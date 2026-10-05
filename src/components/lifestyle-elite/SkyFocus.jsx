@@ -36,6 +36,7 @@ import { phaseLabel } from "@/utils/cyclePhase";
 import { CELESTIAL_CSS, MoonLesson } from "@/components/lifestyle-elite/sky/CelestialSky";
 import SkyMeaning from "@/components/lifestyle-elite/sky/SkyMeaning";
 import ObservedSkyDiary from "@/components/lifestyle-elite/sky/ObservedSkyDiary";
+import DailySkyLesson, { PrivateSkyNotes } from "@/components/lifestyle-elite/sky/DailySkyLesson";
 
 const cap = (s) => (s ? String(s).charAt(0).toUpperCase() + String(s).slice(1) : s);
 const clean = (s) => String(s || "").replace(/<[^>]+>/g, "").replace(/\*(.+?)\*/g, "$1").replace(/\s+/g, " ").trim();
@@ -165,7 +166,7 @@ function GoddessBench({ signs, goddessRead }) {
 }
 
 // ── "carry it with you" — reflect · discuss · ask Jess · mark read (the connectivity keystone) ──
-function CarryItWithYou({ seed, onMarkRead, read }) {
+function CarryItWithYou({ seed, onMarkRead, read, connectedDemo = false }) {
   const go = (href) => window.location.assign(href);
   const act = { display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flex: 1, background: "transparent", border: "none", cursor: "pointer", padding: "10px 4px", fontFamily: UI, fontSize: 12, fontWeight: 700, color: C.slate };
   const s = encodeURIComponent(String(seed || "").slice(0, 180));
@@ -174,15 +175,15 @@ function CarryItWithYou({ seed, onMarkRead, read }) {
       <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color: C.gold, textAlign: "center", marginBottom: 2 }}>Carry it with you</div>
       <div style={{ display: "flex", alignItems: "stretch" }}>
         <button className="fw-elite-press" style={act} onClick={() => go(`${createPageUrl("Journal")}?compose=1&type=horoscope&seed=${s}`)}><PenLine size={16} color={C.ink} strokeWidth={1.7} /> Reflect</button>
-        <button className="fw-elite-press" style={act} onClick={() => go(`${createPageUrl("Community")}?room=the-sky&seed=${s}`)}><MessageCircle size={16} color={C.ink} strokeWidth={1.7} /> Discuss</button>
-        <button className="fw-elite-press" style={act} onClick={() => { try { window.dispatchEvent(new CustomEvent("fw_open_assistant", { detail: { seed } })); } catch { go(createPageUrl("Jess")); } }}><Sparkles size={16} color={C.ink} strokeWidth={1.7} /> Ask Jess</button>
+        <button className="fw-elite-press" style={act} onClick={() => go(`${createPageUrl("Community")}?room=${connectedDemo ? "lounge" : "the-sky"}&seed=${s}`)}><MessageCircle size={16} color={C.ink} strokeWidth={1.7} /> {connectedDemo ? "Lounge" : "Discuss"}</button>
+        <button className="fw-elite-press" style={act} onClick={() => { try { window.dispatchEvent(new CustomEvent("fw_open_assistant", { detail: connectedDemo ? { prompt: `Help me think about this sky reading: ${seed}` } : { seed } })); } catch { go(createPageUrl("Jess")); } }}><Sparkles size={16} color={C.ink} strokeWidth={1.7} /> Ask Jess</button>
         <button className="fw-elite-press" style={{ ...act, color: read ? "#5F8A6B" : C.slate }} onClick={onMarkRead}><Check size={16} color={read ? "#5F8A6B" : C.ink} strokeWidth={1.7} /> {read ? "Read" : "Mark read"}</button>
       </div>
     </div>
   );
 }
 
-export default function SkyFocus({ userProfile, actionRequest, onActionState, onActionHandled, portalChart = false, continuous = false, celestial = false }) {
+export default function SkyFocus({ userProfile, actionRequest, onActionState, onActionHandled, portalChart = false, continuous = false, celestial = false, dailyLessons = false, direction }) {
   const { user, astro, reading, userProfile: up, loading, generatingReading, setAstro } = useBirthChart(userProfile);
   const prof = userProfile || up;
   const chart = useMemo(() => deriveChart(astro, prof), [astro, prof]);
@@ -250,7 +251,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
           <Body size={16} style={{ color: C.slate }}>{celestial ? "Time and place add detail. Don't know the time? Leave it blank; rising and houses need it, and your Moon sign may be uncertain." : "Your birth date is all we need to begin. Birth time and place are optional; they unlock your moon and rising. We never track your location."}</Body>
           <div style={{ marginTop: 6 }}><Cta filled Icon={Sparkles} onClick={() => setSheetOpen(true)}>Set up your sky</Cta></div>
         </section>
-        {celestial && <MoonLesson moon={moon} />}
+        {dailyLessons ? <><DailySkyLesson userId={user?.id} moon={moon} direction={direction}/><PrivateSkyNotes userId={user?.id} moon={moon}/></> : celestial && <MoonLesson moon={moon} />}
         {birthSheet(null)}
       </div>
     );
@@ -308,15 +309,18 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
             {playlist ? <a href={`https://open.spotify.com/playlist/${playlist}`} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 5, textDecoration: "none", fontFamily: UI, fontSize: 12, fontWeight: 700, color: "#5F8A6B" }}><Music2 size={12} /> A sound for today</a> : null}
           </div>
         ) : null}
-        {notice ? (
+        {notice && !dailyLessons ? (
           <div style={{ margin: "16px auto 0", maxWidth: "30em", textAlign: "center", paddingTop: 14, borderTop: `1px solid ${C.hair}` }}>
             <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color: C.gold, marginBottom: 5 }}>Notice · watch for</div>
             {notice.t ? <div style={{ fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: C.ink, lineHeight: 1.35 }}>{notice.t}</div> : null}
             {notice.b ? <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16, fontWeight: 500, color: C.ink, lineHeight: 1.5, margin: "3px 0 0" }}>{notice.b}</p> : null}
           </div>
         ) : null}
-        <CarryItWithYou seed={headline} read={markedRead} onMarkRead={() => { setMarkedRead(true); try { recordProgress("your-sky", 0, user?.id); } catch { /* the garden write is a nicety, never a blocker */ } }} />
+        {dailyLessons && [["Power",reading?.power_title,reading?.power_body],["Pressure",reading?.pressure_title,reading?.pressure_body],["Trouble",reading?.trouble_title,reading?.trouble_body]].map(([label,title,body])=>title || body ? <div key={label} style={{borderTop:`1px solid ${C.hair}`,padding:"14px 0 0",marginTop:14}}><Eyebrow cw="gold" align="left">{label}</Eyebrow>{title && <Title align="left" size={22}>{clean(title)}</Title>}{body && <Body>{clean(body)}</Body>}</div> : null)}
+        <CarryItWithYou connectedDemo={dailyLessons} seed={headline} read={markedRead} onMarkRead={() => { setMarkedRead(true); try { recordProgress("your-sky", 0, user?.id); } catch { /* the garden write is a nicety, never a blocker */ } }} />
       </Movement>
+
+      {dailyLessons && <DailySkyLesson userId={user?.id} moon={moon} direction={direction}/>}
 
       <Fleuron my={24} />
 
@@ -344,7 +348,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
           {celestial ? <SkyMeaning label="your two tides" explanation="The outer ring follows the lunar phase; the inner ring uses your logged cycle dates. Side by side does not mean one causes the other—bodies keep their own time."><Eyebrow cw={cw} style={{margin:0}}>Cycle × moon</Eyebrow></SkyMeaning> : <Eyebrow cw={cw}>Cycle × moon</Eyebrow>}
           <Title>Your two tides</Title>
           <CycleMoonDial moon={moon} cyclePhase={cyc.phase} cycleDay={cyc.day} cycleLen={cyc.len || 28} body={reading?.cycle_moon_body} />
-          {celestial && <MoonLesson moon={moon} />}
+          {celestial && !dailyLessons && <MoonLesson moon={moon} />}
           {!cyc.phase ? <Quiet onClick={() => window.location.assign(createPageUrl("Health"))}>Add your dates to see both tides ›</Quiet> : null}
         </Card>
       </Movement>
@@ -352,7 +356,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
       <Fleuron my={24} />
 
       {/* V · YOUR YEAR — profections · Saturn letter · the sky diary */}
-      <Movement id="year" refs={refs}><YearMovement celestial={celestial} profections={profections} diary={celestial ? null : diary} />{celestial && <ObservedSkyDiary userId={user?.id} />}</Movement>
+      <Movement id="year" refs={refs}><YearMovement celestial={celestial} profections={profections} diary={celestial ? null : diary} />{celestial && <ObservedSkyDiary userId={user?.id} />}{dailyLessons && <PrivateSkyNotes userId={user?.id} moon={moon}/>}</Movement>
 
       <Fleuron my={24} />
 

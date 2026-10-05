@@ -105,7 +105,10 @@ const linkBtn = (accent) => ({ display: "inline-flex", alignItems: "center", gap
 export default function WatchListen() {
   const [tab, setTab] = useState("media");     // "media" | "shows"
   const [length, setLength] = useState("all");
-  const [kind, setKind] = useState("all");
+  const [kind, setKind] = useState(() => {
+    const mode = new URLSearchParams(window.location.search).get("mode");
+    return mode === "listen" ? "audio" : mode === "watch" ? "video" : "all";
+  });
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 

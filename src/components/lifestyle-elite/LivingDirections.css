@@ -1,0 +1,75 @@
+.fw-lifestyle-fold:is([data-fold=letter],[data-fold=horizon],[data-fold=observatory],[data-fold=field],[data-fold=path]){--ff-plum:#51444E;--ff-line:#DDD9D2;background:linear-gradient(#F5F4F1 0,#F5F4F1 420px,#fff 980px)!important}
+.fw-living-header{position:relative;isolation:isolate;color:#191510;--living-ui:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+.fw-living-folio{position:relative;z-index:3;display:flex;justify-content:space-between;gap:10px;color:#6E6A61;font:600 12px/1.5 var(--living-ui);letter-spacing:.09em;text-transform:uppercase}
+.fw-living-stage{position:relative;isolation:isolate;min-height:260px}
+.fw-living-growth{position:absolute;z-index:0;pointer-events:none;right:-30px;top:8px;width:194px;height:255px;mask-image:linear-gradient(transparent,#000 12%,#000 75%,transparent);-webkit-mask-image:linear-gradient(transparent,#000 12%,#000 75%,transparent)}
+.fw-living-growth img{display:block;width:100%;height:100%;object-fit:contain}
+.fw-living-copy{position:relative;z-index:2;padding:90px 0 20px;width:65%}
+.fw-living-copy h1{font:italic 600 clamp(30px,7.6vw,39px)/1.12 'FemWell Editorial',Georgia,serif!important;color:#7A1A12!important;letter-spacing:-.025em;margin:0!important;text-shadow:none!important;filter:none!important;overflow-wrap:anywhere}
+.fw-living-last{white-space:nowrap}.fw-living-last svg{display:inline-block;margin-left:5px;vertical-align:middle}
+.fw-living-flower{font:italic 500 17px/1.38 'FemWell Editorial',Georgia,serif!important;color:#51444E!important;margin:14px 0 0!important;line-height:1.38!important}.fw-living-flower strong{font-weight:600!important}
+.fw-living-object{position:absolute;top:12px;right:46px;width:112px;height:112px;z-index:1;color:#A8893F;pointer-events:none}
+.fw-living-object>svg{width:100%;height:100%;stroke:currentColor;stroke-width:.9}
+.fw-living-object>svg[role=img]{stroke:none;filter:drop-shadow(0 8px 13px #51444E18)}
+.fw-living-object .fw-living-orbit{position:absolute;inset:-26px;width:164px;height:164px;stroke-width:.7}
+.fw-living-petals{position:absolute;width:110px;height:65px;object-fit:contain;bottom:-8px;right:20px;opacity:.7;pointer-events:none}
+.fw-living-caption{display:flex;align-items:flex-start;gap:10px;font:500 12px/1.4 var(--living-ui);color:#51444E}.fw-living-caption .sky-meaning{flex:1;min-width:0}.fw-living-caption .sky-meaning>div:first-child{justify-content:flex-start!important;padding-left:0!important}
+.fw-living-caption>button{flex-shrink:0;min-height:44px;min-width:44px;padding:8px 0;background:transparent;border:0;font:500 12px var(--living-ui);color:inherit;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+.fw-living-header button:focus-visible{outline:2px solid #51444E;outline-offset:3px}
+.fw-living-content{position:relative}
+.fw-lifestyle-fold .fw-living-content .sky-reading{margin-top:2px}
+.fw-lifestyle-fold[data-fold=letter] .fw-living-stage{min-height:258px;border-bottom:1px solid #D9C79B80;background:radial-gradient(ellipse at 98% 70%,#E8E2ED80,transparent 68%)}
+.fw-lifestyle-fold[data-fold=letter] .fw-living-copy{width:67%;padding-top:98px;padding-bottom:25px}
+.fw-lifestyle-fold[data-fold=letter] .fw-living-growth{right:-54px;width:185px;height:276px;top:0}
+.fw-lifestyle-fold[data-fold=letter] .fw-living-object{right:29px;top:7px;width:100px;height:100px}
+.fw-lifestyle-fold[data-fold=letter] .fw-ff-summary{background:white;padding:0 16px 8px;border-left:1px solid #D9C79B;border-radius:0 20px 20px 0;margin-top:20px}
+.fw-lifestyle-fold[data-fold=letter] .fw-ff-glance-row{grid-template-columns:18px minmax(0,1fr) 15px;padding:12px 0}
+.fw-lifestyle-fold[data-fold=letter] .fw-living-content{padding-top:12px}
+.fw-lifestyle-fold[data-fold=horizon] .fw-living-stage{min-height:213px;background:radial-gradient(ellipse 75% 70% at 100% 80%,#E0E8DE90,transparent)}
+.fw-lifestyle-fold[data-fold=horizon] .fw-living-copy{width:64%;padding-top:57px;padding-bottom:22px}
+.fw-lifestyle-fold[data-fold=horizon] .fw-living-growth{width:187px;height:225px;top:-9px;right:-63px;transform:rotate(-16deg)}
+.fw-lifestyle-fold[data-fold=horizon] .fw-living-object{width:88px;height:88px;right:26px;top:1px}
+.fw-lifestyle-fold[data-fold=horizon] .fw-living-flower{margin-top:12px!important;font-size:16px!important}
+.fw-lifestyle-fold[data-fold=horizon] .fw-ff-sections{margin-top:0;background:#FFFFFF80;border-radius:16px 16px 0 0;border-bottom-color:#D1DBC9}
+.fw-lifestyle-fold[data-fold=horizon] .fw-ff-actions [aria-label="Section actions"]>button{border-radius:14px!important}
+.fw-lifestyle-fold[data-fold=horizon] .fw-ff-summary{margin-top:14px}
+.fw-lifestyle-fold[data-fold=horizon] .fw-ff-glance-row{padding:10px 0;grid-template-columns:18px minmax(0,1fr) 15px}
+.fw-lifestyle-fold[data-fold=horizon] .fw-ff-row-label{font-size:12px}.fw-lifestyle-fold[data-fold=horizon] .fw-ff-row-text{font-size:17px}
+.fw-lifestyle-fold[data-fold=horizon] .sky-reading{border-left:0;border-top:1px solid #D9C79B;background:white;border-radius:20px;padding:20px 16px}
+.fw-lifestyle-fold[data-fold=observatory] .fw-living-stage{min-height:327px;text-align:center;background:radial-gradient(ellipse 80% 55% at 50% 50%,#E6E0EBB0,transparent);display:flex;flex-direction:column;padding:24px 0 12px}
+.fw-lifestyle-fold[data-fold=observatory] .fw-living-copy{display:contents}
+.fw-lifestyle-fold[data-fold=observatory] .fw-living-copy h1{font-size:36px!important;order:1;position:relative;z-index:2;padding:0 6px}
+.fw-lifestyle-fold[data-fold=observatory] .fw-living-object{width:122px;height:122px;position:relative;top:auto;right:auto;order:2;margin:28px auto 16px}
+.fw-lifestyle-fold[data-fold=observatory] .fw-living-growth{width:180px;height:233px;right:-20px;top:6px;transform:rotate(14deg);opacity:.8}
+.fw-lifestyle-fold[data-fold=observatory] .fw-living-flower{font-size:16px!important;margin-top:10px!important;order:3;position:relative;z-index:2}
+.fw-lifestyle-fold[data-fold=observatory] .fw-living-petals{left:4px;bottom:49px;right:auto;transform:rotate(-15deg)}
+.fw-lifestyle-fold[data-fold=observatory] .fw-ff-sections button[aria-pressed=true]{border-radius:20px 20px 0 0;background:#E9E3EB80}
+.fw-lifestyle-fold[data-fold=observatory] .fw-ff-summary{margin-top:18px;border:1px solid #D9C79B80;padding:0 16px 10px;background:#FFFFFFC0;border-radius:24px}
+.fw-lifestyle-fold[data-fold=observatory] .fw-ff-glance-row{grid-template-columns:18px minmax(0,1fr) 15px;gap:14px;padding:14px 0}
+.fw-lifestyle-fold[data-fold=observatory] .sky-reading{border:0;background:none;border-radius:0;padding:22px 8px;text-align:left}
+.fw-lifestyle-fold[data-fold=field] .fw-living-stage{min-height:183px}
+.fw-lifestyle-fold[data-fold=field] .fw-living-copy{width:74%;padding:32px 0 20px}
+.fw-lifestyle-fold[data-fold=field] .fw-living-copy h1{font-size:32px!important}
+.fw-lifestyle-fold[data-fold=field] .fw-living-growth{right:-50px;top:28px;width:136px;height:176px;opacity:.9}
+.fw-lifestyle-fold[data-fold=field] .fw-living-object{width:57px;height:57px;right:10px;top:1px}.fw-lifestyle-fold[data-fold=field] .fw-living-orbit{inset:-15px;width:87px;height:87px}
+.fw-lifestyle-fold[data-fold=field] .fw-living-flower{font-size:16px!important;margin-top:12px!important;max-width:84%}
+.fw-lifestyle-fold[data-fold=field] .fw-living-petals{width:65px;right:0;bottom:-8px}
+.fw-lifestyle-fold[data-fold=field] .fw-ff-sections button{flex-direction:row;gap:4px;font-size:12px}
+.fw-lifestyle-fold[data-fold=field] .fw-ff-actions [aria-label="Section actions"]>button{border-radius:10px!important;min-height:48px!important;font-size:13px!important;padding:9px!important}
+.fw-lifestyle-fold[data-fold=field] .fw-ff-summary{margin-top:12px;padding-left:14px;border-left:1px solid #D9C79B}
+.fw-lifestyle-fold[data-fold=field] .fw-ff-glance-row{padding:10px 0}.fw-lifestyle-fold[data-fold=field] .fw-ff-glance-row>span{display:grid;grid-template-columns:72px minmax(0,1fr);gap:9px}.fw-lifestyle-fold[data-fold=field] .fw-ff-row-text{font-size:17px}.fw-lifestyle-fold[data-fold=field] .fw-ff-row-label{font-size:12px;margin-bottom:2px;padding-top:4px}
+.fw-lifestyle-fold[data-fold=field] .sky-reading{border-left:0;background:none;border-bottom:1px solid #D9C79B;border-radius:0;padding:18px 0}
+.fw-lifestyle-fold[data-fold=path] .fw-living-stage{min-height:295px;background:radial-gradient(ellipse at 0% 75%,#E3E9DD80,transparent 75%)}
+.fw-lifestyle-fold[data-fold=path] .fw-living-copy{width:78%;padding:122px 0 22px 32px}
+.fw-lifestyle-fold[data-fold=path] .fw-living-growth{right:auto;left:-90px;top:15px;width:235px;height:297px;transform:rotate(28deg)}
+.fw-lifestyle-fold[data-fold=path] .fw-living-object{top:6px;right:23px;width:103px;height:103px}
+.fw-lifestyle-fold[data-fold=path] .fw-living-petals{width:86px;right:1px;bottom:12px;transform:rotate(-30deg)}
+.fw-lifestyle-fold[data-fold=path] .fw-ff-actions{padding-left:12px;border-left:1px solid #D9C79B}
+.fw-lifestyle-fold[data-fold=path] .fw-ff-actions [aria-label="Section actions"]>button:first-child{border-radius:20px 20px 20px 5px!important}.fw-lifestyle-fold[data-fold=path] .fw-ff-actions [aria-label="Section actions"]>button+button{border-radius:20px 5px 20px 20px!important}
+.fw-lifestyle-fold[data-fold=path] .fw-ff-summary{margin-left:12px;padding:0 0 0 15px;border-left:1px solid #D9C79B;margin-top:18px}
+.fw-lifestyle-fold[data-fold=path] .fw-ff-glance-row{grid-template-columns:18px minmax(0,1fr) 15px;padding:12px 0}
+.fw-lifestyle-fold[data-fold=path] .fw-living-content{border-left:1px solid #D9C79B80;padding-left:12px;margin-left:12px}
+.fw-lifestyle-fold[data-fold=path] .sky-reading{border:0;background:linear-gradient(110deg,#fff,transparent);border-radius:0;padding:20px 0}
+@keyframes fwLivingSettle{from{transform:translateY(3px);opacity:.75}to{transform:translateY(0);opacity:1}}
+@media(prefers-reduced-motion:no-preference){.fw-living-header[data-moving=true] .fw-living-growth img{animation:fwLivingSettle 3s ease-out both}.fw-living-header[data-moving=true] .fw-living-orbit{animation:fwLivingSettle 3s ease-out both}}
+@media(prefers-reduced-motion:reduce){.fw-living-replay{display:none}.fw-living-growth img,.fw-living-orbit{animation:none!important}}

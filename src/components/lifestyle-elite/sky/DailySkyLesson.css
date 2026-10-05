@@ -1,0 +1,24 @@
+.daily-sky-movement{margin:22px 0 26px;scroll-margin-top:18px;min-width:0}
+.daily-sky{color:#191510;font:500 14px/1.5 ui-sans-serif,system-ui,sans-serif;min-width:0}
+.daily-sky-eyebrow{font:700 12px/1.4 ui-sans-serif,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#51444E}
+.daily-sky-date{font-size:12px;color:#6E6A61;margin:2px 0 12px;text-align:center}
+.daily-sky-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;align-items:stretch;min-width:0}
+.daily-sky-track::-webkit-scrollbar{display:none}
+.daily-sky-track[data-busy=true]{overflow-x:hidden;pointer-events:none;touch-action:pan-y}
+.daily-sky-slide{flex:0 0 100%;min-width:0;scroll-snap-align:start;scroll-snap-stop:always;padding:0 1px;display:flex;flex-direction:column;box-sizing:border-box}
+.daily-sky-slide h3{font:600 24px/1.14 'FemWell Editorial',Georgia,serif;color:#7A1A12!important;margin:3px 0 10px!important;text-align:left;letter-spacing:-.02em}
+.daily-sky-slide p{font:500 18px/1.48 'FemWell Editorial',Georgia,serif!important;color:#191510;margin:0 0 10px!important}
+.daily-sky-slide p.daily-sky-try{font:500 12px/1.5 ui-sans-serif,system-ui,sans-serif!important;color:#51444E!important}.daily-sky-try strong{display:block;font-weight:700;margin-bottom:2px}
+.daily-sky-source{min-height:44px;align-content:center;display:block;margin-top:auto;color:#51444E;font-size:12px;text-underline-offset:4px;width:fit-content}
+.daily-sky-controls{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid #D9C79B80;font-size:12px;color:#51444E}
+.daily-sky button{min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;background:transparent;color:#51444E;font:600 12px/1.4 ui-sans-serif,system-ui,sans-serif;padding:8px 6px;cursor:pointer}
+.daily-sky button:disabled{opacity:.4;cursor:default}
+.daily-sky-controls button{padding:10px}.daily-sky-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid #EAE7E0}
+.daily-sky-form{border-top:1px solid #EAE7E0;padding-top:10px}.daily-sky-form label{display:block;font-size:12px;font-weight:600;margin:4px 0 8px}.daily-sky-form textarea{display:block;width:100%;min-height:72px;background:#fff;border:1px solid #DDD9D2;border-radius:12px;padding:10px;color:#191510;font:500 16px/1.5 'FemWell Editorial',Georgia,serif;resize:vertical}
+.daily-sky-form>div{display:flex;justify-content:space-between;gap:6px}.daily-sky-form>button,.daily-sky-form button[type=submit]{background:#51444E;color:white;border-radius:99px;margin-top:8px;padding:10px 14px}.daily-sky-form>p{font-size:12px;color:#6E6A61;margin:6px 0}
+.daily-sky-status{font:500 12px/1.5 ui-sans-serif,system-ui,sans-serif!important;color:#51444E;margin:8px 0!important}
+.daily-sky-kept-note{border-top:1px solid #EAE7E0;padding:0}.daily-sky-kept-note summary{min-height:44px;align-content:center;font-size:12px;color:#51444E;cursor:pointer}.daily-sky-kept-note p{white-space:pre-wrap;overflow-wrap:anywhere;font:500 17px/1.5 'FemWell Editorial',Georgia,serif!important;margin:8px 0!important}.daily-sky-kept-note a{color:#51444E;display:inline-flex;align-items:center;min-height:44px}
+.daily-sky-link{color:#51444E;display:inline-flex;align-items:center;min-height:44px;text-underline-offset:4px;font-size:12px}
+.saved-sky-row{display:flex;align-items:center;justify-content:space-between;min-height:50px;gap:10px;border-top:1px solid #EAE7E0;color:#51444E;text-decoration:none;font:600 18px/1.3 'FemWell Editorial',Georgia,serif}.saved-sky-row svg{flex-shrink:0}
+.daily-sky :is(button,a,textarea,.daily-sky-track,summary):focus-visible{outline:2px solid #51444E;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.daily-sky-track{scroll-behavior:auto}}

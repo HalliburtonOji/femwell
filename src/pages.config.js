@@ -130,6 +130,7 @@ import LifestyleBentoDemo from './pages/LifestyleBentoDemo';
 import LifestyleMoodDemo from './pages/LifestyleMoodDemo';
 import LifestyleBespokeDemo from './pages/LifestyleBespokeDemo';
 import SkyConceptDemo from './pages/SkyConceptDemo';
+import LivingLifestyleDemo from './pages/LivingLifestyleDemo';
 import FloralDreamDemo from './pages/FloralDreamDemo';
 import Insights from './pages/Insights.jsx';
 import OneShotThankYou from './pages/OneShotThankYou';
@@ -411,6 +412,7 @@ export const PAGES = {
     "LifestyleMoodDemo": LifestyleMoodDemo,
     "LifestyleBespokeDemo": LifestyleBespokeDemo,
     "SkyConceptDemo": SkyConceptDemo,
+    "LivingLifestyleDemo": LivingLifestyleDemo,
     "FloralDreamDemo": FloralDreamDemo,
     "Insights": Insights,
     "OneShotThankYou": OneShotThankYou,
