@@ -87,3 +87,11 @@ body:has(.fw-living-atelier) a[aria-label="Open Ideas (Design Lab — dev only)"
 .fw-living-atelier .sky-moon-lesson{padding:18px 0 0!important;border-top:0!important}.fw-living-atelier .sky-moon-lesson>p[aria-live]{min-height:0!important;font:500 16px/1.5 'FemWell Editorial',Georgia,serif!important}
 .fw-living-atelier .fw-atelier-incident--petal{border:0;height:20px;margin:8px 0 -14px;z-index:1}.fw-living-atelier .fw-atelier-incident--petal img{width:58px;height:29px;margin-right:18px;transform:rotate(-24deg)}
 .fw-living-atelier .fw-atelier-incident--growth{border:0;margin:10px 0 -10px;height:40px}.fw-living-atelier .fw-atelier-incident--growth img{left:auto;right:0;width:48px;height:64px;bottom:-4px;transform:rotate(-35deg)}
+
+.fw-living-atelier .fw-lifestyle-fold[data-art-direction=marginalia] .fw-ff-summary{border:0;border-radius:0;background:transparent;padding:0;box-shadow:none}
+.fw-living-atelier [data-art-direction=marginalia] .fw-ff-row-text{font:500 17px/1.4 'FemWell Editorial',Georgia,serif}
+.fw-living-atelier .daily-sky-movement>.daily-sky>.sky-meaning>div:first-child{justify-content:flex-start!important;padding-left:0!important}
+.fw-living-atelier .fw-atelier-identity>section{background:none!important;box-shadow:none!important;border-radius:0!important;padding:16px 0!important;border-top:1px solid #D9C79B80!important}
+.fw-living-atelier .fw-atelier-year>section:first-child>section{background:none!important;box-shadow:none!important;border-radius:0!important;padding:14px 0 14px 16px!important;border-left:1px solid #D9C79B80!important}
+.fw-living-atelier .fw-atelier-year>section:first-child>section>p{font:500 16px/1.55 'FemWell Editorial',Georgia,serif!important;text-align:left!important}
+.fw-living-atelier .fw-atelier-ask>section{background:none!important;box-shadow:none!important;border-radius:0!important;padding:16px 0!important}

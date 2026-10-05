@@ -32,7 +32,6 @@ import { SERIF, UI, SCRIPT } from "@/components/journal/Editorial";
 import { C, PHASE_CLEAN } from "@/components/brand/cleanTokens";
 import { Eyebrow, Title, Body, Card, Summary, Cta, Quiet, Foot, Leaf, Fleuron, Tag, Sep } from "@/components/brand/cleanKit";
 import { YearMovement, RedWhiteMoon, AskTheSky, Compatibility, Atelier, YourWay } from "@/components/lifestyle-elite/sky/SkyMovements";
-import { phaseLabel } from "@/utils/cyclePhase";
 import { CELESTIAL_CSS, MoonLesson } from "@/components/lifestyle-elite/sky/CelestialSky";
 import SkyMeaning from "@/components/lifestyle-elite/sky/SkyMeaning";
 import ObservedSkyDiary from "@/components/lifestyle-elite/sky/ObservedSkyDiary";
