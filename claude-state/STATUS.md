@@ -7,6 +7,9 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-05 · SAVED CATEGORY TARGETING / FINAL REPROOF
+> - Claim expansion **2dd44ff** committed before Saved.jsx targeting edit; source **f67017d** pushed, build **index-oi96Og1k.js** deploying. Saved's normal default/layout stays unchanged; Lifestyle links target its actual category to remove an unnecessary tap. Targeted20/20 passes; prior full98/98. Canonical Saved record and its exact Open return tapped successfully on BjAiUh2i; final query landing and Jess count reproof pending. No new schema/function/main promotion.
+>
 > ### CURRENT STATE — 2026-10-05 · FINAL DEMO BUNDLE PUBLISHED
 > - Source **0922b50**, review/report **5d6afd7** pushed. Stable frontend deploy succeeded; final bundle **index-BjAiUh2i.js**. Full14-file suite98/98 and targeted lint pass. Independent final source audit has no identified new-demo P0/P1. Phone review board now includes90-view checks, persistence/return evidence and staged gaps; final Saved/Jess tap reproof follows before claim release. Main remains held.
 >

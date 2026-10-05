@@ -2,7 +2,7 @@
 
 Demo route: `/LivingLifestyleDemo`. Ideas entry: **Living Lifestyle · five complete directions**. Exactly five: Open Letter, Garden Horizon, Quiet Observatory, Field Notes, Garden Path. Main promotion remains held for Halli's explicit decision.
 
-Source: **0922b50**, with earlier implementation/audit commits in STATUS. Final preview bundle: **index-BjAiUh2i.js** (deployment and final save-action reproof recorded in the next STATUS block).
+Source: **f67017d**, with earlier implementation/audit commits in STATUS. Final preview bundle: **index-oi96Og1k.js** (deployment and final save-action reproof recorded in the next STATUS block).
 
 ## Preserved surface and atoms
 
@@ -15,12 +15,12 @@ New implementation uses 24 short authored astronomy pieces, five cards per day, 
 ## Reality, tests and live proof
 
 - Relevant deployed schemas and authorised account/test records inspected. Four profile rows explain an existing context-selection risk; no personal contents/IDs copied into public review docs. No new schema or function name, no server deployment required.
-- Final full suite: **98/98, 14 files**. New header/lesson suite: **20/20**. Includes failure/draft preservation, late read and owner filtering regressions. Targeted lint and production build pass; diff whitespace check passes. No physical iPhone/WebKit proof claimed.
+- Full suite at0922b50: **98/98, 14 files**. After the final saved-category query refinement, new header/lesson suite: **20/20**. Includes failure/draft preservation, late read and owner filtering regressions. Targeted lint and production build pass; diff whitespace check passes. No physical iPhone/WebKit proof claimed.
 - **90 double-native screenshots:** five directions × six sections × 360/390/430. Every recorded viewport equals its requested width, scrollX=0, no horizontal overflow, and botanical image complete with real natural width. Matrix: `C:/Users/Halli/femwell-handoff/living-reproof-matrix.jsonl`; images `living-{direction}-{section}-{width}.png` in that folder. Early single captures lagged a frame; they are excluded. Independent Atelier review re-proved all Letter/Observatory/Path390 headers; Verify sampled all directions/sections at360/430. No remaining identified first-fold P0/P1.
 - Header matrix provenance: DnW6LSqg/B6BU2X16, whose header code is unchanged in the final build. Fresh DvdB0hsn lesson pixels separately prove the active-height change, full content/source/actions and eight phases. At390 measured track262px versus active261.46px; at360/430 track exceeds active by less than1px. Final build changes save consumers/action only.
 - Actual Ideas entry tapped to reach the demos. All five design choices and six section selectors tapped. Everything restores the full shell. Read chooser opens the exact Tuesday Decision in place; Saved reads shows a truthful empty state. Listen/watch and Books choosers contain real records. Today's chapter opens the actual daily chapter. Good-life time selection changes its actual result; joy chooser contains real items. Continue reading shows an honest empty state for this account. Chart editor opens existing details and cancels without a write; Ask the sky focuses the existing question. Jess digest and full read open/close.
 - Actual daily lesson next-arrow and horizontal-scroll input change title, index and source. Full-moon definition and meaning open/Escape close work. Native horizontal scroll proves the scroll-snap mechanism; physical iPhone finger-swipe remains Halli's review.
-- Actual signed-in save awaited success. One existing SavedItems row read back with exact lesson ID/version/date/route. A harmless labelled QA reflection was kept in existing JournalEntries; matching content_key and text read back. Yours shows the lesson/count; its actual link reloads the exact lesson and private note. QA lesson/note remain in the test account, without deleting other records. No Community post or DM sent.
+- Actual signed-in save awaited success. One existing SavedItems row read back with exact lesson ID/version/date/route. A harmless labelled QA reflection was kept in existing JournalEntries; matching content_key and text read back. Yours shows the lesson/count; its actual link reloads the exact lesson and private note. The canonical Saved collection displays the same record, whose actual Open link returns to the exact lesson. Lifestyle save doors target its category directly, avoiding the initial Advice tab. QA lesson/note remain in the test account, without deleting other records. No Community post or DM sent.
 
 ## Adversarial catalogue and reproof
 
