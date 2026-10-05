@@ -7,6 +7,9 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-05 · FINAL FIVE-DIRECTION PREVIEW DEPLOYED
+> - Source **4043f8a** pushed; stable frontend deploy succeeded. HTTP confirms **index-DfMSk4bB.js**. Horizon now uses a title-first garden band, Path clears the copy, Field has consistent selector icons, and daily lessons use a shorter composition with every action/source retained. Demo-only, main held. Independent final source reproof finds no remaining identified demo P0/P1; final live pixels and persistence checks continue.
+>
 > ### CURRENT STATE — 2026-10-05 · FIVE DEMOS PUBLISHED FOR PIXEL VERIFICATION
 > - Core source **4bfa42f**, independent-audit repairs **49ac86c**, owner-count follow-up **cfa3d41** pushed. First preview deployed successfully, HTTP confirms **index-B0O8DHvj.js**. Final deterministic rebuild includes the latest owner-count change; live pixel/tap/persistence verification is in progress. Demo-only; no main promotion, new functions or schema changes.
 > - Full suite96/96 pass; targeted header/lesson/persistence regressions20/20 pass, later owner-filter lesson checks10/10 pass; targeted lint passes. Independent source P1 findings repaired (pending edits/late reads, header return, section summaries, type floor); P2 owner count/type sizes fixed. Source proof is not live proof.

@@ -40,7 +40,7 @@
 .fw-lifestyle-fold[data-fold=observatory] .fw-living-copy{display:contents}
 .fw-lifestyle-fold[data-fold=observatory] .fw-living-copy h1{font-size:36px!important;order:1;position:relative;z-index:2;padding:0 6px}
 .fw-lifestyle-fold[data-fold=observatory] .fw-living-object{width:122px;height:122px;position:relative;top:auto;right:auto;order:2;margin:28px auto 16px}
-.fw-lifestyle-fold[data-fold=observatory] .fw-living-growth{width:180px;height:233px;right:-20px;top:6px;transform:rotate(14deg);opacity:.8}
+.fw-lifestyle-fold[data-fold=observatory] .fw-living-growth{width:180px;height:190px;right:-20px;top:100px;transform:rotate(14deg);opacity:.8}
 .fw-lifestyle-fold[data-fold=observatory] .fw-living-flower{font-size:16px!important;margin-top:10px!important;order:3;position:relative;z-index:2}
 .fw-lifestyle-fold[data-fold=observatory] .fw-living-petals{left:4px;bottom:49px;right:auto;transform:rotate(-15deg)}
 .fw-lifestyle-fold[data-fold=observatory] .fw-ff-sections button[aria-pressed=true]{border-radius:20px 20px 0 0;background:#E9E3EB80}
@@ -61,7 +61,7 @@
 .fw-lifestyle-fold[data-fold=field] .sky-reading{border-left:0;background:none;border-bottom:1px solid #D9C79B;border-radius:0;padding:18px 0}
 .fw-lifestyle-fold[data-fold=path] .fw-living-stage{min-height:295px;background:radial-gradient(ellipse at 0% 75%,#E3E9DD80,transparent 75%)}
 .fw-lifestyle-fold[data-fold=path] .fw-living-copy{width:calc(100% - 68px);margin-left:68px;padding:122px 0 22px}
-.fw-lifestyle-fold[data-fold=path] .fw-living-growth{right:auto;left:-68px;top:76px;width:166px;height:242px;transform:rotate(10deg);mask-image:linear-gradient(90deg,#000 0,#000 50%,transparent 100%);-webkit-mask-image:linear-gradient(90deg,#000 0,#000 50%,transparent 100%)}
+.fw-lifestyle-fold[data-fold=path] .fw-living-growth{right:auto;left:-68px;top:76px;width:166px;height:242px;transform:rotate(10deg);mask-image:linear-gradient(90deg,#000 0,#000 35%,transparent 75%);-webkit-mask-image:linear-gradient(90deg,#000 0,#000 35%,transparent 75%)}
 .fw-lifestyle-fold[data-fold=path] .fw-living-object{top:6px;right:23px;width:103px;height:103px}
 .fw-lifestyle-fold[data-fold=path] .fw-living-petals{width:86px;right:1px;bottom:12px;transform:rotate(-30deg)}
 .fw-lifestyle-fold[data-fold=path] .fw-ff-actions{padding-left:12px;border-left:1px solid #D9C79B}
