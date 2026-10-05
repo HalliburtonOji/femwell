@@ -28,7 +28,7 @@
 .fw-living-atelier .fw-ff-sections button[aria-pressed=true]{border-bottom:1px solid var(--atelier-plum);color:var(--atelier-ink)}
 .fw-living-atelier .fw-ff-status{font-size:12px;border-top:1px solid #EAE7E0;padding-top:6px}
 .fw-living-atelier .fw-ff-actions{margin-top:6px;padding:0;border:0}
-.fw-living-atelier .fw-ff-actions [aria-label="Section actions"]>button{border-radius:14px!important;min-height:48px!important;font:700 14px/1.3 var(--atelier-ui)!important}
+.fw-living-atelier .fw-ff-actions [aria-label="Section actions"]>button{border-radius:999px!important;min-height:48px!important;font:700 14px/1.3 var(--atelier-ui)!important}
 .fw-living-atelier .fw-ff-summary{position:relative;border:0;border-radius:0;background:transparent;padding:0;margin:22px 0 8px;box-shadow:none}
 .fw-living-atelier .fw-ff-summary-nav{border-bottom:1px solid var(--atelier-hair);font-size:13px}.fw-living-atelier .fw-ff-glance-row{grid-template-columns:18px minmax(0,1fr) 15px;gap:10px;padding:12px 0}
 .fw-living-atelier .fw-ff-row-label{font:600 12px/1.4 var(--atelier-ui);letter-spacing:.04em}.fw-living-atelier .fw-ff-row-text{font:500 17px/1.4 'FemWell Editorial',Georgia,serif}
@@ -39,7 +39,7 @@
 .fw-living-atelier .sky-celestial :is(.sky-note,.sky-year-body){font:500 16px/1.55 'FemWell Editorial',Georgia,serif!important}
 .fw-living-atelier .fw-atelier-reading{border:0!important;border-radius:0!important;background:none!important;padding:16px 0 0!important;position:relative}
 .fw-living-atelier .fw-atelier-reading>p:first-of-type{font:500 17px/1.55 'FemWell Editorial',Georgia,serif!important}
-.fw-living-atelier .fw-atelier-reading>p:first-of-type::first-letter{font:600 44px/1 'FemWell Editorial',Georgia,serif;color:var(--atelier-plum);float:left;margin:3px 6px 0 0}
+
 .fw-living-atelier .fw-atelier-reading :is(p,div){text-shadow:none!important}
 .fw-atelier-incident{position:relative;pointer-events:none;line-height:0;isolation:isolate}
 .fw-atelier-incident img{display:block;object-fit:contain}
@@ -59,7 +59,7 @@
 .fw-living-atelier .fw-atelier-way{padding-top:16px}
 .fw-atelier-notes{max-width:430px;margin:auto;padding:0 16px 110px;color:var(--atelier-plum);font:500 13px/1.4 var(--atelier-ui)}
 .fw-atelier-notes :is(summary,a){min-height:44px;align-content:center;color:inherit}.fw-atelier-notes a{display:inline-flex;align-items:center;margin-right:14px}
-body:has(.fw-living-atelier) a[aria-label="Open Ideas (Design Lab — dev only)"]{position:relative!important;inset:auto!important;display:flex!important;width:fit-content;margin:0 auto 110px!important;transform:none!important}
+body:has(.fw-living-atelier) a[aria-label="Open Ideas (Design Lab — dev only)"]{background:#51444E!important;color:white!important}
 @keyframes fwAtelierArrival{from{opacity:.6;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:no-preference){.fw-atelier-header[data-moving=true] .fw-atelier-canopy-art{animation:fwAtelierArrival 2.8s ease-out both}}
 @media(prefers-reduced-motion:reduce){.fw-atelier-replay{display:none}.fw-atelier-canopy-art{animation:none!important}}
@@ -68,3 +68,22 @@ body:has(.fw-living-atelier) a[aria-label="Open Ideas (Design Lab — dev only)"
 .fw-living-atelier .daily-sky-movement>.daily-sky{padding:0!important;border:0!important;border-radius:0!important;background:none!important}
 .fw-living-atelier .daily-sky-position{flex-direction:column;align-items:flex-start;gap:2px}
 .fw-atelier-rule{height:1px;background:#D9C79B80;margin:14px 0}
+
+.fw-living-atelier [data-art-direction=marginalia] .fw-ff-summary{border:0;border-radius:0;background:transparent;padding:0;box-shadow:none}
+.fw-living-atelier .daily-sky-movement .daily-sky-heading{align-items:flex-start;text-align:left}.fw-living-atelier .daily-sky-movement .daily-sky-date{text-align:left}
+.fw-living-atelier .daily-sky-movement .daily-sky-slide h3{font-size:20px!important}.fw-living-atelier .daily-sky-movement .daily-sky-slide p{font-size:16px!important}.fw-living-atelier .daily-sky-movement .daily-sky-try{font:500 12px/1.5 var(--atelier-ui)!important}
+.fw-living-atelier .fw-atelier-weather-notes{margin-top:24px;border-block:1px solid var(--atelier-hair);padding:14px 0 4px}
+.fw-living-atelier .fw-atelier-weather-entry{margin-bottom:18px;display:grid;grid-template-columns:56px minmax(0,1fr);column-gap:10px;align-items:baseline}
+.fw-living-atelier .fw-atelier-note-label{font:600 12px/1.5 var(--atelier-ui);color:var(--atelier-plum)}
+.fw-living-atelier .fw-atelier-weather-entry>h3{font:600 20px/1.2 'FemWell Editorial',Georgia,serif!important;margin:0!important;text-align:left!important}
+.fw-living-atelier .fw-atelier-weather-entry>p{grid-column:2;font:500 16px/1.55 'FemWell Editorial',Georgia,serif!important;text-align:left!important;margin:8px 0 0!important}
+.fw-living-atelier .fw-atelier-weather-entry--pressure{padding-left:8px;border-left:1px solid #D9C79B80}
+
+.fw-living-atelier .fw-atelier-tides{padding:18px 12px;border:1px solid #D9C79B;border-radius:42px 42px 6px 6px;margin:24px 0 12px;background:radial-gradient(ellipse at 8% 40%,#EDEFF360,transparent 70%)}
+.fw-living-atelier .fw-atelier-tides>div{padding:0!important}
+
+.fw-living-atelier .daily-sky-movement{padding:0;border:0;background:none;box-shadow:none;border-radius:0}
+.fw-living-atelier .daily-sky-movement>.daily-sky{padding:14px!important;border:1px solid var(--atelier-hair)!important;border-radius:3px 20px 3px 3px!important;background:linear-gradient(135deg,#fff,#EEEEF430)!important;box-shadow:3px 4px 0 #EAE7E060!important}
+.fw-living-atelier .sky-moon-lesson{padding:18px 0 0!important;border-top:0!important}.fw-living-atelier .sky-moon-lesson>p[aria-live]{min-height:0!important;font:500 16px/1.5 'FemWell Editorial',Georgia,serif!important}
+.fw-living-atelier .fw-atelier-incident--petal{border:0;height:20px;margin:8px 0 -14px;z-index:1}.fw-living-atelier .fw-atelier-incident--petal img{width:58px;height:29px;margin-right:18px;transform:rotate(-24deg)}
+.fw-living-atelier .fw-atelier-incident--growth{border:0;margin:10px 0 -10px;height:40px}.fw-living-atelier .fw-atelier-incident--growth img{left:auto;right:0;width:48px;height:64px;bottom:-4px;transform:rotate(-35deg)}

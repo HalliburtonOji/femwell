@@ -23,6 +23,13 @@
       "source": "C:/Users/Halli/.codex/generated_images/01a0e28c-de58-74a3-b2fd-c62f5d849aa7/exec-2c412107-3d81-4afc-8a42-ccf05456ce91.png",
       "web": "public/images/living-atelier/petals-v1.webp",
       "processing": "Format conversion only, alpha preserved; original generation retained"
+    },
+    {
+      "key": "petals-v2",
+      "source": "C:/Users/Halli/.codex/generated_images/01a0e28c-de58-74a3-b2fd-c62f5d849aa7/exec-b4863151-a18c-45a2-9496-b38d1a2a2f87.png",
+      "web": "public/images/living-atelier/petals-v2.webp",
+      "prompt": "Edit this botanical fragments asset into exactly TWO fallen individual morning-glory PETALS, not whole blossoms or trumpet flower heads. Each is an irregular torn crumpled translucent violet petal fragment, broad small curved tissue with subtle veins, one faded pale lilac and one deeper dusty violet, and one tiny green fallen calyx. Preserve the realistic painted botanical-study material and upper-left soft light. A sparse horizontal transparent cutout sheet, all three pieces separated with generous fully transparent empty space; no stems, no complete flowers, no background, no border, no ground shadow. These are quiet small fragments for a sophisticated alabaster app margin, coherent with the existing morning-glory canopy. They must look like real fallen tissue with personality, not decorative clip art.",
+      "processing": "Imagegen edit; format conversion only, alpha preserved. v1 retained as rejected first pass."
     }
   ]
 }

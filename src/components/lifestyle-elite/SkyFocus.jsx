@@ -184,13 +184,14 @@ function CarryItWithYou({ seed, onMarkRead, read, connectedDemo = false }) {
   );
 }
 
-export default function SkyFocus({ userProfile, actionRequest, onActionState, onActionHandled, portalChart = false, continuous = false, celestial = false, dailyLessons = false, direction, artDirection }) {
+export default function SkyFocus({ userProfile, actionRequest, onActionState, onActionHandled, portalChart = false, continuous = false, celestial = false, dailyLessons = false, direction, artDirection, cycleContext }) {
   const artful = artDirection === "marginalia";
   const lessonRoute = artful ? "/LivingAtelierDemo" : undefined;
   const { user, astro, reading, userProfile: up, loading, generatingReading, setAstro } = useBirthChart(userProfile);
   const prof = userProfile || up;
   const chart = useMemo(() => deriveChart(astro, prof), [astro, prof]);
-  const cyc = useMemo(() => derivePhaseInfo(prof), [prof]);
+  const derivedCycle = useMemo(() => derivePhaseInfo(prof), [prof]);
+  const cyc = artful && cycleContext ? cycleContext : derivedCycle;
   const moon = useMemo(() => getMoonPhase(new Date()), []);
   const profections = useProfections(astro, prof);
   const asteroids = useAsteroids(astro, prof);
@@ -279,7 +280,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
       {/* I · TONIGHT — the masthead (the page's ONE header sits above this) */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <Eyebrow cw="lavender" align="left">Your sky today</Eyebrow>
+          <Eyebrow cw="lavender" align="left">{artful && reading?.reading_date ? `Your sky · ${new Date(`${reading.reading_date}T12:00:00`).toLocaleDateString("en-GB",{day:"numeric",month:"short"})}` : "Your sky today"}</Eyebrow>
           <h2 style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 30, lineHeight: 1.1, letterSpacing: -0.4, color: C.ink, margin: "0 0 10px", textShadow: "none" }}>{headline}</h2>
         </div>
         <ShareButton iconOnly label="Share today's sky" artifact={shareArtifact} />
@@ -298,7 +299,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
         <Eyebrow cw="crimson">Today's weather</Eyebrow>
         {weather.length ? (
           <>
-            <Body size={18}>{lead ? <><span style={{ fontStyle: "italic", color: C.crimson }}>{lead[1]}</span> {lead[3]}</> : weather[0]}</Body>
+            <Body size={18}>{lead ? <><span style={{ fontStyle: artful ? "normal" : "italic", color: artful ? C.ink : C.crimson }}>{lead[1]}</span> {lead[3]}</> : weather[0]}</Body>
             {weather.slice(1).map((p, i) => <Body key={i} size={18}>{p}</Body>)}
           </>
         ) : <Body size={18}>{celestial ? "Your reading isn't available yet. Your chart and the moon notes are still here to explore." : `A steady ${chart.sun || "quiet"} day — begin the thing you've been thinking about.`}</Body>}
@@ -319,14 +320,14 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
             {notice.b ? <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16, fontWeight: 500, color: C.ink, lineHeight: 1.5, margin: "3px 0 0" }}>{notice.b}</p> : null}
           </div>
         ) : null}
-        {dailyLessons && [["Power",reading?.power_title,reading?.power_body],["Pressure",reading?.pressure_title,reading?.pressure_body],["Trouble",reading?.trouble_title,reading?.trouble_body]].map(([label,title,body])=>title || body ? <div key={label} style={{borderTop:`1px solid ${C.hair}`,padding:"14px 0 0",marginTop:14}}><Eyebrow cw="gold" align="left">{label}</Eyebrow>{title && <Title align="left" size={26}>{clean(title)}</Title>}{body && <Body>{clean(body)}</Body>}</div> : null)}
+        {dailyLessons && <div className={artful ? "fw-atelier-weather-notes" : undefined}>{[["Power",reading?.power_title,reading?.power_body],["Pressure",reading?.pressure_title,reading?.pressure_body],["Trouble",reading?.trouble_title,reading?.trouble_body]].map(([label,title,body])=>title || body ? <div key={label} className={artful ? `fw-atelier-weather-entry fw-atelier-weather-entry--${label.toLowerCase()}` : undefined} style={artful ? undefined : {borderTop:`1px solid ${C.hair}`,padding:"14px 0 0",marginTop:14}}>{artful ? <span className="fw-atelier-note-label">{label}</span> : <Eyebrow cw="gold" align="left">{label}</Eyebrow>}{title && <Title align="left" size={26}>{clean(title)}</Title>}{body && <Body>{clean(body)}</Body>}</div> : null)}</div>}
         <CarryItWithYou connectedDemo={dailyLessons} seed={headline} read={markedRead} onMarkRead={() => { setMarkedRead(true); try { recordProgress("your-sky", 0, user?.id); } catch { /* the garden write is a nicety, never a blocker */ } }} />
       </Movement>
 
       {artful && <AtelierIncident/>}
       {dailyLessons && <DailySkyLesson userId={user?.id} moon={moon} direction={direction} previewRoute={lessonRoute}/>}
 
-      <Fleuron my={24} />
+      {!artful && <Fleuron my={24} />}
 
       {/* III · YOU — chart · goddess bench · red & white moon */}
       <Movement id="you" refs={refs} className={artful ? "fw-atelier-identity" : undefined}>
@@ -344,7 +345,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
         <RedWhiteMoon celestial={celestial} rw={null} />
       </Movement>
 
-      <Fleuron my={24} />
+      {!artful && <Fleuron my={24} />}
 
       {/* IV · YOUR TIDES — the dial in the ONE framed feature card */}
       <Movement id="tides" refs={refs} className={artful ? "fw-atelier-tides" : undefined}>
@@ -357,13 +358,13 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
         </Card>
       </Movement>
 
-      <Fleuron my={24} />
+      {!artful && <Fleuron my={24} />}
 
       {/* V · YOUR YEAR — profections · Saturn letter · the sky diary */}
       {artful && <AtelierIncident kind="growth"/>}
       <Movement id="year" refs={refs} className={artful ? "fw-atelier-year" : undefined}><YearMovement celestial={celestial} profections={profections} diary={celestial ? null : diary} />{celestial && <ObservedSkyDiary userId={user?.id} />}{dailyLessons && <PrivateSkyNotes userId={user?.id} moon={moon}/>}</Movement>
 
-      <Fleuron my={24} />
+      {!artful && <Fleuron my={24} />}
 
       {/* VI · ASK & CONNECT — ask the sky · compatibility */}
       <Movement id="ask" refs={refs} className={artful ? "fw-atelier-ask" : undefined}>
@@ -373,12 +374,12 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
         <Compatibility celestial={celestial} userId={user?.id} />
       </Movement>
 
-      <Fleuron my={24} />
+      {!artful && <Fleuron my={24} />}
 
       {/* VII · THE ATELIER — the letter + the shelf */}
       <Movement id="atelier" refs={refs}><Atelier celestial={celestial} userId={user?.id} hasAtelier={!!user?.has_atelier} letter={null} /></Movement>
 
-      <Fleuron my={24} />
+      {!artful && <Fleuron my={24} />}
 
       {/* VIII · YOUR SKY, YOUR WAY — quiet mode · science · privacy */}
       <Movement id="yours" refs={refs} className={artful ? "fw-atelier-way" : undefined}><YourWay celestial={celestial} userId={user?.id} /></Movement>

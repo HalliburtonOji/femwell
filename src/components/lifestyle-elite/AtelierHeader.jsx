@@ -18,7 +18,7 @@ const NOTES = {
 // Decorative art is separate from every measured fact and control.
 export function AtelierIncident({ kind = "petal" }) {
   return <div className={`fw-atelier-incident fw-atelier-incident--${kind}`} aria-hidden="true">
-    <img src={`/images/living-atelier/${kind === "growth" ? "margin" : "petals"}-v1.webp`} alt="" loading="lazy" width={kind === "growth" ? 1086 : 1774} height={kind === "growth" ? 1448 : 887}/>
+    <img src={`/images/living-atelier/${kind === "growth" ? "margin" : "petals"}-${kind === "growth" ? "v1" : "v2"}.webp`} alt="" loading="lazy" width={kind === "growth" ? 1086 : 1774} height={kind === "growth" ? 1448 : 887}/>
   </div>;
 }
 
