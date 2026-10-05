@@ -34,6 +34,11 @@ describe("daily astronomy and exact identity",()=>{
   });
 });
 describe("real save and private source-linked note contracts",()=>{
+  it("keeps the creative preview on its own exact lesson return, including older saves",async()=>{
+    mock.filter.mockResolvedValue([{id:"one",title:"Earth lends a little light",meta_json:JSON.stringify({kind:"sky-lesson",lessonId:"earthshine",lessonVersion:1,route:"/LivingLifestyleDemo?lesson=earthshine"})}]);
+    render(<SavedSkyLessons userId="owner" direction="letter" previewRoute="/LivingAtelierDemo"/>);
+    const row=await screen.findByRole("link",{name:/Earth lends/});expect(row).toHaveAttribute("href","/LivingAtelierDemo?direction=letter&section=sky&lesson=earthshine&lessonVersion=1#daily-sky-lesson");
+  });
   it("protects the submitted words and card position while persistence is pending",async()=>{
     let complete;mock.create.mockImplementation(()=>new Promise(resolve=>{complete=resolve;}));render(<DailySkyLesson userId="owner"/>);fireEvent.click(screen.getByRole("button",{name:"A private note"}));const input=screen.getByLabelText("What caught your eye?");fireEvent.change(input,{target:{value:"Keep these exact words."}});fireEvent.click(screen.getByRole("button",{name:"Keep in journal"}));expect(input).toHaveAttribute("readonly");expect(screen.getByRole("button",{name:"Next sky lesson"})).toBeDisabled();fireEvent.keyDown(screen.getByLabelText("Swipeable lesson cards"),{key:"ArrowRight"});expect(screen.getByText("1 / 5 · today’s lesson")).toBeVisible();await act(async()=>complete({id:"new",user_id:"owner",content_key:skyLessonKey(dailyLessonDeck(localSkyDay())[0]),text:"Keep these exact words."}));expect(screen.getByText(/Kept in your journal/)).toBeVisible();
   });

@@ -1,0 +1,70 @@
+.fw-living-atelier{--atelier-ink:#191510;--atelier-plum:#51444E;--atelier-gold:#A8893F;--atelier-hair:#D9C79B;--atelier-paper:#F5F4F1;--atelier-ui:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--atelier-paper);color:var(--atelier-ink)}
+.fw-living-atelier [data-art-direction=marginalia]{background:linear-gradient(160deg,#F5F4F1 0%,#F5F4F1 460px,#fff 1080px)!important}
+.fw-living-atelier [data-art-direction=marginalia]>.fw-elite-in{padding-top:8px!important}
+.fw-atelier-review{max-width:430px;margin:0 auto;padding:48px 16px 0;font:600 12px/1.4 var(--atelier-ui);display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--atelier-plum)}
+.fw-atelier-review a{display:inline-flex;align-items:center;min-height:44px;color:inherit;text-underline-offset:4px}
+.fw-atelier-header{position:relative;isolation:isolate}
+.fw-atelier-folio{font:600 12px/1.4 var(--atelier-ui);text-transform:uppercase;letter-spacing:.09em;display:flex;justify-content:space-between;gap:12px;padding:0 0 8px;color:#6E6A61}
+.fw-atelier-canopy{position:relative;aspect-ratio:2/1;margin:0 -8px;isolation:isolate}
+.fw-atelier-canopy-art{position:absolute;inset:0;pointer-events:none;display:flex;justify-content:center;align-items:center}
+.fw-atelier-canopy-art img{width:100%;height:100%;object-fit:contain}
+.fw-atelier-live-moon{position:absolute;left:71.8%;top:46.6%;width:22%;aspect-ratio:1;transform:translate(-50%,-50%);z-index:1}
+.fw-atelier-live-moon>svg{display:block;width:100%;height:100%}
+.fw-atelier-header-words{position:relative;margin-top:-8px;z-index:2;padding:0 0 8px}
+.fw-atelier-header-words h1{margin:0!important;filter:none!important;text-shadow:none!important;color:#7A1A12!important}
+.fw-atelier-header-words .fw-display{font:400 clamp(44px,9.5vw,56px)/1.14 'Ephesis','Pinyon Script',cursive!important;letter-spacing:0!important}
+.fw-atelier-header-words .fw-heading{font:italic 600 clamp(27px,6.4vw,34px)/1.18 'FemWell Editorial',Georgia,serif!important;letter-spacing:0!important}
+.fw-atelier-header-words h1>span{white-space:nowrap}.fw-atelier-header-words h1 svg{display:inline-block;vertical-align:middle;margin-left:8px}
+.fw-atelier-flower{margin:8px 0 0!important;color:var(--atelier-plum);font:italic 500 17px/1.55 'FemWell Editorial',Georgia,serif!important}.fw-atelier-flower strong{font-weight:600!important;margin-right:10px}.fw-atelier-flower>span{display:block}
+.fw-atelier-caption{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;border-bottom:1px solid var(--atelier-hair);padding-bottom:4px;font:600 13px/1.4 var(--atelier-ui);color:var(--atelier-plum)}
+.fw-atelier-caption>.sky-meaning{flex:1;min-width:0}.fw-atelier-caption .sky-meaning>div:first-child{justify-content:flex-start!important;padding-left:0!important}
+.fw-atelier-caption>button{min-height:44px;min-width:44px;border:0;background:none;color:inherit;font:600 13px/1.4 var(--atelier-ui);text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+.fw-atelier-header button:focus-visible{outline:2px solid var(--atelier-plum);outline-offset:3px}
+.fw-atelier-header:not([data-garden=sky]) .fw-atelier-canopy{aspect-ratio:2.6/1}
+.fw-atelier-header:not([data-garden=sky]) .fw-atelier-canopy-art{left:48%;right:0;transform:rotate(-10deg);mask-image:linear-gradient(90deg,transparent,#000 25%,#000 85%,transparent)}
+.fw-atelier-section-trace{position:absolute;left:2%;top:25%;width:50%;color:var(--atelier-gold);pointer-events:none}
+.fw-atelier-section-trace svg{width:100%;stroke:currentColor;stroke-width:.7;stroke-linecap:round;stroke-linejoin:round}
+.fw-living-atelier .fw-ff-sections{margin-top:8px;border-bottom:0;gap:0;padding:4px 0}.fw-living-atelier .fw-ff-sections button{border-radius:0;background:none!important;min-height:54px;font-size:12px;position:relative}
+.fw-living-atelier .fw-ff-sections button[aria-pressed=true]{border-bottom:1px solid var(--atelier-plum);color:var(--atelier-ink)}
+.fw-living-atelier .fw-ff-status{font-size:12px;border-top:1px solid #EAE7E0;padding-top:6px}
+.fw-living-atelier .fw-ff-actions{margin-top:6px;padding:0;border:0}
+.fw-living-atelier .fw-ff-actions [aria-label="Section actions"]>button{border-radius:14px!important;min-height:48px!important;font:700 14px/1.3 var(--atelier-ui)!important}
+.fw-living-atelier .fw-ff-summary{position:relative;border:0;border-radius:0;background:transparent;padding:0;margin:22px 0 8px;box-shadow:none}
+.fw-living-atelier .fw-ff-summary-nav{border-bottom:1px solid var(--atelier-hair);font-size:13px}.fw-living-atelier .fw-ff-glance-row{grid-template-columns:18px minmax(0,1fr) 15px;gap:10px;padding:12px 0}
+.fw-living-atelier .fw-ff-row-label{font:600 12px/1.4 var(--atelier-ui);letter-spacing:.04em}.fw-living-atelier .fw-ff-row-text{font:500 17px/1.4 'FemWell Editorial',Georgia,serif}
+.fw-living-atelier .fw-living-content{padding:0;border:0;margin-left:0;position:relative}
+.fw-living-atelier .sky-celestial{font-family:'FemWell Editorial',Georgia,serif}
+.fw-living-atelier .sky-celestial h2{font:italic 600 clamp(27px,6.4vw,34px)/1.18 'FemWell Editorial',Georgia,serif!important;text-align:left!important;margin-top:8px!important;letter-spacing:0!important}
+.fw-living-atelier .sky-celestial h3{font:600 20px/1.2 'FemWell Editorial',Georgia,serif!important;letter-spacing:0!important}
+.fw-living-atelier .sky-celestial :is(.sky-note,.sky-year-body){font:500 16px/1.55 'FemWell Editorial',Georgia,serif!important}
+.fw-living-atelier .fw-atelier-reading{border:0!important;border-radius:0!important;background:none!important;padding:16px 0 0!important;position:relative}
+.fw-living-atelier .fw-atelier-reading>p:first-of-type{font:500 17px/1.55 'FemWell Editorial',Georgia,serif!important}
+.fw-living-atelier .fw-atelier-reading>p:first-of-type::first-letter{font:600 44px/1 'FemWell Editorial',Georgia,serif;color:var(--atelier-plum);float:left;margin:3px 6px 0 0}
+.fw-living-atelier .fw-atelier-reading :is(p,div){text-shadow:none!important}
+.fw-atelier-incident{position:relative;pointer-events:none;line-height:0;isolation:isolate}
+.fw-atelier-incident img{display:block;object-fit:contain}
+.fw-atelier-incident--petal{height:28px;margin:14px 0 4px;display:flex;justify-content:flex-end;border-bottom:1px solid #D9C79B80}
+.fw-atelier-incident--petal img{width:72px;height:36px;margin-right:8px;transform:rotate(-14deg)}
+.fw-atelier-incident--growth{height:64px;margin:12px 0 0;border-bottom:1px solid #D9C79B80}
+.fw-atelier-incident--growth img{position:absolute;left:-16px;bottom:-12px;width:64px;height:85px;transform:rotate(75deg);transform-origin:center}
+.fw-living-atelier .daily-sky-movement{position:relative;margin:14px 0 20px;padding:14px 14px 4px;border:1px solid var(--atelier-hair);border-radius:3px 20px 3px 3px;background:linear-gradient(135deg,#fff,#EEEEF430);box-shadow:3px 4px 0 #EAE7E060}
+.fw-living-atelier .daily-sky-heading{align-items:flex-start;text-align:left}.fw-living-atelier .daily-sky-date{text-align:left;font-size:12px}.fw-living-atelier .daily-sky-slide h3{font:600 20px/1.2 'FemWell Editorial',Georgia,serif!important}.fw-living-atelier .daily-sky-slide p{font:500 16px/1.55 'FemWell Editorial',Georgia,serif!important}
+.fw-living-atelier .daily-sky-position{flex-direction:row;justify-content:space-between;align-items:center;gap:8px}.fw-living-atelier .daily-sky-controls{border:0;gap:2px;flex:1}.fw-living-atelier .daily-sky-source{flex-shrink:0}
+.fw-living-atelier .daily-sky-actions{margin-top:4px}.fw-living-atelier .daily-sky :is(button,a){font-size:12px}.fw-living-atelier .daily-sky-kept-note p{font-size:16px!important}
+.fw-living-atelier .fw-atelier-identity{padding:10px 0}.fw-living-atelier .fw-atelier-identity>h2{margin-bottom:14px!important}
+.fw-living-atelier .fw-atelier-tides{position:relative;margin:10px 0;padding:14px 0;border-block:1px solid var(--atelier-hair);background:radial-gradient(ellipse at 8% 40%,#EDEFF360,transparent 70%)}
+.fw-living-atelier .fw-atelier-tides>div{background:none!important;box-shadow:none!important;border:0!important;border-radius:0!important}
+.fw-living-atelier .fw-atelier-year{padding-top:4px}.fw-living-atelier [data-testid=observed-sky-diary]{padding:18px 0!important;border-radius:0!important;background:none!important;box-shadow:none!important;border:0!important;border-top:1px solid var(--atelier-hair)!important}
+.fw-living-atelier .fw-atelier-ask{padding:16px 0;border-top:1px solid var(--atelier-hair)}
+.fw-living-atelier .fw-atelier-way{padding-top:16px}
+.fw-atelier-notes{max-width:430px;margin:auto;padding:0 16px 110px;color:var(--atelier-plum);font:500 13px/1.4 var(--atelier-ui)}
+.fw-atelier-notes :is(summary,a){min-height:44px;align-content:center;color:inherit}.fw-atelier-notes a{display:inline-flex;align-items:center;margin-right:14px}
+body:has(.fw-living-atelier) a[aria-label="Open Ideas (Design Lab — dev only)"]{position:relative!important;inset:auto!important;display:flex!important;width:fit-content;margin:0 auto 110px!important;transform:none!important}
+@keyframes fwAtelierArrival{from{opacity:.6;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:no-preference){.fw-atelier-header[data-moving=true] .fw-atelier-canopy-art{animation:fwAtelierArrival 2.8s ease-out both}}
+@media(prefers-reduced-motion:reduce){.fw-atelier-replay{display:none}.fw-atelier-canopy-art{animation:none!important}}
+
+.fw-living-atelier [data-art-direction=marginalia] .fw-living-content{padding:0;border:0;margin-left:0}
+.fw-living-atelier .daily-sky-movement>.daily-sky{padding:0!important;border:0!important;border-radius:0!important;background:none!important}
+.fw-living-atelier .daily-sky-position{flex-direction:column;align-items:flex-start;gap:2px}
+.fw-atelier-rule{height:1px;background:#D9C79B80;margin:14px 0}

@@ -37,6 +37,7 @@ import { CELESTIAL_CSS, MoonLesson } from "@/components/lifestyle-elite/sky/Cele
 import SkyMeaning from "@/components/lifestyle-elite/sky/SkyMeaning";
 import ObservedSkyDiary from "@/components/lifestyle-elite/sky/ObservedSkyDiary";
 import DailySkyLesson, { PrivateSkyNotes } from "@/components/lifestyle-elite/sky/DailySkyLesson";
+import { AtelierIncident } from "./AtelierHeader";
 
 const cap = (s) => (s ? String(s).charAt(0).toUpperCase() + String(s).slice(1) : s);
 const clean = (s) => String(s || "").replace(/<[^>]+>/g, "").replace(/\*(.+?)\*/g, "$1").replace(/\s+/g, " ").trim();
@@ -183,7 +184,9 @@ function CarryItWithYou({ seed, onMarkRead, read, connectedDemo = false }) {
   );
 }
 
-export default function SkyFocus({ userProfile, actionRequest, onActionState, onActionHandled, portalChart = false, continuous = false, celestial = false, dailyLessons = false, direction }) {
+export default function SkyFocus({ userProfile, actionRequest, onActionState, onActionHandled, portalChart = false, continuous = false, celestial = false, dailyLessons = false, direction, artDirection }) {
+  const artful = artDirection === "marginalia";
+  const lessonRoute = artful ? "/LivingAtelierDemo" : undefined;
   const { user, astro, reading, userProfile: up, loading, generatingReading, setAstro } = useBirthChart(userProfile);
   const prof = userProfile || up;
   const chart = useMemo(() => deriveChart(astro, prof), [astro, prof]);
@@ -251,7 +254,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
           <Body size={16} style={{ color: C.slate }}>{celestial ? "Time and place add detail. Don't know the time? Leave it blank; rising and houses need it, and your Moon sign may be uncertain." : "Your birth date is all we need to begin. Birth time and place are optional; they unlock your moon and rising. We never track your location."}</Body>
           <div style={{ marginTop: 6 }}><Cta filled Icon={Sparkles} onClick={() => setSheetOpen(true)}>Set up your sky</Cta></div>
         </section>
-        {dailyLessons ? <><DailySkyLesson userId={user?.id} moon={moon} direction={direction}/><PrivateSkyNotes userId={user?.id} moon={moon}/></> : celestial && <MoonLesson moon={moon} />}
+        {dailyLessons ? <><DailySkyLesson userId={user?.id} moon={moon} direction={direction} previewRoute={lessonRoute}/><PrivateSkyNotes userId={user?.id} moon={moon}/></> : celestial && <MoonLesson moon={moon} />}
         {birthSheet(null)}
       </div>
     );
@@ -288,10 +291,10 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
       {!continuous && <><Cta Icon={Pencil} onClick={() => setSheetOpen(true)}>Edit your chart</Cta>
       <div style={{ marginTop: 14 }}><JumpStrip refs={refs} /></div></>}
 
-      <Leaf my={14} />
+      {artful ? <div className="fw-atelier-rule" aria-hidden="true"/> : <Leaf my={14} />}
 
       {/* II · TODAY — the reading, and what to do with it */}
-      <Movement id="today" refs={refs} focusable={continuous} className={celestial ? "sky-reading" : undefined}>
+      <Movement id="today" refs={refs} focusable={continuous} className={artful ? "sky-reading fw-atelier-reading" : celestial ? "sky-reading" : undefined}>
         <Eyebrow cw="crimson">Today's weather</Eyebrow>
         {weather.length ? (
           <>
@@ -320,12 +323,13 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
         <CarryItWithYou connectedDemo={dailyLessons} seed={headline} read={markedRead} onMarkRead={() => { setMarkedRead(true); try { recordProgress("your-sky", 0, user?.id); } catch { /* the garden write is a nicety, never a blocker */ } }} />
       </Movement>
 
-      {dailyLessons && <DailySkyLesson userId={user?.id} moon={moon} direction={direction}/>}
+      {artful && <AtelierIncident/>}
+      {dailyLessons && <DailySkyLesson userId={user?.id} moon={moon} direction={direction} previewRoute={lessonRoute}/>}
 
       <Fleuron my={24} />
 
       {/* III · YOU — chart · goddess bench · red & white moon */}
-      <Movement id="you" refs={refs}>
+      <Movement id="you" refs={refs} className={artful ? "fw-atelier-identity" : undefined}>
         {celestial ? <SkyMeaning label="your chart" explanation="In astrology, Sun speaks to identity, Moon to your inner world, and rising to how you meet life. Tap a symbol for its reading; these are reflective lenses, not a verdict."><Eyebrow cw="gold" style={{margin:0}}>Your chart</Eyebrow></SkyMeaning> : <Eyebrow cw="gold">Your chart</Eyebrow>}
         <Title>Sun, moon &amp; rising</Title>
         {celestial && <p className="sky-note" style={{textAlign:"center"}}>Three lenses, one very unrepeatable you. In astrology, each has a different part to play.</p>}
@@ -343,7 +347,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
       <Fleuron my={24} />
 
       {/* IV · YOUR TIDES — the dial in the ONE framed feature card */}
-      <Movement id="tides" refs={refs}>
+      <Movement id="tides" refs={refs} className={artful ? "fw-atelier-tides" : undefined}>
         <Card framed wash={cw}>
           {celestial ? <SkyMeaning label="your two tides" explanation="The outer ring follows the lunar phase; the inner ring uses your logged cycle dates. Side by side does not mean one causes the other—bodies keep their own time."><Eyebrow cw={cw} style={{margin:0}}>Cycle × moon</Eyebrow></SkyMeaning> : <Eyebrow cw={cw}>Cycle × moon</Eyebrow>}
           <Title>Your two tides</Title>
@@ -356,12 +360,13 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
       <Fleuron my={24} />
 
       {/* V · YOUR YEAR — profections · Saturn letter · the sky diary */}
-      <Movement id="year" refs={refs}><YearMovement celestial={celestial} profections={profections} diary={celestial ? null : diary} />{celestial && <ObservedSkyDiary userId={user?.id} />}{dailyLessons && <PrivateSkyNotes userId={user?.id} moon={moon}/>}</Movement>
+      {artful && <AtelierIncident kind="growth"/>}
+      <Movement id="year" refs={refs} className={artful ? "fw-atelier-year" : undefined}><YearMovement celestial={celestial} profections={profections} diary={celestial ? null : diary} />{celestial && <ObservedSkyDiary userId={user?.id} />}{dailyLessons && <PrivateSkyNotes userId={user?.id} moon={moon}/>}</Movement>
 
       <Fleuron my={24} />
 
       {/* VI · ASK & CONNECT — ask the sky · compatibility */}
-      <Movement id="ask" refs={refs}>
+      <Movement id="ask" refs={refs} className={artful ? "fw-atelier-ask" : undefined}>
         <Eyebrow cw="lavender">Ask &amp; connect</Eyebrow>
         <Title>Put a question to it</Title>
         <AskTheSky celestial={celestial} userId={user?.id} inputRef={questionRef} />
@@ -376,7 +381,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
       <Fleuron my={24} />
 
       {/* VIII · YOUR SKY, YOUR WAY — quiet mode · science · privacy */}
-      <Movement id="yours" refs={refs}><YourWay celestial={celestial} userId={user?.id} /></Movement>
+      <Movement id="yours" refs={refs} className={artful ? "fw-atelier-way" : undefined}><YourWay celestial={celestial} userId={user?.id} /></Movement>
 
       <Foot>Held lightly — folklore and your own chart, never fate or a score.</Foot>
       {birthSheet(astro)}

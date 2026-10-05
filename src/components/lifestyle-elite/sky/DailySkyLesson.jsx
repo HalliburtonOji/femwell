@@ -26,20 +26,20 @@ export function useLessonSaves(userId) {
   return {rows,error,loading,retry:()=>setAttempt(n=>n+1)};
 }
 
-export function SavedSkyLessons({userId,direction,onCount}) {
+export function SavedSkyLessons({userId,direction,onCount,previewRoute}) {
   const {rows,error,loading,retry}=useLessonSaves(userId);
   useEffect(()=>{if(onCount)onCount(loading || error ? 0 : rows.length);},[rows,loading,error,onCount]);
   return <Card className="daily-sky saved-sky-lessons" style={{marginTop:20}}>
     <Eyebrow cw="lavender" align="left">Your sky keepsakes</Eyebrow><Title align="left" size={26}>Little things you kept.</Title>
     {loading ? <p role="status">Opening your lessons…</p> : error ? <><p role="alert">Your saved lessons couldn’t load.</p><button onClick={retry}>Try again</button></> : rows.length ? rows.map(row=>{
       const meta=parseSavedMeta(row);const lesson=SKY_LESSONS.find(item=>item.id===meta.lessonId && item.version===meta.lessonVersion);
-      return <a className="saved-sky-row" key={row.id} href={lesson ? skyLessonRoute(lesson,direction) : `${meta.route || "/LivingLifestyleDemo?section=sky"}`}><span>{row.title}</span><ArrowRight size={16} aria-hidden="true"/></a>;
+      return <a className="saved-sky-row" key={row.id} href={lesson ? skyLessonRoute(lesson,direction,previewRoute) : `${meta.route || "/LivingLifestyleDemo?section=sky"}`}><span>{row.title}</span><ArrowRight size={16} aria-hidden="true"/></a>;
     }) : <Body>Your saved Sky lessons will settle here. No collection invented on your behalf.</Body>}
     <a className="daily-sky-link" href="/Saved?tab=LIFESTYLE">All your Lifestyle saves</a>
   </Card>;
 }
 
-export default function DailySkyLesson({userId,moon,direction="letter"}) {
+export default function DailySkyLesson({userId,moon,direction="letter",previewRoute}) {
   const [day,setDay]=useState(()=>localSkyDay());
   const [nextDay,setNextDay]=useState(null);
   const params=useRef(new URLSearchParams(window.location.search));
@@ -97,7 +97,7 @@ export default function DailySkyLesson({userId,moon,direction="letter"}) {
     saving.current=true;setBusy(true);setStatus("");
     try{
       if(kept)await removeSavedItem("LIFESTYLE",key);
-      else await saveItem({itemType:"LIFESTYLE",itemId:key,title:lesson.title,previewText:lesson.body,meta:{kind:"sky-lesson",lessonId:lesson.id,lessonVersion:lesson.version,date:day,route:skyLessonRoute(lesson,direction)}});
+      else await saveItem({itemType:"LIFESTYLE",itemId:key,title:lesson.title,previewText:lesson.body,meta:{kind:"sky-lesson",lessonId:lesson.id,lessonVersion:lesson.version,date:day,route:skyLessonRoute(lesson,direction,previewRoute)}});
       setStatus(kept ? "Removed from your saves." : "Kept in Yours and your saved things.");
       window.dispatchEvent(new Event("fw_sky_lesson_saved"));
     }catch{setStatus("That didn’t save. Your lesson is still here; try again.");}

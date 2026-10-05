@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-06",
+  "tool": "built-in imagegen",
+  "purpose": "Original decorative art; measured Moon and all text/controls remain code",
+  "assets": [
+    {
+      "key": "canopy-v1",
+      "prompt": "Create an original luxurious artsy illustration asset for FemWell's mobile lifestyle Sky page, NOT a UI mockup. Wide shallow horizontal composition, about 2:1. Exquisite astronomical copperplate ink drawing combined with realistically painted morning-glory tissue: imperfect muted violet trumpet pleats, silver sage heart-shaped veined leaves and one furled bud. An incomplete eccentric astrolabe-like celestial arc and a small hand-engraved solar rosette occupy the left; fine dark-plum and antique brass lines, drawn with personality, organic growth interrupting geometric paths. The drawing has an OPEN silhouette, entering from upper left, moving across top, and ending with a violet bloom at lower right. Reserve a COMPLETELY TRANSPARENT circular clearing centred x74%, y37%, diameter23% of image WIDTH for a separately code-rendered live Moon. The clear Moon opening must be free of plants, rays, shadows and objects. Entire ground transparent, open transparent perimeter, NO pale background or rectangle. Keep all botanical tips comfortably inside canvas. Coherent soft upper-left daylight, botanical realism with fine engraved lines, original art direction with clever asymmetry and visual rhythm. NOT a gold floral wreath, NOT an isolated boring flower stem, NOT clip art. No text, labels, numbers, baked Moon, planets, zodiac glyphs, border, floor, complete chart, scenery, glitter, large dark fills or confetti. No mockup, no page, no lettering. Genuine alpha.",
+      "source": "C:/Users/Halli/.codex/generated_images/01a0e28c-de58-74a3-b2fd-c62f5d849aa7/exec-6ef56bc8-8a1d-4f05-ba04-94d72678dc31.png",
+      "web": "public/images/living-atelier/canopy-v1.webp",
+      "processing": "Format conversion only, alpha preserved; original generation retained"
+    },
+    {
+      "key": "margin-v1",
+      "prompt": "Original botanical marginal artwork for FemWell mobile celestial folio. A slender, physically plausible morning-glory tendril enters from LEFT and curls away, with three DISTINCT sage cordate veined leaves, one small furled violet bud and ONE folded muted violet trumpet flower viewed from behind. Compact asymmetric growth silhouette, not a straight rose stem. Botanical painting realism, engraved fine veins, tactile petals with imperfect edge, subtle copperplate line accents. Gentle soft upper-left daylight; muted violet, silver sage, ink-plum. Vertical 3:4 asset. Transparent background, open perimeter, no container or floor/shadow rectangle, no text, no wreath/frame, no confetti/glitter. Intended to sit beside a white reading page without crossing its letters. Genuine alpha; finely detailed at small scale.",
+      "source": "C:/Users/Halli/.codex/generated_images/01a0e28c-de58-74a3-b2fd-c62f5d849aa7/exec-7fc6de18-f03c-4ce5-9076-7b9314255f13.png",
+      "web": "public/images/living-atelier/margin-v1.webp",
+      "processing": "Format conversion only, alpha preserved; original generation retained"
+    },
+    {
+      "key": "petals-v1",
+      "prompt": "Original painterly botanical asset: TWO imperfect detached morning-glory petal fragments, one curled violet trumpet fold viewed as a fragment and one pale lavender crumpled edge, plus ONE very small curled sage calyx. Tangible realist painted tissue, fine veining and slight translucent light at edges, coherent soft upper-left daylight, personality and asymmetry. Loose sparse horizontal 2:1 composition, keep all parts inside canvas and separated so transparent space dominates. Refined editorial botanical art for FemWell mobile celestial folio. Genuine fully transparent background, no paper or ground, no container, no shadow rectangle, no lettering, no confetti, no glitter, no complete flower, no butterflies, no UI.",
+      "source": "C:/Users/Halli/.codex/generated_images/01a0e28c-de58-74a3-b2fd-c62f5d849aa7/exec-2c412107-3d81-4afc-8a42-ccf05456ce91.png",
+      "web": "public/images/living-atelier/petals-v1.webp",
+      "processing": "Format conversion only, alpha preserved; original generation retained"
+    }
+  ]
+}
