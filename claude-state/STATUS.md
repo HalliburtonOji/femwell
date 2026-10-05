@@ -7,6 +7,10 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-06 · FINAL THREE-WIDTH HEADER PROOF
+> - Source **edb4bcf** pushed/deployed, HTTP **index-D4xFEcJo.js**. Actual18 section taps/native captures at360/390/430: all full titles/heart/flower meanings/action pairs, art assets loaded, no horizontal overflow. Creative review: no new header craft blocker; Ideas top-strip P1 repaired and re-proved. Lower-page proof continues; main held.
+> - Final density polish: Power/Pressure/Trouble paragraph spans full width beneath aligned label/title, pointer anchor no longer draws keyboard-only focus outline, one clipped original fallen-tissue fragment at learning seam. No content removed or new destination. Wider profile/calendar/commerce/social proof is not claimed; four further worlds remain concept briefs.
+>
 > ### CURRENT STATE — 2026-10-06 · INDEPENDENT P1 CLEARANCE REPAIR
 > - Atelier mobile critique found the floating Ideas pill covering reading/phase/tide controls. Demo-scoped fix places it in the reserved top review strip, retains persistent access and clears body content. Tiny original drawn line connects the canopy edge into the header-word clearing; no plant behind letters. Final build/reproof in progress; still live **index-BDO_kVdd.js** atab4a37b. Main held.
 >
