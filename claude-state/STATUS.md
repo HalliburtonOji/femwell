@@ -7,6 +7,10 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-05 · APPROVED BASE / CONNECTED-LIFE PLAN
+> - Halli approves Sky Living as the base and requests exactly five different demo variants, subtle section-specific floral language, one smart daily swipeable Sky lesson, and substantial Lifestyle/Community/DM/whole-app connections with privacy. This supersedes earlier pending aesthetic acceptance for the base; main promotion remains held. Claim bd89936.
+> - Current source94f72a5; git clean/synchronised before claim. HTTP live **index-5rTngpIJ.js** (the URL's b=4gdnQ-zJ is not bundle evidence). Named team auditing existing routes/schemas, five composition briefs and primary research. Bible§§10.5.9–10 records new direction immediately. Plan/review board in progress; no product/schema changes yet.
+>
 > ### CURRENT STATE — 2026-10-02 · DEPLOYED FOR REVIEW: Sky living page
 > - Source516f816 pushed and deployed; HTTP-confirmed **index-5rTngpIJ.js**. Ideas → Brand, cards & flora → **Lifestyle · Sky as a living page**. Main held; earlier comparisons and other section gardens retained.
 > - Open morning-glory layers/live Moon, shared colour/type through controls/actions/summary/reading; complete titles/profile and features retained. All78 tests and build pass. Live360/390/430 pixels and actual meaning/replay/chart cancel/Ask focus/section/summary/Jess/comparison/Ideas taps verified. No account writes. Proof: flora-dream/living-page-verification.md.
@@ -4432,5 +4436,3 @@ Built sequentially per Halli; read each live page in full first (nothing strippe
 - **/ProgramsClipboardDemo** (commit `7811117`) — flora-hero + summary (continue/for-now/new) + Continue/Browse primaries + search + pinned Jump-to. Two sliders: **Your journeys** (Continue active+progress+reminder · other-active mini-cards · Featured · For-your-phase CardDeck) + **Library** (collections sleep/PMDD/peri · Browse-all+search). Rich program cards (thumbnail · meta · tier Free/Plus+Lock · progress · CTA) + detail popup → day-by-day list. @390 verified: 7 boards, overflow 0, no crash.
 - **Pill-reachable:** all three are `{kind:route, group:CAT.CURRENT, status:new}` in FoundersOS — confirmed in the live bundle (the data IDEAS pill→FoundersOS renders) + each route HTTP 200. (Founder-gated click-through needs Halli's session — documented limitation.) Routes registered in pages.config; lint 0 errors / build 0 each; deployed via `npx base44 site deploy -y`. Did NOT touch flora.jsx/BRAND_IDENTITY.md.
 - **⏭ awaiting Halli:** open IDEAS pill → review each → approve → live click-test/go-live happens later one-at-a-time (like Planner/Nutrition).
-
-
