@@ -2,7 +2,7 @@
 
 Demo route: `/LivingLifestyleDemo`. Ideas entry: **Living Lifestyle · five complete directions**. Exactly five: Open Letter, Garden Horizon, Quiet Observatory, Field Notes, Garden Path. Main promotion remains held for Halli's explicit decision.
 
-Source: **f67017d**, with earlier implementation/audit commits in STATUS. Final preview bundle: **index-oi96Og1k.js** (deployment and final save-action reproof recorded in the next STATUS block).
+Source: **b12f997**, with earlier implementation/audit commits in STATUS. Final preview bundle: **index-EpEVjvCd.js**, confirmed by HTTP and the live browser script. Main remains unchanged.
 
 ## Preserved surface and atoms
 
@@ -20,7 +20,7 @@ New implementation uses 24 short authored astronomy pieces, five cards per day, 
 - Header matrix provenance: DnW6LSqg/B6BU2X16, whose header code is unchanged in the final build. Fresh DvdB0hsn lesson pixels separately prove the active-height change, full content/source/actions and eight phases. At390 measured track262px versus active261.46px; at360/430 track exceeds active by less than1px. Final build changes save consumers/action only.
 - Actual Ideas entry tapped to reach the demos. All five design choices and six section selectors tapped. Everything restores the full shell. Read chooser opens the exact Tuesday Decision in place; Saved reads shows a truthful empty state. Listen/watch and Books choosers contain real records. Today's chapter opens the actual daily chapter. Good-life time selection changes its actual result; joy chooser contains real items. Continue reading shows an honest empty state for this account. Chart editor opens existing details and cancels without a write; Ask the sky focuses the existing question. Jess digest and full read open/close.
 - Actual daily lesson next-arrow and horizontal-scroll input change title, index and source. Full-moon definition and meaning open/Escape close work. Native horizontal scroll proves the scroll-snap mechanism; physical iPhone finger-swipe remains Halli's review.
-- Actual signed-in save awaited success. One existing SavedItems row read back with exact lesson ID/version/date/route. A harmless labelled QA reflection was kept in existing JournalEntries; matching content_key and text read back. Yours shows the lesson/count; its actual link reloads the exact lesson and private note. The canonical Saved collection displays the same record, whose actual Open link returns to the exact lesson. Lifestyle save doors target its category directly, avoiding the initial Advice tab. QA lesson/note remain in the test account, without deleting other records. No Community post or DM sent.
+- Actual signed-in save awaited success. One existing SavedItems row read back with exact lesson ID/version/date/route. A harmless labelled QA reflection was kept in existing JournalEntries; matching content_key and text read back. Yours shows the lesson/count; its actual link reloads the exact lesson and private note. The canonical Saved collection displays the same record, whose actual Open link returns to the exact lesson. Lifestyle save doors target its category directly, avoiding the initial Advice tab. Final live tap confirms `/Saved?tab=LIFESTYLE` lands on that record without a category tap; Open returns to its exact edition on EpEVjvCd. Jess's full read visibly says **1 saved for later**, matching Yours. Evidence: `living-final-saved-category-390.png`, `living-final-jess-count-390.png`, `living-final-demo-390.png` in the handoff folder. QA lesson/note remain in the test account, without deleting other records. No Community post or DM sent.
 
 ## Adversarial catalogue and reproof
 
@@ -32,7 +32,7 @@ New implementation uses 24 short authored astronomy pieces, five cards per day, 
 | P1 | Missing carried Sky diary/power/pressure/trouble and section summary leads | Restored existing stores/source fields, added real per-section leads, preserved all old rows; inventory reproof. |
 | P1 | Floral artwork crossed long titles/profile | Observatory title and flower-name bands clear; Path fade ends before text lane. Independent fresh pixels reprove repairs. |
 | P1 | Yours called the drawer empty beside a kept lesson | Canonical Sky count feeds summary and glance; actual read-back shows one kept lesson. |
-| P1 | Jess and Open your saves still missed canonical Sky saves | Existing save hook feeds all demo summaries; button opens existing Saved page directly. Final live reproof recorded in STATUS. |
+| P1 | Jess and Open your saves still missed canonical Sky saves | Existing save hook feeds all demo summaries, including the full-read fallback; button opens existing Saved page directly in Lifestyle. Actual final live count/category/edition return pass. |
 | P2 | Small chrome below12px, inconsistent lesson heading role |12px floor and26px lesson title; source/pixel review. |
 | P2 | Busy swipe/keyboard and midnight URL could change the wrong lesson | Frozen carousel during save; real URL cleared on new-day switch; tests/source audit. |
 | P2 | Unknown saved edition displayed a misleading fallback | Honest warning plus actual daily deck, original saved record retained; tests. |
