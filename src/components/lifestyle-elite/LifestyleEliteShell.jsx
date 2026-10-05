@@ -1428,7 +1428,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
             : glanceRows;
           // the deep read — only sections we genuinely have signal for, never padded
           const sheetSections = [
-            { label: "What's on", text: continueCards.length ? `You've ${continueCards.length} on the go and ${grouped.article.length} fresh reads waiting. Your place is saved in each, so none of it needs starting over.` : `${grouped.article.length} fresh reads are in, and ${savedItems.length} saved for later. Nothing here expires.` },
+            { label: "What's on", text: continueCards.length ? `You've ${continueCards.length} on the go and ${grouped.article.length} fresh reads waiting. Your place is saved in each, so none of it needs starting over.` : `${grouped.article.length} fresh reads are in, and ${savedItems.length+(livingDemo ? skySavedCount : 0)} saved for later. Nothing here expires.` },
             story ? { label: "If you've ten minutes", text: `Today's chapter${story.cliffhanger ? ` picks up on "${story.cliffhanger}"` : " is ready"} — a finished story you can also read straight through whenever you fancy it.` } : null,
             moonToday ? { label: "Your sky", text: `The moon is ${moonToday.name.toLowerCase()}, ${moonToday.illumination}% lit tonight${phaseKey ? `, and you're in your ${phaseLabel(phaseKey).toLowerCase()} week` : ""}. Folklore, held lightly.` } : null,
           ].filter(Boolean);
