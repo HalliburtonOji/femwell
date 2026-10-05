@@ -1,5 +1,7 @@
 # FemWell Team
 
+**6 October 2026 addition:** Creative Director (`.claude/agents/creative-director.md`), explicitly requested by Halli. Uses the canonical Bible and `claude-state/creative/CONTEXT.md`; owns researched whole-page concepts and critical feedback alongside Ms Deep Search/Ms Atelier. Current AGENTS.md/CLAUDE.md direct-repo workflow overrides the historical MP workflow below.
+
 FemWell is a UK women's wellness app being prepared for a £1M sale. This file defines the team — 11 agents in `.claude/agents/` plus the operating rules they share. Every contributor (Claude in Cowork, Claude Code, Lucha) should treat the agent specs as binding: who does what, with which tools, producing what shape of output, with which verification gates.
 
 As of the 2026-05-13 pivot, every substantive change ships as a paste-ready **mega prompt (MP)** the user pastes into base44 themselves. Direct-repo edits are reserved for the trivial envelope (≤50 lines, no schema/function/LLM-prompt changes). See `mnt/.auto-memory/feedback_hybrid_repo_plus_mp_workflow.md` for the rule and `mr-fix-it.md` for the envelope.

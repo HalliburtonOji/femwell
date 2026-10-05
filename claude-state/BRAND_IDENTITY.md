@@ -833,6 +833,16 @@ Halli explicitly authorises inspecting relevant account/private/test records dur
 
 The daily lesson is authored astronomy with direct primary sources: one short daily lead plus four manual companions, 24-day editorial rotation on the device's calendar date, stable versioned IDs, exact return from saves and private source-linked journal notes. All eight existing phase definitions remain direct controls. No automatic slide movement or implied local visibility/phase prediction. Existing SkyNote diary remains distinct from lesson-linked JournalEntries, with its own useful read-back. Wider social/Planner repair atoms proceed separately and must not be labelled complete from these demos alone.
 
+### 10.5.13 ART DIRECTION, NOT FLOWER REPOSITIONING — Halli, 6 October 2026
+
+Halli rejects all five Living directions as generic and insufficiently varied. Technical checks are not aesthetic acceptance. Reusing the same plant image and merely moving it does not satisfy five distinct directions. Sky Living remains the accepted base; those five executions are rejected references, not approved canon.
+
+Compose the entire continuous page: typography, petals, side buds and section-specific details can carry the floral language beyond its header. Sky’s top should feel like artsy celestial/astrology art, with the calculated Moon and real data separate from decorative imagery. Keep meaningful species, full header language, section selection, focused actions, glance/Jess and every existing capability. No extra clicks or reading required to justify the decoration. Variation must change the drawing/material grammar, hierarchy and body rhythm, not only image position or colour.
+
+Halli explicitly requests a Creative agent with extensive reusable context. Role: `.claude/agents/creative-director.md`; feedback pointers: `claude-state/creative/CONTEXT.md`. This is durable session context, not model training or a parallel Bible. Creative works with research/craft/verification and critiques one complete direction before multiplying it. Designs remain Ideas-only pending explicit approval.
+
+This correction refines §4’s one-motif rule: one coordinated visual language may have small separated botanical incidents across the page, including realistic petals and buds. Avoid repeated frames/wallpaper, decoration behind reading text or inaccessible controls. Cohesion and readable hierarchy govern density; the no-strip rule still wins. Existing font families/roles and clean ground remain.
+
 ### 10.6 CRAFT THAT CARRIES MEANING (format = feeling) — ⏳ PROPOSED (awaiting sign-off)
 - **Wax rose seal + sealed letters:** Health becomes *correspondence* — each letter arrives **sealed with a wax rose** (her signature flower, phase-coloured); opening breaks the seal (once-only lift). Extends to a monthly **"letter from your body,"** a milestone certificate, a sealed **"letter to future you"** in Journal, Jess's notes as folds.
 - **Vines that grow with progress** (a leaf per session, a bloom at the end — growth, not a progress bar).
