@@ -7,6 +7,9 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-05 · OBSERVATORY FINAL CLEARANCE LIVE
+> - Source **46a4519** pushed/deployed; live **index-B6BU2X16.js** confirmed. Shorter botanical extent keeps the Observatory flower-name/profile band clear. Final double native screenshots resolve the browser's one-frame capture lag; independent Letter six-section390 craft reproof passes. Remaining matrix and direct-return checks continue, demo-only/main held.
+>
 > ### CURRENT STATE — 2026-10-05 · CANONICAL SKY SUMMARY REPAIR LIVE
 > - Source **31c171d** pushed/deployed; HTTP confirms **index-DnW6LSqg.js**. Yours reads the actual canonical Sky shelf count, without dropping any previous collection or phase card. Targeted header/lesson suite20/20 passes. Final native mobile matrix/tap reproof continues; no main promotion or schema/function delta.
 >

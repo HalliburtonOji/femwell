@@ -48,6 +48,7 @@ export default function DailySkyLesson({userId,moon,direction="letter"}) {
   const unavailable=exact && (!SKY_LESSONS.some(item=>item.id===exact) || (requestedVersion && requestedVersion!==String(LESSON_VERSION)));
   const deck=dailyLessonDeck(day,unavailable ? null : exact);
   const [index,setIndex]=useState(0);
+  const [lessonHeight,setLessonHeight]=useState(null);
   const track=useRef(null);
   const saving=useRef(false);
   const [busy,setBusy]=useState(false);
@@ -63,6 +64,16 @@ export default function DailySkyLesson({userId,moon,direction="letter"}) {
   const kept=saves.some(row=>row.item_id===key);
   const draft=drafts[key] || "";
   const previousNote=notes.find(note=>note.user_id===userId && note.content_key===key);
+
+  useEffect(()=>{
+    const active=track.current?.children[index];
+    if(!active)return;
+    const measure=()=>{const height=active.getBoundingClientRect().height;if(height>0)setLessonHeight(Math.ceil(height));};
+    measure();
+    if(typeof ResizeObserver==="undefined")return;
+    const observer=new ResizeObserver(measure);observer.observe(active);
+    return()=>observer.disconnect();
+  },[index,key]);
 
   useEffect(()=>{const check=()=>{const current=localSkyDay();if(current!==day)setNextDay(current);};document.addEventListener("visibilitychange",check);const timer=setInterval(check,60000);return()=>{document.removeEventListener("visibilitychange",check);clearInterval(timer);};},[day]);
   useEffect(()=>{
@@ -106,7 +117,7 @@ export default function DailySkyLesson({userId,moon,direction="letter"}) {
     <Card className="daily-sky" style={{padding:"14px 18px",boxShadow:"none",border:"1px solid #D9C79B80",background:"linear-gradient(120deg,#fff,#F5F4F170)"}}>
       <SkyMeaning label="daily sky lessons" explanation="A short, authored astronomy lesson each day, using your device’s date. Swipe for four more; nothing changes automatically. Facts have sources. Personal notes and saves stay in your account. The eight Moon phases remain below."><span className="daily-sky-heading"><span className="daily-sky-eyebrow">A little sky wisdom</span><span className="daily-sky-date">{new Date(`${day}T12:00:00`).toLocaleDateString("en-GB",{day:"numeric",month:"short"})} · astronomy</span></span></SkyMeaning>
       {unavailable && <p role="alert" className="daily-sky-status">That saved lesson or edition is unavailable. Today’s lessons are below; your saved record remains.</p>}
-      <div className="daily-sky-track" ref={track} data-busy={busy} tabIndex={busy ? -1 : 0} aria-label="Swipeable lesson cards" aria-roledescription="carousel" aria-busy={busy} onKeyDown={event=>{if(busy || event.target!==event.currentTarget)return;if(event.key==="ArrowRight"){event.preventDefault();go(index+1);}if(event.key==="ArrowLeft"){event.preventDefault();go(index-1);}}} onScroll={()=>{const el=track.current;if(el && !busy){const next=Math.round(el.scrollLeft/Math.max(el.clientWidth,1));if(next!==index){setIndex(next);setStatus("");}}}}>
+      <div className="daily-sky-track" ref={track} style={lessonHeight ? {height:lessonHeight} : undefined} data-busy={busy} tabIndex={busy ? -1 : 0} aria-label="Swipeable lesson cards" aria-roledescription="carousel" aria-busy={busy} onKeyDown={event=>{if(busy || event.target!==event.currentTarget)return;if(event.key==="ArrowRight"){event.preventDefault();go(index+1);}if(event.key==="ArrowLeft"){event.preventDefault();go(index-1);}}} onScroll={()=>{const el=track.current;if(el && !busy){const next=Math.round(el.scrollLeft/Math.max(el.clientWidth,1));if(next!==index){setIndex(next);setStatus("");}}}}>
         {deck.map((item,i)=><article className="daily-sky-slide" key={item.id} inert={i!==index ? "" : undefined} aria-label={`${i+1} of ${deck.length}`} aria-roledescription="slide"><h3>{item.title}</h3><p>{item.body}</p>{item.tryThis && <p className="daily-sky-try"><strong>Try noticing:</strong> {item.tryThis}</p>}</article>)}
       </div>
       <div className="daily-sky-controls"><button type="button" disabled={index===0 || busy} aria-label="Previous sky lesson" onClick={()=>go(index-1)}><ArrowLeft size={18}/></button><span className="daily-sky-position"><span aria-live="polite" aria-atomic="true">{index+1} / {deck.length} · {index===0 && !exact ? "today’s lesson" : "keep exploring"}</span><a className="daily-sky-source" href={lesson.source} target="_blank" rel="noreferrer">{lesson.source.includes("rmg.co.uk") ? "Royal Observatory" : "NASA"} · the facts</a></span><button type="button" disabled={index===deck.length-1 || busy} aria-label="Next sky lesson" onClick={()=>go(index+1)}><ArrowRight size={18}/></button></div>
