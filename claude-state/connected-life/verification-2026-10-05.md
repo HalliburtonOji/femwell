@@ -19,3 +19,9 @@ Read actual signed-in main Lifestyle and its Sky overlay, all five Living sectio
 Lead Manager: P1 overly broad source/deployed-schema labels corrected into exact S versus D lists. P2 passive Jess context/no-send clarified while preserving explicit Ask intent; competing ordering clarified with§10 authoritative and§7 acceptance-only. Ms Verify: P2 playback persistence overclaim changed to implementation-in-source/runtime-unproved throughout plan, audit and board. Each correction re-read in final source/generated HTML. Existing product P1/P2 catalogue remains unresolved build work; this is not clearance of those issues.
 
 Bible conformance: §§2.7,10.5.9–11,11,15,17.3,19.7–9. Complete preservation inventory and explicit main-promotion hold. Deployment/Ideas reachability proof is appended after publication.
+
+## Published proof
+
+Source b87804f pushed; site deploy succeeded. HTTP200 confirms index-BokqKHj8.js and exact source/live board equality: SHA25614be99f7186a2f08bd1c4890a015242c1a7dc75bb86aec5b13df239b0be08296.
+
+Actual Ideas entry shows the new reality-first description and opens the board. Live UI selects all three workshops and all three journeys with distinct content, expands/closes the microscopic workflow, and opens the approved Sky Living link. Live360/390/430 screenshots: connected-audit-plan-live-{width}.png; no horizontal overflow. Local and live source identical. Independent Ms Verify reviewed local pixels/scripts/evidence boundaries; no remaining planning-scope P0/P1/P2. Product repairs listed in the audit remain unresolved.
