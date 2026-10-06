@@ -56,6 +56,7 @@ body:has(.fw-sky-worlds) [aria-label="Open Ideas (Design Lab — dev only)"]{top
 .fw-world-detail svg{position:absolute;right:0;bottom:6px;width:140px;height:40px;stroke:#a8893f;stroke-width:.7}
 .fw-world-detail--press{height:30px;border-bottom:1px solid #6e6a6140}.fw-world-detail--press svg{stroke:#827b82;right:4px}
 .fw-world-detail--light{height:56px}.fw-world-detail--light img{width:84px;height:56px;left:-14px;right:auto;opacity:.8}
+.fw-world-detail--conservatory{height:72px}.fw-world-detail--conservatory img{width:220px;height:146px;right:-5px}
 .fw-world-detail--workbench{height:30px;border-bottom:1px solid #b9aa8d80}
 .fw-sky-worlds[data-world=conservatory]{--world-rule:#c5d0c7}
 .fw-sky-worlds[data-world=conservatory] .fw-world-clearing{padding-left:12px;border-left:1px solid #b9c5bca0}
@@ -86,7 +87,7 @@ body:has(.fw-sky-worlds) [aria-label="Open Ideas (Design Lab — dev only)"]{top
 .fw-sky-worlds[data-world=petal] .fw-world-moon{z-index:2}.fw-sky-worlds[data-world=petal] .fw-world-clearing{padding-left:5px}
 .fw-sky-worlds[data-world=petal] [data-section=sky] .fw-ff-summary{border-bottom:1px solid #d3c4d4;padding-bottom:7px!important}.fw-sky-worlds[data-world=petal] .fw-ff-glance-row{border-bottom-style:dotted}
 .fw-sky-worlds[data-world=petal] .fw-world-reading{padding-left:6px!important}.fw-sky-worlds[data-world=petal] .fw-world-weather-notes{border-left:1px solid #bfaac3;border-radius:0 0 0 40px;padding-left:16px}.fw-sky-worlds[data-world=petal] .fw-world-weather-entry{border-top-color:#d3c4d4}.fw-sky-worlds[data-world=petal] .fw-world-note-label{font-style:italic}
-.fw-sky-worlds[data-world=petal] .sky-world-body .daily-sky-movement>.daily-sky{border:1px solid #d3c4d4!important;border-radius:28px 1px 1px 1px!important;background:linear-gradient(130deg,#efe6f0 0,#fff 48px)!important;padding-top:22px!important}
+.fw-sky-worlds[data-world=petal] .sky-world-body .daily-sky-movement>.daily-sky{border:1px solid #d3c4d4!important;border-radius:52px 10px 48px 10px!important;background:linear-gradient(140deg,#eee3f0 0,#fff 32%,#fff 78%,#f0e9f1)!important;padding:24px 18px 12px!important}
 .fw-sky-worlds[data-world=petal] .daily-sky-movement>.daily-sky:before{content:"";position:absolute;top:0;left:0;width:25px;height:25px;border-bottom:1px solid #bca6c1;border-radius:0 0 22px 0;pointer-events:none}
 .fw-sky-worlds[data-world=petal] .fw-world-identity{border-top:1px solid #d3c4d4;padding-top:24px}.fw-sky-worlds[data-world=petal] .fw-world-triad-column{border-left-color:#d3c4d4!important}.fw-sky-worlds[data-world=petal] .fw-world-tides{padding:14px 0 4px;border-radius:80px 4px 70px 4px;background:linear-gradient(145deg,#efe6f0aa,#ffffff77 45%,#f5f4f100)}
 .fw-sky-worlds[data-world=petal] .fw-world-tides>div{background:transparent!important;border-radius:70px 0 55px 0!important}.fw-sky-worlds[data-world=petal] .fw-world-year{padding-left:12px;border-left:1px solid #d3c4d4;border-radius:0 0 0 38px}
