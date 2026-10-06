@@ -157,6 +157,8 @@ line: **no generative AI writing about her reading** (the Fable incident, Jan 20
 
 ## 6. IN FLIGHT — claim a surface before you edit it
 
+2026-10-07 extension: Ms Deep Search / Mr Fix-it owns `src/components/planner-v2/PlannerV2ShellClipboard.jsx` and its dedicated regression tests for the exact-source/duration prerequisite. Live taps proved `/Planner` imports that file under the V2 alias; the sibling-only repair must be carried into the actual default route without changing its design. Root owns integration and native re-proof.
+
 
 Additional claim, 6 October 2026: **Codex** owns `src/Layout.jsx` for new SkyWorldsDemo navigation identity only (preview treated as Lifestyle). RELEASED:6997e0a claim,34cd6a1 repair, native preview nav reproof. Found by live audit; main routing/appearance unchanged.
 
