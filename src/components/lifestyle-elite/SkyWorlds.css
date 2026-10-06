@@ -70,7 +70,7 @@ body:has(.fw-sky-worlds) [aria-label="Open Ideas (Design Lab — dev only)"]{top
 
 /* Star Press: printed columns become editorial rows on a small page. */
 .fw-sky-worlds[data-world=press] .fw-world-folio{border-bottom:1px solid #6e6a6170;padding-bottom:7px;font-weight:700;letter-spacing:.17em}
-.fw-sky-worlds[data-world=press] .fw-world-clearing h1{font:italic 600 clamp(27px,6.4vw,34px)/1.18 var(--world-serif)!important;letter-spacing:-.035em;border-bottom:1px solid #6e6a6170;padding-bottom:12px;margin-bottom:10px}
+.fw-sky-worlds[data-world=press] .fw-world-header .fw-world-clearing h1{font:italic 600 clamp(27px,6.4vw,34px)/1.18 var(--world-serif)!important;letter-spacing:-.035em;border-bottom:1px solid #6e6a6170;padding-bottom:12px;margin-bottom:10px}
 .fw-sky-worlds[data-world=press] .fw-world-flower{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;align-items:baseline;font-size:16px}.fw-sky-worlds[data-world=press] .fw-world-flower strong{font-size:18px}
 .fw-sky-worlds[data-world=press] [data-section=sky] .fw-ff-summary{border-top:2px solid #51444e;padding-top:2px!important}.fw-sky-worlds[data-world=press] .fw-ff-summary-nav{border-bottom:1px solid #9c969e}
 .fw-sky-worlds[data-world=press] .fw-world-weather-entry{display:grid;grid-template-columns:62px minmax(0,1fr);column-gap:12px;border-top:1px solid #6e6a6155}.fw-sky-worlds[data-world=press] .fw-world-note-label{grid-row:1/3;padding-top:2px}.fw-sky-worlds[data-world=press] .fw-world-weather-entry :is(h2,h3,p){grid-column:2}
@@ -92,7 +92,7 @@ body:has(.fw-sky-worlds) [aria-label="Open Ideas (Design Lab — dev only)"]{top
 .fw-sky-worlds[data-world=petal] .fw-world-year .daily-sky{background:#ffffff88!important;padding:18px 12px!important;border-radius:0 18px 0 0!important}.fw-sky-worlds[data-world=petal] .fw-world-ask>section{border-top:1px solid #d3c4d4}.fw-sky-worlds[data-world=petal] .fw-world-atelier{border-bottom:1px solid #d3c4d4}
 
 /* Workbench: warm authored reading against precise instruments and slips. */
-.fw-sky-worlds[data-world=workbench] .fw-world-folio{letter-spacing:.08em}.fw-sky-worlds[data-world=workbench] .fw-world-clearing h1{font:italic 600 clamp(27px,6.4vw,34px)/1.18 var(--world-serif)!important;letter-spacing:-.02em}.fw-sky-worlds[data-world=workbench] .fw-world-flower{border-left:1px solid #a8893f80;padding-left:12px}
+.fw-sky-worlds[data-world=workbench] .fw-world-folio{letter-spacing:.08em}.fw-sky-worlds[data-world=workbench] .fw-world-header .fw-world-clearing h1{font:italic 600 clamp(27px,6.4vw,34px)/1.18 var(--world-serif)!important;letter-spacing:-.02em}.fw-sky-worlds[data-world=workbench] .fw-world-flower{border-left:1px solid #a8893f80;padding-left:12px}
 .fw-sky-worlds[data-world=workbench] .fw-world-scene{height:clamp(168px,48vw,206px)}
 .fw-sky-worlds[data-world=workbench] [data-section=sky] .fw-ff-summary{border-top:1px solid #a8893f80}.fw-sky-worlds[data-world=workbench] .fw-ff-glance-row{grid-template-columns:20px minmax(0,1fr) 15px}
 .fw-sky-worlds[data-world=workbench] .sky-world-body .daily-sky-movement>.daily-sky{border:1px solid #b9aa8d!important;border-radius:2px!important;background:#fff!important;padding:16px 14px 6px!important}
