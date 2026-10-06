@@ -7,6 +7,9 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-07 · FINAL RECORD SHIPPED
+> - Verification/claim release93c450c pushed; frontend redeploy succeeds with unchanged index-Ct5Eb3OV.js. HTTP verifies hash and357-check public board; native Ideas checks expanded/overview restored, selected Sky loaded and both deliverables left open. Release test32files/357checks green. Final proof: C:/Users/Halli/femwell-handoff/finish-ideas-review-final.png. No pending source work in this selected-body pass; held wider social/live-write/iPhone/main-approval scope is explicit below and on board.
+>
 > ### CURRENT STATE — 2026-10-07 · FINISHED SELECTED BODY PASS / FINAL LIVE PROOF
 > - **9225d24 +3fedb78 +4617dbe +78762f6 +98b1604 pushed; live index-Ct5Eb3OV.js.** Selected six bodies in Ideas · Dev finished with accepted headers/full source/tools preserved. Earlier research/brainstorms reconciled, Bible10.5.18/HTML mirror updated; main aesthetic promotion still awaits Halli. No backend/schema/function-name changes.
 > - **32 files /357 tests pass** on final unchanged release run (finish-release-tests.log), production build/scoped lint/whitespace pass. Actual signed-in six-room360/390/430 taps/pixels plus independent all18 initial/all12 repaired captures and final3 Good life captures. All five craft issues closed within scoped evidence; full audit/limits in creative/finish-verification.md and finish-craft-live-audit.md.
