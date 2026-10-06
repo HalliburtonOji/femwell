@@ -2,7 +2,9 @@
 
 7 October 2026 · Creative Director / Ms Atelier · Ideas preview only; accepted headers remain locked.
 
-**All18 supplied full-page PNGs inspected, covering six sections at360/390/430. No independently observed pixel P0/P1 blocker. Five P2 craft/copy findings remain below; two are being repaired by root and require new live pixels.** This is not approval to promote the main page, a physical-iPhone verdict, proof of every control, or completion of48 atoms/the social loop.
+**Current P74 reproof: C01, C02 (visual), C04 (one-item state) and C05 close at all three widths. C03 remains a narrower P2 copy issue; player interaction and Planner return proof remain root-owned.**
+
+**Initial audit:** All18 supplied full-page PNGs were inspected, covering six sections at360/390/430, with no independently observed pixel P0/P1 blocker and five P2 craft/copy findings. The original evidence and catalogue below remain historical. This is not approval to promote the main page, a physical-iPhone verdict, proof of every control, or completion of48 atoms/the social loop.
 
 ## Evidence method
 
@@ -36,3 +38,27 @@ Floating navigation occludes some midpage text in a full-page capture, as expect
 Root reports actual signed-in reading keep and five-minute plan acknowledgement; audio remained playing into Books, then paused/closed; chapter1 opened in the real paginated reader with chrome and closed. These are **root's tap results**, not actions performed by this child. Root also found an actual Planner route/Clipboard alias error; repair/reproof is outstanding. Do not say exact Planner return passed yet. Community age gate, shelf writes/failure retry, payments, DM/community recipient/reply loops and all48 atoms are not independently proved by these PNGs.
 
 Visual carry-forward conformance: Bible §§2.7,11,17.3,19.2,19.4,19.7–9; full feature/state/source conformance still depends on tests and root's actual taps. Root owns same-cycle Bible/STATUS and final release catalogue. This review changes only this document.
+
+## P74 repaired-pixel reproof · 7 October 2026
+
+Independently inspected the relevant repaired regions in all12 supplied captures: `C:/Users/Halli/femwell-handoff/finish-{sky,listen,good,yours}-{360,390,430}-repaired.png`. Analysis-only native-width triptychs are `finish-audit-crops/<room>-repaired-triple-<y>.png`. This reproof targets C01–C05 and header preservation, not a second exhaustive audit of every unchanged control.
+
+| Finding | Current result and exact pixel proof |
+|---|---|
+| C01 | **Closed visually.** Power/Pressure/Trouble labels sit above their heading/prose, freeing the full reading width; source paragraphs remain. All three Sky captures, `sky-repaired-triple-1200.png`; the following lesson/chart region remains intact in `sky-repaired-triple-2400.png`. |
+| C02 | **Closed visually; interaction proof separate.** The six playable Listen transports retain the small floral visualiser, Play, progress and clock without the tall beige illustration enclosure. Source titles remain distinct below. All three Listen captures, `listen-repaired-triple-1200/2400/3600.png`. Static pixels cannot prove seeking, transcript, shared playback or resumed state; root is rechecking those actions. |
+| C03 | **Partially repaired; P2 remains.** Long planner instructions, misleading Keep wording and repeated no-streak paragraphs are gone; visible actions consistently say Plan a time. However, the three leisure entries still repeat “A day that's just yours — guilt-free.”, the three small things repeat “Small, doable, just for today.”, and all three quotes repeat “Book a quiet hour, just for you.” Their different titles still receive identical descriptions. All three Good life captures, `good-repaired-triple-1200/2400/3600.png`. Finish with item-specific brief copy grounded in each source, or omit an unnecessary description while preserving the full item and its tools. Do not invent a Keep action or personal inference. |
+| C04 | **Closed for the supplied one-item state.** “1 Sky lesson · 1 Lifestyle find” is correct in all three Yours captures, `yours-repaired-triple-0.png`. A many-item account state is not supplied; its plural behaviour is not independently proved by these pixels. |
+| C05 | **Closed visually.** Something new now shares the quiet page ground, separated by a rule; the brighter saved Sky keep and the saved-story movement precede it. All six actual discoveries and their actions remain visible. All three Yours captures, `yours-repaired-triple-1200/2400.png`. This closes the enclosure/hierarchy finding, not an assertion that discovery selection is perfect. |
+
+The four repaired headers, selectors, focused pairs and glance/Jess affordances remain visibly preserved in the corresponding `*-repaired-triple-0.png` captures. No new P0/P1 pixel issue was observed in these checked regions. Read/Books were not recaptured in this set; their original audit stands.
+
+**Planner correction:** Root corrected the earlier route inference: the actual default uses Elite; the Clipboard import alias is not the default-prop explanation. Root is repairing the actual Planner source/duration path and will provide final return proof. The initial report above records what was known then; this correction does not mark Planner passed. Main promotion, all48 atoms and the complete social loop remain outside this pixel verdict.
+
+## Final C03 reproof · Ct5Eb3OV · 7 October 2026
+
+**C03 closes visually at360/390/430. All five recorded craft findings now have repaired-pixel closure within their stated scope.** Independently inspected `C:/Users/Halli/femwell-handoff/finish-good-{360,390,430}-final.png`, using native-width analysis crops `finish-audit-crops/good-final-triple-1200/2400/3600.png`.
+
+The three leisure entries now have distinct short hooks: the missed street, a selective books-only guest list, and a market/lunch/nap “Horizontal finale.” The three small things have their own lines about a favourite corner, an idea leaving the notebook, and giving a poem a voice. The three quotes carry themselves without the repeated extra paragraph. All nine items retain Plan a time and Details & tools; all11 room doors remain visible. No new P0/P1 or replacement copy defect was observed in these checked regions. These pixels establish visible copy/action preservation, not the opened Details contents or write acknowledgement.
+
+**Separate root interaction evidence, reported to this reviewer:** the actual Elite Planner editor saved five minutes and its source; the editor's source link reached the exact poem dialog at `joy=try-11gq3zo`. P74 audio progressed six seconds, carried into Books showing Pause, then paused and closed. These are root's actual tap results, not child-performed actions or conclusions drawn from static images. This final verdict does not approve main promotion, all48 atoms or the complete social loop.
