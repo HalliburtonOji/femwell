@@ -20,6 +20,7 @@ const LITE_NAV = ["ProgramDay", "ProgramDetail"];
 const todayStr = new Date().toISOString().split("T")[0];
 
 export default function Layout({ children, currentPageName }) {
+  const navPageName = currentPageName === "SkyWorldsDemo" ? "Lifestyle" : currentPageName;
   const showNav = !HIDE_NAV.includes(currentPageName) || LITE_NAV.includes(currentPageName);
   const navMode = LITE_NAV.includes(currentPageName) ? "lite" : "full";
 
@@ -88,7 +89,7 @@ export default function Layout({ children, currentPageName }) {
           <CalendarDays size={20} color="#7A1A12" strokeWidth={1.9} />
         </button>
       )}
-      {showNav && <FloatingSidebar currentPageName={currentPageName} mode={navMode} openQuickLog={openQuickLog} />}
+      {showNav && <FloatingSidebar currentPageName={navPageName} mode={navMode} openQuickLog={openQuickLog} />}
       <main
         id="main-content"
         role="main"
@@ -147,7 +148,7 @@ export default function Layout({ children, currentPageName }) {
           Ideas · dev
         </Link>
       )}
-      {showNav && <MobileBottomNav currentPageName={currentPageName} />}
+      {showNav && <MobileBottomNav currentPageName={navPageName} />}
       <AssistantOverlay
         open={assistantOpen}
         onClose={() => {
