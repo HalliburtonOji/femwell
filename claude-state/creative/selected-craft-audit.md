@@ -1,28 +1,32 @@
 # Ms Atelier — selected Lifestyle craft audit · 6 October 2026
 
-**Source verdict: changes required. Pixel verdict: pending native proof. Main promotion remains held.** Read-only review; no production edits, browser, build or deployment performed. Current Bible supersedes the historical Ms Atelier palette/type/paste workflow.
+**Final source 2e40e74 · deployed index-tpCgLP8I.js. Reviewed craft blockers closed with native pixels. Main promotion held.** Read-only source/art/PNG review. Current Bible supersedes historical Ms Atelier instructions.
 
-Reviewed: BRAND_IDENTITY §§1, 2.7, 5, 10.5.16, 11, 15, 17.3, 19.7–9; SelectedLifestyleHeader/CSS; all six focus compositions including inline BooksStoryFocus; selected CoverCard folio branch; Ideas review board; four generation originals in selected-artwork.json plus existing Sky canopy/Books table.
+Reviewed Bible §§1, 2.7, 5, 10.5.16, 11, 15, 17.3, 19.7–9; six compositions/folio/Ideas and original artwork. Native IAB PNGs under `C:/Users/Halli/femwell-handoff/`: selected-{sky,read,listen,books,good,yours}-{360,390,430}, sky-{ask,lesson}-430, read-{body,reader}-430, listen-body-430, books-chapter-430, {good,yours}-body-{360,390,430}, yours-return-430, full-saved-430; read-final/Good-repaired/Books-repaired-{360,390,430}, sky-ask-repaired-430. These are browser pixels, **not physical iPhone proof, swipe proof or functional sign-off**.
 
-## What conforms
+## Proven strengths
 
-- One live header, retained title/heart/species/date, section selectors, both focused actions and glance/Jess. Books retains its approved table; Sky combines living morning-glory tissue with open editorial rows. Controls stay live HTML. §§2.7, 10.5.16, 17.3.
-- Four genuinely different material subjects: iris/vellum, bluebell/acoustic pleats, marigold/linen, forget-me-not/archive leaves. Originals are RGBA, alpha range 0–254; the bottom sample is fully transparent in every original. The image viewer's black background is **not** a baked black panel. Page-level blending still needs native pixels. §5.
-- Lower composition varies: Read lead/resume margin, Listen player/programme/watch movements, Good life time/joy/eleven doors, Yours real collections. Existing players, metadata, readers and full details survive the compact folio branch. §§19.7–9.
-- Rose-shaped explanation dots have 44px targets, inline answers and Escape return. Reduced motion is honoured. §§11, 15.
+- All six photographed headers fit 360/390/430: six selectors, section-specific focused pills, date/species/title/heart survive. Narrow Read/Books titles wrap naturally with heart attached. No observed horizontal overflow or hard image rectangles. §§2.7, 10.5.16, 17.3.
+- Iris/vellum, bluebell/acoustic pleats, marigold/linen, forget-me-not/archive, Sky tissue/real Moon and Books table feel distinct; artwork fades into the ground. Originals have real RGBA transparency; viewer black is not baked imagery. §5.
+- Listen retains the playing player and episode; Books opens a chapter. Full Saved preserves kept lesson title/text/date and a legible Open. Read chooser has clear destinations and readable wrapping. §§19.7–9.
+- Lesson430 is concise, factual and readable; its open explanation is optional. Small floral edge detail connects lesson to header without occupying a new content row. §10.5.16.
 
 ## Concrete catalogue
 
-**P0:** none established by this source/art review. This is not a live or functional sign-off.
+**P0:** none established.
 
-**P1 — section-heading hierarchy contradicts the Bible.** `SelectedLifestyle.css:52` forces remaining-room h2/h3 to upright 20px ink `#191510`. §1 requires oxblood section headings and the italic hierarchy; folio item titles separately use oxblood. Minimum repair: scope semantic section headings to `--fw-heading-color`, italic; preserve the larger leading Read title and restrained item hierarchy. Do not recolour running text or undo the clean ground. Re-prove all four remaining sections at 360/390/430.
+**P1 CLOSED — expanded Read primary was visually blank.** Proof: `selected-read-reader-430.png`: a wide pale bottom button has no legible label/icon; “Read · Essay” and “Worth taking away” also almost disappear. `expandCards.jsx:87` assigns article cream; `:789` reads its colourway; `:910` puts white text/icon on `c.petal`; `:308` uses the same pale accent for takeaway heading. Minimum selected-only repair: dark semantic controls/eyebrows, preserving decoration, actions, content and main behaviour. First repaired360/390/430 fixes eyebrows, leaves action blank: `cleanTokens.js:44` forces white !important. Selected detail+primary specificity defeats that override. Final Read360/390/430 proves dark #51444e button with legible white “Read this” and icon. §§1, 11, 15.
 
-**P2 — Replay advertises almost no movement outside Sky.** `SelectedLifestyleHeader.jsx:64` labels it “Replay garden movement”; CSS:23–26 only animates opacity .94→1 for Read/Listen/Good life/Yours. Minimum: accurate “Replay light” labelling, or a purposeful tiny material/bud settle without moving controls. Keep the action and reduced-motion behaviour. §§5, 10.5.16.
+**P1 CLOSED — active time-band label lacked contrast.** Good-body360/390/430 show white small “Fifteen minutes” on gold #D4AF37 (~2.1:1). `LifestyleEliteShell.jsx:1955–1959` uses decorative petals with white active text; sage also fails. Minimum selected-only dark active foreground or background; preserve band meaning and selection.
 
-**P2 — empty-state instruction names a control missing from the folio face.** `YoursFocus.jsx:42` says “Tap the heart on any read…”; `expandCards.jsx:712–717` has Open/Details and save remains in the expanded detail. Minimum copy: “Keep a read, listen, watch or book and it waits here.” Do not remove saving or invent a direct-save claim. §§19.5, 19.9.
+**P2 CLOSED — Ask submit icon lacked contrast.** `selected-sky-ask-430.png` shows a dark Send icon on plum, although the white label is legible. `cleanKit.jsx:30` explicitly colours the icon ink; `SkyWorlds.css:49` changes only the button. Selected filled treatment is pixel-proven; asking/disabled states retained.
 
-**P2 — permission phrasing still burdens Good life.** `GoodLifeFocus.jsx:50,62` repeats “permission to enjoy it” and “Small joys & permission”. Minimum selected-branch edits: retain the time-aware question; title “Small joys”. Preserve every permission slip and its Why/DO. Human voice §10.5; no-strip §17.3.
+**P2 — repetition/voice opportunities, not removal requests.** Ask430 repeats “What’s on your mind?”, “Ask the sky”, “Ask it anything” before one field (`SkyMovements.jsx:189–193`). Sky lesson430 contains inherited long advisory forecast prose above the lesson. Later authored-copy work can simplify hierarchy and replace boilerplate at its source; do not truncate or hide existing narrative. §§10.5, 17.3.
 
-**P2 — archive identity is visually diluted.** Yours original has large pink hellebore-like flowers on both outer sheets; the named forget-me-not is a smaller central spray. Not a functional blocker. Before a later art iteration, prefer cropping/framing the blue flowers into prominence; do not regenerate accepted Books or substitute Sky art. §5 species recognition/variety.
+**P2 — Yours species prominence**, original art: outer pink flowers dominate named blue forget-me-not. Later framing/crop refinement; no regeneration of approved Books.
 
-Native proof still needed: every header/body at 360/390/430, expanded explanation rosette, exact folio opening, artwork fade/outer margins, long titles, scroll/nav clearance and actual taps. Do not claim these passed from source or original art alone.
+## Resolved / outstanding
+
+Root resolved the four earlier source findings: oxblood italic room-heading hierarchy, accurate Replay scene-light accessibility label, truthful Yours save instruction, and Good life permission repetition.
+
+All six headers fit three widths without hard edges or clipping. Root has additionally repaired selected-only full-detail semantic colours (#51444e), preserving original FloraCover colourway, and selected Ask filled icon; Final Read primary and Ask-repaired430 pass visual contrast. Time-band repair passes native Good-repaired360/390/430: dark active text/icon on gold, clear selection. Root reports Books Close/settings taps pass three widths. Functional limits and tap proofs remain in `selected-lifestyle-verification.md`. This review does not claim physical iPhone or swipe proof. Remaining art/voice opportunities are P2; no observed open craft P0/P1.
