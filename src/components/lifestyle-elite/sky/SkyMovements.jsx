@@ -12,20 +12,22 @@ import { C, PHASE_CLEAN } from "@/components/brand/cleanTokens";
 import { Eyebrow, Title, Body, Card, Block, Cta, Quiet, Chip, Meta } from "@/components/brand/cleanKit";
 import { decodeSkyPairing, sanitiseSkyLetter, validSkyBirthday } from "./skyCompletion";
 import { PLUS_PARKED } from "@/config/plusTier";
+import SkyMeaning from "./SkyMeaning";
+import { skyCheckoutResult, skyPairingValue, skyParagraphs } from "./skySourceContracts";
 
 const clean = (s) => String(s || "").replace(/<[^>]+>/g, "").replace(/\*(.+?)\*/g, "$1").replace(/\s+/g, " ").trim();
 const cap = (s) => (s ? String(s).charAt(0).toUpperCase() + String(s).slice(1) : s);
 const input = { width: "100%", background: C.surface, border: `1px solid ${C.hair}`, borderRadius: 11, padding: "11px 13px", fontFamily: SERIF, fontSize: 16, color: C.ink, outline: "none" };
 
 // ── V · YOUR YEAR — profections + the Saturn-return letter + the transit timeline ──────────────
-export function YearMovement({ profections, diary, celestial = false }) {
+export function YearMovement({ profections, diary, celestial = false,complete=false }) {
   const p = profections?.profection || null;
   const saturn = profections?.saturn || null;
   const age = p?.age;
   const showSaturn = saturn && age >= 27 && age <= 30;
   return (
     <Block>
-      <Eyebrow cw="plum">Your year</Eyebrow>
+      {complete ? <SkyMeaning label="your year’s house" explanation="In annual profections, each birthday puts another part of life in the spotlight. The ‘time lord’ is that house’s traditional ruling planet."><Eyebrow cw="plum">Your year</Eyebrow></SkyMeaning> : <Eyebrow cw="plum">Your year</Eyebrow>}
       <Title>The house your year is in</Title>
       {p ? (
         <Card wash="plum">
@@ -34,7 +36,11 @@ export function YearMovement({ profections, diary, celestial = false }) {
             {p.time_lord ? <Meta>ruled by {p.time_lord}</Meta> : null}
           </div>
           {(p.theme || (celestial && p.lit_house_copy)) ? <Body size={16.5} style={{ textAlign: "center", margin: 0 }}>{clean(p.theme || p.lit_house_copy)}</Body> : null}
-          <div style={{ fontFamily: UI, fontSize: celestial ? 12 : 11, color: celestial ? C.slate : C.faint, textAlign: "center", marginTop: 10 }}>{celestial ? "In this tradition, each birthday turns the spotlight to another part of life. No homework attached." : "Annual profections move the emphasis one house each birthday."}</div>
+          {complete ? <>
+            {p.house_sign && <p className="sky-note" style={{textAlign:"center"}}>{p.house_sign} · this year’s house sign</p>}
+            {p.time_lord_copy && <details className="daily-sky-kept-note"><summary>More about {p.time_lord || "this year’s planet"}</summary>{skyParagraphs(p.time_lord_copy).map((text,i)=><Body key={i} size={17}>{text}</Body>)}</details>}
+            {p.unlocks_on && <p className="daily-sky-status" style={{textAlign:"center"}}>Next turn · {new Date(`${p.unlocks_on}T12:00:00`).toLocaleDateString("en-GB",{day:"numeric",month:"short"})}</p>}
+          </> : <div style={{ fontFamily: UI, fontSize: celestial ? 12 : 11, color: celestial ? C.slate : C.faint, textAlign: "center", marginTop: 10 }}>{celestial ? "In this tradition, each birthday turns the spotlight to another part of life. No homework attached." : "Annual profections move the emphasis one house each birthday."}</div>}
         </Card>
       ) : (
         <Body size={16.5} style={{ textAlign: "center", color: C.slate }}>Add your birth date and your year's house opens here.</Body>
@@ -131,9 +137,11 @@ export function RedWhiteMoon({ rw, celestial = false, complete = false, loading,
 
 // ── VI · ASK THE SKY — the real askStars function + persisted history ──────────────────────────
 const ASK_CHIPS = ["What should I put my energy into this week?", "Why does this feel harder than it should?", "What am I not seeing?"];
+const ASK_LABELS=["This week","A tough patch","A fresh angle","Work","Friendship"];
 export function AskTheSky({ userId, inputRef, celestial = false, human=false, complete=false }) {
   const [q, setQ] = useState("");
   const [answer, setAnswer] = useState("");
+  const [answerStatus,setAnswerStatus]=useState("");
   const [history, setHistory] = useState([]);
   const [asking, setAsking] = useState(false);
   const [error, setError] = useState("");
@@ -141,10 +149,12 @@ export function AskTheSky({ userId, inputRef, celestial = false, human=false, co
   const [historyRevision, setHistoryRevision] = useState(0);
   const [showHistory, setShowHistory] = useState(false);
   const owner = useRef(userId); owner.current = userId;
+  const inFlight=useRef(false);
+  useEffect(()=>{if(complete){setQ("");setAnswer("");setAnswerStatus("");setHistory([]);setError("");setHistoryError("");setAsking(false);inFlight.current=false;}},[userId,complete]);
 
   useEffect(() => {
     let dead = false;
-    if (complete) { setHistory([]); setAnswer(""); setQ(""); setHistoryError(""); }
+    if (complete) setHistoryError("");
     (async () => {
       if (!userId) return;
       try {
@@ -160,7 +170,7 @@ export function AskTheSky({ userId, inputRef, celestial = false, human=false, co
             if (question) out.push({ id: t.id, question, answer: ans || "" });
           } catch { if (complete && !dead) setHistoryError("Some earlier answers didn't load. Try again?"); }
         }
-        if (!dead) setHistory(out);
+        if (!dead) setHistory(previous=>complete ? [...previous.filter(item=>item._fromVisit && !out.some(entry=>entry.id===item.id)),...out].slice(0,5) : out);
       } catch { if (complete && !dead) setHistoryError("Your earlier answers didn't load. Try again?"); }
     })();
     return () => { dead = true; };
@@ -168,9 +178,9 @@ export function AskTheSky({ userId, inputRef, celestial = false, human=false, co
 
   const submit = async (text) => {
     const question = (text || q).trim();
-    if (!question || asking) return;
+    if (!question || asking || (complete && inFlight.current)) return;
     if (!userId) { setError("Sign in to ask."); return; }
-    setError(""); setAsking(true); setAnswer("");
+    inFlight.current=true;setError("");setAnswerStatus(""); setAsking(true); setAnswer("");
     try {
       const res = await base44.functions.invoke("askStars", { user_id: userId, question });
       if (complete && owner.current !== userId) return;
@@ -178,10 +188,12 @@ export function AskTheSky({ userId, inputRef, celestial = false, human=false, co
       if (!ans) setError(res?.data?.error || res?.error || "No answer came through.");
       else {
         setAnswer(ans); setQ(question);
-        setHistory((prev) => [{ id: res?.data?.thread_id || `t-${Date.now()}`, question, answer: ans }, ...prev].slice(0, 5));
+        const data=res?.data || res;const threadId=data?.thread_id;
+        if(complete && (!threadId || data.question_msg===null || data.answer_msg===null))setAnswerStatus("Your answer is here, but it couldn’t be kept in earlier answers.");
+        setHistory((prev) => [{ id: threadId || `t-${Date.now()}`, question, answer: ans,_fromVisit:true }, ...prev].slice(0, 5));
       }
-    } catch (e) { setError(e?.message || "Couldn't reach the sky."); }
-    finally { setAsking(false); }
+    } catch (e) { if(!complete || owner.current===userId)setError(e?.message || "Couldn't reach the sky."); }
+    finally { if(!complete || owner.current===userId){inFlight.current=false;setAsking(false);} }
   };
 
   return (
@@ -190,24 +202,25 @@ export function AskTheSky({ userId, inputRef, celestial = false, human=false, co
       <Title align="left" size={21}>Ask it anything</Title>
       {celestial && <p className="sky-note">{human ? "Take a new angle. The deciding vote is still yours." : "A question for the sky. You still get the deciding vote."}</p>}
       {/* notebook-ruled input — the original's signature */}
-      <textarea ref={inputRef} aria-label="Your question for the sky" value={q} onChange={(e) => setQ(e.target.value)} rows={3} placeholder="What's on your mind?"
+      <textarea ref={inputRef} aria-label="Your question for the sky" readOnly={complete && asking} maxLength={complete ? 2000 : undefined} value={q} onChange={(e) => setQ(e.target.value)} rows={3} placeholder="What's on your mind?"
         style={{ ...input, resize: "vertical", lineHeight: "1.7em", backgroundImage: `repeating-linear-gradient(${C.surface} 0px, ${C.surface} calc(1.7em - 1px), ${C.hair} calc(1.7em - 1px), ${C.hair} 1.7em)`, backgroundAttachment: "local" }} />
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 7, margin: "10px 0 12px" }}>
-        {ASK_CHIPS.map((c) => <Chip key={c} onClick={() => { setQ(c); if (!celestial) submit(c); else inputRef?.current?.focus(); }} style={{ fontSize: celestial ? 12 : 11.5, fontWeight: 600 }}>{celestial ? c : c.length > 34 ? c.slice(0, 32) + "…" : c}</Chip>)}
-      </div>
+      <fieldset aria-label="Question starters" disabled={complete && asking} style={{ display: "flex", flexWrap: "wrap", gap: 7, margin: "10px 0 12px",border:0,padding:0,minWidth:0 }}>
+        {(complete ? [...ASK_CHIPS,"What could I try differently at work?","What might help a friendship grow?"] : ASK_CHIPS).map((c,i) => <Chip key={c} onClick={() => { if(complete && inFlight.current)return;setQ(c); if (!celestial) submit(c); else inputRef?.current?.focus(); }} style={{ fontSize: celestial ? 12 : 11.5, fontWeight: 600 }}>{complete ? ASK_LABELS[i] : celestial ? c : c.length > 34 ? c.slice(0, 32) + "…" : c}</Chip>)}
+      </fieldset>
       <Cta Icon={Send} filled={complete} onClick={() => submit()} disabled={asking}>{asking ? "Asking…" : "Ask the sky"}</Cta>
-      {error ? <div style={{ fontFamily: UI, fontSize: 12, color: C.crimson, marginTop: 10, textAlign: "center" }}>{error}</div> : null}
+      {error ? <div role={complete ? "alert" : undefined} style={{ fontFamily: UI, fontSize: 12, color: C.crimson, marginTop: 10, textAlign: "center" }}>{error}</div> : null}
       {answer ? (
         <div style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${C.hair}` }}>
           <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color: C.gold, marginBottom: 5 }}>The sky says</div>
-          <Body size={16.5} style={{ margin: 0 }}>{clean(answer)}</Body>
+          {complete ? skyParagraphs(answer).map((paragraph,i)=><Body key={i} size={16.5}>{paragraph}</Body>) : <Body size={16.5} style={{ margin: 0 }}>{clean(answer)}</Body>}
+          {complete && answerStatus && <p role="status" className="daily-sky-status">{answerStatus}</p>}
         </div>
       ) : null}
       {history.length ? (
         <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.hair}` }}>
           <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color: C.faint, marginBottom: 6 }}>You've asked before</div>
           {(complete && showHistory ? history : history.slice(0, 3)).map((h) => (
-            <button key={h.id} onClick={() => { setQ(h.question); setAnswer(h.answer); }} className="fw-elite-press"
+            <button key={h.id} disabled={complete && asking} onClick={() => { setQ(h.question); setAnswer(h.answer);setAnswerStatus(""); }} className="fw-elite-press"
               style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left", background: "transparent", border: "none", padding: "8px 0", cursor: "pointer", fontFamily: SERIF, fontSize: 15, color: C.slate, borderTop: `1px solid ${C.hair}` }}>
               <span style={{ flex: 1, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{h.question}</span>
               <ChevronRight size={14} color={C.faint} />
@@ -223,12 +236,14 @@ export function AskTheSky({ userId, inputRef, celestial = false, human=false, co
 
 // ── VI · COMPATIBILITY — the real generateCompatibility fn + the day/month/year drum + copy-link ─
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const Bar = ({ label, val }) => (
+const Bar = ({ label, val,scale=10 }) => {
+  const value=scale===100 ? skyPairingValue(val) : val;
+  return (
   <div style={{ marginBottom: 9 }}>
-    <div style={{ display: "flex", justifyContent: "space-between", fontFamily: UI, fontSize: 11.5, fontWeight: 600, color: C.slate, marginBottom: 4 }}><span>{label}</span><span>{val != null ? `${val}/10` : "—"}</span></div>
-    <div style={{ height: 4, borderRadius: 99, background: C.hair, overflow: "hidden" }}><div style={{ width: `${Math.max(0, Math.min(10, val || 0)) * 10}%`, height: "100%", background: C.ink }} /></div>
+    <div style={{ display: "flex", justifyContent: "space-between", fontFamily: UI, fontSize: 12, fontWeight: 600, color: C.slate, marginBottom: 4 }}><span>{label}</span><span>{value != null ? `${value}/${scale}` : "—"}</span></div>
+    <div style={{ height: 4, borderRadius: 99, background: C.hair, overflow: "hidden" }}><div style={{ width: `${Math.max(0, Math.min(scale, value || 0)) * 100/scale}%`, height: "100%", background: C.ink }} /></div>
   </div>
-);
+);};
 export function Compatibility({ userId, celestial = false, human=false, complete=false }) {
   const [name, setName] = useState("");
   const [d, setD] = useState(""); const [m, setM] = useState(""); const [y, setY] = useState("");
@@ -239,7 +254,8 @@ export function Compatibility({ userId, celestial = false, human=false, complete
   const [manualLink, setManualLink] = useState("");
   const [resultPair, setResultPair] = useState(null);
   const owner = useRef(userId); owner.current = userId;
-  useEffect(() => { if(complete) {setReading(null);setResultPair(null);setManualLink("");} }, [userId, complete]);
+  const running=useRef(false);
+  useEffect(() => { if(complete) {setName("");setD("");setM("");setY("");setReading(null);setResultPair(null);setManualLink("");setError("");setLoading(false);running.current=false;} }, [userId, complete]);
 
   // a shared ?compat= link pre-fills and auto-runs once (the original's shareable-link feature)
   useEffect(() => {
@@ -254,22 +270,22 @@ export function Compatibility({ userId, celestial = false, human=false, complete
 
   const birthday = y && m && d ? `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}` : "";
   const run = async () => {
-    if (loading) return;
+    if (loading || (complete && running.current)) return;
     setError("");
     if (!userId) { setError("Sign in to run a reading."); return; }
     if (!birthday) { setError("Their birthday is needed."); return; }
     if (complete && !validSkyBirthday(birthday)) { setError("That birthday isn't a real past date. Check the day, month and year."); return; }
     const pair = {name:name.trim(), birthday};
     if (complete) {setReading(null);setCopied(false);setManualLink("");}
-    setLoading(true);
+    running.current=true;setLoading(true);
     try {
       const res = await base44.functions.invoke("generateCompatibility", { user_id: userId, their_name: name.trim(), their_birthday: birthday });
       if (complete && owner.current !== userId) return;
       const row = res?.data?.reading || res?.reading || null;
-      if (!row) setError(res?.data?.error || res?.error || "Couldn't read this pairing.");
+      if (!row || (complete && row.user_id!==userId)) setError(res?.data?.error || res?.error || "Couldn't read this pairing.");
       else {setReading(row);setResultPair(pair);}
-    } catch (e) { setError(e?.message || "Couldn't read this pairing."); }
-    finally { setLoading(false); }
+    } catch (e) { if(!complete || owner.current===userId)setError(e?.message || "Couldn't read this pairing."); }
+    finally { if(!complete || owner.current===userId){running.current=false;setLoading(false);} }
   };
   const copyLink = async () => {
     let url = "";
@@ -287,29 +303,30 @@ export function Compatibility({ userId, celestial = false, human=false, complete
     <Card style={{ marginTop: 14 }}>
       <Eyebrow cw="blush" align="left">You &amp; someone</Eyebrow>
       <Title align="left" size={21}>{human ? "You two, under the stars." : "How you two run"}</Title>
-      {celestial && <p className="sky-note">{human ? "Two charts, one conversation starter. Chemistry still has to show up." : "Two charts, plenty to talk about. A conversation starter, never a verdict on someone you love."}</p>}
-      <input aria-label="Their name" maxLength={complete ? 100 : undefined} value={name} onChange={(e) => setName(e.target.value)} placeholder="Their name" style={{ ...input, marginBottom: 9 }} />
+      {celestial && <p className="sky-note">{complete ? "Two Sun signs, one conversation starter. Chemistry still has to show up." : human ? "Two charts, one conversation starter. Chemistry still has to show up." : "Two charts, plenty to talk about. A conversation starter, never a verdict on someone you love."}</p>}
+      <input aria-label="Their name" readOnly={complete && loading} maxLength={complete ? 100 : undefined} value={name} onChange={(e) => setName(e.target.value)} placeholder="Their name" style={{ ...input, marginBottom: 9 }} />
       <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-        <input value={d} onChange={(e) => setD(e.target.value.replace(/\D/g, "").slice(0, 2))} placeholder="Day" inputMode="numeric" aria-label="Day" style={{ ...input, flex: 1, textAlign: "center" }} />
-        <select value={m} onChange={(e) => setM(e.target.value)} aria-label="Month" style={{ ...input, flex: 1.3, fontFamily: UI, fontSize: 14 }}>
+        <input readOnly={complete && loading} value={d} onChange={(e) => setD(e.target.value.replace(/\D/g, "").slice(0, 2))} placeholder="Day" inputMode="numeric" aria-label="Day" style={{ ...input, flex: 1, textAlign: "center" }} />
+        <select disabled={complete && loading} value={m} onChange={(e) => setM(e.target.value)} aria-label="Month" style={{ ...input, flex: 1.3, fontFamily: UI, fontSize: 14 }}>
           <option value="">Month</option>
           {MONTHS.map((mo, i) => <option key={mo} value={i + 1}>{mo}</option>)}
         </select>
-        <input value={y} onChange={(e) => setY(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="Year" inputMode="numeric" aria-label="Year" style={{ ...input, flex: 1.2, textAlign: "center" }} />
+        <input readOnly={complete && loading} value={y} onChange={(e) => setY(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="Year" inputMode="numeric" aria-label="Year" style={{ ...input, flex: 1.2, textAlign: "center" }} />
       </div>
       <Cta Icon={Sparkles} onClick={run} disabled={loading}>{loading ? "Reading…" : "Read this pairing"}</Cta>
-      {error ? <div style={{ fontFamily: UI, fontSize: 12, color: C.crimson, marginTop: 10, textAlign: "center" }}>{error}</div> : null}
+      {error ? <div role={complete ? "alert" : undefined} style={{ fontFamily: UI, fontSize: 12, color: C.crimson, marginTop: 10, textAlign: "center" }}>{error}</div> : null}
       {reading ? (
         <div style={{ marginTop: 16, paddingTop: 14, borderTop: `1px solid ${C.hair}` }}>
-          <Bar label="Talk" val={reading.talk_score} />
-          <Bar label="Touch" val={reading.touch_score} />
-          <Bar label="Trust" val={reading.trust_score} />
-          <Bar label="Time" val={reading.time_score ?? reading.grow_score} />
-          {reading.summary || reading.body ? <Body size={16} style={{ marginTop: 10 }}>{clean(reading.summary || reading.body)}</Body> : null}
+          {complete && <SkyMeaning label="this pairing" explanation="A Sun-sign conversation starter. These four numbers describe the reading’s interpretation, not a measured relationship. Your actual chemistry gets the last word."><p className="sky-kicker">You &amp; {resultPair?.name || "them"}</p></SkyMeaning>}
+          <Bar scale={complete ? 100 : 10} label="Talk" val={reading.talk_score} />
+          <Bar scale={complete ? 100 : 10} label="Touch" val={reading.touch_score} />
+          <Bar scale={complete ? 100 : 10} label="Trust" val={reading.trust_score} />
+          <Bar scale={complete ? 100 : 10} label={complete ? "Growth" : "Time"} val={reading.time_score ?? reading.grow_score} />
+          {complete ? skyParagraphs(reading.narrative || reading.summary || reading.body).map((paragraph,i)=><Body key={i} size={16} style={{marginTop:10}}>{paragraph}</Body>) : reading.summary || reading.body ? <Body size={16} style={{ marginTop: 10 }}>{clean(reading.summary || reading.body)}</Body> : null}
           <div style={{ fontFamily: UI, fontSize: 11, color: C.faint, marginTop: 8 }}>
             <abbr title="Synastry — comparing two charts to each other, the traditional way of reading a pairing." style={{ textDecoration: "none", borderBottom: `1px dotted ${C.faint}`, cursor: "help" }}>Synastry</abbr>, held lightly — never a verdict on a person.
           </div>
-          <Quiet onClick={copyLink}>{copied ? <><Check size={13} style={{ verticalAlign: -2 }} /> Link copied</> : <><Copy size={13} style={{ verticalAlign: -2 }} /> Copy a link to this reading</>}</Quiet>
+          <Quiet onClick={copyLink}>{copied ? <><Check size={13} style={{ verticalAlign: -2 }} /> Link copied</> : <><Copy size={13} style={{ verticalAlign: -2 }} /> {complete ? "Copy pairing link" : "Copy a link to this reading"}</>}</Quiet>
           {complete && <p style={{fontFamily:UI,fontSize:12,color:C.slate}}>The link includes the name and birthday you entered. It opens those details for a new pairing, not your private answer.</p>}
           {complete && manualLink && <input aria-label="Pairing link to copy" readOnly value={manualLink} onFocus={event=>event.target.select()} style={input}/>}
         </div>
@@ -327,18 +344,22 @@ const PRODUCTS = [
 export function Atelier({ userId, hasAtelier, letter, celestial = false, complete = false, loading, error, onRetry }) {
   const [busy, setBusy] = useState("");
   const [checkoutError, setCheckoutError] = useState("");
+  const pending=useRef(false);const owner=useRef(userId);owner.current=userId;
+  useEffect(()=>{if(complete){pending.current=false;setBusy("");setCheckoutError("");}},[complete,userId]);
   const bodyHtml = complete ? sanitiseSkyLetter(letter?.body_html) : "";
   const checkout = async (fn, payload) => {
-    if(complete && (!userId || busy)) {if(!userId)setCheckoutError("Sign in to continue.");return;}
+    if(complete && (!userId || pending.current)) {if(!userId)setCheckoutError("Sign in to continue.");return;}
+    pending.current=true;
     setCheckoutError("");
-    setBusy(payload.product_key || "plus");
+    setBusy(payload.product || payload.product_key || "plus");
     try {
       const res = await base44.functions.invoke(fn, { user_id: userId, ...payload });
-      const url = res?.data?.url || res?.url;
+      if(complete && owner.current!==userId)return;
+      const url = complete ? skyCheckoutResult(res).url : res?.data?.url || res?.url;
       if (url) window.location.assign(url);
       else {if(complete)setCheckoutError(res?.data?.error || res?.error || "Checkout isn't available right now.");else console.warn("[atelier] checkout returned no url — price id likely missing in env", res);}
-    } catch (e) { if(complete)setCheckoutError("Couldn't open checkout. Try again?");else console.warn("[atelier] checkout failed", e); }
-    finally { setBusy(""); }
+    } catch (e) { if(complete){if(owner.current===userId)setCheckoutError("Couldn't open checkout. Try again?");}else console.warn("[atelier] checkout failed", e); }
+    finally { if(!complete || owner.current===userId){pending.current=false;setBusy("");} }
   };
   return (
     <Block>
@@ -374,7 +395,7 @@ export function Atelier({ userId, hasAtelier, letter, celestial = false, complet
               <div style={{ fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: C.ink }}>{p.title}</div>
               <div style={{ fontFamily: SERIF, fontSize: 14.5, color: C.slate, lineHeight: 1.4, marginTop: 2 }}>{complete ? ({year_ahead:"Your twelve months, house by house.",chart_atelier:"Your whole chart, in one reading.",choose_the_day:"A date for a move, a launch or a conversation."}[p.key]) : p.line}</div>
             </div>
-            <button onClick={() => checkout("createOneShotCheckout", { product_key: p.key })} disabled={!!busy} className="fw-elite-press"
+            <button onClick={() => checkout("createOneShotCheckout", complete ? { product: p.key } : { product_key: p.key })} disabled={!!busy} className="fw-elite-press"
               style={{ flexShrink: 0, background: "transparent", border: `1px solid ${C.ink}`, borderRadius: 999, padding: "8px 14px", fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: C.ink, cursor: "pointer" }}>
               {busy === p.key ? "…" : p.price}
             </button>

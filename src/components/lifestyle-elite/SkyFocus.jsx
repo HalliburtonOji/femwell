@@ -40,6 +40,7 @@ import { AtelierIncident } from "./AtelierHeader";
 import useSkyCompletion from "./sky/useSkyCompletion";
 import { skyReadingKey } from "./sky/skyCompletion";
 import useSelectedSkyChart from "./sky/useSelectedSkyChart";
+import { skyParagraphs } from "./sky/skySourceContracts";
 
 const cap = (s) => (s ? String(s).charAt(0).toUpperCase() + String(s).slice(1) : s);
 const clean = (s) => String(s || "").replace(/<[^>]+>/g, "").replace(/\*(.+?)\*/g, "$1").replace(/\s+/g, " ").trim();
@@ -91,7 +92,7 @@ function TriadColumn({ world = false, Icon, label, sign, trait, desc, locked, on
   const SignIcon = !locked && sign ? getSignIcon(sign) : Icon;
   return (
     <div className={world ? "fw-world-triad-column" : undefined} style={{ flex: 1, minWidth: 0, padding: "4px 6px", borderLeft: first ? "none" : `1px solid ${C.hair}` }}>
-      <button onClick={() => { if (locked) return onUnlock && onUnlock(); if (desc) { if (celestial) onToggle?.(); else setOpen((v) => !v); } }} className="fw-elite-press" aria-expanded={open}
+      <button disabled={world && !locked && !desc} onClick={() => { if (locked) return onUnlock && onUnlock(); if (desc) { if (celestial) onToggle?.(); else setOpen((v) => !v); } }} className="fw-elite-press" aria-expanded={open}
         style={{ width: "100%", textAlign: "center", cursor: (desc || locked) ? "pointer" : "default", background: "transparent", border: "none", padding: 0 }}>
         <div className={celestial ? "sky-triad-icon" : undefined} style={{ display: "flex", justifyContent: "center", lineHeight: 1 }}><SignIcon size={26} color={locked ? C.faint : C.ink} strokeWidth={1.4} /></div>
         <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: C.faint, marginTop: 9 }}>{label}</div>
@@ -107,7 +108,7 @@ function TriadColumn({ world = false, Icon, label, sign, trait, desc, locked, on
 }
 
 // ── the composite cycle × moon dial ────────────────────────────────────────────────────────────
-function CycleMoonDial({ moon, cyclePhase, cycleDay, cycleLen = 28, body }) {
+function CycleMoonDial({ moon, cyclePhase, cycleDay, cycleLen = 28, body,complete=false }) {
   const lunarPos = moon?.position != null ? Math.min(0.999, Math.max(0, moon.position)) : (moon?.illumination != null ? (moon.waxing ? moon.illumination / 200 : 0.5 + (100 - moon.illumination) / 200) : 0);
   const cyclePos = cycleDay ? Math.min(0.999, Math.max(0, (cycleDay - 1) / cycleLen)) : 0;
   const oR = 56, iR = 41, oC = 2 * Math.PI * oR, iC = 2 * Math.PI * iR;
@@ -127,22 +128,23 @@ function CycleMoonDial({ moon, cyclePhase, cycleDay, cycleLen = 28, body }) {
       <div style={{ minWidth: 0, fontFamily: UI, fontSize: 12, color: C.slate }}>
         <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 11 }}><span style={{ width: 8, height: 8, borderRadius: 99, background: C.ink }} /><span><strong style={{ color: C.ink, fontWeight: 700 }}>Lunar</strong> · {moon?.short || moon?.name || "moon"}{moon?.illumination != null ? ` · ${moon.illumination}% lit` : ""}</span></div>
         <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: body ? 8 : 0 }}><span style={{ width: 8, height: 8, borderRadius: 99, background: stroke }} /><span><strong style={{ color: C.ink, fontWeight: 700 }}>Cycle</strong> · {cyclePhase ? `${cap(cyclePhase)}${cycleDay ? ` · Day ${cycleDay}` : ""}` : "add your dates"}</span></div>
-        {body ? <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, fontWeight: 500, color: C.slate, lineHeight: 1.45, margin: 0, maxWidth: "15em" }}>{clean(body)}</p> : null}
+        {body ? <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, fontWeight: 500, color: C.slate, lineHeight: 1.45, margin: 0, maxWidth: "15em",whiteSpace:complete ? "pre-line" : undefined }}>{complete ? skyParagraphs(body).join("\n\n") : clean(body)}</p> : null}
       </div>
     </div>
   );
 }
 
 // ── the goddess bench ──────────────────────────────────────────────────────────────────────────
-function GoddessBench({ signs, goddessRead }) {
+function GoddessBench({ signs, goddessRead, complete=false }) {
   const [open, setOpen] = useState(null);
   const present = ASTEROID_NAMES.map((n) => ({ n, s: signs?.[n] })).filter((x) => x.s);
   if (!present.length && !goddessRead) return null;
   const active = open ? ASTEROID_ARCHETYPES[open] : null;
   return (
     <Card style={{ marginTop: 14 }}>
-      <Eyebrow cw="blush" align="left">Beside you today</Eyebrow>
+      {complete ? <SkyMeaning label="your goddess bench" explanation="Asteroids borrow names from mythology: care, wisdom, commitment and the things you protect. Tap one for its story."><Eyebrow cw="blush">Beside you today</Eyebrow></SkyMeaning> : <Eyebrow cw="blush" align="left">Beside you today</Eyebrow>}
       <Title align="left" size={21}>Your goddess bench</Title>
+      {complete && <p className="daily-sky-status">Date-based position estimates · mythological lenses</p>}
       {present.length ? (
         <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: 16, margin: "2px 0 14px" }}>
           {present.map(({ n }) => {
@@ -212,7 +214,7 @@ function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, o
   const chart = useMemo(() => deriveChart(astro, prof), [astro, prof]);
   const derivedCycle = useMemo(() => derivePhaseInfo(prof), [prof]);
   const cyc = artful && cycleContext ? cycleContext : derivedCycle;
-  const moon = useMemo(() => getMoonPhase(new Date()), []);
+  const moon = useMemo(() => getMoonPhase(new Date()), [complete ? chartState.checkedDay : null]);
   const profections = useProfections(astro, prof);
   const asteroids = useAsteroids(astro, prof);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -296,12 +298,13 @@ function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, o
   }
 
   const headline = clean(reading?.headline) || (celestial ? "A moment under the same moon." : `A steady day. The moon is ${moon?.waxing ? "climbing" : "releasing"}.`);
-  const weather = celestial ? paras(reading?.narrative) : paras(reading?.narrative).slice(0, 3);
+  const weather = complete ? skyParagraphs(reading?.narrative) : celestial ? paras(reading?.narrative) : paras(reading?.narrative).slice(0, 3);
   const energy = reading?.weather_energy || null;
   const mood = reading?.weather_mood ? clean(reading.weather_mood) : null;
   const playlist = chart.moonSign ? MOON_SIGN_PLAYLIST[String(chart.moonSign).toLowerCase()] : null;
   const notice = reading?.pressure_title || reading?.trouble_title ? { t: clean(reading.pressure_title || reading.trouble_title), b: clean(reading.pressure_body || reading.trouble_body) } : null;
-  const shareArtifact = { kind: "horoscope", source: "horoscope", line: headline, footer: "Today's sky", url: "https://femwells.com", shareText: "Today's sky, from FemWell." };
+  const readingDate=reading?.reading_date ? new Date(`${reading.reading_date}T12:00:00`).toLocaleDateString("en-GB",{day:"numeric",month:"short"}) : null;
+  const shareArtifact = { kind: "horoscope", source: "horoscope", line: headline, footer: complete && readingDate ? `Sky · ${readingDate}` : "Today's sky", url: "https://femwells.com", shareText: complete && readingDate ? `My sky reading · ${readingDate}, from FemWell.` : "Today's sky, from FemWell." };
   const stateBits = [cyc.phase ? `${cap(cyc.phase)}${cyc.day ? ` · Day ${cyc.day}` : ""}` : null, moon?.name ? cap(moon.name) : null, chart.sun ? `${cap(chart.sun)} sun` : null].filter(Boolean);
   const lead = weather.length ? weather[0].match(/^(.+?[.!?])(\s+|$)([\s\S]*)$/) : null;
   const cw = phaseCw(cyc.phase);
@@ -311,6 +314,8 @@ function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, o
       {celestial && <style>{CELESTIAL_CSS}</style>}
       <JessAstraBanner />
       {chartFailure}
+      {complete && chartState.newDay && <p className="daily-sky-status">A new day is here. Your open reading stays put. <button className="daily-sky-link" type="button" disabled={chartState.refreshing} onClick={refresh}>{chartState.refreshing ? "Checking…" : "Check today’s sky"}</button></p>}
+      {complete && chartState.refreshing && !chartState.newDay && <p role="status" className="daily-sky-status">Checking your sky…</p>}
 
       {/* I · TONIGHT — the masthead (the page's ONE header sits above this) */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
@@ -356,7 +361,7 @@ function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, o
             {notice.b ? <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16, fontWeight: 500, color: C.ink, lineHeight: 1.5, margin: "3px 0 0" }}>{notice.b}</p> : null}
           </div>
         ) : null}
-        {dailyLessons && <div className={world ? "fw-world-weather-notes" : artful ? "fw-atelier-weather-notes" : undefined}>{[["Power",reading?.power_title,reading?.power_body],["Pressure",reading?.pressure_title,reading?.pressure_body],["Trouble",reading?.trouble_title,reading?.trouble_body]].map(([label,title,body])=>title || body ? <div key={label} className={world ? `fw-world-weather-entry fw-world-weather-entry--${label.toLowerCase()}` : artful ? `fw-atelier-weather-entry fw-atelier-weather-entry--${label.toLowerCase()}` : undefined} style={artful ? undefined : {borderTop:`1px solid ${C.hair}`,padding:"14px 0 0",marginTop:14}}>{artful ? <span className={world ? "fw-world-note-label" : "fw-atelier-note-label"}>{label}</span> : <Eyebrow cw="gold" align="left">{label}</Eyebrow>}{title && <Title align="left" size={26}>{clean(title)}</Title>}{body && <Body>{clean(body)}</Body>}</div> : null)}</div>}
+        {dailyLessons && <div className={world ? "fw-world-weather-notes" : artful ? "fw-atelier-weather-notes" : undefined}>{[["Power",reading?.power_title,reading?.power_body],["Pressure",reading?.pressure_title,reading?.pressure_body],["Trouble",reading?.trouble_title,reading?.trouble_body]].map(([label,title,body])=>title || body ? <div key={label} className={world ? `fw-world-weather-entry fw-world-weather-entry--${label.toLowerCase()}` : artful ? `fw-atelier-weather-entry fw-atelier-weather-entry--${label.toLowerCase()}` : undefined} style={artful ? undefined : {borderTop:`1px solid ${C.hair}`,padding:"14px 0 0",marginTop:14}}>{artful ? <span className={world ? "fw-world-note-label" : "fw-atelier-note-label"}>{label}</span> : <Eyebrow cw="gold" align="left">{label}</Eyebrow>}{title && <Title align="left" size={26}>{clean(title)}</Title>}{body && (complete ? skyParagraphs(body).map((text,i)=><Body key={i}>{text}</Body>) : <Body>{clean(body)}</Body>)}</div> : null)}</div>}
         <CarryItWithYou connectedDemo={dailyLessons} seed={headline} read={markedRead} onMarkRead={markReading} readDisabled={complete && (!readingKey || markedRead)} readError={readError} />
       </Movement>
 
@@ -375,9 +380,9 @@ function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, o
           <TriadColumn world={world} celestial={celestial} expanded={!!triadOpen.moon} onToggle={()=>toggleTriad("moon")} Icon={Moon} label="Moon" sign={chart.moonSign ? cap(chart.moonSign) : null} trait={SIGN_TRAITS[cap(chart.moonSign)]} desc={reading?.triad_moon_desc} locked={!chart.moonSign} onUnlock={() => setSheetOpen(true)} />
           <TriadColumn world={world} celestial={celestial} expanded={!!triadOpen.rising} onToggle={()=>toggleTriad("rising")} Icon={Sunrise} label="Rising" sign={chart.risingSign ? cap(chart.risingSign) : null} trait={SIGN_TRAITS[cap(chart.risingSign)]} desc={reading?.triad_rising_desc} locked={!chart.risingSign} onUnlock={() => setSheetOpen(true)} />
         </div>
-        {celestial && [["sun","Sun",reading?.triad_sun_desc],["moon","Moon",reading?.triad_moon_desc],["rising","Rising",reading?.triad_rising_desc]].map(([key,label,description]) => triadOpen[key] && description ? <div key={key} style={{padding:"16px 0",borderBottom:`1px solid ${C.hair}`}}><p className="sky-kicker">{label} · your reading</p><p className="sky-note" style={{margin:0}}>{clean(description)}</p></div> : null)}
+        {celestial && [["sun","Sun",reading?.triad_sun_desc],["moon","Moon",reading?.triad_moon_desc],["rising","Rising",reading?.triad_rising_desc]].map(([key,label,description]) => triadOpen[key] && description ? <div key={key} style={{padding:"16px 0",borderBottom:`1px solid ${C.hair}`}}><p className="sky-kicker">{label} · your reading</p>{(complete ? skyParagraphs(description) : [clean(description)]).map((text,i)=><p key={i} className="sky-note" style={{margin:i ? "10px 0 0" : 0}}>{text}</p>)}</div> : null)}
         <div style={{ fontFamily: UI, fontSize: 11, letterSpacing: ".06em", color: C.faint, textAlign: "center", marginTop: 14 }}>{[chart.element, chart.modality, chart.sunRuler ? `ruled by ${chart.sunRuler}` : null].filter(Boolean).join(" · ")}</div>
-        <GoddessBench signs={asteroids} goddessRead={reading?.goddess_read} />
+        <GoddessBench complete={complete} signs={asteroids} goddessRead={reading?.goddess_read} />
         <RedWhiteMoon celestial={celestial} complete={complete} rw={complete ? completion.rw : null} loading={completion.loading} error={completion.cycleError} onRetry={completion.retry} />
       </Movement>
 
@@ -388,7 +393,7 @@ function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, o
         <Card framed wash={cw}>
           {celestial ? <SkyMeaning label="your two tides" explanation={world ? "One ring follows the Moon; the other follows your logged cycle. Side by side, each keeping its own time." : "The outer ring follows the lunar phase; the inner ring uses your logged cycle dates. Side by side does not mean one causes the other—bodies keep their own time."}><Eyebrow cw={cw} style={{margin:0}}>Cycle × moon</Eyebrow></SkyMeaning> : <Eyebrow cw={cw}>Cycle × moon</Eyebrow>}
           <Title>Your two tides</Title>
-          <CycleMoonDial moon={moon} cyclePhase={cyc.phase} cycleDay={cyc.day} cycleLen={cyc.len || 28} body={reading?.cycle_moon_body} />
+          <CycleMoonDial complete={complete} moon={moon} cyclePhase={cyc.phase} cycleDay={cyc.day} cycleLen={cyc.len || 28} body={reading?.cycle_moon_body} />
           {celestial && !dailyLessons && <MoonLesson moon={moon} />}
           {!cyc.phase ? <Quiet onClick={() => window.location.assign(createPageUrl("Health"))}>Add your dates to see both tides ›</Quiet> : null}
         </Card>
@@ -398,7 +403,7 @@ function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, o
 
       {/* V · YOUR YEAR — profections · Saturn letter · the sky diary */}
       {artful && !world && <AtelierIncident kind="growth"/>}
-      <Movement id="year" refs={refs} className={movementClass("year")}><YearMovement celestial={celestial} profections={profections} diary={celestial ? null : diary} />{celestial && <ObservedSkyDiary human={world} userId={user?.id} />}{dailyLessons && <PrivateSkyNotes userId={user?.id} moon={moon}/>}</Movement>
+      <Movement id="year" refs={refs} className={movementClass("year")}><YearMovement complete={complete} celestial={celestial} profections={profections} diary={celestial ? null : diary} />{celestial && <ObservedSkyDiary human={world} userId={user?.id} />}{dailyLessons && <PrivateSkyNotes userId={user?.id} moon={moon}/>}</Movement>
 
       {!artful && <Fleuron my={24} />}
 
@@ -420,7 +425,7 @@ function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, o
       {/* VIII · YOUR SKY, YOUR WAY — quiet mode · science · privacy */}
       <Movement id="yours" refs={refs} className={movementClass("way")}><YourWay key={complete ? user?.id || "signed-out" : "legacy"} complete={complete} celestial={celestial} userId={user?.id} /></Movement>
 
-      <Foot>Held lightly — folklore and your own chart, never fate or a score.</Foot>
+      <Foot>{complete ? "Folklore, your chart and your own judgement." : "Held lightly — folklore and your own chart, never fate or a score."}</Foot>
       {birthSheet(astro)}
     </div>
   );

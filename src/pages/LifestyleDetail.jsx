@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { pickProfile } from "@/utils/userProfile";
 import { ArrowLeft, Bookmark, BookmarkCheck, Heart, HeartOff, Loader2, PlayCircle } from "lucide-react";
@@ -7,6 +7,7 @@ import { getCategoryGradient, attachFallbackOverlay } from "@/utils/imageFallbac
 import ContentActionBar from "@/components/common/ContentActionBar";
 import ShareButton from "@/components/share/ShareButton";
 import { readTimeLabel, countWords } from "@/components/brand/ReadingColumn";
+import { removeSavedItem } from "@/lib/savedItems";
 
 // Map a content category to the best-fit whole-life Community room (default: the Lounge).
 const CATEGORY_ROOM = {
@@ -138,6 +139,10 @@ export default function LifestyleDetail() {
   const [profileId, setProfileId] = useState(null);
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [viewer,setViewer]=useState(null);
+  const [actionPending,setActionPending]=useState(false);
+  const [actionError,setActionError]=useState("");
+  const actionLock=useRef(false);
   const [related, setRelated] = useState([]);
   const [videoFailed, setVideoFailed] = useState(false);
 
@@ -186,6 +191,8 @@ export default function LifestyleDetail() {
       setVideoFailed(false);
       try {
         const user = await base44.auth.me();
+        if(cancelled)return;
+        setViewer(user);
         const [items, profiles] = await Promise.all([
           base44.entities.LifestyleItems.filter({ id }).catch(() => []),
           base44.entities.UserProfile.filter({ user_id: user.id }).catch(() => []),
@@ -198,6 +205,9 @@ export default function LifestyleDetail() {
         setProfileId(nextProfile?.id || null);
         setLiked((nextProfile?.liked_item_ids || []).includes(id));
         setSaved((nextProfile?.saved_item_ids || []).includes(id));
+        base44.entities.SavedItems.filter({user_id:user.id,item_type:"LIFESTYLE",item_id:id},undefined,1).then(rows=>{
+          if(!cancelled && rows.some(row=>row.user_id===user.id))setSaved(true);
+        }).catch(()=>{});
 
         // For FemWell-generated content, the full body lives in `lede` or needs `expandContent`.
         // For external articles, `summary` is the body.
@@ -255,23 +265,34 @@ export default function LifestyleDetail() {
   }, [id]);
 
   const updateProfileField = async (field, value) => {
-    if (!profileId) return;
-    await base44.entities.UserProfile.update(profileId, { [field]: value });
-    setProfile((prev) => prev ? { ...prev, [field]: value } : prev);
+    const me=await base44.auth.me();
+    if(!viewer?.id || me?.id!==viewer.id)throw new Error("Sign in again to update this find");
+    const row=profileId ? await base44.entities.UserProfile.update(profileId, { [field]: value })
+      : await base44.entities.UserProfile.create({user_id:viewer.id,user_email:viewer.email,[field]:value});
+    if(!row?.id || (row.user_id && row.user_id!==viewer.id))throw new Error("Couldn’t confirm your change");
+    setProfileId(row.id);setProfile(prev=>({...prev,...row,[field]:value}));
   };
 
   const toggleLiked = async () => {
+    if(actionLock.current)return;
+    actionLock.current=true;setActionPending(true);setActionError("");
     const current = profile?.liked_item_ids || [];
     const next = liked ? current.filter((itemId) => itemId !== id) : [...current, id];
-    setLiked(!liked);
-    await updateProfileField("liked_item_ids", next);
+    try{await updateProfileField("liked_item_ids",next);setLiked(!liked);}
+    catch{setActionError("Couldn’t update this find. Try again.");}
+    finally{actionLock.current=false;setActionPending(false);}
   };
 
   const toggleSaved = async () => {
+    if(actionLock.current)return;
+    actionLock.current=true;setActionPending(true);setActionError("");
     const current = profile?.saved_item_ids || [];
     const next = saved ? current.filter((itemId) => itemId !== id) : [...current, id];
-    setSaved(!saved);
-    await updateProfileField("saved_item_ids", next);
+    try{
+      if(saved)await removeSavedItem("LIFESTYLE",id);
+      await updateProfileField("saved_item_ids",next);setSaved(!saved);
+    }catch{setActionError("Couldn’t update your keeps. Try again.");}
+    finally{actionLock.current=false;setActionPending(false);}
   };
 
   const handleReadFull = () => {
@@ -491,15 +512,16 @@ export default function LifestyleDetail() {
             <ArrowLeft className="w-4 h-4" style={{ color: "#0B0805" }} />
           </button>
           <div className="flex items-center gap-2">
-            <button onClick={toggleLiked} className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid #D8CFBC" }}>
+            <button onClick={toggleLiked} disabled={actionPending} aria-label={liked ? "Unlike this find" : "Like this find"} className="w-11 h-11 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid #D8CFBC" }}>
               {liked ? <Heart className="w-4 h-4" style={{ color: "#E8B4B8", fill: "#E8B4B8" }} /> : <HeartOff className="w-4 h-4" style={{ color: "#2E261B" }} />}
             </button>
-            <button onClick={toggleSaved} className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid #D8CFBC" }}>
+            <button onClick={toggleSaved} disabled={actionPending} aria-busy={actionPending} aria-label={saved ? "Remove from keeps" : "Keep this find"} className="w-11 h-11 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid #D8CFBC" }}>
               {saved ? <BookmarkCheck className="w-4 h-4" style={{ color: "#A8893F" }} /> : <Bookmark className="w-4 h-4" style={{ color: "#2E261B" }} />}
             </button>
           </div>
         </div>
 
+        {actionError && <p role="alert" style={{color:"#7a1a12",fontSize:15,lineHeight:1.5}}>{actionError}</p>}
         <h1 className="fw-display" style={{ margin: "0 0 16px" }}>Lifestyle</h1>
 
         {/* §6.7.8 — ONE padding owner. At 390px the max-width never binds: PADDING *IS* MEASURE.

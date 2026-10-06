@@ -40,7 +40,7 @@ function GoodCard({ eyebrow, title, accent = "gold", children, style, className 
   );
 }
 
-export default function GoodLifeFocus({ timeLens, joys = [], onSlip, timeOfDay, presentation }) {
+export default function GoodLifeFocus({ timeLens, joys = [], onSlip, onPlan, timeOfDay, presentation }) {
   const greet = timeOfDay === "morning" ? "What have you got time for this morning?"
     : timeOfDay === "evening" ? "What have you got time for this evening?"
     : "What have you got time for right now?";
@@ -61,7 +61,7 @@ export default function GoodLifeFocus({ timeLens, joys = [], onSlip, timeOfDay, 
       {joys.length ? (
         <GoodCard className="fw-selected-joys" eyebrow={presentation ? "For the pleasure of it" : "No streaks, nothing owed"} title={presentation ? "Small joys" : "Small joys & permission"} accent="plum">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {joys.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => onSlip && onSlip(it)} />)}
+            {joys.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => onSlip && onSlip(it)} onConsume={presentation && onPlan ? ()=>onPlan(it) : undefined} consumeLabel="Plan a time" />)}
           </div>
         </GoodCard>
       ) : null}

@@ -703,17 +703,19 @@ function CardMediaFace({ item, accent, kind, compact }) {
   );
 }
 
-export function CoverCard({ item: raw, onOpen, compact = false, presentation }) {
+export function CoverCard({ item: raw, onOpen, onConsume, consumeLabel, compact = false, presentation }) {
   const item = resolveCard(raw);
   const c = cwOf(item.cw);
   const I = ICON[item.Icon] || Sparkles;
   const playKind = facePlayable(item);
 
   if (presentation === "folio") {
-    const details = <><span className="fw-folio-card__kind"><I size={13}/>{item.kind}</span><span className="fw-folio-card__title">{item.title}</span>{summaryOf(item) && <span className="fw-folio-card__hook">{summaryOf(item)}</span>}<span className="fw-folio-card__meta">{item.meta.map(([ic,label]) => {const M = ICON[ic] || Clock; return <span key={label}><M size={13}/>{label}</span>;})}</span><span className="fw-folio-card__actions">{playKind ? "Details" : item.external ? "Open source" : "Open"}<ChevronRight size={15}/></span></>;
+    const direct = onConsume || (item.external ? item.actions.find(action=>action.primary)?.onClick : null);
+    const details = <><span className="fw-folio-card__kind"><I size={13}/>{item.kind}</span><span className="fw-folio-card__title">{item.title}</span>{summaryOf(item) && <span className="fw-folio-card__hook">{summaryOf(item)}</span>}<span className="fw-folio-card__meta">{item.meta.map(([ic,label]) => {const M = ICON[ic] || Clock; return <span key={label}><M size={13}/>{label}</span>;})}</span><span className="fw-folio-card__actions">{playKind ? "Details" : consumeLabel || (item.external ? "Open source" : "Open")}<ChevronRight size={15}/></span></>;
     return <div className="fw-folio-card" data-compact={compact} data-media={playKind || undefined}>
-      {playKind && <div className="fw-folio-card__media">{playKind === "audio" ? <FloraAudio src={item.audioSrc} label={item.playerLabel || item.title} accent={c.petal} initialDuration={item.duration || 0} item={item}/> : <CardMediaFace item={item} accent={c.petal} kind={playKind} compact={compact}/>}</div>}
-      <button type="button" className="fw-folio-card__open" onClick={onOpen}>{details}</button>
+      {playKind && <div className="fw-folio-card__media">{playKind === "audio" ? <FloraAudio src={item.audioSrc} label={item.playerLabel || "Episode controls"} accent={c.petal} initialDuration={item.duration || 0} item={item}/> : <CardMediaFace item={item} accent={c.petal} kind={playKind} compact={compact}/>}</div>}
+      <button type="button" className="fw-folio-card__open" onClick={direct || onOpen}>{details}</button>
+      {direct && onOpen && <button type="button" className="fw-folio-details" onClick={onOpen}>Details & tools</button>}
     </div>;
   }
 
@@ -784,8 +786,15 @@ export function ExpandDetailCard({ item: raw, onClose, saved: savedProp, onSave,
   // SAVE is controlled when `saved`/`onSave` are supplied (so a page can persist it);
   // otherwise it falls back to local state so demos/standalone use still works.
   const [savedLocal, setSavedLocal] = useState(false);
+  const [saving,setSaving] = useState(false);
+  const savePending = useRef(false);
   const saved = savedProp !== undefined ? savedProp : savedLocal;
-  const toggleSave = () => { if (onSave) onSave(!saved, item); else setSavedLocal((s) => !s); };
+  const toggleSave = async () => {
+    if(savePending.current)return;
+    if(!onSave){setSavedLocal(s=>!s);return;}
+    savePending.current=true;setSaving(true);
+    try{await onSave(!saved,item);}catch{ /* caller retains error/draft */ }finally{savePending.current=false;setSaving(false);}
+  };
   // Flower petals are decoration; pale petals cannot carry white action labels.
   // The selected folio keeps the original cover colourway, with readable semantic ink.
   const colourway = cwOf(item.cw);
@@ -808,7 +817,7 @@ export function ExpandDetailCard({ item: raw, onClose, saved: savedProp, onSave,
           <FloraCover title={item.title} category={item.category} colorway={item.cw} seed={item.id} height={288} radius={0} showTitle={false} animate idx={`xcov-${item.id}`} />
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 14px 0" }}>
             <button onClick={close} aria-label="Back" style={{ width: 40, height: 40, borderRadius: 999, background: "rgba(244,239,227,0.86)", border: `1px solid ${T.paperDeep}`, color: T.ink, display: "grid", placeItems: "center", cursor: "pointer", backdropFilter: "blur(4px)" }}><ArrowLeft size={19} /></button>
-            <button onClick={toggleSave} aria-label="Save" style={{ width: 40, height: 40, borderRadius: 999, background: "rgba(244,239,227,0.86)", border: `1px solid ${saved ? c.petal : T.paperDeep}`, color: saved ? c.petal : T.ink, display: "grid", placeItems: "center", cursor: "pointer", backdropFilter: "blur(4px)" }}>{saved ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}</button>
+            <button onClick={toggleSave} disabled={saving} aria-busy={saving} aria-label={saving ? "Saving" : "Save"} style={{ width: 40, height: 40, borderRadius: 999, background: "rgba(244,239,227,0.86)", border: `1px solid ${saved ? c.petal : T.paperDeep}`, color: saved ? c.petal : T.ink, display: "grid", placeItems: "center", cursor: "pointer", backdropFilter: "blur(4px)" }}>{saved ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}</button>
           </div>
           <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "40px 20px 16px", background: "linear-gradient(180deg, transparent, rgba(236,231,218,0.72) 55%, var(--paper,#ECE7DA))" }}>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase", color: c.petal }}><I size={13} /> {item.kind}</div>
@@ -908,7 +917,7 @@ export function ExpandDetailCard({ item: raw, onClose, saved: savedProp, onSave,
 
         {/* sticky primary actions */}
         <div style={{ position: "sticky", bottom: 0, left: 0, right: 0, padding: "12px 16px calc(14px + env(safe-area-inset-bottom))", background: "linear-gradient(180deg, transparent, var(--paper,#ECE7DA) 34%)", display: "flex", gap: 10, maxWidth: 460, margin: "0 auto" }}>
-          <button onClick={toggleSave} className="fw-ce-press" aria-label="Save" style={{ flex: "0 0 auto", display: "inline-flex", alignItems: "center", gap: 7, background: T.paperHi, border: `1px solid ${saved ? c.petal : T.paperDeep}`, color: saved ? c.petal : T.muted, borderRadius: 14, padding: "13px 15px", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>{saved ? <BookmarkCheck size={17} /> : <Bookmark size={17} />}{item.actions.length < 2 ? (saved ? " Saved" : " Save") : ""}</button>
+          <button onClick={toggleSave} disabled={saving} aria-busy={saving} className="fw-ce-press" aria-label={saving ? "Saving" : "Save"} style={{ flex: "0 0 auto", display: "inline-flex", alignItems: "center", gap: 7, background: T.paperHi, border: `1px solid ${saved ? c.petal : T.paperDeep}`, color: saved ? c.petal : T.muted, borderRadius: 14, padding: "13px 15px", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>{saved ? <BookmarkCheck size={17} /> : <Bookmark size={17} />}{item.actions.length < 2 ? (saved ? " Saved" : " Save") : ""}</button>
           {item.actions.map((a) => { const A = ICON[a.Icon] || ChevronRight; return (
             <button key={a.label} onClick={() => a.onClick?.(item)} className={a.primary ? "fw-ce-press fw-ce-primary" : "fw-ce-press"} style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, background: a.primary ? c.petal : T.paperHi, color: a.primary ? "#fff" : c.petal, border: a.primary ? "none" : `1px solid ${c.petal}`, borderRadius: 14, padding: "13px 12px", fontFamily: UI, fontSize: 13.5, fontWeight: 800, cursor: "pointer", boxShadow: a.primary ? `0 4px 16px ${c.petal}44` : "none" }}><A size={16} /> {a.label}</button>
           ); })}

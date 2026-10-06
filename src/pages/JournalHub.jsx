@@ -25,7 +25,8 @@ import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { pickProfile } from "@/utils/userProfile";
 import { format, parseISO } from "date-fns";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useExactJournalEntry } from "@/lib/lifestyleReturns";
 import { computeCycleDay } from "@/hooks/useCycleDay";
 import {
   Feather, Waves, Eye, Users, BarChart2, Lock, Hash, CalendarHeart, Moon,
@@ -172,6 +173,7 @@ function onThisDayEntries(entries, profile, todayCycleDay) {
 export default function JournalHub() {
   useEditorialFonts();
   const navigate = useNavigate();
+  const { search } = useLocation();
 
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -202,6 +204,8 @@ export default function JournalHub() {
   const [threadFilter, setThreadFilter] = useState(null);
   const [deleteErr, setDeleteErr] = useState(false);
 
+  const linkedEntry = useExactJournalEntry({ entity: base44.entities.JournalEntries, userId: user?.id, authLoading: loading, search, onOpen: setReadEntry });
+
 
   // ── init: auth + entries + profile (both guarded, never crash) ─────────────
   useEffect(() => {
@@ -213,7 +217,7 @@ export default function JournalHub() {
           base44.entities.JournalEntries.filter({ user_id: u.id }, "-created_date", 200).catch(() => []),
           base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
         ]);
-        setEntries(Array.isArray(data) ? data : []);
+        setEntries(Array.isArray(data) ? data.filter(entry => entry?.user_id === u.id) : []);
         setProfile(pickProfile(profiles));   // not [0] — see utils/userProfile
       } catch (err) {
         console.error("JournalHub init failed:", err);
@@ -365,6 +369,10 @@ export default function JournalHub() {
   return (
     <div style={{ ...PAPER_BG, minHeight: "100vh", fontFamily: SERIF, color: T.ink, paddingBottom: 120, position: "relative", overflowX: "hidden" }}>
       <InkFilter />
+      {["loading", "auth", "missing", "error"].includes(linkedEntry.status) && <div role={linkedEntry.status === "loading" ? "status" : "alert"} style={{ position: "relative", zIndex: 1, maxWidth: COL, margin: "18px auto", padding: "12px 18px", fontFamily: UI, fontSize: 13, lineHeight: 1.5 }}>
+        {linkedEntry.status === "loading" ? "Opening your note…" : linkedEntry.status === "auth" ? "Your note couldn’t open. Sign in to your account and try again." : linkedEntry.status === "missing" ? "That note isn’t available in your journal. It may have been removed, or this link belongs to another account." : "Your note couldn’t load. Try again."}
+        {linkedEntry.status === "error" && <button type="button" onClick={linkedEntry.retry} style={{ display: "block", minHeight: 44, color: T.ink, background: "transparent", border: 0, textDecoration: "underline" }}>Try again</button>}
+      </div>}
       {/* botanical page texture — one low-opacity vine per fold, clipped (no horizontal scroll),
           behind content, never over text (BRAND_IDENTITY §4/§6.2). */}
       <div aria-hidden style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>

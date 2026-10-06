@@ -11,6 +11,8 @@
 // checkpoint's discussion unlocks only when YOU say you've reached it → spoiler-safe AND
 // latecomer-safe. (Auto-unlock from live reader progress is a later refinement.)
 
+import { base44 } from "@/api/base44Client";
+
 export const SEED_PICK = {
   pick_key: "littlewomen-2026q3",
   gutenberg_id: "514",                 // Little Women — Louisa May Alcott (Project Gutenberg)
@@ -30,5 +32,24 @@ export const SEED_PICK = {
 
 // device-local self-attested progress (highest checkpoint index reached; -1 = none yet).
 // A checkpoint i is unlocked only when reached >= i → spoiler-safe, including checkpoint 0.
-export const clubReached = (pickKey) => { try { const v = localStorage.getItem("fw_club_" + pickKey); return v === null ? -1 : Number(v); } catch { return -1; } };
-export const setClubReached = (pickKey, idx) => { try { const cur = clubReached(pickKey); if (idx > cur) localStorage.setItem("fw_club_" + pickKey, String(idx)); } catch { /* ignore */ } };
+export const clubReached = (pickKey) => { try { const v = localStorage.getItem("fw_club_" + pickKey), idx = v === null ? -1 : Number(v); return Number.isInteger(idx) && idx >= -1 ? idx : -1; } catch { return -1; } };
+export const setClubReached = (pickKey, idx) => { try { const cur = clubReached(pickKey); if (Number.isInteger(idx) && idx >= 0 && idx > cur) localStorage.setItem("fw_club_" + pickKey, String(idx)); } catch { /* ignore */ } };
+
+// Never substitute another book on error or borrow the seed's spoiler prompts.
+export async function loadBookClubPick() {
+  const picks = await base44.entities.BookClubPick.filter({ active: true }, "-created_date", 1);
+  if (!Array.isArray(picks)) throw new Error("Couldn't load the book club.");
+  const pick = picks.find(row => row?.active !== false && row?.pick_key && row?.title);
+  if (!pick) {
+    if (picks.length) throw new Error("Couldn't identify the current club book.");
+    return { ...SEED_PICK, _origin: "seed" };
+  }
+  const rows = await base44.entities.ClubCheckpoint.filter({ pick_key: pick.pick_key }, "index", 150);
+  if (!Array.isArray(rows)) throw new Error("Couldn't load the club checkpoints.");
+  const indexes = new Set();
+  const checkpoints = rows.filter(row => {
+    if (row.pick_key !== pick.pick_key || !Number.isInteger(row.index) || row.index < 0 || !row.label || indexes.has(row.index)) return false;
+    indexes.add(row.index); return true;
+  }).sort((a, b) => a.index - b.index);
+  return { ...pick, gutenberg_id: pick.gutenberg_id ? String(pick.gutenberg_id) : null, checkpoints, _origin: "live" };
+}

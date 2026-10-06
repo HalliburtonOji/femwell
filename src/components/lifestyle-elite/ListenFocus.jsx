@@ -10,6 +10,7 @@ import { SERIF } from "@/components/journal/Editorial";
 import { C } from "@/components/brand/cleanTokens";
 import { Eyebrow, Title, Card as CleanCard, Summary, Foot } from "@/components/brand/cleanKit";
 import { SelectedRoomDetail } from "./SelectedLifestyleHeader";
+import { usePodcastPlayer } from "@/hooks/usePodcastPlayer";
 
 const durOf = (it) => {
   const m = (it?.meta || []).find((row) => /min|hr|:/.test(String(row?.[1] || "")));
@@ -29,8 +30,15 @@ function ListenCard({ eyebrow, title, accent = "sage", children, style, classNam
 }
 
 export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, presentation }) {
-  const featured = audioCards[0] || videoCards[0] || null;
-  const restAudio = audioCards.slice(featured && featured === audioCards[0] ? 1 : 0);
+  const player = usePodcastPlayer();
+  const current = presentation ? player?.currentEpisode : null;
+  const active = current && (audioCards.find(card=>card.id===current.id) || (current.audio_url ? {
+    id:current.id,type:"audio",title:current.title,audioSrc:current.audio_url,duration:current.duration_seconds,
+    sourceName:current.source_name,imageUrl:current.image_url,_raw:current,
+    meta:[["Headphones",current.source_name || "Podcast"]],body:[],actions:[],
+  } : null));
+  const featured = active || audioCards[0] || videoCards[0] || null;
+  const restAudio = audioCards.filter(card=>card.id!==featured?.id);
   const watches = presentation && featured === videoCards[0] ? videoCards.slice(1) : videoCards;
   const hasAny = featured || restAudio.length || videoCards.length;
 
@@ -54,7 +62,7 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, 
 
       {/* 1 · NOW — the featured listen, player-forward (plays inline, keeps going) */}
       {featured ? (
-        <ListenCard className="fw-selected-now" eyebrow="Start here" title={presentation && !audioCards.length ? "Today's watch" : "Today's listen"} accent="sage">
+        <ListenCard className="fw-selected-now" eyebrow={active ? player?.isPlaying ? "On air" : "Pick up your listen" : "Worth your headphones"} title={presentation && featured.type === "video" ? "Today's watch" : "Today's listen"} accent="sage">
           {presentation && <SelectedRoomDetail section="listen"/>}
           <CoverCard presentation={presentation} item={featured} onOpen={() => onOpen && onOpen(featured)} />
         </ListenCard>

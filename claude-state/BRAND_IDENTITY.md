@@ -881,6 +881,10 @@ The next pass thinks through **every section in minute detail**: reasoned conten
 
 Plans and labelled interaction studies remain in Ideas · Dev, optional depth behind a concise visual overview. Build Sky atoms first, then Read, Listen, Books conformance, Good life and Yours, carrying all current features forward. Main promotion still requires Halli's explicit go-ahead. The agreed requirement is detailed thinking and preservation; individual new layouts/features remain proposals until reviewed.
 
+### 10.5.18 FINISH THE WORK; CARRY THE EARLIER THINKING FORWARD — Halli, 6 October 2026
+
+Halli asks to check the previous research and brainstorms and finish. Reconcile the earlier garden, Petal × Star Press, reading-room, whole-life connectivity and section-detail work before completing the six working bodies in the selected Ideas demo. A planning workshop is not a completed feature. Preserve the approved headers, full content and tools; make consuming a known object direct, with optional details alongside it. Time promises use real duration; saved, planned, read and played are distinct acknowledged states. Every keep and plan returns to its actual source and edition when available. Missing sources remain visible, without fabricated progress or success. Layouts follow the activity of each room, not six copies of one decorated stack. Main aesthetic promotion remains held.
+
 ## 11. THE PER-PAGE BUILD LIFECYCLE — how EVERY page is built (Lifestyle = reference implementation · ✅ AGREED · Halli 2026-08-01) · v1
 > **This is the PROCESS, not just the product. Every future page goes through the EXACT lifecycle Lifestyle did — it does not merely inherit the visual tokens.** §6.8.2 gives the page *skeleton*; this gives the *order of operations*. It is load-bearing: skipping a step is how thin shells, faked shelves and DOM-only "green" got shipped before. **§11.0 holds the STANDING GATES that make the whole lifecycle self-enforcing — run them on every atom.** Then run all seven steps, in order, per page; the craft each step must meet lives in §12 (content) · §13 (interaction) · §14 (engineering) · §15 (QA).
 

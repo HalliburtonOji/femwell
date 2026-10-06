@@ -24,7 +24,7 @@ function ReadCard({ eyebrow, title, accent = "plum", children, style, className 
   );
 }
 
-export default function ReadFocus({ continueCards = [], articleCards = [], storyCards = [], phaseWord, onOpen, presentation }) {
+export default function ReadFocus({ continueCards = [], articleCards = [], storyCards = [], phaseWord, onOpen, onDetails, presentation }) {
   const hasAny = continueCards.length || articleCards.length || storyCards.length;
   if (!hasAny) {
     return (
@@ -46,7 +46,7 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
       {continueCards.length ? (
         <ReadCard className="fw-selected-resume" eyebrow="Pick up where you left off" title="Reading now" accent="plum">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {continueCards.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} onOpen={() => onOpen && onOpen(it)} />)}
+            {continueCards.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation ? () => onOpen?.(it) : undefined} consumeLabel={it._continue ? "Continue" : "Read"} />)}
           </div>
         </ReadCard>
       ) : null}
@@ -55,15 +55,15 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
       {featured ? (
         <ReadCard className="fw-selected-lead" eyebrow={presentation ? "On the reading desk" : "Chosen for you today"} title="Today's read" accent="crimson">
           {presentation && <SelectedRoomDetail section="read"/>}
-          <CoverCard presentation={presentation} item={featured} onOpen={() => onOpen && onOpen(featured)} />
+          <CoverCard presentation={presentation} item={featured} onOpen={() => (onDetails || onOpen)?.(featured)} onConsume={presentation ? () => onOpen?.(featured) : undefined} consumeLabel={featured._continue ? "Continue" : "Read"} />
         </ReadCard>
       ) : null}
 
       {/* 3 · FRESH READS — the ranked feed */}
       {restArticles.length ? (
-        <ReadCard className="fw-selected-fresh" eyebrow="For a spare ten minutes" title="Fresh reads & guides" accent="plum">
+        <ReadCard className="fw-selected-fresh" eyebrow="A fresh page" title="Fresh reads & guides" accent="plum">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {restArticles.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />)}
+            {restArticles.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation ? () => onOpen?.(it) : undefined} consumeLabel={it._continue ? "Continue" : "Read"} />)}
           </div>
         </ReadCard>
       ) : null}
@@ -72,7 +72,7 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
       {storyCards.length ? (
         <ReadCard className="fw-selected-fiction" eyebrow="Get lost in one" title="Stories & fiction" accent="crimson">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {storyCards.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />)}
+            {storyCards.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation ? () => onOpen?.(it) : undefined} consumeLabel={it._continue ? "Continue" : "Read"} />)}
           </div>
         </ReadCard>
       ) : null}

@@ -31,6 +31,11 @@ import {
   Wind, ChevronRight, ChevronLeft, Music2, Compass, Loader, ExternalLink, Clock, Coffee, Sunset, Check, Star, Sprout, Leaf, Coins, X,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { mergeSavedCollections, readOwnerSavedRows } from "@/lib/savedCollections";
+import { parseSavedMeta } from "@/lib/savedItems";
+import { authoredJoyId, timeFit, rankedReads, continuePositions, gutenbergReaderHref } from "./finishLifestyle";
+import LifestylePlanSheet from "./LifestylePlanSheet";
+import { FloraAudio } from "@/components/brand/expandCards";
 import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
 import { FocusLayout } from "@/components/lifestyle-elite/FocusLayouts";
 import SkyFocus from "@/components/lifestyle-elite/SkyFocus";
@@ -202,17 +207,7 @@ const phaseTagsOf = (i) => (Array.isArray(i?.phase_tags) ? i.phase_tags : [])
 // device-locally as `fw_reader_pos_{bookId}` = {chapterIndex, pageInChapter, paragraphIndex, ts}
 // (DailyStoryReader). We read those back, newest first, so the Read board can offer "pick up
 // where you left off" — no new entity, no server state, just her own device.
-const CONTINUE_PREFIX = "fw_reader_pos_";
-const readContinuePositions = (max = 3) => {
-  try {
-    return Object.keys(localStorage)
-      .filter((k) => k.startsWith(CONTINUE_PREFIX))
-      .map((k) => { try { return { bookId: k.slice(CONTINUE_PREFIX.length), ...JSON.parse(localStorage.getItem(k) || "{}") }; } catch { return null; } })
-      .filter((p) => p && p.bookId)
-      .sort((a, b) => (Number(b.ts) || 0) - (Number(a.ts) || 0))
-      .slice(0, max);
-  } catch { return []; }
-};
+const readContinuePositions = () => continuePositions(localStorage);
 
 // ── §6.8.2 band 3+4 — Jess's WRITTEN read for Lifestyle. Signal-driven from what's actually
 // loaded (her reading, her saves, today's chapter, her sky, the phase) and rotates every load.
@@ -501,6 +496,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   const skySavedCount = !skySavesLoading && !skySavesError ? keptSkyLessons.filter(row=>row.user_id===user?.id).length : 0;
   const [profile, setProfile] = useState(null);
   const [resolvedKeeps, setResolvedKeeps] = useState([]);
+  const [archiveKeeps,setArchiveKeeps] = useState([]);
   const [keepsError, setKeepsError] = useState("");
   const [keepsRevision, setKeepsRevision] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -542,6 +538,18 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   const [heroCard, setHeroCard] = useState(() => _lifeHeroCard); // the controller-hero’s active chip
   const [toast, setToast] = useState(null);
   const sliderRef = useRef(null);
+  const savePending = useRef(false);
+  const [planRequest, setPlanRequest] = useState(null);
+  const planResolve = useRef(null);
+  const ownerRef = useRef(null);
+  ownerRef.current = user?.id;
+  const startPlan = useCallback(arg => {
+    if (!ownerRef.current) { setToast("Sign in to plan a time"); return Promise.resolve(false); }
+    if (planResolve.current) return Promise.resolve(false);
+    return new Promise(resolve => { planResolve.current = resolve; setPlanRequest(arg); });
+  }, []);
+  const finishPlan = result => { setPlanRequest(null); const resolve = planResolve.current; planResolve.current = null; resolve?.(result); };
+  useEffect(() => () => { planResolve.current?.(false); }, []);
 
   const flash = (m) => { setToast(m); window.clearTimeout(flash._t); flash._t = window.setTimeout(() => setToast(null), 2300); };
 
@@ -581,23 +589,33 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
     return pool.filter(i => savedIds.includes(i.id) && !seen.has(i.id) && seen.add(i.id));
   }, [items, savedIds, selectedPresentation, resolvedKeeps]);
   useEffect(() => {
-    let cancelled = false;
-    if (!selectedPresentation || !user?.id) { setResolvedKeeps([]); setKeepsError(""); return; }
-    setResolvedKeeps([]); setKeepsError("");
-    const missing = savedIds.filter(id => !items.some(item => item.id === id));
-    (async () => {
-      const found = [];
-      let failed = false;
-      for (let start = 0; start < missing.length; start += 6) {
-        const batch = await Promise.allSettled(missing.slice(start, start + 6).map(id => withTimeout(base44.entities.LifestyleItems.filter({id}, undefined, 1), 6000, "kept-item")));
-        if (cancelled) return;
-        batch.forEach(result => { if (result.status === "fulfilled") { const row = result.value?.[0]; if (row?.title) found.push(row); else failed = true; } else failed = true; });
+    let cancelled=false;
+    if(!selectedPresentation || !user?.id) { setResolvedKeeps([]);setArchiveKeeps([]);setKeepsError("");return; }
+    setKeepsError("");
+    (async()=>{
+      let physical=[], failed=false;
+      try { physical=await readOwnerSavedRows(user.id); } catch { failed=true; }
+      if(cancelled)return;
+      physical=physical.filter(row=>row.user_id===user.id);
+      const ids=[...new Set([...savedIds,...physical.filter(row=>row.item_type==="LIFESTYLE" && parseSavedMeta(row)?.kind!=="sky-lesson").map(row=>row.item_id)])];
+      const resolutions=new Map();
+      for(let start=0;start<ids.length;start+=6){
+        const batch=await Promise.allSettled(ids.slice(start,start+6).map(async id=>{
+          const cached=items.find(item=>item.id===id);
+          return cached || (await withTimeout(base44.entities.LifestyleItems.filter({id},undefined,1),6000,"kept-item"))?.[0] || null;
+        }));
+        if(cancelled)return;
+        batch.forEach((result,index)=>resolutions.set(ids[start+index],result.status==="fulfilled" ? {item:result.value} : {error:true}));
       }
-      if (!cancelled) { setResolvedKeeps(found); setKeepsError(failed ? "Some keeps couldn't open here. Their saved references are still safe." : ""); }
+      if(cancelled)return;
+      const merged=mergeSavedCollections(physical,{...profile,user_id:user.id,saved_item_ids:savedIds},resolutions);
+      setResolvedKeeps([...resolutions.values()].map(value=>value.item).filter(Boolean));
+      setArchiveKeeps(merged.filter(row=>parseSavedMeta(row)?.kind!=="sky-lesson"));
+      setKeepsError(failed ? "Some keeps couldn’t load. Your saved references are still safe." : "");
     })();
-    return () => { cancelled = true; };
-  }, [selectedPresentation, user?.id, savedIds, items, keepsRevision]);
-  const isSaved = useCallback((id) => savedIds.includes(id), [savedIds]);
+    return()=>{cancelled=true;};
+  },[selectedPresentation,user?.id,savedIds,items,keepsRevision,profile]);
+  const isSaved = useCallback((id) => savedIds.includes(id) || archiveKeeps.some(keep=>keep.item_id===id), [savedIds,archiveKeeps]);
 
   // ── loaders (real, guarded — same calls as Lifestyle.jsx) ─────────────────
   // Essential content (real entities) — this gates the initial render. Kept off the external
@@ -636,7 +654,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   // guarded; on any failure `feed` stays null and the deck uses the page's loaded reads.
   const loadFeed = useCallback(async (phase) => {
     try {
-      const res = await withTimeout(base44.functions.invoke("getLifestyleFeed", { mode: "for_you", page: 0, page_size: 12, phase: phase || "" }), 6000, "feed");
+      const res = await withTimeout(base44.functions.invoke("getLifestyleFeed", { mode: "for_you", page: 0, page_size: 12, phase: phase || "" }), 14000, "feed");
       const rows = res?.data?.items || res?.items || [];
       const reads = (Array.isArray(rows) ? rows : []).filter((r) => r && r.title && /ARTICLE|STORY|GUIDE|FICTION/.test(String(r.content_type || "").toUpperCase()));
       if (reads.length) setFeed(reads);
@@ -655,14 +673,14 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
     // the wrong id-space, not a missing row). So we only resolve real LifestyleItems ids here;
     // daily + Gutenberg positions have their own homes and never hit this query.
     const isLsId = (id) => { const s = String(id || ""); return s.length >= 12 && !s.startsWith("daily_") && !/^\d{1,9}$/.test(s); };
-    const dbPositions = positions.filter((p) => isLsId(p.bookId));
+    const dbPositions = positions.filter((p) => isLsId(p.bookId)).slice(0, 24);
     if (!dbPositions.length) { setContinueItems([]); return; }
     try {
       const rows = await Promise.all(dbPositions.map((p) =>
         withTimeout(base44.entities.LifestyleItems.filter({ id: p.bookId }, undefined, 1), 6000, "continue")
           .then((r) => (Array.isArray(r) ? r[0] : null)).catch(() => null)
       ));
-      setContinueItems(dbPositions.map((p, i) => (rows[i] && rows[i].title ? { item: rows[i], pos: p } : null)).filter(Boolean));
+      setContinueItems(dbPositions.map((p, i) => (rows[i] && rows[i].title ? { item: rows[i], pos: p } : null)).filter(Boolean).slice(0, 3));
     } catch { setContinueItems([]); }
   }, []);
 
@@ -755,29 +773,30 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
 
   // ── SAVE toggle (persists to UserProfile.saved_item_ids — optimistic + rollback) ──
   const toggleSave = useCallback(async (item) => {
-    if (!item?.id) return;
-    const id = item.id;
-    const was = savedIds.includes(id);
-    const next = was ? savedIds.filter((x) => x !== id) : Array.from(new Set([...savedIds, id]));
-    setSavedIds(next);                                  // optimistic
-    flash(was ? "Removed from saved" : "Saved");
-    if (!was) recordAction(item, "save");               // teach the feed she liked this (on save only)
-    if (!user?.id) { return; }                          // signed-out: optimistic only (no persistence path)
+    if (!item?.id || savePending.current) return false;
+    if (!user?.id) { flash("Sign in to keep this find"); return false; }
+    const owner = user.id, was = isSaved(item.id);
+    const next = was ? savedIds.filter(id => id !== item.id) : [...new Set([...savedIds, item.id])];
+    savePending.current = true;
     try {
-      // Use the profile already loaded at init — re-filtering here would be a redundant read that
-      // can hang behind the page's live subscriptions (saturated connection pool), so the write
-      // never fires. Go straight to update() with the known row id.
-      if (profile?.id) {
-        await withTimeout(base44.entities.UserProfile.update(profile.id, { saved_item_ids: next }), 6000, "save");
-      } else {
-        const created = await withTimeout(base44.entities.UserProfile.create({ user_id: user.id, user_email: user.email, saved_item_ids: next }), 6000, "save");
-        if (created?.id) setProfile(created);
+      const currentUser=await base44.auth.me();
+      if(currentUser?.id!==owner) throw new Error("Account changed");
+      if(was) {
+        const rows=await base44.entities.SavedItems.filter({user_id:owner,item_type:"LIFESTYLE",item_id:item.id});
+        for(const row of rows.filter(row=>row.user_id===owner)) await base44.entities.SavedItems.delete(row.id);
       }
-    } catch {
-      setSavedIds(savedIds);                            // rollback to prior set
-      flash("Couldn't update — try again");
-    }
-  }, [savedIds, user, profile, recordAction]);
+      const result = profile?.id
+        ? await base44.entities.UserProfile.update(profile.id, { saved_item_ids: next })
+        : await base44.entities.UserProfile.create({ user_id: owner, user_email: user.email, saved_item_ids: next });
+      if (!result?.id || ownerRef.current !== owner) return false;
+      setProfile(p => ({ ...p, ...result, saved_item_ids: next })); setSavedIds(next);
+      setArchiveKeeps(keeps=>was ? keeps.filter(keep=>keep.item_id!==item.id) : keeps);
+      flash(was ? "Removed from saved" : "Kept for later");
+      if (!was) recordAction(item, "save");
+      return true;
+    } catch { if (ownerRef.current === owner) { flash("Couldn't update your keeps — try again"); setKeepsRevision(n=>n+1); } return false; }
+    finally { savePending.current = false; }
+  }, [savedIds, user, profile, recordAction,isSaved]);
 
   // ── Sky diary → SkyNote.create (real persistence; optimistic + rollback) ──
   const addSkyNote = useCallback(async (text) => {
@@ -797,7 +816,8 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   // One evening block for a book, or the club's whole six weeks as one row per checkpoint. Rides the
   // existing entity (no planner dispatcher exists); source+ref let the planner deep-link back.
   const scheduleReading = useCallback(async (arg) => {
-    if (!user?.id || !arg) return;
+    if (!user?.id || !arg) return false;
+    if (selectedPresentation) return startPlan({...arg,source:"books"});
     const mk = (title, date, ref, notes, time) => base44.entities.PlannerItems.create({
       user_id: user.id, title, date, time: time || "21:00", category: "personal", repeat: "once",
       notes, source: "books", ref, is_completed: false, created_at: nowISO(), updated_at: nowISO(),
@@ -816,29 +836,31 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
         flash("Tonight at 9 — it's in your planner");
       }
     } catch { flash("Couldn't reach your planner just now"); }
-  }, [user, flash]);
+  }, [user, flash, selectedPresentation, startPlan]);
 
   // ── A day for you → PlannerItems.create (a gentle planned day-off block) ──
   const savePlannerDay = useCallback(async (title) => {
     if (!user?.id) { flash("Sign in to save it to your planner"); return false; }
+    if (selectedPresentation) return startPlan({title:title || A_DAY.title,source:"lifestyle",ref:`joy:${authoredJoyId("aday",title || A_DAY.title)}`});
     if (!selectedPresentation) flash("Saved to your planner");
     try {
       await withTimeout(base44.entities.PlannerItems.create({ user_id: user.id, title: title || A_DAY.title, date: todayKey(), category: "wellbeing", notes: "A day for you — guilt-free, from Lifestyle.", is_completed: false, created_at: nowISO(), updated_at: nowISO() }), 6000, "planner-day");
       if (selectedPresentation) flash("Planned — it's in your planner");
       return true;
     } catch { flash("Couldn't save — try again"); return false; }
-  }, [user, selectedPresentation]);
+  }, [user, selectedPresentation, startPlan]);
 
   // ── Try this → PlannerItems.create (a soft intention) ──
   const saveTryThis = useCallback(async (title) => {
     if (!user?.id) { flash(selectedPresentation ? "Sign in to keep this in your planner" : `Nice — "${title}"`); return false; }
+    if (selectedPresentation) return startPlan({title,source:"lifestyle",ref:`joy:${authoredJoyId("try",title)}`});
     if (!selectedPresentation) flash(`Saved — "${title}"`);
     try {
       await withTimeout(base44.entities.PlannerItems.create({ user_id: user.id, title: title, date: todayKey(), category: "wellbeing", notes: "A soft intention from Lifestyle — try it when you fancy it.", is_completed: false, created_at: nowISO(), updated_at: nowISO() }), 6000, "planner-try");
       if (selectedPresentation) flash(`Planned — "${title}"`);
       return true;
     } catch { flash("Couldn't save — try again"); return false; }
-  }, [user, selectedPresentation]);
+  }, [user, selectedPresentation, startPlan]);
 
   // good-life do-it small cards (piece D): tick in place (optimistic) + the REAL write.
   // awe/tea are soft intentions (saveTryThis); quiet hour is a wellbeing day (savePlannerDay).
@@ -847,9 +869,9 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
     if (pendingIntentions.current.has(key)) return;
     if (!selectedPresentation) setGLDone(d => d[key] ? d : {...d,[key]:true});
     pendingIntentions.current.add(key);
-    try { const saved = await (kind === "day" ? savePlannerDay(title) : saveTryThis(title)); if (selectedPresentation && saved) setGLDone(d=>({...d,[key]:true})); }
+    try { const saved = await (selectedPresentation ? startPlan({title,source:"lifestyle",ref:`joy:${key}`}) : kind === "day" ? savePlannerDay(title) : saveTryThis(title)); if (selectedPresentation && saved) setGLDone(d=>({...d,[key]:true})); }
     finally { pendingIntentions.current.delete(key); }
-  }, [savePlannerDay, saveTryThis, selectedPresentation]);
+  }, [savePlannerDay, saveTryThis, selectedPresentation,startPlan]);
 
   // #4 — open a book at OUR reader standard, IN PLACE (no navigation to a slow route).
   // FemWell fiction is already loaded (its chapters live on the row), so we mount the
@@ -859,7 +881,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
     if (!it) return;
     recordAction(it, "open");
     const raw = it._raw || it;
-    if (it._book === "gutenberg" || it.gutenbergId) { window.location.assign(`/BookReader?gutenberg_id=${it._gutenbergId || raw._gutenbergId}`); return; }
+    if (it._book === "gutenberg" || it.gutenbergId) { const href=gutenbergReaderHref(it); if(href)window.location.assign(href);else flash("This book’s reader couldn’t open. Try another edition."); return; }
     setBookReader(raw);
   }, [recordAction]);
 
@@ -913,8 +935,8 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
     const longest = (arr) => [...(arr || [])].sort((a, b) => (b.duration_seconds || 0) - (a.duration_seconds || 0));
     // The new demo's time promise uses measured durations. Longer/unknown items stay in their sections.
     const within = (rows, seconds) => byDur(rows).find(row => Number(row.duration_seconds) > 0 && Number(row.duration_seconds) <= seconds) || null;
-    if (bandKey === "few") return { read: byDur(grouped.article)[0] || grouped.guide?.[0] || null, listen: livingDemo ? within([...(grouped.audio || []), ...(grouped.video || [])], 300) : grouped.audio?.[0] || grouped.video?.[0] || null };
-    if (bandKey === "fifteen") return { read: grouped.article?.[1] || grouped.article?.[0] || null, listen: livingDemo ? within(grouped.audio, 900) : grouped.audio?.[0] || null };
+    if (bandKey === "few") return { read: livingDemo ? timeFit([...(grouped.article || []), ...(grouped.guide || [])],300) : byDur(grouped.article)[0] || grouped.guide?.[0] || null, listen: livingDemo ? within([...(grouped.audio || []), ...(grouped.video || [])], 300) : grouped.audio?.[0] || grouped.video?.[0] || null };
+    if (bandKey === "fifteen") return { read: livingDemo ? timeFit([...(grouped.article || []), ...(grouped.guide || [])],900) : grouped.article?.[1] || grouped.article?.[0] || null, listen: livingDemo ? within(grouped.audio, 900) : grouped.audio?.[0] || null };
     return { read: grouped.story?.[0] || longest(grouped.article)[0] || null, listen: longest(grouped.audio)[0] || grouped.video?.[0] || null };
   }, [grouped, livingDemo]);
 
@@ -941,7 +963,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
     // Audio (piece #3): a SHORT summary — the flora player IS the content, not a wall of text.
     summary: (type === "audio" ? shortSummary(r.summary || r.lede) : stripHtml(r.summary || r.why_it_matters || "")) || undefined,
     category: r.category || undefined,
-    meta: [["Clock", durLabel(r) || ((type === "audio" || type === "video") ? "A short listen" : "A few minutes")], ["BookOpen", r.source_name || r.author_name || "FemWell Editorial"]],
+    meta: [["Clock", durLabel(r) || "Duration unavailable"], ["BookOpen", r.source_name || r.author_name || "FemWell Editorial"]],
     chips: [r.category, r.emotional_tag].filter(Boolean).slice(0, 3),
     // audio: no prose body (the player carries it); everything else gets its real body (piece G)
     body: type === "audio" ? [] : g_body,
@@ -977,23 +999,23 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
     };
   }, [openItem, openExternal, openBook]);
 
-  const articleCards = useMemo(() => [...(grouped.article || []), ...(grouped.guide || [])].slice(0, 6).map((r) => rowCard(r, "article")), [grouped, rowCard]);
+  const articleCards = useMemo(() => rankedReads(selectedPresentation ? (feed || []).filter(r=>["article","guide"].includes(lfTypeOf(r))) : [], [...(grouped.article || []), ...(grouped.guide || [])]).slice(0, 6).map((r) => rowCard(r, "article")), [grouped, rowCard, selectedPresentation, feed]);
   const storyCards = useMemo(() => (grouped.story || []).slice(0, 6).map((r) => rowCard(r, "daily_story")), [grouped, rowCard]);
   // CONTINUE READING cards — lead the Read board with what she's part-way through. The eyebrow
   // says "Continue reading", the meta says where she is, and tapping resumes IN PLACE (the same
   // immersive reader as #4, which restores her saved position from fw_reader_pos_{bookId}).
   const continueCards = useMemo(() => continueItems.map(({ item, pos }) => {
     const ch = Number(pos?.chapterIndex) || 0;
-    const where = ch > 0 ? `Chapter ${ch + 1}` : "Back to the beginning";
+    const where = pos?.kind === "article" ? "Your saved place · this device" : ch > 0 ? `Chapter ${ch + 1} · this device` : "Your saved place · this device";
     return {
       ...rowCard(item, CARD_TYPE_OF(item)),
       kind: "Continue reading", overline: "Continue reading", cw: "gold",
       meta: [["Book", where], ["Clock", "Pick up where you left off"]],
       chips: ["reading now"],
       _continue: item,
-      actions: [{ label: "Continue reading", Icon: "Book", primary: true, onClick: () => openBook(item) }],
+      actions: [{ label: "Continue reading", Icon: "Book", primary: true, onClick: () => pos?.kind === "article" ? openItem(item) : openBook(item) }],
     };
-  }), [continueItems, rowCard, openBook]);
+  }), [continueItems, rowCard, openBook, openItem]);
   // ── LISTEN — the REAL podcast feature, wired at last ─────────────────────────────────────
   // Correction (2026-07-17): my earlier "0 audio" measured LifestyleItems media_type only. The
   // podcast subsystem was always real — 12 curated, ACTIVE sources with live RSS feeds
@@ -1112,15 +1134,15 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
     // rotate a fresh handful of "a day for you" ideas + "try this" joys each day (Track A)
     const dayPool = [{ title: A_DAY.title, line: A_DAY.line }, ...A_DAY.alts.map((a) => ({ title: a, line: "A day that's just yours — guilt-free." }))];
     const aday = rotateDaily(dayPool, 3)
-      .map((d, i) => ({
-        id: `aday-${i}`, type: "ritual", title: d.title, subtitle: d.line,
+      .map((d) => ({
+        id: authoredJoyId("aday", d.title), type: "ritual", title: d.title, subtitle: d.line,
         meta: [["Sun", "A day for you"], ["Heart", "No streaks, no pressure"]], chips: ["a day for you"],
         body: ["Leisure is the point — this lands softly in your planner, and nothing nags you if the day goes another way."],
         why: whyFor(d.title), doable: { label: "Save it for the day", title: d.title, kind: "day" },
         actions: [{ label: "Save it for the day", Icon: "Star", primary: true, onClick: () => { savePlannerDay(d.title); setExpanded(null); } }],
       }));
-    const trys = rotateDaily(TRY_THIS, 3).map((t, i) => ({
-      id: `try-${i}`, type: "ritual", title: t.title, subtitle: "Small, doable, just for today.", cw: t.cw,
+    const trys = rotateDaily(TRY_THIS, 3).map((t) => ({
+      id: authoredJoyId("try", t.title), type: "ritual", title: t.title, subtitle: "Small, doable, just for today.", cw: t.cw,
       meta: [["Wind", "A small thing"], ["Heart", "No streaks"]], chips: ["try this"],
       body: ["Tap to keep it — it lands softly in your planner. Try it when you fancy it; leave it if you don't."],
       why: whyFor(t.title), doable: { label: "Keep it for today", title: t.title, kind: "try" },
@@ -1132,16 +1154,30 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
     // two rotating whole-life slips + the gentle phase-tinted line (kept dynamic, a gentle few)
     const slips = [
       ...rotateDaily(PERMISSION_SLIPS, 2),
-      phaseKey ? `Your ${phaseLabel(phaseKey).toLowerCase()} week asks for a gentler pace. That's not falling behind.` : "A gentler pace today isn't falling behind.",
+      selectedPresentation ? "You don’t have to make a project of your day off." : phaseKey ? `Your ${phaseLabel(phaseKey).toLowerCase()} week asks for a gentler pace. That's not falling behind.` : "A gentler pace today isn't falling behind.",
     ];
-    return slips.map((sl, i) => ({
-      id: `slip-${i}`, type: "quote", title: sl, subtitle: "A permission slip, not a to-do.",
+    return slips.map((sl) => ({
+      id: authoredJoyId("slip", sl), type: "quote", title: sl, subtitle: "A permission slip, not a to-do.",
       meta: [["Heart", "Permission"]], chips: ["permission"], quote: { text: sl, attrib: "FemWell" },
       body: ["No streaks here — leisure is the point, and guilt isn't invited."],
       why: whyFor(sl), doable: { label: "Book a quiet hour", title: "A quiet hour, just for you", kind: "day" },
-      actions: [{ label: "Book a quiet hour", Icon: "Moon", primary: true, onClick: () => { savePlannerDay("A quiet hour, just for you"); setExpanded(null); } }],
+      actions: [{ label: "Book a quiet hour", Icon: "Moon", primary: true, onClick: () => { selectedPresentation ? startPlan({title:"A quiet hour, just for you",source:"lifestyle",ref:`joy:${authoredJoyId("slip",sl)}`}) : savePlannerDay("A quiet hour, just for you"); setExpanded(null); } }],
     }));
-  }, [phaseKey, savePlannerDay]);
+  }, [phaseKey, savePlannerDay,selectedPresentation,startPlan]);
+  const handledJoy = useRef(null);
+  useEffect(()=>{
+    if(!livingDemo || focusSection!=="good")return;
+    const wanted=new URLSearchParams(window.location.search).get("joy");
+    if(!wanted || handledJoy.current===wanted)return;
+    const current=[...ritualCards,...permissionCards].find(card=>card.id===wanted);
+    const sources=[{kind:"aday",title:A_DAY.title},{kind:"aday",title:"A quiet hour, just for you"},{kind:"slip",title:"You don’t have to make a project of your day off."},...A_DAY.alts.map(title=>({kind:"aday",title})),...TRY_THIS.map(row=>({kind:"try",title:row.title})),...PERMISSION_SLIPS.map(title=>({kind:"slip",title})),...TIME_BANDS.map(band=>({kind:"try",title:band.make.title}))];
+    const source=sources.find(row=>authoredJoyId(row.kind,row.title)===wanted);
+    handledJoy.current=wanted;
+    if(current)setGLFace({slip:current});
+    else if(source)setGLFace({slip:{id:wanted,type:source.kind==="slip" ? "quote" : "ritual",title:source.title,why:whyFor(source.title),doable:{label:"Plan a time",title:source.kind==="slip" ? "A quiet hour, just for you" : source.title,kind:["aday","slip"].includes(source.kind) ? "day" : "try"}}});
+    else flash("That activity has changed. Your plan is still in Planner.");
+  },[livingDemo,focusSection,ritualCards,permissionCards]);
+
   // ── THE "FOR YOU" DECK (pass d) — a taste of EVERYTHING, not a reads list ────────────────
   // One personalised pick from a DIFFERENT section each: Story · Read · Listen & watch · Sky ·
   // Books · The good life. Ranked by getLifestyleFeed (her interests + what she's opened/saved
@@ -1235,11 +1271,17 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
     (savedItems || []).forEach((i) => { const t = CARD_TYPE_OF(i); (g[t] = g[t] || []).push(i); });
     return g;
   }, [savedItems]);
-  const savedCards = useMemo(() =>
-    SAVED_ORDER.flatMap((t) => savedCollections[t] || []).concat(
+  const savedCards = useMemo(() => selectedPresentation ? archiveKeeps.map(keep => {
+    const raw=keep._lifestyleItem;
+    const card=raw ? rowCard(raw,CARD_TYPE_OF(raw)) : {id:keep.item_id || keep.id,type:"keep",title:keep.title || "A kept find",body:[keep.preview_text].filter(Boolean),meta:[["Bookmark",keep.item_type]],actions:[]};
+    const date=keep.created_at || keep.created_date;
+    return {...card,_keep:keep,subtitle:keep._unavailable || card.subtitle,
+      meta:[...(card.meta || []),...(date ? [["Calendar",new Date(date).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})]] : [])],
+      actions:keep._unavailable ? [{label:"Retry source",primary:true,onClick:()=>setKeepsRevision(n=>n+1)}] : keep._href && !raw ? [{label:"Open source",primary:true,onClick:()=>window.location.assign(keep._href)}] : card.actions};
+  }) : SAVED_ORDER.flatMap((t) => savedCollections[t] || []).concat(
       (savedItems || []).filter((i) => !SAVED_ORDER.includes(CARD_TYPE_OF(i)))
     ).slice(0, selectedPresentation ? undefined : 10).map((r) => rowCard(r, CARD_TYPE_OF(r))),
-  [savedCollections, savedItems, rowCard, selectedPresentation]);
+  [savedCollections, savedItems, rowCard, selectedPresentation, archiveKeeps]);
   const savedSummary = useMemo(() => {
     const c = { read: 0, listen: 0, watch: 0, book: 0 };
     (savedItems || []).forEach((i) => { const t = CARD_TYPE_OF(i); if (t === "audio") c.listen++; else if (t === "video") c.watch++; else if (t === "book") c.book++; else c.read++; });
@@ -1265,8 +1307,19 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   }, [phaseFeed, items, story, phaseKey, rowCard]);
 
   // save from inside an expanded card → the REAL persistence + the feed's learning loop
-  const isCardSaved = useCallback((it) => !!(it?._raw?.id && savedIds.includes(it._raw.id)), [savedIds]);
-  const onCardSave = useCallback((_next, it) => { if (it?._raw) toggleSave(it._raw); }, [toggleSave]);
+  const isCardSaved = useCallback((it) => !!it?._keep || !!(it?._raw?.id && isSaved(it._raw.id)), [isSaved]);
+  const onCardSave = useCallback(async (_next, it) => {
+    if(it?._raw || (it?._keep?.item_type==="LIFESTYLE" && it._keep.item_id))return toggleSave(it._raw || {id:it._keep.item_id});
+    if(!it?._keep){flash("This source has no saveable item yet");return false;}
+    if(savePending.current || !user?.id)return false;
+    savePending.current=true;
+    try{
+      if((await base44.auth.me())?.id!==user.id)throw new Error("Account changed");
+      for(const row of (it._keep._savedRecords || []).filter(row=>row.user_id===user.id))await base44.entities.SavedItems.delete(row.id);
+      setArchiveKeeps(rows=>rows.filter(row=>row.id!==it._keep.id));flash("Removed from your keeps");return true;
+    }catch{flash("Couldn’t update your keeps — try again");setKeepsRevision(n=>n+1);return false;}
+    finally{savePending.current=false;}
+  }, [toggleSave,user]);
 
   // ── CHIP-FOCUS wiring (only live when enableFocus) ────────────────────────────────────────────
   // chip id → { the board index it collapses to, its display label, the For-you sections it keeps }.
@@ -1310,13 +1363,16 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   const forYouShown = focus ? forYouItems.filter((it) => focus.forYou.includes(it.forYouSection)) : forYouItems;
 
   // a continue-card resumes IN PLACE; everything else opens its expand.
-  const openReadCard = (it) => (it._continue ? openBook(it._continue) : setExpanded(it));
+  const openReadCard = (it) => {
+    if (it._continue) return lfTypeOf(it._continue) === "book" ? openBook(it._continue) : openItem(it._continue);
+    return selectedPresentation && it._raw ? openItem(it._raw) : setExpanded(it);
+  };
   const choose = (label, items, open = setExpanded, empty) => ({ label, items, open, empty });
   const actionSavedCards = savedItems.map((item) => rowCard(item, CARD_TYPE_OF(item)));
   const sectionActions = {
-    read: [choose("Choose a read", [...articleCards, ...storyCards], openReadCard), choose("Saved reads", actionSavedCards.filter((i) => ["article", "daily_story"].includes(i.type)), openReadCard, "No saved reads yet. Save a piece you enjoy and it will appear here.")],
+    read: [continueCards[0] ? {label:"Continue reading",run:()=>openReadCard(continueCards[0])} : choose("Choose a read", [...articleCards, ...storyCards], openReadCard), choose("Saved reads", actionSavedCards.filter((i) => ["article", "daily_story"].includes(i.type)), openReadCard, "No saved reads yet. Save a piece you enjoy and it will appear here.")],
     listen: [choose("Choose a listen", audioCards), choose("Choose a watch", videoCards)],
-    books: [{ label: "Today's chapter", run: () => setChapterOpen(true) }, choose("Choose a book", [...shelfBookCards, ...classicCards])],
+    books: [{ label: "Today's chapter", run: () => { if(selectedPresentation && story){setReaderStart(storyPick?.index ?? 0);setReaderOpen(true);}else setChapterOpen(true);} }, choose("Choose a book", [...shelfBookCards, ...classicCards])],
     good: [{ label: "Time for yourself", description: "Choose the time you have, then open a suggestion. Saving closes this picker and shows confirmation on the page.", content: (afterClose) => <TimePickerLens presentation={selectedPresentation} pickFor={pickFor} isSaved={isSaved} onSave={(it) => afterClose(toggleSave, it)} onOpen={(it) => afterClose(openItem, it)} onTry={(title) => afterClose(saveTryThis, title)} /> }, choose("A small joy", [...ritualCards, ...permissionCards], (it) => setGLFace({ slip: it }))],
     yours: [livingDemo ? {label:"Open your saves",run:()=>window.location.assign("/Saved?tab=LIFESTYLE")} : choose("Open your saves", actionSavedCards), choose("Continue reading", continueCards, openReadCard, "No reading in progress yet. Start a book and your place will appear here.")],
     sky: [skyActionState.hasChart ? { label: "Ask the sky", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "ask" }) } : { label: "Set up your sky", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "chart" }) }, skyActionState.hasChart ? { label: "Edit your chart", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "chart" }) } : { label: "What you'll need", description: "Your birth date starts your sky. Add time and place only if you know them; do not guess. Unknown birth time limits what can be calculated.", content: <p style={{ lineHeight: 1.6 }}>Use Set up your sky when you are ready. You can review your details in the chart sheet before saving.</p> }],
@@ -1444,6 +1500,10 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
             freshReads: (grouped.article || []).length, hasStory: !!story, cliffhanger: story?.cliffhanger,
             moon: moonToday?.name, phaseKey, listens: (grouped.audio || []).length, watches: playableVideos(grouped.video).length,
           });
+          if (selectedPresentation && focusSection && focusSection !== "sky") {
+            const lines = {read:continueCards[0] ? `Your place in ${continueCards[0].title} is waiting. One good read beats twelve open tabs.` : "One good read beats twelve open tabs.",listen:"Let someone else do the talking. Your headphones have earned an outing.",books:"One chapter. Then we’ll see.",good:"A little room in your day. No productivity hat required.",yours:"Your excellent taste, filed loosely."};
+            jess.eyebrow = "Jess · " + (FOCUS_MAP[focusSection]?.label || "Lifestyle"); jess.body = lines[focusSection] || jess.body;
+          }
           const glanceRows = [
             { Icon: Feather, label: "Today's chapter", text: story ? `${story.series_title || story.title || "Today's chapter"}${story.cliffhanger ? ` — "${story.cliffhanger}"` : ""}` : "Today's chapter is on its way — tap to open the Daily Story.", onClick: () => setChapterOpen(true) },
             { Icon: BookOpen, label: "Your reading",
@@ -1672,9 +1732,9 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
             userId={user?.id} onSchedule={scheduleReading} onCorner={(b) => window.location.assign(createPageUrl(`Community?club=${dailyReadClubKey(b.gutenberg_id)}&title=${encodeURIComponent(b.title || "")}`))}
             continueCards={continueCards} shelfBookCards={shelfBookCards} classicCards={classicCards} onOpenBook={(it) => (it && it._library ? (livingDemo ? jumpTo(5) : setFocusSection("yours")) : openBook(it._continue || it._raw || it))} lifeStage={profile?.life_stage} /></div>;
           if (sec === "listen") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--listen" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{livingDemo && <nav aria-label="Full media directories" style={{display:"flex",justifyContent:"space-between",gap:12,marginBottom:12,fontFamily:UI,fontSize:12}}><a href="/WatchListen?mode=listen" style={{color:C.ink,minHeight:44,alignContent:"center"}}>All listens & shows</a><a href="/WatchListen?mode=watch" style={{color:C.ink,minHeight:44,alignContent:"center"}}>All watches</a></nav>}<ListenFocus presentation={selectedPresentation} audioCards={audioCards} videoCards={videoCards} onOpen={setExpanded} /></div>;
-          if (sec === "read") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--read" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><ReadFocus presentation={selectedPresentation} continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} /></div>;
-          if (sec === "good") { const h = new Date().getHours(); const timeOfDay = h < 12 ? "morning" : h < 18 ? "afternoon" : "evening"; return <div className={selectedPresentation ? "fw-living-content fw-selected-room--good" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><GoodLifeFocus presentation={selectedPresentation} timeOfDay={timeOfDay} timeLens={<TimePickerLens presentation={selectedPresentation} pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />} joys={[...ritualCards, ...permissionCards]} onSlip={(it) => setGLFace({ slip: it })} /></div>; }
-          if (sec === "yours") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--yours" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{livingDemo && <SavedSkyLessons userId={user?.id} human={artDirection === "sky-worlds"} direction={worldDirection} previewRoute={artDirection === "sky-worlds" ? "/SkyWorldsDemo" : artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artDirection === "marginalia" ? "/LivingAtelierDemo" : undefined}/>}{selectedPresentation && keepsError && <div role="alert" style={{fontFamily:UI,fontSize:13,marginBottom:16}}><p>{keepsError}</p><button type="button" onClick={()=>setKeepsRevision(value=>value+1)}>Retry keeps</button> <a href="/Saved?tab=LIFESTYLE">Open the full saved collection</a></div>}<YoursFocus presentation={selectedPresentation} savedCards={savedCards} savedSummary={savedSummary} phaseCards={phaseCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={setExpanded} skySavedCount={livingDemo ? skySavedCount : 0} /></div>;
+          if (sec === "read") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--read" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><ReadFocus presentation={selectedPresentation} continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} onDetails={selectedPresentation ? setExpanded : undefined} /></div>;
+          if (sec === "good") { const h = new Date().getHours(); const timeOfDay = h < 12 ? "morning" : h < 18 ? "afternoon" : "evening"; return <div className={selectedPresentation ? "fw-living-content fw-selected-room--good" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><GoodLifeFocus presentation={selectedPresentation} timeOfDay={timeOfDay} timeLens={<TimePickerLens presentation={selectedPresentation} pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />} joys={[...ritualCards, ...permissionCards]} onPlan={(it)=>glTick(it.id,it.doable?.title || it.title,it.doable?.kind)} onSlip={(it) => setGLFace({ slip: it })} /></div>; }
+          if (sec === "yours") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--yours" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{livingDemo && <SavedSkyLessons userId={user?.id} human={artDirection === "sky-worlds"} direction={worldDirection} previewRoute={artDirection === "sky-worlds" ? "/SkyWorldsDemo" : artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artDirection === "marginalia" ? "/LivingAtelierDemo" : undefined}/>}{selectedPresentation && keepsError && <div role="alert" style={{fontFamily:UI,fontSize:13,marginBottom:16}}><p>{keepsError}</p><button type="button" onClick={()=>setKeepsRevision(value=>value+1)}>Retry keeps</button> <a href="/Saved?tab=LIFESTYLE">Open the full saved collection</a></div>}<YoursFocus presentation={selectedPresentation} savedCards={savedCards} savedSummary={savedSummary} phaseCards={phaseCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={(it)=>it._keep?._unavailable ? setKeepsRevision(n=>n+1) : it._keep?._href ? window.location.assign(it._keep._href) : openReadCard(it)} onDetails={setExpanded} skySavedCount={livingDemo ? skySavedCount : 0} /></div>;
           // every section is bespoke — the generic slider-free layout is only ever the LANDING deck
           return <div style={{ marginTop: 22 }}><FocusLayout layout={layout} groups={landingGroups} clean={clean} /></div>;
         })()}
@@ -1753,6 +1813,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
           unreachable while this was dark, so no new user could set up a chart at all.
           It self-loads (useBirthChart) and fires generateHoroscopeReading on open, which is
           why readings stopped on 2026-06-20: nothing had mounted this since. */}
+      {planRequest && <LifestylePlanSheet key={user?.id} ownerId={user?.id} request={planRequest} onFinish={finishPlan}/>}
       {skyOpen && (
         <div style={{ position: "fixed", inset: 0, zIndex: 1200, ...CLEAN_BG, overflowY: "auto" }}>
           <div style={{ position: "sticky", top: 0, zIndex: 3, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: `linear-gradient(180deg, ${C.ground}, ${C.ground}00)` }}>
@@ -1781,7 +1842,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
             bookId={`daily_${storyPick?.seriesKey || DAILY_STORY_SERIES}`}
             goToChapter={readerStart ?? (storyPick?.index ?? 0)}
             defaultImmersive
-            onExit={() => setReaderOpen(false)}
+            onExit={() => { setReaderOpen(false); loadContinue(); }}
             onChapterReached={(i, reachedChapter) => {
               const c = reachedChapter; if (!c?.id) return;
               markChapterRead(c.id);
@@ -1798,7 +1859,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
         return (
           <div style={{ position: "fixed", inset: 0, zIndex: 1200, ...PAPER_BG }}>
             <DailyStoryReader source={{ kind: "book", items: chs, currentIndex: 0 }} totalCount={chs.length}
-              defaultImmersive onExit={() => setBookReader(null)} bookId={bookReader.id} />
+              defaultImmersive onExit={() => { setBookReader(null); loadContinue(); }} bookId={bookReader.id} />
           </div>
         );
       })()}
@@ -1952,7 +2013,7 @@ function TimePickerLens({ pickFor, isSaved, onSave, onOpen, onTry, presentation 
   const read = picks.read, listen = picks.listen;
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 10px" }}>Pick by the time you have — a small, chosen handful, never an endless scroll.</p>
+      <p style={{ fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 10px" }}>{presentation ? "A read, a listen, or a little doing." : "Pick by the time you have — a small, chosen handful, never an endless scroll."}</p>
       <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>{TIME_BANDS.map((b) => { const c = cwOf(b.cw).petal; const on = b.key === band.key; return (
         <button key={b.key} onClick={() => setBand(b)} aria-pressed={on} className="fw-elite-press" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "9px 4px", borderRadius: 12, cursor: "pointer", background: on ? c : `${c}12`, border: `1px solid ${on ? c : c + "55"}` }}>
           <b.Icon size={16} color={on ? (presentation === "folio" ? T.ink : "#fff") : c} />
@@ -1961,7 +2022,7 @@ function TimePickerLens({ pickFor, isSaved, onSave, onOpen, onTry, presentation 
       ); })}</div>
       <div style={{ ...lbl, marginBottom: 6 }}>For {band.label.toLowerCase()}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {read ? <ContentRow Icon={lfTypeOf(read) === "story" ? Feather : BookOpen} accent={cwOf("plum").petal} title={read.title} meta={`Read · ${metaOf(read)}`} saved={isSaved(read.id)} onSave={() => onSave(read)} onOpen={() => onOpen(read)} /> : <EmptyLine>A read lands here as the library fills out.</EmptyLine>}
+        {read ? <ContentRow Icon={lfTypeOf(read) === "story" ? Feather : BookOpen} accent={cwOf("plum").petal} title={read.title} meta={`Read · ${metaOf(read)}`} saved={isSaved(read.id)} onSave={() => onSave(read)} onOpen={() => onOpen(read)} /> : <EmptyLine>{presentation ? "No read fits this time. Try another moment." : "A read lands here as the library fills out."}</EmptyLine>}
         {listen ? (
           // A listen PLAYS IN PLACE here — the last reachable surface that used to route to
           // /LifestyleDetail. Title line for context + the real inline player (LifestyleMedia:
@@ -1972,9 +2033,9 @@ function TimePickerLens({ pickFor, isSaved, onSave, onOpen, onTry, presentation 
               <span style={{ color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{listen.title}</span>
               <span style={{ color: T.muted, fontWeight: 600, flexShrink: 0 }}>· {durLabel(listen) || metaOf(listen)}</span>
             </div>
-            <LifestyleMedia item={listen} accent={cwOf("sage").petal} />
+            <>{presentation && listen.audio_url ? <FloraAudio item={{id:listen.id,title:listen.title,sourceName:listen.source_name,imageUrl:listen.image_url}} src={listen.audio_url} label={listen.title} accent={cwOf("sage").petal} initialDuration={Number(listen.duration_seconds)||0}/> : <LifestyleMedia item={listen} accent={cwOf("sage").petal} />}</>
           </div>
-        ) : <EmptyLine>A listen lands here as podcasts are added.</EmptyLine>}
+        ) : <EmptyLine>{presentation ? "No listen fits this time. Try another moment." : "A listen lands here as podcasts are added."}</EmptyLine>}
         {/* the make / awe prompt — saves as a soft intention */}
         <button onClick={() => onTry(band.make.title)} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", ...subCard(cwOf("gold").petal), padding: "10px 12px", cursor: "pointer" }}>
           <span style={{ width: 28, height: 28, borderRadius: 9, background: `${cwOf("gold").petal}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><Sparkles size={14} color={cwOf("gold").petal} /></span>

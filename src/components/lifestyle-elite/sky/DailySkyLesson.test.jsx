@@ -8,7 +8,7 @@ const mock = vi.hoisted(()=>({filter:vi.fn(),journals:vi.fn(),create:vi.fn(),sav
 vi.mock("@/api/base44Client",()=>({base44:{entities:{SavedItems:{filter:mock.filter},JournalEntries:{filter:mock.journals,create:mock.create}}}}));
 vi.mock("@/lib/savedItems",()=>({saveItem:mock.save,removeSavedItem:mock.remove,parseSavedMeta:item=>JSON.parse(item.meta_json || "{}")}));
 
-beforeEach(()=>{vi.clearAllMocks();mock.filter.mockResolvedValue([]);mock.journals.mockResolvedValue([]);mock.save.mockResolvedValue({id:"saved"});mock.remove.mockResolvedValue({id:"saved"});window.history.replaceState({},"","/LivingLifestyleDemo?section=sky");HTMLElement.prototype.scrollTo=vi.fn();});
+beforeEach(()=>{vi.clearAllMocks();mock.filter.mockResolvedValue([]);mock.journals.mockResolvedValue([]);mock.save.mockImplementation(async ({itemId,title,meta})=>({id:"saved",user_id:"owner",item_id:itemId,title,meta_json:JSON.stringify(meta)}));mock.remove.mockResolvedValue({id:"saved"});window.history.replaceState({},"","/LivingLifestyleDemo?section=sky");HTMLElement.prototype.scrollTo=vi.fn();});
 
 describe("daily astronomy and exact identity",()=>{
   it("uses calendar ordinals across month/DST boundaries and 24 distinct daily leads",()=>{
@@ -83,12 +83,12 @@ describe("real save and private source-linked note contracts",()=>{
   it("returns an older save to its exact edition in the room and rejects an arbitrary preview destination",async()=>{
     const lesson=SKY_LESSONS.find(item=>item.id==="earthshine");
     expect(skyLessonRoute(lesson,"living","https://example.com")).toMatch(/^\/LivingLifestyleDemo\?/);
-    mock.filter.mockResolvedValue([{id:"old",title:lesson.title,meta_json:JSON.stringify({kind:"sky-lesson",lessonId:lesson.id,lessonVersion:1,route:"/LivingAtelierDemo?lesson=earthshine"})}]);
+    mock.filter.mockResolvedValue([{id:"old",user_id:"owner",title:lesson.title,meta_json:JSON.stringify({kind:"sky-lesson",lessonId:lesson.id,lessonVersion:1,route:"/LivingAtelierDemo?lesson=earthshine"})}]);
     render(<SavedSkyLessons userId="owner" direction="living" previewRoute="/LivingReadingRoomDemo"/>);
     expect(await screen.findByRole("link",{name:/Earth lends/})).toHaveAttribute("href","/LivingReadingRoomDemo?direction=living&section=sky&lesson=earthshine&lessonVersion=1#daily-sky-lesson");
   });
   it("keeps the creative preview on its own exact lesson return, including older saves",async()=>{
-    mock.filter.mockResolvedValue([{id:"one",title:"Earth lends a little light",meta_json:JSON.stringify({kind:"sky-lesson",lessonId:"earthshine",lessonVersion:1,route:"/LivingLifestyleDemo?lesson=earthshine"})}]);
+    mock.filter.mockResolvedValue([{id:"one",user_id:"owner",title:"Earth lends a little light",meta_json:JSON.stringify({kind:"sky-lesson",lessonId:"earthshine",lessonVersion:1,route:"/LivingLifestyleDemo?lesson=earthshine"})}]);
     render(<SavedSkyLessons userId="owner" direction="letter" previewRoute="/LivingAtelierDemo"/>);
     const row=await screen.findByRole("link",{name:/Earth lends/});expect(row).toHaveAttribute("href","/LivingAtelierDemo?direction=letter&section=sky&lesson=earthshine&lessonVersion=1#daily-sky-lesson");
   });
@@ -107,6 +107,6 @@ describe("real save and private source-linked note contracts",()=>{
     fireEvent.click(screen.getByRole("button",{name:"A private note"}));const input=screen.getByLabelText("What caught your eye?");fireEvent.change(input,{target:{value:"The faint outline caught my eye."}});fireEvent.click(screen.getByRole("button",{name:"Keep in journal"}));await screen.findByText(/Your note didn’t save/);expect(input).toHaveValue("The faint outline caught my eye.");fireEvent.click(screen.getByRole("button",{name:"Keep in journal"}));await screen.findByText(/Kept in your journal/);expect(mock.create).toHaveBeenLastCalledWith(expect.objectContaining({user_id:"owner",content_id:"sky-lesson:earthshine:v1",content_key:"sky-lesson:earthshine:v1",card_type:"reflection",text:"The faint outline caught my eye."}));fireEvent.click(screen.getByText("Your note on this lesson"));expect(screen.getByText("The faint outline caught my eye.")).toBeVisible();
   });
   it("reads only the owner’s saves and adds the exact lesson return alongside existing Yours",async()=>{
-    mock.filter.mockResolvedValue([{id:"one",title:"Earth lends a little light",meta_json:JSON.stringify({kind:"sky-lesson",lessonId:"earthshine",lessonVersion:1})}]);render(<SavedSkyLessons userId="owner" direction="horizon"/>);const row=await screen.findByRole("link",{name:/Earth lends/});expect(row).toHaveAttribute("href",expect.stringContaining("direction=horizon&section=sky&lesson=earthshine&lessonVersion=1"));expect(mock.filter).toHaveBeenCalledWith({user_id:"owner",item_type:"LIFESTYLE"},"-created_at",150);
+    mock.filter.mockResolvedValue([{id:"one",user_id:"owner",title:"Earth lends a little light",meta_json:JSON.stringify({kind:"sky-lesson",lessonId:"earthshine",lessonVersion:1})}]);render(<SavedSkyLessons userId="owner" direction="horizon"/>);const row=await screen.findByRole("link",{name:/Earth lends/});expect(row).toHaveAttribute("href",expect.stringContaining("direction=horizon&section=sky&lesson=earthshine&lessonVersion=1"));expect(mock.filter).toHaveBeenCalledWith({user_id:"owner",item_type:"LIFESTYLE"},"-created_at",150);
   });
 });

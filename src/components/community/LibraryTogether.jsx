@@ -8,10 +8,8 @@
 // "reading along" COHORT + progress via ReadingActivity (createCommunityPost dispatcher,
 // k-floored, fire-and-forget) · the in-app BookReader for public-domain reads.
 //
-// NEW here: a personal SHELF (add a book · currently reading / want to read / finished).
-// v1 is DEVICE-LOCAL (localStorage, private, no backend) — same pattern as "I'm going" /
-// clubReached. A persistent cross-device shelf needs a new Bookshelf entity (or a
-// SavedItems "BOOK" type) → FLAGGED for sign-off, NOT built here.
+// One personal SHELF (UserBook) is shared with Lifestyle Books. Signed-in mutations
+// await confirmation; the owner-scoped device mirror keeps existing offline choices.
 //
 // Safety = calm on the surface: discussion rides the moderated CommunityPost path
 // (report/block in the "…" menu, background screening); every text input is crisis-checked.
@@ -24,10 +22,10 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { T, SERIF, UI, Eyebrow, Script, Hand, PAPER_BG, useEditorialFonts } from "@/components/journal/Editorial";
 import { CornerSprig, FlowerGlyph, cwOf } from "@/components/brand/flora";
-import { SEED_PICK, clubReached } from "@/components/community/bookClubConfig";
+import { loadBookClubPick, clubReached } from "@/components/community/bookClubConfig";
 import { dailyReadClubKey } from "@/components/community/clubsConfig";
 import { cohortReachedCount, recordProgress } from "@/components/community/readingActivity";
-import { loadShelf, addBook, setStatus as setShelfStatusRemote, removeBook } from "@/components/community/bookshelf";
+import { loadShelf, readLocal, bookKey, addBook, setStatus as setShelfStatusRemote, removeBook } from "@/components/community/bookshelf";
 import { communityHash, botanicalAlias } from "@/components/community/communityAnon";
 import { MOOD_SHELVES, readProgress, setReadProgress, progressLabel, joinBuddyRead, buddiesFor, reportBuddy, parseBuddyNote } from "@/components/community/libraryExtras";
 import { useScrollLock } from "@/utils/useScrollLock";
@@ -67,18 +65,24 @@ const STARTERS = [
   { title: "The Yellow Wallpaper", author: "Charlotte Perkins Gilman", gutenberg_id: "1952", tag: "short & fierce" },
 ];
 
-function AddBookSheet({ onClose, onAdded }) {
+export function AddBookSheet({ onClose, onAdded, userId }) {
   useScrollLock(true);
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [status, setStatus] = useState("reading");
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState("");
+  const saving = useRef(false);
+  const searchSequence = useRef(0);
   // Open Library search (no key/creds; CORS-friendly per research). Guarded: any failure
   // (incl. a CSP block on this host) degrades silently to the manual fields below.
   const [q, setQ] = useState("");
   const [results, setResults] = useState(null);   // null=idle · []=none · [...]=hits
   const [searching, setSearching] = useState(false);
   const timer = useRef(null);
+  useEffect(() => () => { clearTimeout(timer.current); searchSequence.current++; }, []);
   const doSearch = (query) => {
+    const sequence = ++searchSequence.current;
     setQ(query);
     if (timer.current) clearTimeout(timer.current);
     if (!query.trim() || query.trim().length < 3) { setResults(null); setSearching(false); return; }
@@ -88,12 +92,19 @@ function AddBookSheet({ onClose, onAdded }) {
         const r = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query.trim())}&limit=6&fields=title,author_name`);
         const d = await r.json();
         const hits = (d?.docs || []).filter((x) => x?.title).map((x) => ({ title: x.title, author: (x.author_name || [])[0] || "" }));
-        setResults(hits);
-      } catch { setResults(null); }   // fail-open → manual
-      finally { setSearching(false); }
+        if (sequence === searchSequence.current) setResults(hits);
+      } catch { if (sequence === searchSequence.current) setResults(null); }   // fail-open → manual
+      finally { if (sequence === searchSequence.current) setSearching(false); }
     }, 450);
   };
-  const add = () => { const t = title.trim(); if (!t) return; onAdded({ title: t, author: author.trim(), status }); onClose(); };
+  const submit = async book => {
+    if (saving.current) return;
+    saving.current = true; setPending(true); setError("");
+    try { if (await onAdded(book) === false) throw new Error("unconfirmed"); onClose(); }
+    catch { setError("Couldn't add it. Your choices are still here — try again."); }
+    finally { saving.current = false; setPending(false); }
+  };
+  const add = () => { const t = title.trim(); if (t) submit({ title: t, author: author.trim(), status }); };
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(36,26,38,0.45)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
       <div onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Add a book" style={{ width: "100%", maxWidth: 460, background: T.paper, borderRadius: "14px 14px 0 0", padding: "20px 18px 28px", paddingBottom: "var(--fw-sheet-safe)", maxHeight: "88vh", overflowY: "auto" }}>
@@ -112,7 +123,7 @@ function AddBookSheet({ onClose, onAdded }) {
         {Array.isArray(results) && results.length > 0 && (
           <div style={{ border: `1px solid ${T.paperDeep}`, borderRadius: 11, overflow: "hidden", marginBottom: 12 }}>
             {results.map((b, i) => (
-              <button key={i} onClick={() => { onAdded({ title: b.title, author: b.author, status: "reading" }); onClose(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", background: T.paperHi, border: "none", borderTop: i ? `1px solid ${T.paperDeep}` : "none", padding: "9px 11px", cursor: "pointer" }}>
+              <button key={i} disabled={pending} onClick={() => submit({ title: b.title, author: b.author, status })} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", background: T.paperHi, border: "none", borderTop: i ? `1px solid ${T.paperDeep}` : "none", padding: "9px 11px", cursor: "pointer" }}>
                 <BookCover title={b.title} size={26} />
                 <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, lineHeight: 1.15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.title}</span>{b.author && <span style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>{b.author}</span>}</span>
                 <Plus size={15} color={T.gold} />
@@ -124,29 +135,30 @@ function AddBookSheet({ onClose, onAdded }) {
         <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: T.muted, margin: "2px 0 8px" }}>Or add it by hand</div>
         <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" style={{ width: "100%", boxSizing: "border-box", background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "11px 13px", fontFamily: SERIF, fontSize: 16, color: T.ink, marginBottom: 9, outline: "none" }} />
         <input value={author} onChange={(e) => setAuthor(e.target.value)} placeholder="Author (optional)" style={{ width: "100%", boxSizing: "border-box", background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "11px 13px", fontFamily: SERIF, fontSize: 16, color: T.ink, marginBottom: 12, outline: "none" }} />
-        <div style={{ display: "flex", gap: 7, marginBottom: 14 }}>
+        <div style={{ display: "flex", gap: 7, flexWrap:"wrap",marginBottom: 14 }}>
           {STATUSES.map((s) => (
-            <button key={s.key} onClick={() => setStatus(s.key)} style={{ flex: 1, borderRadius: 999, padding: "8px 6px", border: `1px solid ${status === s.key ? cwOf("gold").petal : T.paperDeep}`, background: status === s.key ? `${cwOf("gold").petal}1C` : T.paperHi, color: status === s.key ? cwOf("gold").petal : T.muted, fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{s.label}</button>
+            <button key={s.key} disabled={pending} aria-pressed={status === s.key} onClick={() => setStatus(s.key)} style={{ flex: "1 1 130px",minHeight:44,borderRadius: 999, padding: "8px 6px", border: `1px solid ${status === s.key ? cwOf("gold").petal : T.paperDeep}`, background: status === s.key ? `${cwOf("gold").petal}1C` : T.paperHi, color: status === s.key ? cwOf("gold").petal : T.muted, fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>{s.label}</button>
           ))}
         </div>
-        <button onClick={add} disabled={!title.trim()} style={{ width: "100%", background: title.trim() ? T.ink : T.paperDeep, color: T.paperHi, border: "none", borderRadius: 12, padding: "13px", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: title.trim() ? "pointer" : "default", marginBottom: 12 }}>Add to my shelf</button>
+        {error && <p role="alert" style={{fontFamily:UI,fontSize:13,color:T.crimson}}>{error}</p>}
+        <button onClick={add} disabled={pending || !title.trim()} aria-busy={pending} style={{ width: "100%", background: title.trim() ? T.ink : T.paperDeep, color: T.paperHi, border: "none", borderRadius: 12, padding: "13px", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: title.trim() ? "pointer" : "default", marginBottom: 12 }}>{pending ? "Adding…" : "Add to my shelf"}</button>
         <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: T.muted, marginBottom: 8 }}>Or add a loved one</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
           {STARTERS.slice(0, 5).map((b) => (
-            <button key={b.title} onClick={() => { onAdded({ ...b, status: "want" }); onClose(); }} style={{ display: "flex", alignItems: "center", gap: 10, textAlign: "left", background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "8px 10px", cursor: "pointer" }}>
+            <button key={b.title} disabled={pending} onClick={() => submit({ ...b, status: "want" })} style={{ display: "flex", alignItems: "center", gap: 10, textAlign: "left", background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "8px 10px", cursor: "pointer" }}>
               <BookCover title={b.title} size={30} />
               <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, lineHeight: 1.15 }}>{b.title}</span><span style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>{b.author} · {b.tag}</span></span>
               <Plus size={15} color={T.gold} />
             </button>
           ))}
         </div>
-        <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, lineHeight: 1.5, marginTop: 12 }}>Your shelf is private and kept on your phone. (A synced, searchable library is on the way.)</div>
+        <div style={{ fontFamily: UI, fontSize: 13, color: T.muted, lineHeight: 1.5, marginTop: 12 }}>{userId ? "Private to you. Confirmed changes sync across devices." : "Private to you, kept on this device."}</div>
       </div>
     </div>
   );
 }
 
-function ShelfBook({ book, onStatus, onTalk, onRead, onRemove, onBuddy }) {
+function ShelfBook({ book, onStatus, onTalk, onRead, onRemove, onBuddy, busy }) {
   const pct = book.status === "reading" ? readProgress(book.key) : 0;
   return (
     <div style={{ display: "flex", gap: 12, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "12px 13px", marginBottom: 10 }}>
@@ -156,7 +168,7 @@ function ShelfBook({ book, onStatus, onTalk, onRead, onRemove, onBuddy }) {
         {book.author && <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginBottom: 7 }}>{book.author}</div>}
         <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 8 }}>
           {STATUSES.map((s) => (
-            <button key={s.key} onClick={() => onStatus(book.key, s.key)} style={{ borderRadius: 999, padding: "4px 10px", border: `1px solid ${book.status === s.key ? cwOf("sage").petal : T.paperDeep}`, background: book.status === s.key ? `${cwOf("sage").petal}1C` : "transparent", color: book.status === s.key ? cwOf("sage").petal : T.muted, fontFamily: UI, fontSize: 10.5, fontWeight: 700, cursor: "pointer" }}>{s.label}</button>
+            <button key={s.key} disabled={busy} aria-pressed={book.status === s.key} onClick={() => onStatus(book.key, s.key)} style={{ minHeight:44,borderRadius: 999, padding: "6px 10px", border: `1px solid ${book.status === s.key ? cwOf("sage").petal : T.paperDeep}`, background: book.status === s.key ? `${cwOf("sage").petal}1C` : "transparent", color: book.status === s.key ? cwOf("sage").petal : T.muted, fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>{s.label}</button>
           ))}
         </div>
         {/* currently-reading progress chip (device-local) */}
@@ -169,7 +181,7 @@ function ShelfBook({ book, onStatus, onTalk, onRead, onRemove, onBuddy }) {
           <button onClick={() => onBuddy(book)} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "transparent", border: "none", cursor: "pointer", color: cwOf("sage").petal, fontFamily: UI, fontSize: 12, fontWeight: 700 }}><Users size={13} /> Buddy read</button>
           <button onClick={() => onTalk(book)} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "transparent", border: "none", cursor: "pointer", color: T.crimson, fontFamily: UI, fontSize: 12, fontWeight: 700 }}><MessageCircle size={13} /> Talk</button>
           {book.gutenberg_id && <button onClick={() => onRead(book)} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "transparent", border: "none", cursor: "pointer", color: T.gold, fontFamily: UI, fontSize: 12, fontWeight: 700 }}><BookOpen size={13} /> Read</button>}
-          <button onClick={() => onRemove(book.key)} aria-label="Remove" style={{ marginLeft: "auto", background: "transparent", border: "none", cursor: "pointer", color: T.muted, fontFamily: UI, fontSize: 11 }}>Remove</button>
+          <button disabled={busy} onClick={() => onRemove(book.key)} aria-label={`Remove ${book.title}`} style={{ marginLeft: "auto", background: "transparent", border: "none", cursor: "pointer", color: T.muted, fontFamily: UI, fontSize: 14 }}>{busy ? "Saving…" : "Remove"}</button>
         </div>
       </div>
     </div>
@@ -177,7 +189,7 @@ function ShelfBook({ book, onStatus, onTalk, onRead, onRemove, onBuddy }) {
 }
 
 // stable book_key across shelf + discovery (matches bookshelf.js: g:<id> · s:<slug>)
-const bookKeyOf = (b) => b.key || (b.gutenberg_id ? `g:${b.gutenberg_id}` : `s:${slug(b.title)}`);
+const bookKeyOf = bookKey;
 
 // ── BUDDY READS (substance #4) — pair, async + spoiler-safe, on the BuddyRead entity. Shows the
 // k-anon "who's reading this too", lets you join the pool + leave a short (crisis-checked) note tagged
@@ -316,33 +328,88 @@ export default function LibraryTogether({ user, onBack, onNav, onOpenCorner }) {
   const [myHash, setMyHash] = useState(null);
   const [buddyBook, setBuddyBook] = useState(null);  // book whose buddy-read sheet is open
   const [mood, setMood] = useState(MOOD_SHELVES[0].key);
-  const pick = SEED_PICK;   // the live BookClubPick would upgrade this; seed is always present
   const uid = user?.id;
+  const [shelfScope, setShelfScope] = useState(uid);
+  const owner = useRef({ id: uid, generation: 0 });
+  if (owner.current.id !== uid) owner.current = { id: uid, generation: owner.current.generation + 1 };
+  const [pick, setPick] = useState(null);
+  const [clubError, setClubError] = useState("");
+  const [clubLoading, setClubLoading] = useState(true);
+  const [shelfLoading, setShelfLoading] = useState(true);
+  const [shelfError, setShelfError] = useState("");
+  const [pendingKeys, setPendingKeys] = useState(new Set());
+  const pending = useRef(new Set());
+  const [retry, setRetry] = useState(null);
+  const shelfSequence = useRef(0);
+  const clubSequence = useRef(0);
+  const refreshClub = useCallback(async () => {
+    const sequence = ++clubSequence.current; setClubLoading(true); setClubError("");
+    try { const next = await loadBookClubPick(); if (sequence === clubSequence.current) setPick(next); }
+    catch { if (sequence === clubSequence.current) setClubError("Couldn't refresh the club. Try again."); }
+    finally { if (sequence === clubSequence.current) setClubLoading(false); }
+  }, []);
+  useEffect(() => { refreshClub(); return () => { clubSequence.current++; }; }, [refreshClub]);
   useEffect(() => { let a = true; communityHash(uid).then((h) => { if (a) setMyHash(h); }).catch(() => {}); return () => { a = false; }; }, [uid]);
 
   // load the shelf: UserBook (synced) + local fallback + migrate local-only up (bookshelf.js)
-  useEffect(() => { let alive = true; loadShelf(uid).then((items) => { if (alive) setShelf(items); }).catch(() => {}); return () => { alive = false; }; }, [uid]);
+  const refreshShelf = useCallback(async () => {
+    const sequence = ++shelfSequence.current, generation = owner.current.generation;
+    setShelfLoading(true);
+    try {
+      const items = await loadShelf(uid, { strict: true });
+      if (sequence === shelfSequence.current && generation === owner.current.generation) { setShelf(items); setShelfError(items.syncError || ""); }
+    } catch { if (sequence === shelfSequence.current && generation === owner.current.generation) setShelfError("Couldn't refresh your shelf. Your device copy is still here."); }
+    finally { if (sequence === shelfSequence.current && generation === owner.current.generation) setShelfLoading(false); }
+  }, [uid]);
+  useEffect(() => {
+    setShelfScope(uid); setShelf(readLocal(uid)); setShelfError(""); setRetry(null); pending.current = new Set(); setPendingKeys(new Set()); setAddOpen(false); setBuddyBook(null);
+    refreshShelf();
+    const changed = event => { if (event.detail?.userId === uid) refreshShelf(); };
+    window.addEventListener("fw_bookshelf_changed", changed);
+    return () => { shelfSequence.current++; window.removeEventListener("fw_bookshelf_changed", changed); };
+  }, [uid, refreshShelf]);
   useEffect(() => {
     let alive = true;
+    setCohort(undefined);
+    if (!pick?.gutenberg_id) return () => { alive = false; };
     const at = Math.max(0, clubReached(pick.pick_key));
     cohortReachedCount(String(pick.gutenberg_id), at).then((n) => { if (alive) setCohort(typeof n === "number" ? n : null); }).catch(() => { if (alive) setCohort(null); });
     return () => { alive = false; };
-  }, [pick.pick_key, pick.gutenberg_id]);
+  }, [pick?.pick_key, pick?.gutenberg_id]);
 
   const talk = useCallback((book) => {
     const id = book.gutenberg_id || slug(book.title);
     onOpenCorner?.(dailyReadClubKey(id), book.title);   // the moderated readers' corner
   }, [onOpenCorner]);
   const read = useCallback((book) => { if (book.gutenberg_id) navigate(createPageUrl(`BookReader?gutenberg_id=${book.gutenberg_id}`)); }, [navigate]);
-  const onAdded = (book) => { setFilter("all"); addBook(uid, book).then(setShelf).catch(() => {}); };   // never let a new book hide behind a filter
-  const onStatus = (key, s) => { setShelfStatusRemote(uid, key, s).then(setShelf).catch(() => {}); };
-  const onRemove = (key) => { removeBook(uid, key).then(setShelf).catch(() => {}); };
-  const readingPick = () => { recordProgress(pick.gutenberg_id, Math.max(0, clubReached(pick.pick_key)), uid); onAdded({ title: pick.title, author: pick.author, gutenberg_id: pick.gutenberg_id, status: "reading", source: "pick" }); };
+  const changeShelf = async (key, action) => {
+    if (pending.current.has(key)) return false;
+    const generation = owner.current.generation;
+    pending.current.add(key); setPendingKeys(new Set(pending.current)); setShelfError("");
+    try {
+      const items = await action();
+      if (generation !== owner.current.generation) return false;
+      setShelf(items); setRetry(null); return true;
+    } catch {
+      if (generation === owner.current.generation) { setShelfError("Couldn't change your shelf. Your previous choices are still here."); setRetry(() => () => changeShelf(key, action)); }
+      return false;
+    } finally { if (generation === owner.current.generation) { pending.current.delete(key); setPendingKeys(new Set(pending.current)); } }
+  };
+  const onAdded = book => { setFilter("all"); return changeShelf(bookKey(book), () => addBook(uid, book)); };
+  const onStatus = (key, s) => changeShelf(key, () => setShelfStatusRemote(uid, key, s));
+  const onRemove = key => changeShelf(key, () => removeBook(uid, key));
+  const readingPick = async () => {
+    if (await onAdded({ title: pick.title, author: pick.author, gutenberg_id: pick.gutenberg_id, status: "reading", source: "pick" })) {
+      recordProgress(pick.gutenberg_id, Math.max(0, clubReached(pick.pick_key)), uid);
+    }
+  };
 
-  const shown = filter === "all" ? shelf : shelf.filter((b) => b.status === filter);
+  const visibleShelf = shelfScope === uid ? shelf : readLocal(uid);
+  const shown = filter === "all" ? visibleShelf : visibleShelf.filter((b) => b.status === filter);
 
   return (
-    <div style={{ minHeight: "100vh", ...PAPER_BG }}>
+    <div className="fw-library-together" style={{ minHeight: "100vh", ...PAPER_BG }}>
+      <style>{`.fw-library-together button{min-height:44px;min-width:44px;font-size:14px!important;flex-shrink:0}.fw-library-together [role=dialog] button{min-height:44px;min-width:44px}`}</style>
       <div style={{ maxWidth: 460, margin: "0 auto", padding: "24px 18px 60px" }}>
         {onBack && <button onClick={onBack} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "7px 11px", fontFamily: UI, fontSize: 12.5, fontWeight: 600, color: T.ink, cursor: "pointer", marginBottom: 14 }}><ChevronLeft size={14} /> Together</button>}
         <Eyebrow color={T.gold} mb={6}>Together · The Library</Eyebrow>
@@ -350,7 +417,9 @@ export default function LibraryTogether({ user, onBack, onNav, onOpenCorner }) {
         <Hand size={17} color={T.muted} style={{ marginBottom: 18 }}>Keep a shelf, talk about a book with the women reading it too, or join the season's read — spoiler-safe, no rush, no streak.</Hand>
 
         {/* THIS SEASON'S READ — the curated Book Club pick (real read-along) */}
-        <div style={{ position: "relative", overflow: "hidden", background: `linear-gradient(160deg, ${T.paperHi} 0%, ${cwOf("crimson").petal}12 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${cwOf("crimson").petal}`, borderRadius: 18, padding: "16px 16px", marginBottom: 18 }}>
+        {clubLoading && <p role="status">Finding the club’s current read…</p>}
+        {clubError && <div role="alert"><p>{clubError}</p><button onClick={refreshClub}>Try again</button></div>}
+        {pick && <div style={{ position: "relative", overflow: "hidden", background: `linear-gradient(160deg, ${T.paperHi} 0%, ${cwOf("crimson").petal}12 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${cwOf("crimson").petal}`, borderRadius: 18, padding: "16px 16px", marginBottom: 18 }}>
           <CornerSprig variant="sprig" color={cwOf("crimson").petal} corner="tr" size={50} opacity={0.4} />
           <Eyebrow color={T.gold} mb={8}>This season, together</Eyebrow>
           <div style={{ display: "flex", gap: 13 }}>
@@ -359,32 +428,34 @@ export default function LibraryTogether({ user, onBack, onNav, onOpenCorner }) {
               <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 20, color: T.ink, lineHeight: 1.2 }}>{pick.title}</div>
               <div style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, marginBottom: 6 }}>{pick.author} · {pick.cadence}</div>
               <Hand size={14} color={T.inkSoft} style={{ marginBottom: 2 }}>
-                {cohort === undefined ? "Finding who's reading along…" : typeof cohort === "number" ? `${cohort} of us are reading along.` : "A quiet few are reading along — no rush, the thread waits."}
+                {cohort === undefined ? "Finding who's reading along…" : typeof cohort === "number" ? `${cohort} of us are reading along.` : "No reading-along count to show just now."}
               </Hand>
             </div>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
             <button onClick={() => navigate(createPageUrl("Lifestyle?tab=books"))} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 999, padding: "8px 12px", border: `1px solid ${T.paperDeep}`, background: T.paperHi, color: T.inkSoft, fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer" }}><BookOpen size={13} /> Your reading corner</button>
             <button onClick={() => onNav?.("bookclub")} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 999, padding: "10px 15px", border: "none", background: T.ink, color: T.paperHi, fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer" }}><BookMarked size={14} /> The book club</button>
-            <button onClick={readingPick} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 999, padding: "10px 15px", border: `1px solid ${cwOf("sage").petal}`, background: `${cwOf("sage").petal}1C`, color: cwOf("sage").petal, fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer" }}><Heart size={14} /> I'm reading this too</button>
+            <button disabled={pendingKeys.has(bookKey(pick))} aria-busy={pendingKeys.has(bookKey(pick))} onClick={readingPick} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 999, padding: "10px 15px", border: `1px solid ${cwOf("sage").petal}`, background: `${cwOf("sage").petal}1C`, color: cwOf("sage").petal, fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer" }}><Heart size={14} /> {pendingKeys.has(bookKey(pick)) ? "Adding…" : "I'm reading this too"}</button>
             <button onClick={() => talk(pick)} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 999, padding: "10px 15px", border: `1px solid ${T.paperDeep}`, background: T.paperHi, color: T.ink, fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer" }}><MessageCircle size={14} /> Readers' corner</button>
             <button onClick={() => setBuddyBook({ title: pick.title, author: pick.author, gutenberg_id: pick.gutenberg_id })} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 999, padding: "10px 15px", border: `1px solid ${cwOf("sage").petal}`, background: T.paperHi, color: cwOf("sage").petal, fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer" }}><Users size={14} /> Find a buddy</button>
           </div>
-        </div>
+        </div>}
 
         {/* MY SHELF */}
+        {shelfLoading && <p role="status">Refreshing your shelf…</p>}
+        {shelfScope === uid && shelfError && <div role="alert"><p>{shelfError}</p><button disabled={shelfLoading || pendingKeys.size > 0} onClick={() => retry ? retry() : refreshShelf()}>Try again</button></div>}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
           <Eyebrow color={T.gold}>My shelf</Eyebrow>
           <button onClick={() => setAddOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: T.ink, color: T.paperHi, border: "none", borderRadius: 999, padding: "7px 13px", fontFamily: UI, fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}><Plus size={14} /> Add a book</button>
         </div>
-        {shelf.length > 0 && (
-          <div style={{ display: "flex", gap: 7, marginBottom: 12 }}>
+        {visibleShelf.length > 0 && (
+          <div style={{ display: "flex", gap: 7, flexWrap:"wrap",marginBottom: 12 }}>
             {[["all", "All"], ...STATUSES.map((s) => [s.key, s.label])].map(([k, l]) => (
               <button key={k} onClick={() => setFilter(k)} style={{ borderRadius: 999, padding: "6px 12px", border: `1px solid ${filter === k ? cwOf("gold").petal : T.paperDeep}`, background: filter === k ? `${cwOf("gold").petal}1C` : "transparent", color: filter === k ? cwOf("gold").petal : T.muted, fontFamily: UI, fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}>{l}</button>
             ))}
           </div>
         )}
-        {shelf.length === 0 ? (
+        {visibleShelf.length === 0 && !shelfLoading && !shelfError ? (
           <div style={{ background: T.paperHi, border: `1px dashed ${T.paperDeep}`, borderRadius: 16, padding: "24px 18px", textAlign: "center", marginBottom: 20 }}>
             <BookOpen size={26} color={T.gold} style={{ marginBottom: 10 }} />
             <Hand size={17} color={T.ink}>Your shelf is empty — for now.</Hand>
@@ -392,8 +463,8 @@ export default function LibraryTogether({ user, onBack, onNav, onOpenCorner }) {
           </div>
         ) : (
           <div style={{ marginBottom: 20 }}>
-            {shown.map((b) => <ShelfBook key={b.key} book={b} onStatus={onStatus} onTalk={talk} onRead={read} onRemove={onRemove} onBuddy={setBuddyBook} />)}
-            {shown.length === 0 && <Hand size={15} color={T.muted}>Nothing under that shelf yet.</Hand>}
+            {shown.map((b) => <ShelfBook key={b.key} book={b} busy={pendingKeys.has(b.key)} onStatus={onStatus} onTalk={talk} onRead={read} onRemove={onRemove} onBuddy={setBuddyBook} />)}
+            {shown.length === 0 && !shelfLoading && !shelfError && <Hand size={15} color={T.muted}>Nothing under that shelf yet.</Hand>}
           </div>
         )}
 
@@ -411,12 +482,12 @@ export default function LibraryTogether({ user, onBack, onNav, onOpenCorner }) {
               <Hand size={14} color={T.muted} style={{ marginBottom: 10 }}>{active.sub}.</Hand>
               <div className="fw-lib-disc" style={{ display: "flex", gap: 11, overflowX: "auto", paddingBottom: 8, marginBottom: 18 }}>
                 {active.books.map((b) => (
-                  <div key={b.title} style={{ flex: "0 0 138px", background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "12px 11px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
+                  <div key={b.title} style={{ flex: "0 0 172px", background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "12px 11px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
                     <BookCover title={b.title} size={54} />
                     <div style={{ fontFamily: SERIF, fontSize: 13.5, fontWeight: 600, color: T.ink, lineHeight: 1.15, margin: "9px 0 1px" }}>{b.title}</div>
                     <div style={{ fontFamily: UI, fontSize: 10, color: T.muted, marginBottom: 8 }}>{b.tag}</div>
                     <div style={{ display: "flex", gap: 6, marginTop: "auto" }}>
-                      <button onClick={() => onAdded({ ...b, status: "want" })} aria-label="Add to shelf" style={{ width: 30, height: 30, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.gold, cursor: "pointer", display: "grid", placeItems: "center" }}><Plus size={15} /></button>
+                      <button onClick={() => onAdded({ ...b, status: "want" })} disabled={pendingKeys.has(bookKey(b))} aria-busy={pendingKeys.has(bookKey(b))} aria-label={`Add ${b.title} to shelf`} style={{ width: 30, height: 30, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.gold, cursor: "pointer", display: "grid", placeItems: "center" }}><Plus size={15} /></button>
                       <button onClick={() => setBuddyBook(b)} aria-label="Find a buddy" style={{ width: 30, height: 30, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paper, color: cwOf("sage").petal, cursor: "pointer", display: "grid", placeItems: "center" }}><Users size={14} /></button>
                       <button onClick={() => talk(b)} aria-label="Talk about it" style={{ width: 30, height: 30, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.crimson, cursor: "pointer", display: "grid", placeItems: "center" }}><MessageCircle size={14} /></button>
                     </div>
@@ -437,7 +508,7 @@ export default function LibraryTogether({ user, onBack, onNav, onOpenCorner }) {
               <div style={{ fontFamily: SERIF, fontSize: 14, fontWeight: 600, color: T.ink, lineHeight: 1.15, margin: "9px 0 1px" }}>{b.title}</div>
               <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginBottom: 8 }}>{b.tag}</div>
               <div style={{ display: "flex", gap: 6, marginTop: "auto" }}>
-                <button onClick={() => onAdded({ ...b, status: "want" })} aria-label="Add" style={{ width: 30, height: 30, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.gold, cursor: "pointer", display: "grid", placeItems: "center" }}><Plus size={15} /></button>
+                <button onClick={() => onAdded({ ...b, status: "want" })} disabled={pendingKeys.has(bookKey(b))} aria-busy={pendingKeys.has(bookKey(b))} aria-label={`Add ${b.title} to shelf`} style={{ width: 30, height: 30, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.gold, cursor: "pointer", display: "grid", placeItems: "center" }}><Plus size={15} /></button>
                 <button onClick={() => talk(b)} aria-label="Talk about it" style={{ width: 30, height: 30, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.crimson, cursor: "pointer", display: "grid", placeItems: "center" }}><MessageCircle size={14} /></button>
               </div>
             </div>
@@ -450,8 +521,8 @@ export default function LibraryTogether({ user, onBack, onNav, onOpenCorner }) {
         </div>
       </div>
 
-      {addOpen && <AddBookSheet onClose={() => setAddOpen(false)} onAdded={onAdded} />}
-      {buddyBook && <BuddyReadSheet book={buddyBook} user={user} myHash={myHash} onClose={() => setBuddyBook(null)} onTalk={talk} />}
+      {shelfScope === uid && addOpen && <AddBookSheet onClose={() => setAddOpen(false)} onAdded={onAdded} userId={uid} />}
+      {shelfScope === uid && buddyBook && <BuddyReadSheet book={buddyBook} user={user} myHash={myHash} onClose={() => setBuddyBook(null)} onTalk={talk} />}
     </div>
   );
 }

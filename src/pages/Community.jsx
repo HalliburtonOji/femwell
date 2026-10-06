@@ -58,7 +58,7 @@ import {
   isDailyReadClub, dailyReadClubFromKey, dailyReadClubKey,
 } from "@/components/community/clubsConfig";
 import { WISDOM_TOPICS, WISDOM_SEED, featuredWisdom } from "@/components/community/wisdomLibrary";
-import { SEED_PICK, clubReached, setClubReached } from "@/components/community/bookClubConfig";
+import { clubReached, setClubReached, loadBookClubPick } from "@/components/community/bookClubConfig";
 import { cohortReachedCount } from "@/components/community/readingActivity";
 import {
   POOL_MOMENTS, REVEAL_K_FLOOR, weekKey, closePromptForWeek, closedThisWeek, markClosedWeek,
@@ -835,31 +835,31 @@ function ClubCheckpointThread({ pickKey, cp, user, onCrisis }) {
   );
 }
 
-function BookClubView({ user, onCrisis, onBack }) {
+export function BookClubView({ user, onCrisis, onBack }) {
   const navigate = useNavigate();
   const [pick, setPick] = useState(null);
   const [checkpoints, setCheckpoints] = useState([]);
   const [reached, setReached] = useState(-1);
-  useEffect(() => {
-    (async () => {
-      const picks = await base44.entities.BookClubPick.filter({ active: true }, "-created_date", 1).catch(() => []);
-      if (Array.isArray(picks) && picks.length) {
-        const p0 = picks[0];
-        const cps = await base44.entities.ClubCheckpoint.filter({ pick_key: p0.pick_key }, "index", 50).catch(() => []);
-        setPick(p0);
-        setCheckpoints(Array.isArray(cps) && cps.length ? cps : SEED_PICK.checkpoints);
-        setReached(clubReached(p0.pick_key));
-      } else {
-        setPick(SEED_PICK); setCheckpoints(SEED_PICK.checkpoints); setReached(clubReached(SEED_PICK.pick_key));
-      }
-    })();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const sequence = useRef(0);
+  const load = useCallback(async () => {
+    const request = ++sequence.current; setLoading(true); setError("");
+    try {
+      const next = await loadBookClubPick();
+      if (request === sequence.current) { setPick(next); setCheckpoints(next.checkpoints); setReached(clubReached(next.pick_key)); }
+    } catch { if (request === sequence.current) setError("Couldn't refresh this season’s read. Try again."); }
+    finally { if (request === sequence.current) setLoading(false); }
   }, []);
-  if (!pick) return <div style={{ padding: "26px 18px" }}><Hand size={17} color={T.muted}>Finding this season's read…</Hand></div>;
+  useEffect(() => { load(); return () => { sequence.current++; }; }, [load]);
   const attest = (idx) => { setClubReached(pick.pick_key, idx); setReached((r) => Math.max(r, idx)); };
   return (
     <div style={{ padding: "26px 18px 60px" }}>
       <button onClick={onBack} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
       <Eyebrow color={T.gold} mb={8}>Book club · Jess hosts</Eyebrow>
+      {loading && <div role="status"><Hand size={17} color={T.muted}>Finding this season’s read…</Hand></div>}
+      {error && <div role="alert"><Hand size={17} color={T.muted}>{error}</Hand><button onClick={load} style={{...ghostBtn,minHeight:44,minWidth:44}}>Try again</button></div>}
+      {pick && <>
       <Script size={32} color={OXBLOOD} style={{ marginBottom: 2 }}>{pick.title}</Script>
       <div style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, marginBottom: 12 }}>{pick.author}{pick.cadence ? ` · ${pick.cadence}` : ""}</div>
       <Hand size={17} color={T.inkSoft} style={{ marginBottom: 14 }}>{pick.host_intro}</Hand>
@@ -878,6 +878,7 @@ function BookClubView({ user, onCrisis, onBack }) {
       )}
 
       <Eyebrow color={T.gold} mb={10}>Checkpoints — open one when you reach it</Eyebrow>
+      {checkpoints.length === 0 && <Hand size={17} color={T.muted}>This book’s checkpoints haven’t been published yet.</Hand>}
       {checkpoints.map((cp) => {
         const unlocked = reached >= cp.index;
         return (
@@ -894,7 +895,7 @@ function BookClubView({ user, onCrisis, onBack }) {
                 </div>}
           </div>
         );
-      })}
+      })}</>}
     </div>
   );
 }
@@ -1413,28 +1414,30 @@ const NAMED_GAMES = [
 // is NOT a member-hosting surface: it's a read-only signpost into the existing Book Club read +
 // its readers' corner, plus a count-free "where the room tends to be" line and the k-floored cohort
 // milestone. Anonymity-aware (cohort via the anonymous ReadingActivity helper, fail-open).
-function BooksCircleSharedRead() {
+export function BooksCircleSharedRead() {
   const navigate = useNavigate();
-  const [pick, setPick] = useState(SEED_PICK);   // seed immediately; upgrade to a live pick if set
+  const [pick, setPick] = useState(null);
   const [cohort, setCohort] = useState(undefined);   // undefined = loading; number = k-floored; null = below floor
-  const [reached, setReached] = useState(() => clubReached(SEED_PICK.pick_key));
-
-  useEffect(() => {
-    let alive = true;
-    // Prefer a live BookClubPick (active) over the seed, mirroring BookClubView. Fail-open to seed.
-    base44.entities.BookClubPick.filter({ active: true }, "-created_date", 1).catch(() => []).then((picks) => {
-      if (!alive) return;
-      const p0 = Array.isArray(picks) && picks.length ? picks[0] : null;
-      if (p0) { setPick(p0); setReached(clubReached(p0.pick_key)); }
-    });
-    return () => { alive = false; };
+  const [reached, setReached] = useState(-1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const sequence = useRef(0);
+  const load = useCallback(async () => {
+    const request = ++sequence.current; setLoading(true); setError("");
+    try {
+      const next = await loadBookClubPick();
+      if (request === sequence.current) { setPick(next); setReached(clubReached(next.pick_key)); }
+    } catch { if (request === sequence.current) setError("Couldn't refresh the circle’s read. Try again."); }
+    finally { if (request === sequence.current) setLoading(false); }
   }, []);
+  useEffect(() => { load(); return () => { sequence.current++; }; }, [load]);
 
   // "Where the room tends to be" — k-floored cohort at the reader's own self-attested checkpoint,
   // so it's spoiler-safe (never reveals progress beyond where you are) AND count-free below the
   // floor. Anonymous: reuses cohortReachedCount (author_hash only). Never awaited on a tap.
   useEffect(() => {
     let alive = true;
+    setCohort(undefined);
     const gid = pick?.gutenberg_id;
     if (gid == null) { setCohort(null); return; }
     const at = Math.max(0, reached);   // checkpoint index doubles as a chapter-ish floor
@@ -1448,6 +1451,9 @@ function BooksCircleSharedRead() {
   return (
     <section style={{ background: T.paperHi, border: `1px solid ${T.gold}`, borderRadius: 6, padding: "16px 16px 14px", marginBottom: 20 }}>
       <Eyebrow color={T.gold} mb={6}>This season, together</Eyebrow>
+      {loading && <div role="status"><Hand size={17} color={T.muted}>Finding this season’s read…</Hand></div>}
+      {error && <div role="alert"><Hand size={17} color={T.muted}>{error}</Hand><button onClick={load} style={{...ghostBtn,minHeight:44,minWidth:44}}>Try again</button></div>}
+      {pick && <>
       <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 19, color: T.ink, marginBottom: 2 }}>
         The Books circle is reading {pick?.title}.
       </div>
@@ -1461,7 +1467,7 @@ function BooksCircleSharedRead() {
           ? "Finding where the room is…"
           : typeof cohort === "number"
             ? `${cohort} of us have reached around where you are. No rush — the thread waits.`
-            : "A quiet few are reading along right now. No rush — the thread waits, and there's no catching up to do."}
+            : "No reading-along count to show just now. The thread will wait."}
       </Hand>
 
       <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
@@ -1475,7 +1481,7 @@ function BooksCircleSharedRead() {
             <Users size={13} /> The readers{"’"} corner
           </button>
         )}
-      </div>
+      </div></>}
     </section>
   );
 }
@@ -2109,12 +2115,26 @@ function ClubsView({ user, onCrisis, onBack, initialActive = null, clubTitle = "
 }
 
 // ── The Library room — reading home (Book Club + reading) ─────────────────────
-function LibraryView({ user, onCrisis, onNav, onOpenCorner }) {
-  const flagshipCorner = dailyReadClubKey(SEED_PICK.gutenberg_id);
+export function LibraryView({ user, onCrisis, onNav, onOpenCorner }) {
+  const [pick, setPick] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const sequence = useRef(0);
+  const load = useCallback(async () => {
+    const request = ++sequence.current; setLoading(true); setError("");
+    try { const next = await loadBookClubPick(); if (request === sequence.current) setPick(next); }
+    catch { if (request === sequence.current) setError("Couldn't refresh the Library’s current read. Try again."); }
+    finally { if (request === sequence.current) setLoading(false); }
+  }, []);
+  useEffect(() => { load(); return () => { sequence.current++; }; }, [load]);
+  const cornerBookId = pick?.gutenberg_id || (pick?.title ? String(pick.title).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) : null);
+  const flagshipCorner = cornerBookId ? dailyReadClubKey(cornerBookId) : null;
   return (
     <div>
       <Script size={32} style={{ marginBottom: 4 }}>The Library</Script>
       <Hand size={17} color={T.muted} style={{ marginBottom: 16 }}>Read together — at our own pace, spoiler-safe. Lurking counts.</Hand>
+      {loading && <div role="status"><Hand size={17} color={T.muted}>Finding the Library’s current read…</Hand></div>}
+      {error && <div role="alert"><Hand size={17} color={T.muted}>{error}</Hand><button onClick={load} style={{...ghostBtn,minHeight:44,minWidth:44}}>Try again</button></div>}
 
       <button onClick={() => onNav("bookclub")} style={{
         display: "block", width: "100%", textAlign: "left", cursor: "pointer",
@@ -2124,22 +2144,22 @@ function LibraryView({ user, onCrisis, onNav, onOpenCorner }) {
         <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 19, color: T.ink, marginBottom: 4 }}>A book, together — at our own pace.</div>
         <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>One read, spoiler-safe checkpoints, no streaks. Come in →</div>
       </button>
-      <div style={{ marginBottom: 14 }}>
+      {pick && <div style={{ marginBottom: 14 }}>
         <ShareButton label="Share this read" artifact={{
-          kind: "bookpick", source: "bookpick", line: SEED_PICK.title, sub: SEED_PICK.author,
-          footer: "On the FemWell shelf", url: "https://femwells.com",
-          shareText: `Reading ${SEED_PICK.title} with FemWell's book club.`,
+          kind: "bookpick", source: "bookpick", line: pick.title, sub: pick.author,
+          footer: "On the FemWell shelf", url: "https://femwells.com/Community?view=bookclub",
+          shareText: `FemWell’s book club is reading ${pick.title}.`,
         }} />
-      </div>
+      </div>}
 
       {/* Daily-read readers' corners — a light, spoiler-safe per-book chat for whatever you're reading */}
-      <button onClick={() => onOpenCorner && onOpenCorner(flagshipCorner, SEED_PICK.title)} style={{
+      <button disabled={!flagshipCorner} onClick={() => onOpenCorner && onOpenCorner(flagshipCorner, pick.title)} style={{
         display: "block", width: "100%", textAlign: "left", cursor: "pointer",
         background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 6, padding: "14px 15px", marginBottom: 14,
       }}>
         <Eyebrow color={T.gold} mb={6}>Readers' corners</Eyebrow>
         <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 17, color: T.ink, marginBottom: 4 }}>Talk about the book you're reading.</div>
-        <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>Every book has a small, spoiler-safe corner — others reading the same one, talking about it. Open {SEED_PICK.title}'s corner →</div>
+        <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{pick ? `Open ${pick.title}’s corner →` : "The current book’s corner will appear when its details load."}</div>
       </button>
 
       <section style={{ background: T.paperHi, border: `1px dashed ${T.paperDeep}`, borderRadius: 6, padding: "13px 15px" }}>

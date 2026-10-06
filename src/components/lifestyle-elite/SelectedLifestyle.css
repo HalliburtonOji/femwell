@@ -49,7 +49,8 @@
 .fw-sky-worlds[data-world=petal-press] :is(.fw-selected-room--read,.fw-selected-room--listen,.fw-selected-room--good,.fw-selected-room--yours){position:relative;min-width:0;color:#191510;isolation:isolate}
 .fw-sky-worlds[data-world=petal-press] :is(.fw-selected-room--read,.fw-selected-room--listen,.fw-selected-room--good,.fw-selected-room--yours)>div{gap:26px!important}
 .fw-sky-worlds[data-world=petal-press] :is(.fw-selected-room--read,.fw-selected-room--listen,.fw-selected-room--good,.fw-selected-room--yours) section{box-shadow:none!important;border-radius:0!important}
-.fw-sky-worlds[data-world=petal-press] :is(.fw-selected-room--read,.fw-selected-room--listen,.fw-selected-room--good,.fw-selected-room--yours) :is(h2,h3){font:italic 600 24px/1.2 var(--selected-serif)!important;color:var(--fw-heading-color,#7a1a12)!important;text-shadow:none!important}
+.fw-sky-worlds[data-world=petal-press] :is(.fw-selected-room--read,.fw-selected-room--listen,.fw-selected-room--good,.fw-selected-room--yours) h2{font:italic 600 clamp(27px,6.4vw,34px)/1.18 var(--selected-serif)!important;color:var(--fw-heading-color,#7a1a12)!important;text-shadow:none!important}
+.fw-sky-worlds[data-world=petal-press] :is(.fw-selected-room--read,.fw-selected-room--listen,.fw-selected-room--good,.fw-selected-room--yours) h3{font:600 20px/1.2 var(--selected-serif)!important;color:var(--fw-heading-color,#7a1a12)!important;text-shadow:none!important}
 .fw-sky-worlds[data-world=petal-press] .fw-folio-card{position:relative;min-width:0;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:#191510;overflow:visible}
 .fw-sky-worlds[data-world=petal-press] .fw-folio-card__kind{font:600 12px/1.4 var(--selected-ui)!important;color:#51444e;letter-spacing:.06em;text-transform:uppercase}
 .fw-sky-worlds[data-world=petal-press] .fw-folio-card__title{font:600 20px/1.2 var(--selected-serif)!important;color:#7a1a12;overflow-wrap:anywhere}
@@ -91,3 +92,37 @@
 
 @media(max-width:374px){.fw-sky-worlds[data-world=petal-press] .fw-selected-folio{letter-spacing:.07em}.fw-sky-worlds[data-world=petal-press] .fw-selected-header[data-selected-section=good] .fw-selected-flower{display:flex}}
 @media(prefers-reduced-motion:reduce){.fw-sky-worlds[data-world=petal-press] .fw-selected-header[data-moving=true] .fw-selected-art{animation:none!important}.fw-sky-worlds[data-world=petal-press] :is(.daily-sky-track,.fw-ff-summary-track){scroll-behavior:auto}}
+
+/* Complete bodies: a bookmark, transport, open directory and archive have different jobs. */
+.fw-sky-worlds[data-world=petal-press] .fw-folio-details{min-height:44px;background:transparent;border:0;padding:8px 0;font:600 14px/1.4 var(--selected-ui);color:#51444e;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+.fw-sky-worlds[data-world=petal-press] .fw-folio-card__actions{font-size:14px}
+.fw-sky-worlds[data-world=petal-press] :is(.fw-selected-fresh,.fw-selected-audio,.fw-selected-collection,.fw-selected-joys) .fw-folio-card__title{font:600 18px/1.3 var(--selected-serif)!important}
+.fw-sky-worlds[data-world=petal-press] .fw-selected-resume{position:relative;margin-left:6px}
+.fw-sky-worlds[data-world=petal-press] .fw-selected-resume:before{content:"";position:absolute;left:-8px;top:-1px;width:14px;height:32px;background:#c2b0c8;clip-path:polygon(0 0,100% 0,100% 100%,50% 80%,0 100%);pointer-events:none}
+.fw-sky-worlds[data-world=petal-press] .fw-selected-fiction:before{content:"";display:block;width:64px;height:1px;margin-bottom:20px;background:#a58bab;transform:rotate(-5deg)}
+.fw-sky-worlds[data-world=petal-press] .fw-selected-now .fw-folio-card__media{margin:0 0 14px;padding:0;border:0}
+.fw-sky-worlds[data-world=petal-press] .fw-selected-now .fw-folio-card__title{font:italic 600 26px/1.2 var(--selected-serif)!important}
+.fw-sky-worlds[data-world=petal-press] .fw-selected-audio{margin-left:10px;border-left:1px solid #bac8bc;padding-left:12px!important}
+.fw-sky-worlds[data-world=petal-press] .fw-selected-watch .fw-folio-card__media{margin-inline:-2px}
+.fw-sky-worlds[data-world=petal-press] .fw-selected-time h2{font-size:25px!important}
+.fw-sky-worlds[data-world=petal-press] .fw-selected-joys .fw-folio-card[data-media]{border:0}
+.fw-sky-worlds[data-world=petal-press] .fw-selected-doors a{flex-wrap:wrap;gap:8px!important}
+.fw-sky-worlds[data-world=petal-press] .fw-selected-doors a>span:last-child{flex:1 1 92px}
+.fw-sky-worlds[data-world=petal-press] .fw-selected-phase{background:transparent!important;padding:24px 0!important;border-top:2px solid #bfc9ca!important}
+.fw-sky-worlds[data-world=petal-press] .fw-selected-phase .fw-folio-card__hook{font-size:15px!important}
+.fw-sky-worlds[data-world=petal-press] .fw-selected-material[data-material-section=read]{top:auto;bottom:-22px;right:-10px}
+.fw-sky-worlds[data-world=petal-press] .fw-selected-material[data-material-section=good]{top:auto;bottom:-18px;right:4px}
+.fw-sky-worlds[data-world=petal-press] .fw-selected-material[data-material-section=yours]{top:24px;right:auto;left:-32px;opacity:.7}
+.fw-lifestyle-plan-backdrop{position:fixed;inset:0;z-index:1500;background:#19151055;display:flex;align-items:flex-end;justify-content:center}
+.fw-lifestyle-plan{position:relative;width:min(100%,460px);max-height:90dvh;overflow:auto;background:#fff;color:#191510;padding:28px 20px max(110px,env(safe-area-inset-bottom));border-radius:24px 24px 0 0;box-shadow:0 -8px 36px #19151020;font:500 17px/1.5 'FemWell Editorial','Cormorant Garamond',Georgia,serif}
+.fw-lifestyle-plan h2{font:italic 600 30px/1.2 'FemWell Editorial','Cormorant Garamond',Georgia,serif;color:#7a1a12;margin:14px 0}
+.fw-plan-close{position:absolute;right:10px;top:8px;width:44px;height:44px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer}
+.fw-plan-eyebrow{display:flex;gap:8px;align-items:center;font:600 12px/1.4 system-ui;color:#51444e;text-transform:uppercase;letter-spacing:.06em;padding-right:32px}
+.fw-lifestyle-plan fieldset{border:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.fw-lifestyle-plan label{display:flex;flex-direction:column;gap:6px;font:500 14px/1.4 system-ui;min-width:0}
+.fw-lifestyle-plan :is(input,select){min-width:0;width:100%;min-height:48px;border:1px solid #cec7d0;border-radius:8px;background:#f5f4f1;color:#191510;padding:8px;font:400 16px/1.4 system-ui}
+.fw-lifestyle-plan form>button,.fw-plan-actions :is(button,a){display:inline-flex;align-items:center;justify-content:center;min-height:48px;min-width:44px;padding:10px 16px;margin-top:20px;border:0;border-radius:999px;background:#51444e;color:white;font:600 14px/1.4 system-ui;cursor:pointer;text-decoration:none}
+.fw-plan-actions{display:flex;gap:12px;flex-wrap:wrap}.fw-plan-actions a{background:#eee8ef;color:#51444e}
+.fw-plan-checkpoints{padding:12px 0 0;list-style:none}.fw-plan-checkpoints li{display:flex;flex-direction:column;padding:8px 0;border-bottom:1px solid #cec7d0}.fw-plan-checkpoints time{font:400 13px/1.4 system-ui;color:#6e6a61}
+.fw-lifestyle-plan [role=alert]{color:#7a1a12;font:500 15px/1.5 system-ui}
+.fw-lifestyle-plan button:disabled{opacity:.6;cursor:wait}

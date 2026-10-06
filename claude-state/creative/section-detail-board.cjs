@@ -136,7 +136,9 @@ const finalHtml=html.replace('Resume this passage','Show the saved passage').rep
  .replace('float:right','display:block;margin-top:6px')
  .replace('Planning artifact awaiting final native responsive/tap verification.','Root native verification: six room selectors and sample action taps at 360 / 390 / 430; lesson drafts, reading focus, playback failure states, checkpoint preview, planning draft and exact keepsake states checked. Expanded evidence wrapping repaired and re-proved at all three widths. Independent source/craft pixel review is separate; production persistence and full body implementation remain queued.')
  .replace('<ol><li>Sky:', '<p><strong>First shared repair:</strong> prove the exact return in the routed Planner V2. The previous Elite Planner repair does not establish that this live route works. Club pick consistency, acknowledged saves and the shared audio player are also prerequisites, not decorative additions.</p><ol><li>Sky:');
-const output=path.join('public','lifestyle-workshop');fs.mkdirSync(output,{recursive:true});fs.writeFileSync(path.join(output,'index.html'),finalHtml);
+const deliveryNotice='<aside class="rules"><h2>The working build</h2><p>The earlier research is reconciled and the selected six-section build is now the implementation under review. <a href="/selected-lifestyle/index.html">Open the six working sections and current checks</a>. The studies below remain labelled local examples, not live account data or evidence of persistence. Main promotion remains held.</p></aside>';
+const deliveredHtml=finalHtml.replace('<main>','<main>'+deliveryNotice);
+const output=path.join('public','lifestyle-workshop');fs.mkdirSync(output,{recursive:true});fs.writeFileSync(path.join(output,'index.html'),deliveredHtml);
 fs.writeFileSync('claude-state/creative/section-detail-board.json',JSON.stringify(rooms,null,2)+'\n');
 fs.copyFileSync(path.join(output,'index.html'),'C:/Users/Halli/femwell-handoff/LIFESTYLE-DETAIL-WORKSHOP-2026-10-06.html');
 console.log('Rendered six-room workshop: '+rooms.reduce((n,r)=>n+r.atoms.length,0)+' mapped atoms.');

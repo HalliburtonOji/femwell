@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { act, fireEvent, renderHook, waitFor } from "@testing-library/react";
 import { decodeSkyPairing, sanitiseSkyLetter, skyReadingKey, validSkyBirthday } from "./skyCompletion";
 import useSkyCompletion from "./useSkyCompletion";
 import useSelectedSkyChart from "./useSelectedSkyChart";
@@ -10,6 +10,7 @@ vi.mock("@/utils/astrology",()=>({getMoonPhase:mock.moon}));
 const deferred=()=>{let resolve;const promise=new Promise(done=>{resolve=done;});return {promise,resolve};};
 const published={id:"letter-a",user_id:"a",draft:false,month:"2026-10",body:"A real published letter"};
 beforeEach(()=>{vi.resetAllMocks();mock.cycles.mockResolvedValue([]);mock.plans.mockResolvedValue([]);mock.letters.mockResolvedValue([]);mock.moon.mockReturnValue({key:"full"});mock.me.mockResolvedValue({id:"a"});mock.charts.mockResolvedValue([]);mock.readings.mockResolvedValue([]);mock.profiles.mockResolvedValue([]);mock.subscribe.mockReturnValue(mock.unsubscribe);});
+afterEach(()=>vi.useRealTimers());
 
 describe("Sky completion exact input and source safety",()=>{
   it.each(["2026-02-29","2026-04-31","2026-13-01","2026-00-10","1899-10-01","2027-01-01","2026-10-07","06/10/2026"])("rejects impossible or future birthday %s",value=>{
@@ -106,6 +107,27 @@ describe("Selected Sky completion owner and partial-read lifecycle",()=>{
 });
 
 describe("Selected preview chart reads without generation",()=>{
+  it("never labels a returned older owned reading as the requested current edition",async()=>{
+    mock.readings.mockResolvedValue([{id:"old",user_id:"a",reading_date:"1990-01-01",narrative:"An old reading."}]);
+    const {result}=renderHook(()=>useSelectedSkyChart());await waitFor(()=>expect(result.current.loading).toBe(false));expect(result.current.reading).toBeNull();
+  });
+  it("keeps the existing chart and open reading mounted while an explicit refresh is pending",async()=>{
+    const chart={id:"chart-a",user_id:"a"},reading={id:"reading-a",user_id:"a",reading_date:new Date().toISOString().slice(0,10),narrative:"The current edition."};
+    mock.charts.mockResolvedValue([chart]);mock.readings.mockResolvedValue([reading]);const {result}=renderHook(()=>useSelectedSkyChart());await waitFor(()=>expect(result.current.loading).toBe(false));
+    const pending=deferred();mock.charts.mockReturnValue(pending.promise);act(()=>result.current.refresh());await waitFor(()=>expect(result.current.refreshing).toBe(true));
+    expect(result.current.loading).toBe(false);expect(result.current.astro).toEqual(chart);expect(result.current.reading).toEqual(reading);
+    await act(async()=>pending.resolve([chart]));await waitFor(()=>expect(result.current.refreshing).toBe(false));
+  });
+  it("offers a new producer day without fetching or replacing an open edition automatically",async()=>{
+    vi.useFakeTimers({toFake:["Date"]});vi.setSystemTime(new Date("2026-10-06T23:59:00Z"));const reading={id:"reading-a",user_id:"a",reading_date:"2026-10-06",narrative:"The open edition."};mock.readings.mockResolvedValue([reading]);
+    const {result}=renderHook(()=>useSelectedSkyChart());await waitFor(()=>expect(result.current.loading).toBe(false));vi.setSystemTime(new Date("2026-10-07T00:01:00Z"));fireEvent(document,new Event("visibilitychange"));
+    expect(result.current.newDay).toBe("2026-10-07");expect(result.current.reading).toEqual(reading);expect(mock.readings).toHaveBeenCalledTimes(1);expect(mock.invoke).not.toHaveBeenCalled();
+  });
+  it("does not let the next day's subscription replace an open dated edition",async()=>{
+    vi.useFakeTimers({toFake:["Date"]});vi.setSystemTime(new Date("2026-10-06T23:59:00Z"));const reading={id:"reading-a",user_id:"a",reading_date:"2026-10-06",narrative:"Keep this open."};mock.readings.mockResolvedValue([reading]);
+    const {result}=renderHook(()=>useSelectedSkyChart());await waitFor(()=>expect(result.current.loading).toBe(false));const handler=mock.subscribe.mock.calls.at(-1)[0];vi.setSystemTime(new Date("2026-10-07T00:01:00Z"));
+    act(()=>handler({type:"create",data:{id:"tomorrow",user_id:"a",reading_date:"2026-10-07",narrative:"A new edition."}}));expect(result.current.reading).toEqual(reading);expect(result.current.newDay).toBe("2026-10-07");
+  });
   it("uses only the signed-in owner's actual chart, reading and supplied profile without invoking a generator",async()=>{
     const ownChart={id:"chart-a",user_id:"a",sun_sign:"Taurus"};
     const ownReading={id:"reading-a",user_id:"a",reading_date:new Date().toISOString().slice(0,10),narrative:"Your existing reading."};

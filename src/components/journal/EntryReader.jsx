@@ -12,6 +12,7 @@ import { TYPE_COLOUR, TYPE_LABEL } from "./JournalLedger";
 import UnpackWithJess from "./UnpackWithJess";
 import ShareButton from "@/components/share/ShareButton";
 import { useScrollLock } from "@/utils/useScrollLock";
+import { journalSourceReturn } from "@/lib/lifestyleReturns";
 
 const MOOD_WORD = { 1: "Low", 2: "Down", 3: "Neutral", 4: "Good", 5: "Bright" };
 
@@ -79,6 +80,7 @@ export default function EntryReader({ entry, profile, phase, onClose, onEdit, on
   const colour = TYPE_COLOUR[entry.card_type] || T.muted;
   const label = TYPE_LABEL[entry.card_type] || "Entry";
   const tags = Array.isArray(entry.tags) ? entry.tags.filter(Boolean) : [];
+  const sourceReturn = journalSourceReturn(entry);
 
   const Action = ({ icon: Icon, label: l, onClick, danger }) => (
     <button onClick={onClick} style={{
@@ -114,6 +116,7 @@ export default function EntryReader({ entry, profile, phase, onClose, onEdit, on
           </div>
         )}
 
+        {sourceReturn && <a href={sourceReturn.href} style={{ display: "inline-flex", alignItems: "center", minHeight: 44, marginTop: 12, fontFamily: UI, fontSize: 13, fontWeight: 600, color: T.inkSoft, textDecoration: "underline" }}>{sourceReturn.label}</a>}
         <div style={{ display: "flex", alignItems: "center", gap: 22, marginTop: 24, paddingTop: 18, borderTop: `1px solid ${T.paperDeep}`, flexWrap: "wrap" }}>
           <Action icon={Pin} label={entry.is_pinned ? "Unpin" : "Pin"} onClick={() => onPin && onPin(entry)} />
           <Action icon={PenLine} label="Edit" onClick={() => onEdit && onEdit(entry)} />

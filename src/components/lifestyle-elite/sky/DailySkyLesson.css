@@ -20,5 +20,7 @@
 .daily-sky-kept-note{border-top:1px solid #EAE7E0;padding:0}.daily-sky-kept-note summary{min-height:44px;align-content:center;font-size:12px;color:#51444E;cursor:pointer}.daily-sky-kept-note p{white-space:pre-wrap;overflow-wrap:anywhere;font:500 17px/1.5 'FemWell Editorial',Georgia,serif!important;margin:8px 0!important}.daily-sky-kept-note a{color:#51444E;display:inline-flex;align-items:center;min-height:44px}
 .daily-sky-link{color:#51444E;display:inline-flex;align-items:center;min-height:44px;text-underline-offset:4px;font-size:12px}
 .saved-sky-row{display:flex;align-items:center;justify-content:space-between;min-height:50px;gap:10px;border-top:1px solid #EAE7E0;color:#51444E;text-decoration:none;font:600 18px/1.3 'FemWell Editorial',Georgia,serif}.saved-sky-row svg{flex-shrink:0}
+.daily-sky-edition{display:block;font:500 13px/1.5 ui-sans-serif,system-ui,sans-serif;color:#6E6A61;margin-top:3px}
+.saved-sky-row>span{min-width:0;overflow-wrap:anywhere}
 .daily-sky :is(button,a,textarea,.daily-sky-track,summary):focus-visible{outline:2px solid #51444E;outline-offset:3px}
 @media(prefers-reduced-motion:reduce){.daily-sky-track{scroll-behavior:auto}}

@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, parseISO } from "date-fns";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useExactJournalEntry } from "@/lib/lifestyleReturns";
 import { computeCycleDay } from "@/hooks/useCycleDay";
 import { Feather, X, ChevronDown, ChevronUp } from "lucide-react";
 import NewEntrySheet from "../components/journal/NewEntrySheet";
@@ -231,6 +232,7 @@ function WitnessNote({ type }) {
 export default function Journal() {
   useEditorialFonts();
   const navigate = useNavigate();
+  const { search } = useLocation();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [entries, setEntries] = useState([]);
@@ -245,6 +247,7 @@ export default function Journal() {
   const [showNewEntry, setShowNewEntry] = useState(false);
   const [editEntry, setEditEntry] = useState(null);
   const [readEntry, setReadEntry] = useState(null);
+  const linkedEntry = useExactJournalEntry({ entity: base44.entities.JournalEntries, userId: user?.id, authLoading: loading, search, onOpen: setReadEntry });
   const [seedText, setSeedText] = useState("");
   const [seedType, setSeedType] = useState(null);
   const [seedThread, setSeedThread] = useState("");
@@ -271,7 +274,7 @@ export default function Journal() {
           base44.entities.JournalEntries.filter({ user_id: u.id }, "-created_date", 200).catch(() => []),
           base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
         ]);
-        setEntries(Array.isArray(data) ? data : []);
+        setEntries(Array.isArray(data) ? data.filter(entry => entry?.user_id === u.id) : []);
         setProfile(profiles[0] || null);
       } catch (err) {
         console.error("Journal page init failed:", err);
@@ -400,6 +403,10 @@ export default function Journal() {
 
   return (
     <div className="min-h-screen pb-28" style={{ position: "relative", ...PAPER_BG }}>
+      {["loading", "auth", "missing", "error"].includes(linkedEntry.status) && <div role={linkedEntry.status === "loading" ? "status" : "alert"} style={{ position: "relative", zIndex: 1, maxWidth: 430, margin: "18px auto", padding: "12px 18px", fontFamily: UI, fontSize: 13, lineHeight: 1.5 }}>
+        {linkedEntry.status === "loading" ? "Opening your note…" : linkedEntry.status === "auth" ? "Your note couldn’t open. Sign in to your account and try again." : linkedEntry.status === "missing" ? "That note isn’t available in your journal. It may have been removed, or this link belongs to another account." : "Your note couldn’t load. Try again."}
+        {linkedEntry.status === "error" && <button type="button" onClick={linkedEntry.retry} style={{ display: "block", minHeight: 44, color: T.ink, background: "transparent", border: 0, textDecoration: "underline" }}>Try again</button>}
+      </div>}
       <InkFilter />
       {/* botanical page texture — one low-opacity vine per fold, clipped so it never causes
           horizontal scroll, behind content, never over text (BRAND_IDENTITY §4/§6.2). A clipped

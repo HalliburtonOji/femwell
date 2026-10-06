@@ -31,7 +31,7 @@ function YoursCard({ eyebrow, title, accent = "gold", children, style, className
   );
 }
 
-export default function YoursFocus({ savedCards = [], savedSummary, phaseCards = [], phaseWord, onOpen, skySavedCount = 0, presentation }) {
+export default function YoursFocus({ savedCards = [], savedSummary, phaseCards = [], phaseWord, onOpen, onDetails, skySavedCount = 0, presentation }) {
   const groups = KINDS.map((k) => ({ ...k, items: savedCards.filter((c) => k.test(String(c.type || ""))) })).filter((g) => g.items.length);
   const other = savedCards.filter(c => !KINDS.some(k => k.test(String(c.type || ""))));
   if (presentation && other.length) groups.push({label:"Other keeps",accent:"gold",items:other});
@@ -47,7 +47,7 @@ export default function YoursFocus({ savedCards = [], savedSummary, phaseCards =
     ? `${skySavedCount} Sky ${skySavedCount === 1 ? "lesson" : "lessons"} kept above${hasSaved ? ` · ${savedCards.length} more saved finds` : ""}${phaseCards.length ? " — and this week's set below" : ""}.`
     : hasSaved
     ? `${savedCards.length} saved${savedSummary ? ` · ${savedSummary}` : ""}${phaseCards.length ? ` — and this week's set` : ""}.`
-    : `Your saved drawer's empty — but here's a set tuned to your ${phaseWord || "week"}.`;
+    : `Your keeps will live here. A few discoveries to start you off.`;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -59,14 +59,14 @@ export default function YoursFocus({ savedCards = [], savedSummary, phaseCards =
         <YoursCard className="fw-selected-collection" key={g.label} eyebrow="Saved" title={g.label} accent={g.accent}>
           {presentation && index === 0 && <SelectedRoomDetail section="yours"/>}
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {g.items.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />)}
+            {g.items.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation && !it.audioSrc && !it.youtubeId && !it.videoSrc ? ()=>onOpen?.(it) : undefined} consumeLabel={it._keep?._unavailable ? "Retry source" : ["article","daily_story","book"].includes(it.type) ? "Read" : "Open source"} />)}
           </div>
         </YoursCard>
       ))}
 
       {/* 2 · FOR YOUR PHASE — this week's tuned set */}
       {phaseCards.length ? (
-        <YoursCard className="fw-selected-phase" eyebrow="Tuned to your week" title={phaseWord ? `For your ${phaseWord} week` : "For your phase"} accent="sage">
+        <YoursCard className="fw-selected-phase" eyebrow={presentation ? "Something new" : "Tuned to your week"} title={presentation ? "A few discoveries" : phaseWord ? `For your ${phaseWord} week` : "For your phase"} accent="sage">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {phaseCards.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />)}
           </div>

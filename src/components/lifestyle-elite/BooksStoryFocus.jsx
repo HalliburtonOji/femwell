@@ -18,13 +18,13 @@
 // NO generative AI writing about her reading (Fable, Jan 2025 — the "Previously" is the author's own
 // last line); never fake a shelf (0 published FemWell fiction → curated public-domain classics);
 // no new entity or function (device-local storage + an authored module, like the club seed).
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Feather, BookOpen, ChevronLeft, ChevronRight, Check, Users, Coffee, RotateCcw, Sparkles, MessageCircle, BookMarked, CalendarPlus } from "lucide-react";
 import { readingPosition, isChapterRead } from "@/components/lifestyle/dailyStory";
 import { readingDaySet } from "@/components/community/readingActivity";
 import { monthlySet, DOORWAYS, DOORWAY_KEYS, getDoorway, setDoorway, passBook } from "@/components/lifestyle/booksMonthly";
-import { SEED_PICK, clubReached } from "@/components/community/bookClubConfig";
-import { loadShelf, addBook } from "@/components/community/bookshelf";
+import { clubReached, loadBookClubPick } from "@/components/community/bookClubConfig";
+import { loadShelf, readLocal, addBook, setStatus } from "@/components/community/bookshelf";
 import { readTimeLabel, countWords } from "@/components/brand/ReadingColumn";
 import { createPageUrl } from "@/utils";
 import { SERIF, UI } from "@/components/journal/Editorial";
@@ -36,7 +36,7 @@ const clean = (s) => String(s || "").replace(/<[^>]+>/g, "").replace(/\*(.+?)\*/
 const paras = (s) => String(s || "").replace(/<[^>]+>/g, "").split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
 const isBook = (c) => /book/i.test(c?.type || "") || !!c?._book || /book/i.test(c?._continue?.type || "") || !!c?._continue?._book;
 const isSerial = (c) => /daily_story|story/i.test(c?.type || "") || c?.id === "daily-chapter";
-const doorBtnStyle = () => ({ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, minHeight: 40, background: "transparent", border: `1px solid ${C.hair}`, borderRadius: 11, fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: C.ink, cursor: "pointer", padding: "0 6px", whiteSpace: "nowrap" });
+const doorBtnStyle = () => ({ flex: "1 1 130px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, minHeight: 44, background: "transparent", border: `1px solid ${C.hair}`, borderRadius: 11, fontFamily: UI, fontSize: 14, fontWeight: 700, color: C.ink, cursor: "pointer", padding: "8px 12px", whiteSpace: "normal" });
 const ord = (n) => (n % 10 === 1 && n !== 11 ? "st" : n % 10 === 2 && n !== 12 ? "nd" : n % 10 === 3 && n !== 13 ? "rd" : "th");
 
 // ── a flora book cover (never a photo — §6.7.7 hard rule 1) ────────────────────────────────────
@@ -57,14 +57,14 @@ function Cover({ title, w = 84, h = 118, room = false }) {
 }
 
 // ── the run strip — this run's series only; navigation, never a score ──────────────────────────
-function RunStrip({ pool, unlockedCount, nextIndex, onOpen }) {
+export function RunStrip({ pool, unlockedCount, nextIndex, onOpen, room = false }) {
   return (
-    <div className="fw-books-run" style={{ display: "grid", gridTemplateColumns: "repeat(10, 1fr)", gap: "7px 5px", margin: "4px 0 12px" }}>
+    <div className={room ? "fw-books-run fw-books-run6grid" : "fw-books-run"} style={{ display: "grid", gridTemplateColumns: room ? "repeat(6, minmax(44px, 1fr))" : "repeat(auto-fit, minmax(44px, 1fr))", gap: 6, margin: "4px 0 12px" }}>
       {pool.map((c, i) => {
         const read = c?.id ? isChapterRead(c.id) : false;
         const locked = i >= unlockedCount;
         const isNext = i === nextIndex;
-        const base = { aspectRatio: "1", borderRadius: 999, display: "grid", placeItems: "center", fontFamily: UI, fontSize: 10, fontWeight: 700, cursor: locked ? "default" : "pointer", border: "none", padding: 0 };
+        const base = { minHeight: 44, minWidth: 44, borderRadius: 9, display: "grid", placeItems: "center", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: locked ? "default" : "pointer", border: "none", padding: 0 };
         const style = isNext ? { ...base, background: C.ink, color: "#fff", boxShadow: `0 0 0 2px ${C.ground}, 0 0 0 3.5px ${C.ink}` }
           : read ? { ...base, background: "#DCE8DC", color: "#3E6B4A" }
           : locked ? { ...base, background: "transparent", border: `1px dashed ${C.hair}`, color: C.faint }
@@ -80,7 +80,7 @@ function RunStrip({ pool, unlockedCount, nextIndex, onOpen }) {
   );
 }
 const Legend = () => (
-  <div style={{ display: "flex", gap: 12, justifyContent: "center", fontFamily: UI, fontSize: 11, color: C.slate, margin: "0 0 12px", flexWrap: "wrap" }}>
+  <div style={{ display: "flex", gap: 12, justifyContent: "center", fontFamily: UI, fontSize: 13, color: C.slate, margin: "0 0 12px", flexWrap: "wrap" }}>
     {[["#DCE8DC", "read", null], [C.ink, "next", null], ["transparent", "open", "solid"], ["transparent", "opens daily", "dashed"]].map(([bg, label, border]) => (
       <span key={label} style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
         <i style={{ width: 9, height: 9, borderRadius: 99, background: bg, border: border ? `1px ${border} ${border === "dashed" ? C.hair : C.ink}` : "none", display: "inline-block" }} />{label}
@@ -93,11 +93,11 @@ const Legend = () => (
 function WayIn({ Icon, title, line, onClick, first }) {
   return (
     <button onClick={onClick} className="fw-elite-press"
-      style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left", background: "transparent", border: "none", borderTop: first ? "none" : `1px solid ${C.hair}`, padding: "12px 2px", cursor: "pointer" }}>
+      style={{ display: "flex", alignItems: "center", gap: 12, minHeight:44, width: "100%", textAlign: "left", background: "transparent", border: "none", borderTop: first ? "none" : `1px solid ${C.hair}`, padding: "12px 2px", cursor: "pointer" }}>
       <span style={{ width: 30, height: 30, borderRadius: 9, background: C.sunk, border: `1px solid ${C.hair}`, display: "grid", placeItems: "center", flexShrink: 0 }}><Icon size={15} color={C.ink} strokeWidth={1.7} /></span>
       <span style={{ flex: 1, minWidth: 0 }}>
         <span style={{ display: "block", fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: C.ink, lineHeight: 1.25 }}>{title}</span>
-        <span style={{ display: "block", fontFamily: SERIF, fontSize: 14.5, color: C.slate, lineHeight: 1.4, marginTop: 1 }}>{line}</span>
+        <span style={{ display: "block", fontFamily: SERIF, fontSize: 15, color: C.slate, lineHeight: 1.4, marginTop: 1 }}>{line}</span>
       </span>
       <ChevronRight size={15} color={C.faint} />
     </button>
@@ -115,9 +115,57 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
   // rows via the existing bookshelf API — adding here shows up there, and her status (reading /
   // want / finished / set aside) is one cross-device truth instead of two device-local copies.
   const [shelf, setShelf] = useState([]);
-  useEffect(() => { let dead = false; (async () => { try { const s = await loadShelf(userId); if (!dead) setShelf(s); } catch { /* the shelf is a nicety */ } })(); return () => { dead = true; }; }, [userId, passTick]);
-  const onShelf = (gid) => shelf.find((b) => b.gutenberg_id === String(gid)) || null;
-  const shelve = async (bk, status) => { try { await addBook(userId, { title: bk.title, author: bk.author, gutenberg_id: bk.gutenberg_id, status, source: "curated" }); setPassTick((t) => t + 1); } catch { /* ignore */ } };
+  const [shelfScope, setShelfScope] = useState(userId);
+  const owner = useRef({ id: userId, generation: 0 });
+  if (owner.current.id !== userId) owner.current = { id: userId, generation: owner.current.generation + 1 };
+  const shelfSequence = useRef(0);
+  const shelfPending = useRef(false);
+  const [shelfBusy, setShelfBusy] = useState(false);
+  const [shelfLoading, setShelfLoading] = useState(true);
+  const [shelfError, setShelfError] = useState("");
+  const [shelfRetry, setShelfRetry] = useState(null);
+  const refreshShelf = useCallback(async () => {
+    const sequence = ++shelfSequence.current;
+    const generation = owner.current.generation;
+    setShelfLoading(true);
+    try {
+      const rows = await loadShelf(userId, { strict: true });
+      if (owner.current.id === userId && generation === owner.current.generation && sequence === shelfSequence.current) { setShelf(rows); setShelfError(rows.syncError || ""); }
+    } catch { if (generation === owner.current.generation && sequence === shelfSequence.current) setShelfError("Couldn't refresh your shelf. Your device copy is still here."); }
+    finally { if (generation === owner.current.generation && sequence === shelfSequence.current) setShelfLoading(false); }
+  }, [userId]);
+  useEffect(() => {
+    setShelfScope(userId); setShelf(readLocal(userId)); setShelfError(""); setShelfRetry(null); shelfPending.current = false; setShelfBusy(false);
+    refreshShelf();
+    const changed = event => { if (event.detail?.userId === userId) refreshShelf(); };
+    window.addEventListener("fw_bookshelf_changed", changed);
+    return () => { shelfSequence.current++; window.removeEventListener("fw_bookshelf_changed", changed); };
+  }, [userId, refreshShelf]);
+  const visibleShelf = shelfScope === userId ? shelf : readLocal(userId);
+  const onShelf = (gid) => visibleShelf.find((b) => b.gutenberg_id === String(gid)) || null;
+  const shelve = async (bk, status) => {
+    if (shelfPending.current) return;
+    shelfPending.current = true; setShelfBusy(true); setShelfError("");
+    const sourceOwner = userId;
+    const generation = owner.current.generation;
+    try {
+      const existing = onShelf(bk.gutenberg_id);
+      const rows = existing ? await setStatus(userId, existing.key, status) : await addBook(userId, { title: bk.title, author: bk.author, gutenberg_id: bk.gutenberg_id, status, source: "curated" });
+      if (owner.current.id === sourceOwner && generation === owner.current.generation) { setShelf(rows); setShelfRetry(null); }
+    } catch { if (owner.current.id === sourceOwner && generation === owner.current.generation) { setShelfError(`Couldn't change ${bk.title} on your shelf. Try again.`); setShelfRetry({ book: bk, status }); } }
+    finally { if (owner.current.id === sourceOwner && generation === owner.current.generation) { shelfPending.current = false; setShelfBusy(false); } }
+  };
+  const [club, setClub] = useState(null);
+  const [clubError, setClubError] = useState("");
+  const [clubLoading, setClubLoading] = useState(true);
+  const clubSequence = useRef(0);
+  const refreshClub = useCallback(async () => {
+    const sequence = ++clubSequence.current; setClubLoading(true); setClubError("");
+    try { const next = await loadBookClubPick(); if (sequence === clubSequence.current) setClub(next); }
+    catch { if (sequence === clubSequence.current) setClubError("Couldn't refresh the book club. Try again."); }
+    finally { if (sequence === clubSequence.current) setClubLoading(false); }
+  }, []);
+  useEffect(() => { refreshClub(); return () => { clubSequence.current++; }; }, [refreshClub]);
   const set = useMemo(() => monthlySet(new Date(), lifeStage, doorway), [lifeStage, doorway, passTick]);
 
   const contBooks = (continueCards || []).filter(isBook);
@@ -157,8 +205,8 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
 
   // the club — ALREADY BUILT, finally surfaced. Her checkpoint is self-attested + device-local
   // (clubReached), so the conversation is gated by her own position: it structurally cannot spoil.
-  const reached = clubReached(SEED_PICK.pick_key);
-  const nextCp = SEED_PICK.checkpoints[Math.min(SEED_PICK.checkpoints.length - 1, Math.max(0, reached + 1))];
+  const reached = club ? clubReached(club.pick_key) : -1;
+  const nextCp = club?.checkpoints?.find(cp => cp.index > reached) || club?.checkpoints?.at(-1) || null;
 
   // her own words — the ONLY progress artefact in this section. No counts anywhere.
   const herWords = useMemo(() => {
@@ -190,7 +238,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
       {pos && her ? (
         <Card wash="crimson" className={room ? "fw-room-chapter-leaf" : undefined}>
           <Eyebrow cw="crimson" align="left">Your next chapter</Eyebrow>
-          <Title align="left" size={25} style={{ margin: "0 0 4px" }}>{roomChapterTitle || clean(her.title) || `Chapter ${herN}`}</Title>
+          <Title align="left" size={20} style={{ margin: "0 0 4px" }}>{roomChapterTitle || clean(her.title) || `Chapter ${herN}`}</Title>
           <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 600, color: C.slate, letterSpacing: ".03em", margin: "0 0 10px" }}>
             {series} · chapter {herN} of {total}{chapterTime ? ` · ${chapterTime}` : ""}
           </div>
@@ -201,11 +249,11 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
           ) : null}
           {previously ? (
             <div style={{ margin: "0 0 12px", paddingLeft: 12, borderLeft: `2px solid ${C.goldHair}` }}>
-              <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color: C.gold, marginBottom: 3 }}>Previously</div>
-              <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, fontWeight: 500, color: C.slate, lineHeight: 1.5, margin: 0 }}>{previously}</p>
+              <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, letterSpacing: ".16em", textTransform: "uppercase", color: C.gold, marginBottom: 3 }}>Previously</div>
+              <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, fontWeight: 500, color: C.slate, lineHeight: 1.5, margin: 0 }}>{previously}</p>
             </div>
           ) : null}
-          {paras(room ? roomChapterBody : her.segment_text).slice(0, 1).map((p, i) => <Body key={i} size={16.5} style={{ margin: "0 0 14px" }}>{p}</Body>)}
+          {paras(room ? roomChapterBody : her.segment_text).slice(0, 1).map((p, i) => <Body key={i} size={16} style={{ margin: "0 0 14px" }}>{p}</Body>)}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <button onClick={() => onRead && onRead(Math.max(0, pos.index - 1))} disabled={pos.index === 0} aria-label="Previous chapter" className="fw-elite-press"
               style={{ width: 44, height: 44, borderRadius: 12, border: `1px solid ${C.hair}`, background: C.surface, color: C.ink, display: "grid", placeItems: "center", cursor: pos.index === 0 ? "default" : "pointer", opacity: pos.index === 0 ? 0.35 : 1, flexShrink: 0 }}><ChevronLeft size={18} /></button>
@@ -213,7 +261,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
             <button onClick={() => onRead && onRead(Math.min(pos.unlockedCount - 1, pos.index + 1))} disabled={!isChapterRead(her.id) || pos.index >= pos.unlockedCount - 1} aria-label="Next chapter" className="fw-elite-press"
               style={{ width: 44, height: 44, borderRadius: 12, border: `1px solid ${C.hair}`, background: C.surface, color: C.ink, display: "grid", placeItems: "center", cursor: "pointer", opacity: (!isChapterRead(her.id) || pos.index >= pos.unlockedCount - 1) ? 0.35 : 1, flexShrink: 0 }}><ChevronRight size={18} /></button>
           </div>
-          <div style={{ fontFamily: UI, fontSize: 11, color: C.faint, textAlign: "center", margin: "10px 0 0" }}>‹ re-read · › moves on once this one's read</div>
+          <div style={{ fontFamily: UI, fontSize: 13, color: C.faint, textAlign: "center", margin: "10px 0 0" }}>‹ re-read · › moves on once this one's read</div>
         </Card>
       ) : (
         <Card className={room ? "fw-room-chapter-leaf" : undefined}>
@@ -229,18 +277,18 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
       {pos ? (
         <section className={room ? "fw-room-chapter-index" : undefined}>
           <Eyebrow cw="plum">{pick?.monthName ? `${pick.monthName}'s run` : "The run"} · {total} chapters</Eyebrow>
-          <RunStrip pool={pos.pool} unlockedCount={pos.unlockedCount} nextIndex={pos.index} onOpen={(i) => onRead && onRead(i)} />
+          <RunStrip room={room} pool={pos.pool} unlockedCount={pos.unlockedCount} nextIndex={pos.index} onOpen={(i) => onRead && onRead(i)} />
           <Legend />
           <div style={{ display: "flex", flexDirection: "column" }}>
             {pos.pool.slice(pos.index + 1, pos.index + 3).map((c, i) => {
               const n = c.day_number || pos.index + 2 + i;
               const locked = pos.index + 1 + i >= pos.unlockedCount;
               return (
-                <button key={c.id || n} onClick={() => !locked && onRead && onRead(pos.index + 1 + i)} className="fw-elite-press"
-                  style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", textAlign: "left", background: "transparent", border: "none", borderTop: `1px solid ${C.hair}`, padding: "11px 2px", cursor: locked ? "default" : "pointer", opacity: locked ? 0.72 : 1 }}>
-                  <span style={{ width: 26, height: 26, borderRadius: 8, border: `1px solid ${C.hair}`, display: "grid", placeItems: "center", fontFamily: UI, fontSize: 11, fontWeight: 800, color: C.slate, flexShrink: 0 }}>{n}</span>
+                <button key={c.id || n} disabled={locked} onClick={() => !locked && onRead && onRead(pos.index + 1 + i)} className="fw-elite-press"
+                  style={{ display: "flex", alignItems: "center", gap: 11, minHeight:44, width: "100%", textAlign: "left", background: "transparent", border: "none", borderTop: `1px solid ${C.hair}`, padding: "11px 2px", cursor: locked ? "default" : "pointer", opacity: locked ? 0.72 : 1 }}>
+                  <span style={{ width: 26, height: 26, borderRadius: 8, border: `1px solid ${C.hair}`, display: "grid", placeItems: "center", fontFamily: UI, fontSize: 13, fontWeight: 700, color: C.slate, flexShrink: 0 }}>{n}</span>
                   <span style={{ flex: 1, minWidth: 0, fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: C.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{clean(c.title) || `Chapter ${n}`}</span>
-                  <span style={{ fontFamily: UI, fontSize: 11, color: C.faint, flexShrink: 0 }}>{locked ? `opens the ${n}${ord(n)}` : i === 0 ? "up next" : "after that"}</span>
+                  <span style={{ fontFamily: UI, fontSize: 13, color: C.faint, flexShrink: 0 }}>{locked ? `opens the ${n}${ord(n)}` : i === 0 ? "up next" : "after that"}</span>
                 </button>
               );
             })}
@@ -254,8 +302,8 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
       {/* 3 · NOT MUCH IN THE TANK? — capacity, not motivation. The section's differentiator. */}
       <section className={room ? "fw-room-capacity" : undefined}>
         {room && <RestingBook/>}
-        <Eyebrow cw="sage">Not much in the tank?</Eyebrow>
-        <Title>A way in that costs nothing</Title>
+        <Eyebrow cw="sage">Short on time?</Eyebrow>
+        <Title>One chapter. Then we’ll see.</Title>
         <Card className={room ? "fw-room-tissue" : undefined}>
           {shortest ? (
             <WayIn first Icon={Coffee} title="The shortest one waiting"
@@ -268,7 +316,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
           <WayIn Icon={BookOpen} title="Just a page" line="Open it, read one page, close it. That counts."
             onClick={() => (pos ? onRead && onRead(pos.index) : set.featured ? openBook(set.featured) : onOpenBook && onOpenBook({ _library: true }))} />
         </Card>
-        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: C.faint, textAlign: "center", lineHeight: 1.5, margin: "10px 14px 0" }}>Some weeks there's no room for a book. This is here for those weeks.</p>
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: C.faint, textAlign: "center", lineHeight: 1.5, margin: "10px 14px 0" }}>Some weeks there's no room for a book. This is here for those weeks.</p>
       </section>
 
       {!room && <Fleuron my={24} />}
@@ -281,26 +329,26 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
             <div style={{ display: "flex", gap: 14 }}>
               <Cover title={set.featured.title} room={room}/>
               <div style={{ minWidth: 0, display: "flex", flexDirection: "column" }}>
-                <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 21, lineHeight: 1.12, color: C.ink }}>{set.featured.title}</div>
-                <div style={{ fontFamily: UI, fontSize: 11.5, color: C.slate, margin: "3px 0 7px" }}>{set.featured.author} · free to read</div>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: C.gold, marginBottom: 6 }}>
+                <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 18, lineHeight: 1.3, color: C.ink }}>{set.featured.title}</div>
+                <div style={{ fontFamily: UI, fontSize: 13, color: C.slate, margin: "3px 0 7px" }}>{set.featured.author} · free to read</div>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 13, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: C.gold, marginBottom: 6 }}>
                   <Sparkles size={11} /> {DOORWAYS[set.featured.doorway]?.label}
                 </div>
-                <p style={{ fontFamily: SERIF, fontSize: 15.5, fontWeight: 500, lineHeight: 1.5, color: C.ink, margin: 0 }}>{set.featured.why}</p>
+                <p style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 500, lineHeight: 1.5, color: C.ink, margin: 0 }}>{set.featured.why}</p>
               </div>
             </div>
             {set.featured.notes ? (
-              <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${C.hair}`, fontFamily: UI, fontSize: 11.5, color: C.slate, lineHeight: 1.5 }}>
+              <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${C.hair}`, fontFamily: UI, fontSize: 13, color: C.slate, lineHeight: 1.5 }}>
                 <b style={{ color: C.ink, fontWeight: 700 }}>Worth knowing:</b> {set.featured.notes}.
               </div>
             ) : null}
             <div className={room ? "fw-room-feature-reading" : undefined} style={{ marginTop: 14 }}><Cta filled Icon={BookOpen} onClick={() => openBook(set.featured)}>Start reading</Cta></div>
             {/* the three doors out — shelf (UserBook, shared with Community) · plan a time
                 (PlannerItems) · talk about it (this book's readers' corner in Community). */}
-            <div className={room ? "fw-room-connections" : undefined} style={{ display: "flex", gap: 8, marginTop: 10 }}>
+            <div className={room ? "fw-room-connections" : undefined} style={{ display: "flex", gap: 8, flexWrap:"wrap", marginTop: 10 }}>
               {(() => { const on = onShelf(set.featured.gutenberg_id); return (
-                <button onClick={() => shelve(set.featured, on ? "reading" : "want")} className={room ? "fw-elite-press fw-room-shelf-marker" : "fw-elite-press"} style={doorBtnStyle()}>
-                  <BookMarked size={14} color={on ? "#5F8A6B" : C.ink} strokeWidth={1.7} />{on ? (on.status === "reading" ? "Reading" : "On your shelf") : "Add to shelf"}
+                <button disabled={shelfBusy || shelfLoading || on?.status === "reading"} aria-busy={shelfBusy} onClick={() => shelve(set.featured, on ? "reading" : "want")} className={room ? "fw-elite-press fw-room-shelf-marker" : "fw-elite-press"} style={doorBtnStyle()}>
+                  <BookMarked size={14} color={on ? "#5F8A6B" : C.ink} strokeWidth={1.7} />{shelfBusy ? "Saving…" : shelfLoading ? "Loading shelf…" : on ? (on.status === "reading" ? "On your reading shelf" : "Mark as reading") : "Add to shelf"}
                 </button>); })()}
               <button onClick={() => onSchedule && onSchedule({ title: `Read ${set.featured.title}`, ref: `gutenberg:${set.featured.gutenberg_id}` })} className="fw-elite-press" style={doorBtnStyle()}>
                 <CalendarPlus size={14} color={C.ink} strokeWidth={1.7} />Plan a time
@@ -309,6 +357,11 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
                 <MessageCircle size={14} color={C.ink} strokeWidth={1.7} />Talk about it
               </button>
             </div>
+            {onShelf(set.featured.gutenberg_id) && <div className="fw-room-shelf-status" style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:10}} aria-label="Reading status">
+              {[["want","Want to read"],["reading","Reading"],["finished","Finished"],["set_aside","Set aside"]].map(([value,label]) => <button key={value} aria-pressed={onShelf(set.featured.gutenberg_id)?.status === value} disabled={shelfBusy || shelfLoading} onClick={() => shelve(set.featured,value)} className="fw-elite-press" style={{...doorBtnStyle(),flex:"1 1 130px"}}>{label}</button>)}
+            </div>}
+            {!userId && onShelf(set.featured.gutenberg_id) && <p style={{fontFamily:UI,fontSize:13,color:C.slate}}>Kept on this device.</p>}
+            {shelfScope === userId && shelfError && <div role="alert" style={{fontFamily:UI,fontSize:13,color:C.crimson,marginTop:10}}><p>{shelfError}</p><button disabled={shelfBusy || shelfLoading} onClick={() => shelfRetry ? shelve(shelfRetry.book,shelfRetry.status) : refreshShelf()} style={doorBtnStyle()}>Try again</button></div>}
             <Quiet onClick={() => { passBook(set.featured.gutenberg_id); setPassTick((t) => t + 1); }}>Not for me — show me another ›</Quiet>
           </Card>
         ) : (
@@ -321,19 +374,22 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
         <Eyebrow cw="blush">Read it with others</Eyebrow>
         <Title>The book club</Title>
         <Card className={room ? "fw-room-correspondence" : undefined}>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
-            <span style={{ fontFamily: SERIF, fontSize: 19, fontWeight: 600, color: C.ink }}>{SEED_PICK.title}</span>
-            <span style={{ fontFamily: UI, fontSize: 11.5, color: C.slate }}>{SEED_PICK.author} · {SEED_PICK.cadence}</span>
+          {clubLoading && <p role="status" style={{fontFamily:UI,fontSize:13,color:C.slate}}>Finding the club’s current read…</p>}
+          {clubError && <div role="alert"><p>{clubError}</p><button onClick={refreshClub} style={doorBtnStyle()}>Try again</button></div>}
+          {club && <><div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
+            <span style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: C.ink }}>{club.title}</span>
+            <span style={{ fontFamily: UI, fontSize: 13, color: C.slate }}>{[club.author,club.cadence,club.gutenberg_id ? `Gutenberg ${club.gutenberg_id}` : null].filter(Boolean).join(" · ")}</span>
           </div>
-          <Body size={16} style={{ margin: "0 0 12px", color: C.slate }}>{clean(SEED_PICK.host_intro).slice(0, 160)}…</Body>
-          <div className={room ? "fw-room-checkpoint" : undefined} style={{ background: C.sunk, border: `1px solid ${C.hair}`, borderRadius: 13, padding: "12px 14px" }}>
-            <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color: C.gold, marginBottom: 4 }}>{reached < 0 ? "It starts at" : "Your next checkpoint"}</div>
+          <Body size={16} style={{ margin: "0 0 12px", color: C.slate }}>{clean(club.host_intro)}</Body>
+          {club.trigger_warnings?.length > 0 && <div style={{fontFamily:UI,fontSize:13,color:C.slate,marginBottom:12}}><strong>Worth knowing</strong>{club.trigger_warnings.map(line => <p key={line}>{line}</p>)}</div>}
+          {nextCp ? <div className={room ? "fw-room-checkpoint" : undefined} style={{ background: C.sunk, border: `1px solid ${C.hair}`, borderRadius: 13, padding: "12px 14px" }}>
+            <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, letterSpacing: ".16em", textTransform: "uppercase", color: C.gold, marginBottom: 4 }}>{reached < 0 ? "It starts at" : "Your next checkpoint"}</div>
             <div style={{ fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: C.ink, lineHeight: 1.3 }}>{nextCp?.label}</div>
-            <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, fontWeight: 500, color: C.slate, lineHeight: 1.5, margin: "6px 0 0" }}>{clean(nextCp?.jess_prompt)}</p>
-          </div>
-          <div style={{ fontFamily: UI, fontSize: 11, color: C.faint, textAlign: "center", margin: "10px 0 0", lineHeight: 1.5 }}>Each checkpoint's conversation opens when <em>you</em> say you've reached it — so nothing can spoil it.</div>
+            {reached >= nextCp.index ? <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, fontWeight: 500, color: C.slate, lineHeight: 1.5, margin: "6px 0 0" }}>{clean(nextCp.jess_prompt)}</p> : <p style={{fontFamily:UI,fontSize:13,color:C.slate,margin:"8px 0 0"}}>The conversation opens when you reach this part.</p>}
+          </div> : <Body size={16}>This book’s checkpoints haven’t been published yet.</Body>}
+          <div style={{ fontFamily: UI, fontSize: 13, color: C.faint, textAlign: "center", margin: "10px 0 0", lineHeight: 1.5 }}>Prompts stay tucked away until you reach each part.</div>
           <div style={{ marginTop: 12 }}><Cta Icon={Users} onClick={() => window.location.assign(createPageUrl("Community?view=bookclub"))}>Open the book club</Cta></div>
-          <Quiet onClick={() => onSchedule && onSchedule({ club: SEED_PICK })}>Put the six weeks in my planner ›</Quiet>
+          {club.checkpoints.length > 0 && <Quiet onClick={() => onSchedule && onSchedule({ club })}>Plan the club’s checkpoints ›</Quiet>}</>}
         </Card>
       </section>
 
@@ -348,8 +404,8 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
                 <Cover title={b.title} w={44} h={62} room={room}/>
                 <span style={{ flex: 1, minWidth: 0 }}>
                   <span style={{ display: "block", fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: C.ink, lineHeight: 1.2 }}>{b.title}</span>
-                  <span style={{ display: "block", fontFamily: UI, fontSize: 11, color: C.slate, margin: "2px 0 3px" }}>{b.author} · {DOORWAYS[b.doorway]?.label}</span>
-                  <span style={{ display: "block", fontFamily: SERIF, fontSize: 14.5, color: C.slate, lineHeight: 1.4 }}>{b.why}</span>
+                  <span style={{ display: "block", fontFamily: UI, fontSize: 13, color: C.slate, margin: "2px 0 3px" }}>{b.author} · {DOORWAYS[b.doorway]?.label}</span>
+                  <span style={{ display: "block", fontFamily: SERIF, fontSize: 15, color: C.slate, lineHeight: 1.4 }}>{b.why}</span>
                 </span>
                 <ChevronRight size={15} color={C.faint} style={{ flexShrink: 0 }} />
               </button>
@@ -357,15 +413,15 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
             {set.reveal ? (
               <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 2px", borderTop: set.alternates.length ? `1px solid ${C.hair}` : "none" }}>
                 {set.reveal.revealed ? <Cover title={set.reveal.title} w={44} h={62} room={room}/> : (
-                  <span style={{ width: 44, height: 62, borderRadius: 8, border: `1px dashed ${C.goldHair}`, display: "grid", placeItems: "center", flexShrink: 0, fontFamily: UI, fontSize: 10, fontWeight: 700, color: C.faint }}>{set.reveal.day}{ord(set.reveal.day)}</span>
+                  <span style={{ width: 44, height: 62, borderRadius: 8, border: `1px dashed ${C.goldHair}`, display: "grid", placeItems: "center", flexShrink: 0, fontFamily: UI, fontSize: 13, fontWeight: 700, color: C.faint }}>{set.reveal.day}{ord(set.reveal.day)}</span>
                 )}
                 <span style={{ flex: 1, minWidth: 0 }}>
                   <span style={{ display: "block", fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: set.reveal.revealed ? C.ink : C.slate, lineHeight: 1.2 }}>{set.reveal.revealed ? set.reveal.title : "The last one of the month"}</span>
-                  <span style={{ display: "block", fontFamily: UI, fontSize: 11, color: C.slate, margin: "2px 0 3px" }}>{set.reveal.revealed ? `${set.reveal.author} · ${DOORWAYS[set.reveal.doorway]?.label}` : `${DOORWAYS[set.reveal.doorway]?.label} · arrives on the ${set.reveal.day}${ord(set.reveal.day)}`}</span>
-                  <span style={{ display: "block", fontFamily: SERIF, fontSize: 14.5, color: C.slate, lineHeight: 1.4 }}>{set.reveal.why}</span>
+                  <span style={{ display: "block", fontFamily: UI, fontSize: 13, color: C.slate, margin: "2px 0 3px" }}>{set.reveal.revealed ? `${set.reveal.author} · ${DOORWAYS[set.reveal.doorway]?.label}` : `${DOORWAYS[set.reveal.doorway]?.label} · arrives on the ${set.reveal.day}${ord(set.reveal.day)}`}</span>
+                  <span style={{ display: "block", fontFamily: SERIF, fontSize: 15, color: C.slate, lineHeight: 1.4 }}>{set.reveal.why}</span>
                 </span>
                 {set.reveal.revealed ? (
-                  <button onClick={() => openBook(set.reveal)} className="fw-elite-press" aria-label={`Open ${set.reveal.title}`} style={{ background: "transparent", border: "none", cursor: "pointer", padding: 0, flexShrink: 0 }}><ChevronRight size={15} color={C.faint} /></button>
+                  <button onClick={() => openBook(set.reveal)} className="fw-elite-press" aria-label={`Open ${set.reveal.title}`} style={{ minWidth:44,minHeight:44,display:"grid",placeItems:"center",background: "transparent", border: "none", cursor: "pointer", padding: 0, flexShrink: 0 }}><ChevronRight size={15} color={C.faint} /></button>
                 ) : null}
               </div>
             ) : null}
@@ -385,7 +441,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
         return (
           <section className={room ? "fw-room-grown" : undefined} style={{ marginTop: 24 }}>
             <Eyebrow cw="sage">In your garden</Eyebrow>
-            <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16.5, fontWeight: 500, color: C.ink, lineHeight: 1.55, textAlign: "center", margin: "0 auto", maxWidth: "26em" }}>
+            <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16, fontWeight: 500, color: C.ink, lineHeight: 1.55, textAlign: "center", margin: "0 auto", maxWidth: "26em" }}>
               Time with a book has grown forget-me-nots in your garden this month — they cluster, because reading is something you do in company.
             </p>
             <Quiet onClick={() => window.location.assign(createPageUrl("Garden"))}>See your garden ›</Quiet>
@@ -398,7 +454,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
         <section className={room ? "fw-room-private-slip" : undefined} style={{ marginTop: 24 }}>
           <Eyebrow cw="plum">What you wrote</Eyebrow>
           <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, fontWeight: 500, color: C.ink, lineHeight: 1.55, textAlign: "center", margin: "0 auto", maxWidth: "28em" }}>“{clean(herWords).slice(0, 220)}”</p>
-          <div style={{ fontFamily: UI, fontSize: 11, color: C.faint, textAlign: "center", marginTop: 8 }}>the last thing you left at the end of a chapter</div>
+          <div style={{ fontFamily: UI, fontSize: 13, color: C.faint, textAlign: "center", marginTop: 8 }}>the last thing you left at the end of a chapter</div>
         </section>
       ) : null}
 
@@ -406,17 +462,17 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
       {!doorway ? (
         <section className={room ? "fw-room-doorway" : undefined} style={{ marginTop: 24 }}>
           <Eyebrow cw="gold">One question, once</Eyebrow>
-          <Title size={21}>What draws you into a book?</Title>
+          <Title size={20}>What draws you into a book?</Title>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
             {DOORWAY_KEYS.map((k) => (
               <button key={k} onClick={() => { setDoorway(k); setDoor(k); }} className="fw-elite-press"
                 style={{ textAlign: "left", background: C.surface, border: `1px solid ${C.hair}`, borderRadius: 14, padding: "13px 14px", cursor: "pointer" }}>
-                <span style={{ display: "block", fontFamily: SERIF, fontSize: 16.5, fontWeight: 600, color: C.ink }}>{DOORWAYS[k].label}</span>
-                <span style={{ display: "block", fontFamily: SERIF, fontSize: 13.5, color: C.slate, lineHeight: 1.35, marginTop: 2 }}>{DOORWAYS[k].line}</span>
+                <span style={{ display: "block", fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: C.ink }}>{DOORWAYS[k].label}</span>
+                <span style={{ display: "block", fontFamily: SERIF, fontSize: 14, color: C.slate, lineHeight: 1.35, marginTop: 2 }}>{DOORWAYS[k].line}</span>
               </button>
             ))}
           </div>
-          <div style={{ fontFamily: UI, fontSize: 11, color: C.faint, textAlign: "center", marginTop: 9 }}>{room ? "We’ll keep this choice on this device to help order your books." : "It only sorts what's shown here. Nothing about you is saved."}</div>
+          <div style={{ fontFamily: UI, fontSize: 13, color: C.faint, textAlign: "center", marginTop: 9 }}>{room ? "We’ll keep this choice on this device to help order your books." : "It only sorts what's shown here. Nothing about you is saved."}</div>
         </section>
       ) : null}
 

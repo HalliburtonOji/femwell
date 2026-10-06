@@ -30,10 +30,21 @@ export async function saveItem({ itemType, itemId, title, previewText = "", meta
 }
 
 export async function removeSavedItem(itemType, itemId) {
-  const existing = await findSavedItem(itemType, itemId);
-  if (!existing) return null;
-  await base44.entities.SavedItems.delete(existing.id);
-  return existing;
+  const user = await getUser();
+  const filter = {user_id:user.id,item_type:itemType,item_id:itemId};
+  const matches = [], seen = new Set();
+  for(let skip=0;;skip+=100){
+    const page=await base44.entities.SavedItems.filter(filter,"-created_date",100,skip);
+    const fresh=page.filter(row=>row.user_id===user.id && !seen.has(row.id));
+    fresh.forEach(row=>{seen.add(row.id);matches.push(row);});
+    if(page.length<100)break;
+    if(!fresh.length)throw new Error("Saved pagination did not advance");
+  }
+  if(!matches.length)return null;
+  for(const row of matches)await base44.entities.SavedItems.delete(row.id);
+  const remaining=await base44.entities.SavedItems.filter(filter,undefined,1);
+  if(remaining.some(row=>row.user_id===user.id))throw new Error("This keep is still present");
+  return matches[0];
 }
 
 export async function toggleSavedItem({ itemType, itemId, title, previewText = "", meta = {} }) {
