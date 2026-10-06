@@ -7,6 +7,14 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-06 · FIVE SKY WORLDS READY FOR IDEAS REVIEW
+> - Final source **b84ad39** pushed, live **index-rEG30ljq.js** HTTP/native confirmed. Exactly5 complete candidates in organised Ideas: Workbench, Conservatory, Press, Petal, Light. All15 native360/390/430 headers, each lesson/expanded chart430, real Moon help/chart/Ask/Next/Replay→Still/Books voice/existing kept exact return proved. Full145 tests pass, lint0errors, production build succeeds. Main promotion held.
+> - Independent Atelier clears reviewed P0/P1; P2 remains Petal's separated small flower and partly shared body geometry. Actual Ideas pill→Lifestyle board→five-world group/brief verified. No claim untouched lower conditional/backend/physical iPhone touch paths passed. Evidence/catalogue/limits: **creative/sky-worlds-verification.md**. Bible10.5.15 + one HTML mirror updated, approved Books art retained. Both claims released; final review-record/static brief deploy next (unchanged hash expected).
+>
+> ### CURRENT STATE — 2026-10-06 · EDGE / MATERIAL REFINEMENTS LIVE
+> - Source **0f33c44 + b84ad39** pushed; stable final production build and frontend deploy succeed. HTTP **index-rEG30ljq.js** confirmed. Petal artwork-only edge fade, organic lesson clearing and larger glass/bud detail address independent pixel audit. Main held; final local composite reproof next.
+> - Native all15 headers fit/no horizontal overflow with exact oxblood titles. Full15files/145 tests passes; actual Next all5, Moon help, chart, Ask and Books voice proven. Mouse drag did not advance desktop native carousel; iPhone touch swipe remains unverified, arrow controls work. Existing saved SunSurfacev1 return link preserves Press direction/edition; settled saved-note readback next. No new backend names/schema changes.
+>
 > ### CURRENT STATE — 2026-10-06 · FINAL TITLE CASCADE DEPLOYED
 > - Repairs **4633f9c + b9307f0** pushed; stable production build and frontend deploy succeed. HTTP **index-CDx1mgNg.js** confirmed. Exact scoped title rule fixes inherited black/bold override, retains Press/Workbench editorial variants. Main held. Final native matrix in progress; source/full145 previously passes, actual chart opens and Ask focuses correct composer.
 >
