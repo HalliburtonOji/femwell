@@ -478,7 +478,7 @@ function Agenda({ blocks, anchors, peakIdx, phase, offset, onToggle, onEdit, onA
                       {peak && <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: phase.hue }}>· peak</span>}
                     </div>
                   </button>
-                  {plannerReturnLink(b) && <a href={plannerReturnLink(b).href} aria-label={`${plannerReturnLink(b).label}: ${b.title}`} style={{ display: "grid", placeItems: "center", minWidth: 36, minHeight: 44, color: tcw, flexShrink: 0 }}><ArrowRight size={16} aria-hidden="true" /></a>}
+                  {plannerReturnLink(b) && <a href={plannerReturnLink(b).href} aria-label={`${plannerReturnLink(b).label}: ${b.title}`} style={{ display: "grid", placeItems: "center", minWidth: 44, minHeight: 44, color: tcw, flexShrink: 0 }}><ArrowRight size={16} aria-hidden="true" /></a>}
                 </div>
               );
             })}

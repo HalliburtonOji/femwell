@@ -711,7 +711,8 @@ export function CoverCard({ item: raw, onOpen, onConsume, consumeLabel, previewT
 
   if (presentation === "folio") {
     const direct = onConsume || (item.external ? item.actions.find(action=>action.primary)?.onClick : null);
-    const details = <><span className="fw-folio-card__kind"><I size={13}/>{item.kind}</span><span className="fw-folio-card__title">{item.title}</span>{(previewText || summaryOf(item)) && <span className="fw-folio-card__hook">{previewText || summaryOf(item)}</span>}<span className="fw-folio-card__meta">{item.meta.map(([ic,label]) => {const M = ICON[ic] || Clock; return <span key={label}><M size={13}/>{label}</span>;})}</span><span className="fw-folio-card__actions">{playKind ? "Details" : consumeLabel || (item.external ? "Open source" : "Open")}<ChevronRight size={15}/></span></>;
+    const hook = previewText ?? summaryOf(item);
+    const details = <><span className="fw-folio-card__kind"><I size={13}/>{item.kind}</span><span className="fw-folio-card__title">{item.title}</span>{hook && <span className="fw-folio-card__hook">{hook}</span>}<span className="fw-folio-card__meta">{item.meta.map(([ic,label]) => {const M = ICON[ic] || Clock; return <span key={label}><M size={13}/>{label}</span>;})}</span><span className="fw-folio-card__actions">{playKind ? "Details" : consumeLabel || (item.external ? "Open source" : "Open")}<ChevronRight size={15}/></span></>;
     return <div className="fw-folio-card" data-compact={compact} data-media={playKind || undefined}>
       {playKind && <div className="fw-folio-card__media">{playKind === "audio" ? <FloraAudio compact src={item.audioSrc} label={item.playerLabel || "Episode controls"} accent={c.petal} initialDuration={item.duration || 0} item={item}/> : <CardMediaFace item={item} accent={c.petal} kind={playKind} compact={compact}/>}</div>}
       <button type="button" className="fw-folio-card__open" onClick={direct || onOpen}>{details}</button>
