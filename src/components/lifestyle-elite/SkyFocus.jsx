@@ -82,12 +82,12 @@ const Movement = ({ id, refs, children, focusable = false, className }) => (
 );
 
 // ── the chart triad — three hairline columns; tap one to unfold its reading ─────────────────────
-function TriadColumn({ Icon, label, sign, trait, desc, locked, onUnlock, first, celestial = false, expanded = false, onToggle }) {
+function TriadColumn({ world = false, Icon, label, sign, trait, desc, locked, onUnlock, first, celestial = false, expanded = false, onToggle }) {
   const [localOpen, setOpen] = useState(false);
   const open = celestial ? expanded : localOpen;
   const SignIcon = !locked && sign ? getSignIcon(sign) : Icon;
   return (
-    <div style={{ flex: 1, minWidth: 0, padding: "4px 6px", borderLeft: first ? "none" : `1px solid ${C.hair}` }}>
+    <div className={world ? "fw-world-triad-column" : undefined} style={{ flex: 1, minWidth: 0, padding: "4px 6px", borderLeft: first ? "none" : `1px solid ${C.hair}` }}>
       <button onClick={() => { if (locked) return onUnlock && onUnlock(); if (desc) { if (celestial) onToggle?.(); else setOpen((v) => !v); } }} className="fw-elite-press" aria-expanded={open}
         style={{ width: "100%", textAlign: "center", cursor: (desc || locked) ? "pointer" : "default", background: "transparent", border: "none", padding: 0 }}>
         <div className={celestial ? "sky-triad-icon" : undefined} style={{ display: "flex", justifyContent: "center", lineHeight: 1 }}><SignIcon size={26} color={locked ? C.faint : C.ink} strokeWidth={1.4} /></div>
@@ -184,8 +184,11 @@ function CarryItWithYou({ seed, onMarkRead, read, connectedDemo = false }) {
 }
 
 export default function SkyFocus({ userProfile, actionRequest, onActionState, onActionHandled, portalChart = false, continuous = false, celestial = false, dailyLessons = false, direction, artDirection, cycleContext }) {
-  const artful = ["marginalia","reading-room"].includes(artDirection);
-  const lessonRoute = artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artful ? "/LivingAtelierDemo" : undefined;
+  const world = artDirection === "sky-worlds";
+  const artful = world || ["marginalia","reading-room"].includes(artDirection);
+  const lessonFirst = world && ["workbench","light"].includes(direction);
+  const movementClass = name => world ? `fw-world-${name}` : artful ? `fw-atelier-${name}` : undefined;
+  const lessonRoute = world ? "/SkyWorldsDemo" : artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artful ? "/LivingAtelierDemo" : undefined;
   const { user, astro, reading, userProfile: up, loading, generatingReading, setAstro } = useBirthChart(userProfile);
   const prof = userProfile || up;
   const chart = useMemo(() => deriveChart(astro, prof), [astro, prof]);
@@ -243,7 +246,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
   // ── no chart → the onboarding, in the same language ──
   if (!astro) {
     return (
-      <div className={celestial ? "sky-celestial" : undefined} style={{ display: "flex", flexDirection: "column" }}>
+      <div className={world ? "sky-celestial sky-world-body" : celestial ? "sky-celestial" : undefined} style={{ display: "flex", flexDirection: "column" }}>
         {celestial && <style>{CELESTIAL_CSS}</style>}
         <JessAstraBanner />
         <Summary Icon={Moon} cw="lavender">{moon?.name ? `The moon is ${moon.name.toLowerCase()}${moon.illumination != null ? `, ${moon.illumination}% lit` : ""} tonight — your own sky opens once you add your birth date.` : "Your own sky opens once you add your birth date."}</Summary>
@@ -254,7 +257,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
           <Body size={16} style={{ color: C.slate }}>{celestial ? "Time and place add detail. Don't know the time? Leave it blank; rising and houses need it, and your Moon sign may be uncertain." : "Your birth date is all we need to begin. Birth time and place are optional; they unlock your moon and rising. We never track your location."}</Body>
           <div style={{ marginTop: 6 }}><Cta filled Icon={Sparkles} onClick={() => setSheetOpen(true)}>Set up your sky</Cta></div>
         </section>
-        {dailyLessons ? <><DailySkyLesson userId={user?.id} moon={moon} direction={direction} previewRoute={lessonRoute}/><PrivateSkyNotes userId={user?.id} moon={moon}/></> : celestial && <MoonLesson moon={moon} />}
+        {dailyLessons ? <><DailySkyLesson human={world} userId={user?.id} moon={moon} direction={direction} previewRoute={lessonRoute}/><PrivateSkyNotes userId={user?.id} moon={moon}/></> : celestial && <MoonLesson moon={moon} />}
         {birthSheet(null)}
       </div>
     );
@@ -272,7 +275,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
   const cw = phaseCw(cyc.phase);
 
   return (
-    <div className={celestial ? "sky-celestial" : undefined} style={{ display: "flex", flexDirection: "column" }}>
+    <div className={world ? "sky-celestial sky-world-body" : celestial ? "sky-celestial" : undefined} style={{ display: "flex", flexDirection: "column" }}>
       {celestial && <style>{CELESTIAL_CSS}</style>}
       <JessAstraBanner />
 
@@ -291,11 +294,12 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
       {!continuous && <><Cta Icon={Pencil} onClick={() => setSheetOpen(true)}>Edit your chart</Cta>
       <div style={{ marginTop: 14 }}><JumpStrip refs={refs} /></div></>}
 
-      {artful ? <div className="fw-atelier-rule" aria-hidden="true"/> : <Leaf my={14} />}
+      {artful ? <div className={world ? "fw-world-rule" : "fw-atelier-rule"} aria-hidden="true"/> : <Leaf my={14} />}
 
+      {lessonFirst && <DailySkyLesson human userId={user?.id} moon={moon} direction={direction} previewRoute={lessonRoute}/>}
       {/* II · TODAY — the reading, and what to do with it */}
-      <Movement id="today" refs={refs} focusable={continuous} className={artful ? "sky-reading fw-atelier-reading" : celestial ? "sky-reading" : undefined}>
-        <Eyebrow cw="crimson">Today's weather</Eyebrow>
+      <Movement id="today" refs={refs} focusable={continuous} className={world ? "sky-reading fw-world-reading" : artful ? "sky-reading fw-atelier-reading" : celestial ? "sky-reading" : undefined}>
+        <Eyebrow cw="crimson">{world ? "Astra, for you" : "Today's weather"}</Eyebrow>
         {weather.length ? (
           <>
             <Body size={18}>{lead ? <><span style={{ fontStyle: artful ? "normal" : "italic", color: artful ? C.ink : C.crimson }}>{lead[1]}</span> {lead[3]}</> : weather[0]}</Body>
@@ -319,24 +323,24 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
             {notice.b ? <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16, fontWeight: 500, color: C.ink, lineHeight: 1.5, margin: "3px 0 0" }}>{notice.b}</p> : null}
           </div>
         ) : null}
-        {dailyLessons && <div className={artful ? "fw-atelier-weather-notes" : undefined}>{[["Power",reading?.power_title,reading?.power_body],["Pressure",reading?.pressure_title,reading?.pressure_body],["Trouble",reading?.trouble_title,reading?.trouble_body]].map(([label,title,body])=>title || body ? <div key={label} className={artful ? `fw-atelier-weather-entry fw-atelier-weather-entry--${label.toLowerCase()}` : undefined} style={artful ? undefined : {borderTop:`1px solid ${C.hair}`,padding:"14px 0 0",marginTop:14}}>{artful ? <span className="fw-atelier-note-label">{label}</span> : <Eyebrow cw="gold" align="left">{label}</Eyebrow>}{title && <Title align="left" size={26}>{clean(title)}</Title>}{body && <Body>{clean(body)}</Body>}</div> : null)}</div>}
+        {dailyLessons && <div className={world ? "fw-world-weather-notes" : artful ? "fw-atelier-weather-notes" : undefined}>{[["Power",reading?.power_title,reading?.power_body],["Pressure",reading?.pressure_title,reading?.pressure_body],["Trouble",reading?.trouble_title,reading?.trouble_body]].map(([label,title,body])=>title || body ? <div key={label} className={world ? `fw-world-weather-entry fw-world-weather-entry--${label.toLowerCase()}` : artful ? `fw-atelier-weather-entry fw-atelier-weather-entry--${label.toLowerCase()}` : undefined} style={artful ? undefined : {borderTop:`1px solid ${C.hair}`,padding:"14px 0 0",marginTop:14}}>{artful ? <span className={world ? "fw-world-note-label" : "fw-atelier-note-label"}>{label}</span> : <Eyebrow cw="gold" align="left">{label}</Eyebrow>}{title && <Title align="left" size={26}>{clean(title)}</Title>}{body && <Body>{clean(body)}</Body>}</div> : null)}</div>}
         <CarryItWithYou connectedDemo={dailyLessons} seed={headline} read={markedRead} onMarkRead={() => { setMarkedRead(true); try { recordProgress("your-sky", 0, user?.id); } catch { /* the garden write is a nicety, never a blocker */ } }} />
       </Movement>
 
-      {artful && <AtelierIncident/>}
-      {dailyLessons && <DailySkyLesson userId={user?.id} moon={moon} direction={direction} previewRoute={lessonRoute}/>}
+      {artful && !world && <AtelierIncident/>}
+      {dailyLessons && !lessonFirst && <DailySkyLesson human={world} userId={user?.id} moon={moon} direction={direction} previewRoute={lessonRoute}/>}
 
       {!artful && <Fleuron my={24} />}
 
       {/* III · YOU — chart · goddess bench · red & white moon */}
-      <Movement id="you" refs={refs} className={artful ? "fw-atelier-identity" : undefined}>
-        {celestial ? <SkyMeaning label="your chart" explanation="In astrology, Sun speaks to identity, Moon to your inner world, and rising to how you meet life. Tap a symbol for its reading; these are reflective lenses, not a verdict."><Eyebrow cw="gold" style={{margin:0}}>Your chart</Eyebrow></SkyMeaning> : <Eyebrow cw="gold">Your chart</Eyebrow>}
+      <Movement id="you" refs={refs} className={movementClass("identity")}>
+        {celestial ? <SkyMeaning label="your chart" explanation={world ? "In astrology, Sun is your sense of self, Moon your inner weather, and rising how you meet the world. Tap a sign to read yours." : "In astrology, Sun speaks to identity, Moon to your inner world, and rising to how you meet life. Tap a symbol for its reading; these are reflective lenses, not a verdict."}><Eyebrow cw="gold" style={{margin:0}}>Your chart</Eyebrow></SkyMeaning> : <Eyebrow cw="gold">Your chart</Eyebrow>}
         <Title>Sun, moon &amp; rising</Title>
-        {celestial && <p className="sky-note" style={{textAlign:"center"}}>Three lenses, one very unrepeatable you. In astrology, each has a different part to play.</p>}
-        <div style={{ display: "flex", alignItems: "stretch" }}>
-          <TriadColumn celestial={celestial} expanded={!!triadOpen.sun} onToggle={()=>toggleTriad("sun")} first Icon={Sun} label="Sun" sign={chart.sun ? cap(chart.sun) : null} trait={SIGN_TRAITS[cap(chart.sun)]} desc={reading?.triad_sun_desc} />
-          <TriadColumn celestial={celestial} expanded={!!triadOpen.moon} onToggle={()=>toggleTriad("moon")} Icon={Moon} label="Moon" sign={chart.moonSign ? cap(chart.moonSign) : null} trait={SIGN_TRAITS[cap(chart.moonSign)]} desc={reading?.triad_moon_desc} locked={!chart.moonSign} onUnlock={() => setSheetOpen(true)} />
-          <TriadColumn celestial={celestial} expanded={!!triadOpen.rising} onToggle={()=>toggleTriad("rising")} Icon={Sunrise} label="Rising" sign={chart.risingSign ? cap(chart.risingSign) : null} trait={SIGN_TRAITS[cap(chart.risingSign)]} desc={reading?.triad_rising_desc} locked={!chart.risingSign} onUnlock={() => setSheetOpen(true)} />
+        {celestial && <p className="sky-note" style={{textAlign:"center"}}>{world ? "Your centre. Your inner weather. Your hello." : "Three lenses, one very unrepeatable you. In astrology, each has a different part to play."}</p>}
+        <div className={world ? "fw-world-triad" : undefined} style={{ display: "flex", alignItems: "stretch" }}>
+          <TriadColumn world={world} celestial={celestial} expanded={!!triadOpen.sun} onToggle={()=>toggleTriad("sun")} first Icon={Sun} label="Sun" sign={chart.sun ? cap(chart.sun) : null} trait={SIGN_TRAITS[cap(chart.sun)]} desc={reading?.triad_sun_desc} />
+          <TriadColumn world={world} celestial={celestial} expanded={!!triadOpen.moon} onToggle={()=>toggleTriad("moon")} Icon={Moon} label="Moon" sign={chart.moonSign ? cap(chart.moonSign) : null} trait={SIGN_TRAITS[cap(chart.moonSign)]} desc={reading?.triad_moon_desc} locked={!chart.moonSign} onUnlock={() => setSheetOpen(true)} />
+          <TriadColumn world={world} celestial={celestial} expanded={!!triadOpen.rising} onToggle={()=>toggleTriad("rising")} Icon={Sunrise} label="Rising" sign={chart.risingSign ? cap(chart.risingSign) : null} trait={SIGN_TRAITS[cap(chart.risingSign)]} desc={reading?.triad_rising_desc} locked={!chart.risingSign} onUnlock={() => setSheetOpen(true)} />
         </div>
         {celestial && [["sun","Sun",reading?.triad_sun_desc],["moon","Moon",reading?.triad_moon_desc],["rising","Rising",reading?.triad_rising_desc]].map(([key,label,description]) => triadOpen[key] && description ? <div key={key} style={{padding:"16px 0",borderBottom:`1px solid ${C.hair}`}}><p className="sky-kicker">{label} · your reading</p><p className="sky-note" style={{margin:0}}>{clean(description)}</p></div> : null)}
         <div style={{ fontFamily: UI, fontSize: 11, letterSpacing: ".06em", color: C.faint, textAlign: "center", marginTop: 14 }}>{[chart.element, chart.modality, chart.sunRuler ? `ruled by ${chart.sunRuler}` : null].filter(Boolean).join(" · ")}</div>
@@ -347,9 +351,9 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
       {!artful && <Fleuron my={24} />}
 
       {/* IV · YOUR TIDES — the dial in the ONE framed feature card */}
-      <Movement id="tides" refs={refs} className={artful ? "fw-atelier-tides" : undefined}>
+      <Movement id="tides" refs={refs} className={movementClass("tides")}>
         <Card framed wash={cw}>
-          {celestial ? <SkyMeaning label="your two tides" explanation="The outer ring follows the lunar phase; the inner ring uses your logged cycle dates. Side by side does not mean one causes the other—bodies keep their own time."><Eyebrow cw={cw} style={{margin:0}}>Cycle × moon</Eyebrow></SkyMeaning> : <Eyebrow cw={cw}>Cycle × moon</Eyebrow>}
+          {celestial ? <SkyMeaning label="your two tides" explanation={world ? "One ring follows the Moon; the other follows your logged cycle. Side by side, each keeping its own time." : "The outer ring follows the lunar phase; the inner ring uses your logged cycle dates. Side by side does not mean one causes the other—bodies keep their own time."}><Eyebrow cw={cw} style={{margin:0}}>Cycle × moon</Eyebrow></SkyMeaning> : <Eyebrow cw={cw}>Cycle × moon</Eyebrow>}
           <Title>Your two tides</Title>
           <CycleMoonDial moon={moon} cyclePhase={cyc.phase} cycleDay={cyc.day} cycleLen={cyc.len || 28} body={reading?.cycle_moon_body} />
           {celestial && !dailyLessons && <MoonLesson moon={moon} />}
@@ -360,28 +364,28 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
       {!artful && <Fleuron my={24} />}
 
       {/* V · YOUR YEAR — profections · Saturn letter · the sky diary */}
-      {artful && <AtelierIncident kind="growth"/>}
-      <Movement id="year" refs={refs} className={artful ? "fw-atelier-year" : undefined}><YearMovement celestial={celestial} profections={profections} diary={celestial ? null : diary} />{celestial && <ObservedSkyDiary userId={user?.id} />}{dailyLessons && <PrivateSkyNotes userId={user?.id} moon={moon}/>}</Movement>
+      {artful && !world && <AtelierIncident kind="growth"/>}
+      <Movement id="year" refs={refs} className={movementClass("year")}><YearMovement celestial={celestial} profections={profections} diary={celestial ? null : diary} />{celestial && <ObservedSkyDiary human={world} userId={user?.id} />}{dailyLessons && <PrivateSkyNotes userId={user?.id} moon={moon}/>}</Movement>
 
       {!artful && <Fleuron my={24} />}
 
       {/* VI · ASK & CONNECT — ask the sky · compatibility */}
-      <Movement id="ask" refs={refs} className={artful ? "fw-atelier-ask" : undefined}>
+      <Movement id="ask" refs={refs} className={movementClass("ask")}>
         <Eyebrow cw="lavender">Ask &amp; connect</Eyebrow>
-        <Title>Put a question to it</Title>
-        <AskTheSky celestial={celestial} userId={user?.id} inputRef={questionRef} />
-        <Compatibility celestial={celestial} userId={user?.id} />
+        <Title>{world ? "What’s on your mind?" : "Put a question to it"}</Title>
+        <AskTheSky human={world} celestial={celestial} userId={user?.id} inputRef={questionRef} />
+        <Compatibility human={world} celestial={celestial} userId={user?.id} />
       </Movement>
 
       {!artful && <Fleuron my={24} />}
 
       {/* VII · THE ATELIER — the letter + the shelf */}
-      <Movement id="atelier" refs={refs}><Atelier celestial={celestial} userId={user?.id} hasAtelier={!!user?.has_atelier} letter={null} /></Movement>
+      <Movement id="atelier" refs={refs} className={movementClass("atelier")}><Atelier celestial={celestial} userId={user?.id} hasAtelier={!!user?.has_atelier} letter={null} /></Movement>
 
       {!artful && <Fleuron my={24} />}
 
       {/* VIII · YOUR SKY, YOUR WAY — quiet mode · science · privacy */}
-      <Movement id="yours" refs={refs} className={artful ? "fw-atelier-way" : undefined}><YourWay celestial={celestial} userId={user?.id} /></Movement>
+      <Movement id="yours" refs={refs} className={movementClass("way")}><YourWay celestial={celestial} userId={user?.id} /></Movement>
 
       <Foot>Held lightly — folklore and your own chart, never fate or a score.</Foot>
       {birthSheet(astro)}

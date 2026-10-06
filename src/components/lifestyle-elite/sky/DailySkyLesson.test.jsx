@@ -34,6 +34,38 @@ describe("daily astronomy and exact identity",()=>{
   });
 });
 describe("real save and private source-linked note contracts",()=>{
+  it.each(["conservatory","press","petal","workbench","light"])("reopens an older owner's exact saved edition inside the %s world",async direction=>{
+    const lesson=SKY_LESSONS.find(item=>item.id==="earthshine");
+    const key=skyLessonKey(lesson);
+    mock.filter.mockResolvedValue([{id:"old",user_id:"owner",item_id:key,title:lesson.title,meta_json:JSON.stringify({kind:"sky-lesson",lessonId:lesson.id,lessonVersion:1,date:"2026-09-15",route:"/LivingLifestyleDemo?direction=letter&lesson=earthshine"})}]);
+    const {unmount}=render(<SavedSkyLessons userId="owner" direction={direction} previewRoute="/SkyWorldsDemo"/>);
+    const link=await screen.findByRole("link",{name:/Earth lends/});
+    expect(link).toHaveAttribute("href",`/SkyWorldsDemo?direction=${direction}&section=sky&lesson=earthshine&lessonVersion=1#daily-sky-lesson`);
+    expect(mock.filter).toHaveBeenCalledWith({user_id:"owner",item_type:"LIFESTYLE"},"-created_at",150);
+    window.history.replaceState({},"",link.getAttribute("href"));unmount();
+    render(<DailySkyLesson userId="owner" direction={direction} previewRoute="/SkyWorldsDemo"/>);
+    expect(screen.getByRole("article",{name:"1 of 5"})).toHaveTextContent(lesson.title);
+    expect(screen.getByRole("article",{name:"1 of 5"})).toHaveTextContent(lesson.body);
+    expect(await screen.findByRole("button",{name:"Kept · undo"})).toHaveAttribute("aria-pressed","true");
+    expect(mock.save).not.toHaveBeenCalled();
+  });
+  it.each(["conservatory","press","petal","workbench","light"])("saves the same canonical lesson in %s while retaining its world return",async direction=>{
+    window.history.replaceState({},"",`/SkyWorldsDemo?direction=${direction}&section=sky&lesson=earthshine&lessonVersion=1`);
+    render(<DailySkyLesson userId="owner" direction={direction} previewRoute="/SkyWorldsDemo"/>);
+    const keep=screen.getByRole("button",{name:"Keep this"});await waitFor(()=>expect(keep).not.toBeDisabled());
+    fireEvent.click(keep);await screen.findByText(/Kept in Yours/);
+    expect(mock.save).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({itemType:"LIFESTYLE",itemId:"sky-lesson:earthshine:v1",meta:expect.objectContaining({kind:"sky-lesson",lessonId:"earthshine",lessonVersion:1,route:`/SkyWorldsDemo?direction=${direction}&section=sky&lesson=earthshine&lessonVersion=1#daily-sky-lesson`})}));
+  });
+  it.each(["/LivingLifestyleDemo","/LivingAtelierDemo","/LivingReadingRoomDemo","/SkyWorldsDemo"])("retains the existing allowed %s destination and exact identity",route=>{
+    const lesson=SKY_LESSONS.find(item=>item.id==="earthshine");
+    const url=new URL(skyLessonRoute(lesson,"press",route),"https://femwells.com");
+    expect(url.pathname).toBe(route);expect(url.searchParams.get("lesson")).toBe(lesson.id);expect(url.searchParams.get("lessonVersion")).toBe("1");expect(url.hash).toBe("#daily-sky-lesson");
+  });
+  it.each(["https://example.com","//example.com","/SkyWorldsDemo?direction=press","/unknown"])("rejects an arbitrary preview destination %s without losing lesson identity",route=>{
+    const lesson=SKY_LESSONS.find(item=>item.id==="earthshine");
+    const url=new URL(skyLessonRoute(lesson,"petal",route),"https://femwells.com");
+    expect(url.origin).toBe("https://femwells.com");expect(url.pathname).toBe("/LivingLifestyleDemo");expect(url.searchParams.get("direction")).toBe("petal");expect(url.searchParams.get("lesson")).toBe(lesson.id);expect(url.searchParams.get("lessonVersion")).toBe("1");
+  });
   it("returns an older save to its exact edition in the room and rejects an arbitrary preview destination",async()=>{
     const lesson=SKY_LESSONS.find(item=>item.id==="earthshine");
     expect(skyLessonRoute(lesson,"living","https://example.com")).toMatch(/^\/LivingLifestyleDemo\?/);

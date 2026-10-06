@@ -416,7 +416,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
               </button>
             ))}
           </div>
-          <div style={{ fontFamily: UI, fontSize: 11, color: C.faint, textAlign: "center", marginTop: 9 }}>It only sorts what's shown here. Nothing about you is saved.</div>
+          <div style={{ fontFamily: UI, fontSize: 11, color: C.faint, textAlign: "center", marginTop: 9 }}>{room ? "We’ll keep this choice on this device to help order your books." : "It only sorts what's shown here. Nothing about you is saved."}</div>
         </section>
       ) : null}
 

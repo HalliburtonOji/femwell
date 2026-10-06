@@ -7,6 +7,7 @@ import SkyMeaning from "./SkyMeaning";
 import { MoonLesson } from "./CelestialSky";
 import { SKY_LESSONS, LESSON_VERSION, dailyLessonDeck, localSkyDay, skyLessonKey, skyLessonRoute } from "./skyLessons";
 import "./DailySkyLesson.css";
+import SkyWorldDetails from "../SkyWorldDetails";
 
 export function useLessonSaves(userId) {
   const [rows,setRows] = useState([]);
@@ -26,7 +27,7 @@ export function useLessonSaves(userId) {
   return {rows,error,loading,retry:()=>setAttempt(n=>n+1)};
 }
 
-export function SavedSkyLessons({userId,direction,onCount,previewRoute}) {
+export function SavedSkyLessons({userId,direction,onCount,previewRoute,human=false}) {
   const {rows,error,loading,retry}=useLessonSaves(userId);
   useEffect(()=>{if(onCount)onCount(loading || error ? 0 : rows.length);},[rows,loading,error,onCount]);
   return <Card className="daily-sky saved-sky-lessons" style={{marginTop:20}}>
@@ -34,12 +35,12 @@ export function SavedSkyLessons({userId,direction,onCount,previewRoute}) {
     {loading ? <p role="status">Opening your lessons…</p> : error ? <><p role="alert">Your saved lessons couldn’t load.</p><button onClick={retry}>Try again</button></> : rows.length ? rows.map(row=>{
       const meta=parseSavedMeta(row);const lesson=SKY_LESSONS.find(item=>item.id===meta.lessonId && item.version===meta.lessonVersion);
       return <a className="saved-sky-row" key={row.id} href={lesson ? skyLessonRoute(lesson,direction,previewRoute) : `${meta.route || "/LivingLifestyleDemo?section=sky"}`}><span>{row.title}</span><ArrowRight size={16} aria-hidden="true"/></a>;
-    }) : <Body>Your saved Sky lessons will settle here. No collection invented on your behalf.</Body>}
+    }) : <Body>{human ? "Keep a lesson and you’ll find it here." : "Your saved Sky lessons will settle here. No collection invented on your behalf."}</Body>}
     <a className="daily-sky-link" href="/Saved?tab=LIFESTYLE">All your Lifestyle saves</a>
   </Card>;
 }
 
-export default function DailySkyLesson({userId,moon,direction="letter",previewRoute}) {
+export default function DailySkyLesson({userId,moon,direction="letter",previewRoute,human=false}) {
   const [day,setDay]=useState(()=>localSkyDay());
   const [nextDay,setNextDay]=useState(null);
   const params=useRef(new URLSearchParams(window.location.search));
@@ -115,7 +116,7 @@ export default function DailySkyLesson({userId,moon,direction="letter",previewRo
   };
   return <section id="daily-sky-lesson" className="daily-sky-movement" aria-label="Daily Sky lessons">
     <Card className="daily-sky" style={{padding:"14px 18px",boxShadow:"none",border:"1px solid #D9C79B80",background:"linear-gradient(120deg,#fff,#F5F4F170)"}}>
-      <SkyMeaning label="daily sky lessons" explanation="A short, authored astronomy lesson each day, using your device’s date. Swipe for four more; nothing changes automatically. Facts have sources. Personal notes and saves stay in your account. The eight Moon phases remain below."><span className="daily-sky-heading"><span className="daily-sky-eyebrow">A little sky wisdom</span><span className="daily-sky-date">{new Date(`${day}T12:00:00`).toLocaleDateString("en-GB",{day:"numeric",month:"short"})} · astronomy</span></span></SkyMeaning>
+      <SkyMeaning label="daily sky lessons" explanation={human ? "One new bit of sky knowledge each day. Swipe for four more; keep anything worth remembering." : "A short, authored astronomy lesson each day, using your device’s date. Swipe for four more; nothing changes automatically. Facts have sources. Personal notes and saves stay in your account. The eight Moon phases remain below."}><span className="daily-sky-heading"><span className="daily-sky-eyebrow">A little sky wisdom</span><span className="daily-sky-date">{new Date(`${day}T12:00:00`).toLocaleDateString("en-GB",{day:"numeric",month:"short"})} · astronomy</span></span></SkyMeaning>
       {unavailable && <p role="alert" className="daily-sky-status">That saved lesson or edition is unavailable. Today’s lessons are below; your saved record remains.</p>}
       <div className="daily-sky-track" ref={track} style={lessonHeight ? {height:lessonHeight} : undefined} data-busy={busy} tabIndex={busy ? -1 : 0} aria-label="Swipeable lesson cards" aria-roledescription="carousel" aria-busy={busy} onKeyDown={event=>{if(busy || event.target!==event.currentTarget)return;if(event.key==="ArrowRight"){event.preventDefault();go(index+1);}if(event.key==="ArrowLeft"){event.preventDefault();go(index-1);}}} onScroll={()=>{const el=track.current;if(el && !busy){const next=Math.round(el.scrollLeft/Math.max(el.clientWidth,1));if(next!==index){setIndex(next);setStatus("");}}}}>
         {deck.map((item,i)=><article className="daily-sky-slide" key={item.id} inert={i!==index ? "" : undefined} aria-label={`${i+1} of ${deck.length}`} aria-roledescription="slide"><h3>{item.title}</h3><p>{item.body}</p>{item.tryThis && <p className="daily-sky-try"><strong>Try noticing:</strong> {item.tryThis}</p>}</article>)}
@@ -123,12 +124,13 @@ export default function DailySkyLesson({userId,moon,direction="letter",previewRo
       <div className="daily-sky-controls"><button type="button" disabled={index===0 || busy} aria-label="Previous sky lesson" onClick={()=>go(index-1)}><ArrowLeft size={18}/></button><span className="daily-sky-position"><span aria-live="polite" aria-atomic="true">{index+1} / {deck.length} · {index===0 && !exact ? "today’s lesson" : "keep exploring"}</span><a className="daily-sky-source" href={lesson.source} target="_blank" rel="noreferrer">{lesson.source.includes("rmg.co.uk") ? "Royal Observatory" : "NASA"} · the facts</a></span><button type="button" disabled={index===deck.length-1 || busy} aria-label="Next sky lesson" onClick={()=>go(index+1)}><ArrowRight size={18}/></button></div>
       <div className="daily-sky-actions"><button type="button" disabled={busy || saveLoading || saveReadError} aria-pressed={kept} onClick={save}>{kept ? <Check size={15}/> : <Bookmark size={15}/>} {busy ? "Keeping…" : kept ? "Kept · undo" : "Keep this"}</button><button type="button" disabled={busy} aria-expanded={writing} onClick={()=>{setWriting(!writing);setStatus(userId ? "" : "Sign in to keep a private note.");}}><PenLine size={15}/> A private note</button></div>
       {saveReadError && <p className="daily-sky-status" role="alert">Your saves couldn’t load. <button onClick={retrySaves}>Try again</button></p>}
-      {writing && userId && <form onSubmit={saveNote} className="daily-sky-form"><label htmlFor="sky-lesson-note">What caught your eye?</label><textarea id="sky-lesson-note" value={draft} readOnly={busy} maxLength={4000} onChange={event=>setDrafts(current=>({...current,[key]:event.target.value}))} rows={3}/><div><button type="submit" disabled={busy || !draft.trim()}>Keep in journal</button><button type="button" disabled={busy} onClick={()=>setWriting(false)}>Close · keep draft</button></div><p>Only your words are saved. This lesson keeps the link.</p></form>}
+      {writing && userId && <form onSubmit={saveNote} className="daily-sky-form"><label htmlFor="sky-lesson-note">What caught your eye?</label><textarea id="sky-lesson-note" value={draft} readOnly={busy} maxLength={4000} onChange={event=>setDrafts(current=>({...current,[key]:event.target.value}))} rows={3}/><div><button type="submit" disabled={busy || !draft.trim()}>Keep in journal</button><button type="button" disabled={busy} onClick={()=>setWriting(false)}>Close · keep draft</button></div><p>{human ? "Your words, kept with this lesson." : "Only your words are saved. This lesson keeps the link."}</p></form>}
       {previousNote && <details className="daily-sky-kept-note"><summary>Your note on this lesson</summary><p>{previousNote.text}</p><a href="/Journal">Open your journal</a></details>}
       {notesError && <p className="daily-sky-status">Your notes couldn’t load. <button onClick={()=>setNotesAttempt(n=>n+1)}>Retry notes</button></p>}
       {status && <p role="status" className="daily-sky-status">{status}</p>}
       {nextDay && <button className="daily-sky-link" disabled={busy} onClick={()=>{setDay(nextDay);setNextDay(null);setExact(null);params.current.delete("lessonVersion");const url=new URL(window.location.href);url.searchParams.delete("lesson");url.searchParams.delete("lessonVersion");window.history.replaceState(window.history.state,"",url);go(0);}}>Read today’s new lesson</button>}
     </Card>
+    {human && <SkyWorldDetails direction={direction}/>}
     <MoonLesson moon={moon}/>
   </section>;
 }

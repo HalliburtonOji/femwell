@@ -5,11 +5,11 @@ import { C } from "@/components/brand/cleanTokens";
 import { UI, SERIF } from "@/components/journal/Editorial";
 import SkyMeaning from "./SkyMeaning";
 
-export default function ObservedSkyDiary({ userId }) {
+export default function ObservedSkyDiary({ userId, human=false }) {
   const [attempt, setAttempt] = useState(0);
-  return <div style={{marginTop:24}}><DiaryEntries key={`${userId || "guest"}-${attempt}`} userId={userId} retry={()=>setAttempt(v=>v+1)}/></div>;
+  return <div style={{marginTop:24}}><DiaryEntries key={`${userId || "guest"}-${attempt}`} userId={userId} human={human} retry={()=>setAttempt(v=>v+1)}/></div>;
 }
-function DiaryEntries({ userId, retry }) {
+function DiaryEntries({ userId, retry, human }) {
   const { loading, periodStarts, readings } = useSkyDiary(userId);
   const [open, setOpen] = useState(null);
   const [all, setAll] = useState(false);
@@ -20,8 +20,8 @@ function DiaryEntries({ userId, retry }) {
   const fmt = date=>new Date(date).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
   const quiet = {minHeight:44,font:`600 12px ${UI}`,color:C.ink,border:0,background:"transparent",padding:"8px 0",cursor:"pointer",textDecoration:"underline",textUnderlineOffset:4};
   return <Card data-testid="observed-sky-diary" style={{padding:"14px 18px"}}>
-    <SkyMeaning label="your sky diary" explanation="Your recent readings and logged cycle dates, kept together. Open a title to read it again; earlier entries stay a tap away. This is a diary, not a prediction."><Eyebrow cw="sage" style={{margin:0}}>Your sky diary</Eyebrow></SkyMeaning>
-    <Title size={20}>A few moments, kept.</Title>
+    <SkyMeaning label="your sky diary" explanation={human ? "Your past readings, with the dates you’ve kept. Open one to revisit it." : "Your recent readings and logged cycle dates, kept together. Open a title to read it again; earlier entries stay a tap away. This is a diary, not a prediction."}><Eyebrow cw="sage" style={{margin:0}}>Your sky diary</Eyebrow></SkyMeaning>
+    <Title size={20}>{human ? "Under earlier skies." : "A few moments, kept."}</Title>
     {loading ? <p role="status" style={{font:`500 14px ${UI}`}}>Opening your diary…</p> : <>
       <div id={`${id}-readings`}>
         {readings.length ? (all ? readings : readings.slice(0,2)).map((entry,i)=><div key={entry.id || i} style={{borderTop:`1px solid ${C.hair}`}}>
@@ -37,7 +37,7 @@ function DiaryEntries({ userId, retry }) {
         <button type="button" aria-expanded={showDates} aria-controls={`${id}-dates`} onClick={()=>setShowDates(v=>!v)} style={{...quiet,textAlign:"left"}}>{showDates ? "Hide cycle dates" : `Cycle dates${dates.length ? ` · ${dates.length}` : ""}`}</button>
         <button type="button" onClick={retry} style={quiet}>Refresh diary</button>
       </div>
-      <div id={`${id}-dates`} hidden={!showDates}>{dates.length ? <ol style={{display:"flex",flexWrap:"wrap",gap:8,listStyle:"none",padding:0,margin:"4px 0 8px"}}>{dates.map((entry,i)=><li key={entry.raw?.id || i} style={{font:`600 12px/1.4 ${UI}`,padding:"6px 8px",border:`1px solid ${C.goldHair}`,borderRadius:8}}>{fmt(entry.date)}</li>)}</ol> : <p className="sky-note">No cycle dates loaded. Nothing filled in on your behalf.</p>}</div>
+      <div id={`${id}-dates`} hidden={!showDates}>{dates.length ? <ol style={{display:"flex",flexWrap:"wrap",gap:8,listStyle:"none",padding:0,margin:"4px 0 8px"}}>{dates.map((entry,i)=><li key={entry.raw?.id || i} style={{font:`600 12px/1.4 ${UI}`,padding:"6px 8px",border:`1px solid ${C.goldHair}`,borderRadius:8}}>{fmt(entry.date)}</li>)}</ol> : <p className="sky-note">{human ? "No cycle dates here yet." : "No cycle dates loaded. Nothing filled in on your behalf."}</p>}</div>
     </>}
   </Card>;
 }

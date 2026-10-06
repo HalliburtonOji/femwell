@@ -19,6 +19,8 @@ Sky Living page: /FloralDreamDemo?direction=living&section=sky. Approval is reco
 
 ## Latest correction
 
+6 October, newest: Books art is good, its “imagined scenery” explanation is rejected. Short personal, human, funny/cool authored UI copy, no construction disclaimers. Sky remains creatively inadequate. Deliver FIVE complete different whole-page Sky demos, not one proof plus four concepts. This supersedes the earlier root scope reduction below; see Bible §10.5.15. Books art stays. Main promotion remains held.
+
 6 October: Sky should have artsy astrology/celestial top art and section-specific details across the page. Need deeper brainstorming and meaningful variety. Creative Director develops whole-page visual worlds; root builds one complete proof before expanding. Preserve earlier demos as rejected reference, not canon. New interpretation recorded in Bible §10.5.13.
 
 ## Evidence to read

@@ -203,6 +203,12 @@ const GROUP_BLURB = {
 const COLLAPSED_BY_DEFAULT = new Set([CAT.ARCHIVE]);
 
 const CATALOG = [
+  {kind:"route",href:"/SkyWorldsDemo?direction=workbench&section=sky",group:CAT.CURRENT,sub:"Sky · five worlds",status:"new",added:"2026-10-06",accent:"gold",title:"1 · Lunar Workbench",desc:"Fine brass, a living tendril and your real Moon. Lessons lead; chart readouts, tides and diary form a small observatory."},
+  {kind:"route",href:"/SkyWorldsDemo?direction=conservatory&section=sky",group:CAT.CURRENT,sub:"Sky · five worlds",status:"new",added:"2026-10-06",accent:"sage",title:"2 · Moonlight Conservatory",desc:"Morning glory grows through clear glass. Open readings, learning panes and dated notes share its light."},
+  {kind:"route",href:"/SkyWorldsDemo?direction=press&section=sky",group:CAT.CURRENT,sub:"Sky · five worlds",status:"new",added:"2026-10-06",accent:"plum",title:"3 · The Star Press",desc:"Celestial ink, a printed forecast, horizontal chart entries and a lesson folio. A different rhythm through the whole page."},
+  {kind:"route",href:"/SkyWorldsDemo?direction=petal&section=sky",group:CAT.CURRENT,sub:"Sky · five worlds",status:"new",added:"2026-10-06",accent:"plum",title:"4 · Petal Observatory",desc:"Morning-glory tissue becomes a lunar canopy. Folds, veins and open clearings continue through the useful page."},
+  {kind:"route",href:"/SkyWorldsDemo?direction=light&section=sky",group:CAT.CURRENT,sub:"Sky · five worlds",status:"new",added:"2026-10-06",accent:"sage",title:"5 · Light Garden",desc:"Botanical light impressions, a real bloom and white clearings. Learning first, with a quieter open chart and diary."},
+  {kind:"route",href:"/sky-worlds/index.html",group:CAT.CURRENT,sub:"Sky · five worlds",status:"new",added:"2026-10-06",accent:"gold",title:"Five skies · compare & review",desc:"Direct previews, short voice samples, primary inspiration and checks. Main release waits for Halli’s go-ahead."},
   {kind:"route",href:"/LivingReadingRoomDemo?section=books",group:CAT.CURRENT,sub:"Lifestyle · continuous worlds",status:"new",added:"2026-10-06",accent:"plum",title:"Books · the reading room",desc:"Real chapter leaf, reading note, bookmark and club correspondence share the table’s light and materials. All existing capabilities remain. Review proposal; main held."},
   {kind:"route",href:"/LivingReadingRoomDemo?section=sky",group:CAT.CURRENT,sub:"Lifestyle · continuous worlds",status:"new",added:"2026-10-06",accent:"plum",title:"Sky · the garden breathes",desc:"Accepted Living garden with a short controllable breeze, live Moon and the complete Sky surface. Review the motion and whole-page composition."},
   {kind:"route",href:"/reading-room/index.html",group:CAT.CURRENT,sub:"Lifestyle · continuous worlds",status:"new",added:"2026-10-06",accent:"sage",title:"Continuous worlds · brief & checks",desc:"Short visual brief, primary references, preserved feature inventory, verification and known gaps."},
@@ -652,6 +658,7 @@ const SECTION_ORDER = ["skyreview","lsredesign","brand","pages","community","cal
 
 // A CURRENT-group entry routes to a section by its `sub`.
 const SUB_TO_SECTION = {
+  "Sky · five worlds":                 "lsredesign",
   "Lifestyle · continuous worlds":     "lsredesign",
   "Sky · review before main":          "skyreview",
   "Lifestyle redesigns (UX audit)":   "lsredesign",

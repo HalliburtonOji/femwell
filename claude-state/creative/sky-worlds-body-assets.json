@@ -1,0 +1,24 @@
+{
+  "tool": "built-in imagegen",
+  "transparent_background": true,
+  "prompts": [
+    [
+      "glass-note",
+      "An original delicate realistic artsy small UI edge asset for FemWell Moonlight Conservatory, transparent alpha,landscape1536x1024. ONE slender clearglass botanical microscope slide or lens fragment at bottom-right,its thin bevel catching daylight,with one tiny violet morning-glory furledbud and a small accurate cordateleaf resting partly across it. Composition entirelybottom-right60%,top-left70% empty transparent textlane. Clear fine glass edge not rectangular solidtile or frame. Interesting handmade glass slight irregularity,mutedsage/violet,contactshadows only no broad atmosphere nohalo. Refined coherent daylight sameworld realisticglassplants. No letters,words,numbers,fullMoon,stars,UI or broad painted backdrop."
+    ],
+    [
+      "petal-note",
+      "Original ultrarefined realistic artsy tiny botanical edgeasset for FemWell Petal Observatory,transparentalpha landscape1536x1024. ONE curled violet morning-glory petal fragment,thin transluscent veined tissue,with a small tornedge and tiny subtle sagecalyx,partly unfurls at bottomright corner. A purposeful delicatelifted fold,not wholeflowernotclipart; preciselyobservedmacrotexture,coherentupperleftdaylight. Keep restcanvasfullytransparent,contactshadowsonly,nofogbackground,nomoonring,sparkles,letters,labels,papertile,UI,wreath. Artfromonefragmentoccupiesright40% andlower50%, fitslowercorneroflearningcardclearingwithoutwords."
+    ],
+    [
+      "light-note",
+      "Original high-end light botanical photographic edgeasset for FemWell LightGarden,transparentalpha landscape1536x1024. A faint translucent contactlight impression of ONE morning-glory cordateleaf with fine realveins,slanting across farleftedge; one tiny actual sageleaf and violet bud rightbottom as grounding. Mostimageempty transparent,especiallycentral70% textlane. Impression paleindigo-grey luminous butdelicate,realisticnotflatclipart. Coherentupperleftdaylight,no glossybox,no darkcyanotype rectangle,no plantbehindtext,noring,nobroadfog,nomoon,letters,labels,paperorUI. Original dreamlike materiallybelievable suncontacttrace with openabsentedges."
+    ]
+  ],
+  "originals": {
+    "glass-note": "exec-9a573a0c-0245-4b62-8619-40e78a8122cc.png",
+    "petal-note": "exec-04f3cd5c-faa3-4a2f-afe4-286e6d47a306.png",
+    "light-note": "exec-05d5fd91-f8c0-4cf0-bf68-0997d21382ed.png"
+  },
+  "placement": "One quiet learning-to-phase seam per world, outside prose and controls. Press/Workbench native line accents; Moon data stays independent."
+}

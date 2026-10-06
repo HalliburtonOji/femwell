@@ -4,7 +4,7 @@
 // stays readable. Parity targets: 6 profections + Saturn · 7 red/white moon · 8 compatibility ·
 // 9 ask-the-sky · 10 sky diary (timeline + right-now + void-of-course) · 11 quiet mode ·
 // 12 science footer · 13 privacy · 14 atelier · 15 paid shelf.
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Sparkles, Send, Copy, Check, Lock, ChevronRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { SERIF, UI } from "@/components/journal/Editorial";
@@ -115,7 +115,7 @@ export function RedWhiteMoon({ rw, celestial = false }) {
 
 // ── VI · ASK THE SKY — the real askStars function + persisted history ──────────────────────────
 const ASK_CHIPS = ["What should I put my energy into this week?", "Why does this feel harder than it should?", "What am I not seeing?"];
-export function AskTheSky({ userId, inputRef, celestial = false }) {
+export function AskTheSky({ userId, inputRef, celestial = false, human=false }) {
   const [q, setQ] = useState("");
   const [answer, setAnswer] = useState("");
   const [history, setHistory] = useState([]);
@@ -165,7 +165,7 @@ export function AskTheSky({ userId, inputRef, celestial = false }) {
     <Card>
       <Eyebrow cw="lavender" align="left">Ask the sky</Eyebrow>
       <Title align="left" size={21}>Ask it anything</Title>
-      {celestial && <p className="sky-note">A question for the sky. You still get the deciding vote.</p>}
+      {celestial && <p className="sky-note">{human ? "Take a new angle. The deciding vote is still yours." : "A question for the sky. You still get the deciding vote."}</p>}
       {/* notebook-ruled input — the original's signature */}
       <textarea ref={inputRef} aria-label="Your question for the sky" value={q} onChange={(e) => setQ(e.target.value)} rows={3} placeholder="What's on your mind?"
         style={{ ...input, resize: "vertical", lineHeight: "1.7em", backgroundImage: `repeating-linear-gradient(${C.surface} 0px, ${C.surface} calc(1.7em - 1px), ${C.hair} calc(1.7em - 1px), ${C.hair} 1.7em)`, backgroundAttachment: "local" }} />
@@ -204,7 +204,7 @@ const Bar = ({ label, val }) => (
     <div style={{ height: 4, borderRadius: 99, background: C.hair, overflow: "hidden" }}><div style={{ width: `${Math.max(0, Math.min(10, val || 0)) * 10}%`, height: "100%", background: C.ink }} /></div>
   </div>
 );
-export function Compatibility({ userId, celestial = false }) {
+export function Compatibility({ userId, celestial = false, human=false }) {
   const [name, setName] = useState("");
   const [d, setD] = useState(""); const [m, setM] = useState(""); const [y, setY] = useState("");
   const [reading, setReading] = useState(null);
@@ -239,7 +239,10 @@ export function Compatibility({ userId, celestial = false }) {
   };
   const copyLink = async () => {
     try {
-      const url = `${window.location.origin}${window.location.pathname}?compat=${btoa(`${name}|${birthday}`)}`;
+      const link = new URL(window.location.href);
+      if(!human)link.search="";
+      link.hash="";link.searchParams.set("compat",btoa(`${name}|${birthday}`));
+      const url=link.toString();
       await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 1600);
     } catch { /* clipboard blocked — nothing to say */ }
   };
@@ -247,8 +250,8 @@ export function Compatibility({ userId, celestial = false }) {
   return (
     <Card style={{ marginTop: 14 }}>
       <Eyebrow cw="blush" align="left">You &amp; someone</Eyebrow>
-      <Title align="left" size={21}>How you two run</Title>
-      {celestial && <p className="sky-note">Two charts, plenty to talk about. A conversation starter, never a verdict on someone you love.</p>}
+      <Title align="left" size={21}>{human ? "You two, under the stars." : "How you two run"}</Title>
+      {celestial && <p className="sky-note">{human ? "Two charts, one conversation starter. Chemistry still has to show up." : "Two charts, plenty to talk about. A conversation starter, never a verdict on someone you love."}</p>}
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Their name" style={{ ...input, marginBottom: 9 }} />
       <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
         <input value={d} onChange={(e) => setD(e.target.value.replace(/\D/g, "").slice(0, 2))} placeholder="Day" inputMode="numeric" aria-label="Day" style={{ ...input, flex: 1, textAlign: "center" }} />

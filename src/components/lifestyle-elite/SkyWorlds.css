@@ -1,0 +1,113 @@
+/* Five complete materials. Functional text remains crisp, on open ground. */
+.fw-sky-worlds{--world-ink:#191510;--world-plum:#51444e;--world-rule:#d4ccd2;--world-serif:'FemWell Editorial','Cormorant Garamond',Georgia,serif;--world-ui:ui-sans-serif,system-ui,-apple-system,sans-serif;background:#f5f4f1;color:var(--world-ink);min-height:100vh}
+.fw-sky-worlds *, .fw-sky-worlds *::before,.fw-sky-worlds *::after{box-sizing:border-box}
+.fw-world-review{max-width:430px;margin:auto;min-height:92px;padding:48px 16px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;font:500 12px/1.4 var(--world-ui)}
+.fw-world-review a,.fw-world-review-footer a{display:inline-flex;align-items:center;min-height:44px;color:#51444e;text-underline-offset:4px}
+.fw-world-review-footer{max-width:430px;margin:24px auto 0;padding:16px 16px 120px;border-top:1px solid #d4ccd2;font:500 12px/1.5 var(--world-ui)}
+.fw-world-review-footer nav{display:flex;flex-wrap:wrap;gap:0 14px}.fw-world-review-footer a[aria-current=page]{font-weight:700}
+.fw-sky-worlds :is(button,a,input,textarea,summary):focus-visible{outline:2px solid #51444e;outline-offset:3px}
+.fw-sky-worlds .fw-world-header{position:relative;isolation:isolate;min-width:0;margin:0 0 6px}
+.fw-world-folio{display:flex;justify-content:space-between;gap:12px;position:relative;z-index:3;font:600 12px/1.4 ui-sans-serif,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#6e6a61;padding:6px 0 0}
+.fw-world-scene{position:relative;height:clamp(156px,45vw,192px);margin:0 -10px;pointer-events:none}
+.fw-world-art-plane{position:absolute;top:0;left:0;width:100%;aspect-ratio:3/2}
+.fw-world-art{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;z-index:1;transform-origin:30% 30%}
+.fw-world-moon{position:absolute;transform:translate(-50%,-50%);z-index:2;aspect-ratio:1;line-height:0}
+.fw-world-moon>svg{width:100%;height:auto;display:block}.fw-world-bloom-fallback{position:absolute;left:14%;top:20%}
+.fw-world-clearing{position:relative;z-index:3;max-width:100%;padding:0 2px}
+.fw-world-clearing h1{font:400 clamp(44px,9.5vw,56px)/1.14 Ephesis,cursive;color:#7a1a12;margin:0 0 8px;overflow-wrap:break-word}
+.fw-world-last{display:inline-block;white-space:nowrap}.fw-world-last>svg{display:inline-block;margin-left:7px;vertical-align:middle;color:#bc2e27}
+.fw-world-flower{margin:0;color:#51444e;font:italic 500 17px/1.4 var(--world-serif);display:flex;flex-direction:column;gap:2px}.fw-world-flower strong{font-weight:600;font-size:20px}
+.fw-world-caption{position:relative;z-index:3;display:flex;align-items:flex-start;gap:6px;margin-top:10px;color:#51444e;font:500 12px/1.45 var(--world-ui)}
+.fw-world-caption>.sky-meaning{flex:1;min-width:0}.fw-world-caption>.sky-meaning>div:first-child{justify-content:flex-start!important;padding-left:0!important;padding-right:44px!important;text-align:left}.fw-world-motion,.fw-world-art-retry{min-width:44px;min-height:44px;border:0;background:transparent;color:#51444e;padding:8px 2px;font:600 12px/1.4 var(--world-ui);text-decoration:underline;text-underline-offset:4px;cursor:pointer}.fw-world-art-retry{display:block}
+.fw-world-header[data-moving=true] .fw-world-art{animation:worldGardenLight 4.2s ease-out both}
+@keyframes worldGardenLight{0%{opacity:.82}60%{opacity:.97}100%{opacity:1}}
+.fw-sky-worlds[data-world=petal] .fw-world-header[data-moving=true] .fw-world-art{animation:worldPetalSettle 4.2s ease-out both}
+@keyframes worldPetalSettle{0%{transform:rotate(-.6deg) translateY(1px)}55%{transform:rotate(.25deg)}100%{transform:none}}
+.fw-sky-worlds [data-art-direction=sky-worlds][data-section=sky]{--ff-plum:#51444e;--ff-line:#d4ccd2}
+.fw-sky-worlds [data-section=sky] .fw-ff-actions [aria-label="Section actions"]>button{border-radius:999px!important}
+.fw-sky-worlds [data-section=sky] .fw-ff-summary{background:transparent!important;border-radius:0!important;padding:0!important;margin-top:18px}
+.fw-sky-worlds [data-section=sky] .fw-ff-row-text{font-size:17px}.fw-sky-worlds [data-section=sky] .fw-ff-jess-body{font-size:17px}
+.fw-sky-worlds .sky-world-body{position:relative;min-width:0;padding-top:16px;gap:0}
+.fw-sky-worlds .sky-world-body>section{min-width:0;position:relative;scroll-margin-top:18px}
+.fw-sky-worlds .sky-world-body h2{font:italic 600 clamp(27px,6.4vw,34px)/1.18 var(--world-serif)!important}
+.fw-sky-worlds .sky-world-body :is(.fw-world-year,.fw-world-ask,.fw-world-atelier,.fw-world-way)>section>:is(h2,h3){font:600 20px/1.2 var(--world-serif)!important}
+.fw-sky-worlds .fw-world-rule{height:1px;background:#d4ccd2;margin:4px 0 20px}
+.fw-sky-worlds .sky-world-body .fw-world-reading{background:none;border:0;border-radius:0;padding:10px 0 0;margin-bottom:28px}
+.fw-sky-worlds .fw-world-reading>p{font:500 18px/1.6 var(--world-serif)!important;text-align:left;max-width:100%;color:#191510}
+.fw-sky-worlds .fw-world-reading>div:first-child{justify-content:flex-start!important;color:#51444e!important}
+.fw-world-weather-notes{margin-top:22px}.fw-world-weather-entry{position:relative;min-width:0;padding:15px 0 12px;border-top:1px solid #d4ccd2}.fw-world-note-label{display:block;font:600 12px/1.4 var(--world-ui);color:#51444e;margin:0 0 7px}.fw-sky-worlds .fw-world-weather-entry :is(h2,h3){font:600 20px/1.2 var(--world-serif)!important;margin-bottom:5px!important;text-align:left!important}.fw-sky-worlds .fw-world-weather-entry p{font:500 17px/1.5 var(--world-serif)!important;margin:0!important}
+.fw-sky-worlds .sky-world-body :is(.fw-world-identity,.fw-world-tides,.fw-world-year,.fw-world-ask,.fw-world-atelier,.fw-world-way){margin:8px 0 28px}
+.fw-sky-worlds .sky-world-body :is(.fw-world-identity,.fw-world-ask)>:is(h2,h3){font:italic 600 clamp(27px,6.4vw,34px)/1.18 var(--world-serif)!important}.fw-sky-worlds .sky-world-body .sky-note{font:500 17px/1.5 var(--world-serif)}
+.fw-sky-worlds .sky-world-body .daily-sky-movement{margin:4px 0 28px}
+.fw-sky-worlds .sky-world-body .daily-sky-movement>.daily-sky{box-shadow:none!important;padding:18px 16px 8px!important;border-radius:0!important;background:#fff!important;position:relative}
+.fw-sky-worlds .sky-world-body .daily-sky-slide h3{font-size:20px;line-height:1.2}.fw-sky-worlds .sky-world-body .daily-sky-slide p{font-size:17px!important;line-height:1.48}
+.fw-sky-worlds .sky-world-body .daily-sky-heading{text-align:left}.fw-sky-worlds .sky-world-body .daily-sky-date{text-align:left}.fw-sky-worlds .sky-world-body .daily-sky-movement .sky-meaning>div:first-child{justify-content:flex-start!important;padding-left:0!important}
+.fw-sky-worlds .sky-world-body .fw-world-triad{min-width:0;gap:0}.fw-sky-worlds .fw-world-triad-column{min-width:0;flex:1}.fw-sky-worlds .fw-world-triad-column button{min-height:74px!important;width:100%}
+.fw-sky-worlds .sky-world-body :is(.fw-world-year,.fw-world-ask,.fw-world-atelier,.fw-world-way)>section{box-shadow:none!important;border-radius:0!important;padding:18px 0!important;background:transparent!important}
+.fw-sky-worlds .fw-world-ask>section>button.fw-elite-press{border-radius:999px!important;background:#51444e!important;color:white!important;border:1px solid #51444e!important;letter-spacing:0!important;text-transform:none!important;font-weight:600!important}
+.fw-sky-worlds .fw-world-ask :is(input,textarea){font-size:16px!important;border-radius:8px!important;background:#fff!important;min-width:0}.fw-sky-worlds .fw-world-way button{min-height:44px}
+.fw-sky-worlds .fw-world-tides>div{box-shadow:none!important}.fw-sky-worlds .fw-world-year .daily-sky{border-left:1px solid #d4ccd2!important;padding-left:16px!important}
+
+/* Conservatory: an open window, clear panes, one architectural axis. */
+.fw-world-detail{height:48px;position:relative;pointer-events:none;isolation:isolate;margin:0 0 4px}
+.fw-world-detail img{width:120px;height:80px;object-fit:contain;position:absolute;right:-8px;bottom:0;display:block}
+.fw-world-detail svg{position:absolute;right:0;bottom:6px;width:140px;height:40px;stroke:#a8893f;stroke-width:.7}
+.fw-world-detail--press{height:30px;border-bottom:1px solid #6e6a6140}.fw-world-detail--press svg{stroke:#827b82;right:4px}
+.fw-world-detail--light{height:56px}.fw-world-detail--light img{width:84px;height:56px;left:-14px;right:auto;opacity:.8}
+.fw-world-detail--workbench{height:30px;border-bottom:1px solid #b9aa8d80}
+.fw-sky-worlds[data-world=conservatory]{--world-rule:#c5d0c7}
+.fw-sky-worlds[data-world=conservatory] .fw-world-clearing{padding-left:12px;border-left:1px solid #b9c5bca0}
+.fw-sky-worlds[data-world=conservatory] .fw-world-clearing:before{content:"";position:absolute;left:-1px;top:-24px;width:22px;height:24px;border-left:1px solid #b9c5bca0;border-top:1px solid #b9c5bca0;pointer-events:none}
+.fw-sky-worlds[data-world=conservatory] [data-section=sky] .fw-ff-summary{border-left:1px solid #c5d0c7;padding-left:12px!important}
+.fw-sky-worlds[data-world=conservatory] .sky-world-body .daily-sky-movement>.daily-sky{border:1px solid #c5d0c7!important;border-top:0!important;background:linear-gradient(128deg,#fff 65%,#edf2ee 100%)!important;border-radius:1px 1px 24px 1px!important}
+.fw-sky-worlds[data-world=conservatory] .daily-sky-movement>.daily-sky:before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,#c5d0c7,transparent);pointer-events:none}
+.fw-sky-worlds[data-world=conservatory] .fw-world-weather-entry{border-color:#c5d0c7;padding-left:14px}.fw-sky-worlds[data-world=conservatory] .fw-world-weather-entry:before{content:"";position:absolute;top:14px;left:0;height:24px;border-left:1px solid #889e91}
+.fw-sky-worlds[data-world=conservatory] .fw-world-triad{gap:5px!important}.fw-sky-worlds[data-world=conservatory] .fw-world-triad-column{border:1px solid #c5d0c7;border-radius:42% 42% 0 0;padding-top:10px;background:#ffffff60}
+.fw-sky-worlds[data-world=conservatory] .fw-world-tides{border:1px solid #c5d0c7;border-radius:38% 38% 3px 3px;padding:10px 0 0;background:linear-gradient(132deg,#fff 48%,#edf2ee77)}
+.fw-sky-worlds[data-world=conservatory] .fw-world-year{border-left:1px solid #c5d0c7;padding-left:14px}.fw-sky-worlds[data-world=conservatory] .fw-world-year .daily-sky{border-top:1px solid #c5d0c7!important;border-left:0!important;padding-left:0!important}
+.fw-sky-worlds[data-world=conservatory] .fw-world-ask>section{border-top:1px solid #c5d0c7;padding:18px 12px!important;background:#ffffff55!important}.fw-sky-worlds[data-world=conservatory] .fw-world-atelier{border-bottom:1px solid #c5d0c7}
+
+/* Star Press: printed columns become editorial rows on a small page. */
+.fw-sky-worlds[data-world=press] .fw-world-folio{border-bottom:1px solid #6e6a6170;padding-bottom:7px;font-weight:700;letter-spacing:.17em}
+.fw-sky-worlds[data-world=press] .fw-world-clearing h1{font:italic 600 clamp(27px,6.4vw,34px)/1.18 var(--world-serif);letter-spacing:-.035em;border-bottom:1px solid #6e6a6170;padding-bottom:12px;margin-bottom:10px}
+.fw-sky-worlds[data-world=press] .fw-world-flower{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;align-items:baseline;font-size:16px}.fw-sky-worlds[data-world=press] .fw-world-flower strong{font-size:18px}
+.fw-sky-worlds[data-world=press] [data-section=sky] .fw-ff-summary{border-top:2px solid #51444e;padding-top:2px!important}.fw-sky-worlds[data-world=press] .fw-ff-summary-nav{border-bottom:1px solid #9c969e}
+.fw-sky-worlds[data-world=press] .fw-world-weather-entry{display:grid;grid-template-columns:62px minmax(0,1fr);column-gap:12px;border-top:1px solid #6e6a6155}.fw-sky-worlds[data-world=press] .fw-world-note-label{grid-row:1/3;padding-top:2px}.fw-sky-worlds[data-world=press] .fw-world-weather-entry :is(h2,h3,p){grid-column:2}
+.fw-sky-worlds[data-world=press] .sky-world-body .daily-sky-movement>.daily-sky{border:0!important;border-top:2px solid #51444e!important;border-bottom:1px solid #6e6a6170!important;background:transparent!important;padding:15px 0 4px!important}
+.fw-sky-worlds[data-world=press] .daily-sky-heading{flex-direction:row;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px}.fw-sky-worlds[data-world=press] .daily-sky-slide h3{font-style:italic;font-size:20px}.fw-sky-worlds[data-world=press] .sky-moon-lesson{border-top:1px solid #6e6a6170!important}
+.fw-sky-worlds[data-world=press] .fw-world-triad{flex-direction:column!important;border-top:1px solid #6e6a6155}.fw-sky-worlds[data-world=press] .fw-world-triad-column{border-left:0!important;border-bottom:1px solid #6e6a6155;padding:0!important}.fw-sky-worlds[data-world=press] .fw-world-triad-column>button{display:grid!important;grid-template-columns:30px 54px minmax(0,1fr) 18px;align-items:center;text-align:left;column-gap:10px!important;row-gap:3px!important;min-height:66px!important;border-radius:0!important;padding:10px 0 5px!important}.fw-sky-worlds[data-world=press] .fw-world-triad-column>button>div{margin:0!important}.fw-sky-worlds[data-world=press] .fw-world-triad-column>button>div:nth-child(1){grid-column:1;grid-row:1}.fw-sky-worlds[data-world=press] .fw-world-triad-column>button>div:nth-child(2){grid-column:2;grid-row:1}.fw-sky-worlds[data-world=press] .fw-world-triad-column>button>div:nth-child(3){grid-column:3;grid-row:1}.fw-sky-worlds[data-world=press] .fw-world-triad-column>button>div:nth-child(4){grid-column:2/5;grid-row:2}.fw-sky-worlds[data-world=press] .fw-world-triad-column>button>svg{grid-column:4;grid-row:1;margin:0!important}.fw-sky-worlds[data-world=press] .fw-world-triad-column>p{text-align:left!important;margin:0 0 10px 40px!important;font-size:12px!important}
+.fw-sky-worlds[data-world=press] .fw-world-tides{border-top:2px solid #51444e;border-bottom:1px solid #6e6a6170;padding-top:12px}.fw-sky-worlds[data-world=press] .fw-world-tides>div{background:transparent!important;border-radius:0!important}
+.fw-sky-worlds[data-world=press] .fw-world-year{border-left:1px solid #6e6a6155;padding-left:15px}.fw-sky-worlds[data-world=press] .fw-world-year>section{border-bottom:1px solid #6e6a6133}.fw-sky-worlds[data-world=press] .fw-world-ask>section{border-top:1px solid #6e6a6155}.fw-sky-worlds[data-world=press] .fw-world-atelier{border-top:2px solid #51444e}
+
+/* Petal Observatory: a tissue canopy, veins and organic open clearings. */
+.fw-sky-worlds[data-world=petal] .fw-world-scene{height:clamp(154px,44vw,186px)}
+.fw-sky-worlds[data-world=petal] .fw-world-moon{z-index:0}.fw-sky-worlds[data-world=petal] .fw-world-clearing{padding-left:5px}
+.fw-sky-worlds[data-world=petal] [data-section=sky] .fw-ff-summary{border-bottom:1px solid #d3c4d4;padding-bottom:7px!important}.fw-sky-worlds[data-world=petal] .fw-ff-glance-row{border-bottom-style:dotted}
+.fw-sky-worlds[data-world=petal] .fw-world-reading{padding-left:6px!important}.fw-sky-worlds[data-world=petal] .fw-world-weather-notes{border-left:1px solid #bfaac3;border-radius:0 0 0 40px;padding-left:16px}.fw-sky-worlds[data-world=petal] .fw-world-weather-entry{border-top-color:#d3c4d4}.fw-sky-worlds[data-world=petal] .fw-world-note-label{font-style:italic}
+.fw-sky-worlds[data-world=petal] .sky-world-body .daily-sky-movement>.daily-sky{border:1px solid #d3c4d4!important;border-radius:28px 1px 1px 1px!important;background:linear-gradient(130deg,#efe6f0 0,#fff 48px)!important;padding-top:22px!important}
+.fw-sky-worlds[data-world=petal] .daily-sky-movement>.daily-sky:before{content:"";position:absolute;top:0;left:0;width:25px;height:25px;border-bottom:1px solid #bca6c1;border-radius:0 0 22px 0;pointer-events:none}
+.fw-sky-worlds[data-world=petal] .fw-world-identity{border-top:1px solid #d3c4d4;padding-top:24px}.fw-sky-worlds[data-world=petal] .fw-world-triad-column{border-left-color:#d3c4d4!important}.fw-sky-worlds[data-world=petal] .fw-world-tides{padding:14px 0 4px;border-radius:80px 4px 70px 4px;background:linear-gradient(145deg,#efe6f0aa,#ffffff77 45%,#f5f4f100)}
+.fw-sky-worlds[data-world=petal] .fw-world-tides>div{background:transparent!important;border-radius:70px 0 55px 0!important}.fw-sky-worlds[data-world=petal] .fw-world-year{padding-left:12px;border-left:1px solid #d3c4d4;border-radius:0 0 0 38px}
+.fw-sky-worlds[data-world=petal] .fw-world-year .daily-sky{background:#ffffff88!important;padding:18px 12px!important;border-radius:0 18px 0 0!important}.fw-sky-worlds[data-world=petal] .fw-world-ask>section{border-top:1px solid #d3c4d4}.fw-sky-worlds[data-world=petal] .fw-world-atelier{border-bottom:1px solid #d3c4d4}
+
+/* Workbench: warm authored reading against precise instruments and slips. */
+.fw-sky-worlds[data-world=workbench] .fw-world-folio{letter-spacing:.08em}.fw-sky-worlds[data-world=workbench] .fw-world-clearing h1{font:italic 600 clamp(27px,6.4vw,34px)/1.18 var(--world-serif);letter-spacing:-.02em}.fw-sky-worlds[data-world=workbench] .fw-world-flower{border-left:1px solid #a8893f80;padding-left:12px}
+.fw-sky-worlds[data-world=workbench] .fw-world-scene{height:clamp(168px,48vw,206px)}
+.fw-sky-worlds[data-world=workbench] [data-section=sky] .fw-ff-summary{border-top:1px solid #a8893f80}.fw-sky-worlds[data-world=workbench] .fw-ff-glance-row{grid-template-columns:20px minmax(0,1fr) 15px}
+.fw-sky-worlds[data-world=workbench] .sky-world-body .daily-sky-movement>.daily-sky{border:1px solid #b9aa8d!important;border-radius:2px!important;background:#fff!important;padding:16px 14px 6px!important}
+.fw-sky-worlds[data-world=workbench] .daily-sky-heading{border-left:3px solid #a8893f;padding-left:9px}.fw-sky-worlds[data-world=workbench] .daily-sky-slide h3{font-size:20px}.fw-sky-worlds[data-world=workbench] .daily-sky-controls{border-top-color:#b9aa8d}
+.fw-sky-worlds[data-world=workbench] .fw-world-reading{padding:14px 14px 8px!important;background:#fff!important;border-left:1px solid #c4bac2!important}.fw-sky-worlds[data-world=workbench] .fw-world-weather-entry{padding-left:12px;border-top:1px solid #c4bac2}.fw-sky-worlds[data-world=workbench] .fw-world-note-label{border-left:2px solid #a8893f;padding-left:8px;margin-left:-12px}
+.fw-sky-worlds[data-world=workbench] .fw-world-triad{gap:5px!important}.fw-sky-worlds[data-world=workbench] .fw-world-triad-column{border:1px solid #b9aa8d!important;border-radius:2px;background:#fff;padding-top:6px}
+.fw-sky-worlds[data-world=workbench] .fw-world-tides{border-top:1px solid #a8893f;border-bottom:1px solid #a8893f;padding:12px 0}.fw-sky-worlds[data-world=workbench] .fw-world-tides>div{background:#ffffff88!important;border-radius:0!important}
+.fw-sky-worlds[data-world=workbench] .fw-world-year{border-left:1px solid #b9aa8d;padding-left:14px}.fw-sky-worlds[data-world=workbench] .fw-world-year>section{border-top:1px solid #b9aa8d88}.fw-sky-worlds[data-world=workbench] .fw-world-ask>section{padding:18px 12px!important;border:1px solid #b9aa8d!important;margin-bottom:12px!important;background:#fff!important}.fw-sky-worlds[data-world=workbench] .fw-world-atelier{border-top:1px solid #b9aa8d}
+
+/* Light Garden: photographic traces at the edges of crisp writing plates. */
+.fw-sky-worlds[data-world=light] .fw-world-clearing{padding-left:3px}
+.fw-sky-worlds[data-world=light] [data-section=sky] .fw-ff-summary{border-left:1px solid #c0c8c2;padding-left:10px!important}.fw-sky-worlds[data-world=light] .fw-world-rule{background:linear-gradient(90deg,#bcc7bd,transparent)}
+.fw-sky-worlds[data-world=light] .sky-world-body .daily-sky-movement>.daily-sky{background:#fff!important;border:0!important;border-radius:0 0 34px 0!important;border-left:1px solid #c0c8c2!important;padding:17px 16px 8px!important}.fw-sky-worlds[data-world=light] .daily-sky-movement>.daily-sky:after{content:"";position:absolute;bottom:0;right:0;width:28px;height:28px;border-bottom:1px solid #b8c7bd;border-radius:0 0 26px 0;pointer-events:none}
+.fw-sky-worlds[data-world=light] .fw-world-reading{padding:12px 0 0 12px!important;border-left:1px solid #c0c8c2!important;background:linear-gradient(90deg,#fff8,transparent 85%)!important}
+.fw-sky-worlds[data-world=light] .fw-world-weather-entry{border-color:#c0c8c2;padding-top:18px}.fw-sky-worlds[data-world=light] .fw-world-note-label{font-weight:500;letter-spacing:.06em}.fw-sky-worlds[data-world=light] .fw-world-triad{border-top:1px solid #c0c8c2;border-bottom:1px solid #c0c8c2;padding:10px 0}
+.fw-sky-worlds[data-world=light] .fw-world-triad-column{border-left-color:#c0c8c2!important}.fw-sky-worlds[data-world=light] .fw-world-tides{border-left:1px solid #c0c8c2;border-bottom:1px solid #c0c8c2;border-radius:0 0 42px 0;background:#ffffff80}.fw-sky-worlds[data-world=light] .fw-world-tides>div{background:transparent!important;border-radius:0!important}
+.fw-sky-worlds[data-world=light] .fw-world-year{padding-left:12px;border-left:1px solid #c0c8c2}.fw-sky-worlds[data-world=light] .fw-world-year .daily-sky{background:#fff!important;padding:18px 14px!important;border-left:0!important;border-bottom:1px solid #c0c8c2!important}.fw-sky-worlds[data-world=light] .fw-world-ask>section{border-top:1px solid #c0c8c2;padding-top:22px!important}.fw-sky-worlds[data-world=light] .fw-world-atelier{border-top:1px solid #c0c8c2}
+@media(min-width:431px){.fw-world-scene{height:196px}.fw-sky-worlds[data-world=workbench] .fw-world-scene{height:214px}}
+@media(prefers-reduced-motion:reduce){.fw-world-header[data-moving=true] .fw-world-art{animation:none!important}.fw-sky-worlds .daily-sky-track,.fw-sky-worlds .fw-ff-summary-track{scroll-behavior:auto}}
