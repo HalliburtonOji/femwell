@@ -843,6 +843,12 @@ Halli explicitly requests a Creative agent with extensive reusable context. Role
 
 This correction refines §4’s one-motif rule: one coordinated visual language may have small separated botanical incidents across the page, including realistic petals and buds. Avoid repeated frames/wallpaper, decoration behind reading text or inaccessible controls. Cohesion and readable hierarchy govern density; the no-strip rule still wins. Existing font families/roles and clean ground remain.
 
+### 10.5.14 A CONTINUOUS VISUAL WORLD — Halli, 6 October 2026
+
+The art direction must carry through the useful section, not stop at its header. Objects, light, materials, typography and small incidents form a coherent place. Naturally fading flora is an example of integration, not an instruction to repeat blurred flowers. Think beyond the example: a reading table could hold an open book/stem, vase and stack; its title lives in a deliberate clearing below, while a bookmark on a real reading card, a resting book or related abstract detail continues the same world as she scrolls. Each object has a purpose and a relationship to the section; never scatter decorative stickers, add clutter or make pretend controls. This table is one concept, not a universal template.
+
+Sky's accepted Living garden can feel alive through gentle, physically plausible plant/light movement. Keep measured Moon data separate from imagined art; provide stillness and reduced-motion support. Full original header language, heart, section selectors, changing focused actions and every existing capability stay. Creative Director must critique whole-page coherence, not just hero quality. New executions remain Ideas-only until Halli approves them; this records the direction, not aesthetic approval of an implementation.
+
 ### 10.6 CRAFT THAT CARRIES MEANING (format = feeling) — ⏳ PROPOSED (awaiting sign-off)
 - **Wax rose seal + sealed letters:** Health becomes *correspondence* — each letter arrives **sealed with a wax rose** (her signature flower, phase-coloured); opening breaks the seal (once-only lift). Extends to a monthly **"letter from your body,"** a milestone certificate, a sealed **"letter to future you"** in Journal, Jess's notes as folds.
 - **Vines that grow with progress** (a leaf per session, a bloom at the end — growth, not a progress bar).

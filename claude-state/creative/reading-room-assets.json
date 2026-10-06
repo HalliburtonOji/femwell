@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-06",
+  "tool": "built-in image_gen",
+  "processing": "Format conversion only, preserve generated alpha; no Python art editing.",
+  "assets": [
+    {
+      "source": "C:/Users/Halli/.codex/generated_images/01a0e28c-de58-74a3-b2fd-c62f5d849aa7/exec-b24e7f39-f9cb-45bf-92f9-20416ecfaf7d.png",
+      "web": "/images/reading-room/table-v1.webp",
+      "prompt": "Use case: stylized-concept. Asset: original FemWell Books reading-room masthead, a wide composition on truly transparent background. A realistic artsy, intimate still-life with personality, painterly glazed oil detail and photographic material truth, not cartoon/vector/collage. Slightly elevated frontal view of a narrow pale weathered walnut reading table, near top-middle of image. On it a cream open unlettered book slightly left of centre, naturally arched thin pages; ONE loose jasmine stem crosses its gutter. At right an irregular clear glass vase with airy identifiable five-petalled white jasmine, small olive-sage leaves and several buds, not bouquet; behind at far right two offset subdued plum and sage linen-bound books. Upper-left pearly daylight, coherent soft violet/sage colour grading and delicate shadows. Restrained wood edge with only short side supports; the table, side supports and shadows dissolve naturally into alpha/alabaster, no rectangular room or cutout sticker edges. Purposefully cropped off the left/right outer sides, scene grows into page. TOP 60% holds objects/table. LOWER CENTRAL 76% width from y62% through bottom stays COMPLETELY EMPTY AND TRANSPARENT, a deliberate clearing UNDER THE TABLE for real HTML title, carved heart, flower name and meaning. Composition landscape 3:2, fine believable surfaces, beautiful asymmetry, warm lived-in quality, no heavy dark table slab. No text, letters, typography, symbols, labels, watermark, wallpaper, wall, floor, picture frame, interface, fake UI, no rose, no surrounding border. Entire external backdrop and lower clearing transparent. Objects and soft light have graduated natural edges."
+    },
+    {
+      "source": "C:/Users/Halli/.codex/generated_images/01a0e28c-de58-74a3-b2fd-c62f5d849aa7/exec-89ec7801-32dc-4ec3-b48a-c8cca921092f.png",
+      "web": "/images/reading-room/page-edge-v1.webp",
+      "prompt": "Use case: stylized-concept. Asset original transparent reading-page EDGE only for FemWell real HTML chapter card, match pale wood reading table world: glazed painterly realism, tactile ivory paper grain, upper-left pearly daylight, gentle olive-sage and violet shadows. Landscape horizontal 3:2 canvas. A close fragment of ONE book page's soft folded bottom-right corner and finely layered paper fore-edge: objects only in BOTTOM 12% and RIGHTMOST 8%, all other interior 90% truly transparent, no solid page fill. A slender left binding seam in far left4% optional, not second page. Fine natural curves imperfect paper, restrained shadows that fade to alpha. No letters/text/lines/symbols/objects/plant/border/background/wall/floor/book cover/UI. This is an irregular quiet edge to sit around readable real HTML, no fake content, no heavy dark outline, no rectangle, no aged yellow/burnt paper."
+    },
+    {
+      "source": "C:/Users/Halli/.codex/generated_images/01a0e28c-de58-74a3-b2fd-c62f5d849aa7/exec-d0426512-0a6b-41ca-87c1-2b782550cde0.png",
+      "web": "/images/reading-room/resting-book-v1.webp",
+      "prompt": "Use case: stylized-concept. Original transparent intimate reading-room detail for FemWell. A small muted plum linen-bound book placed face-down and slightly tented/ajar, cream paper edges visible, a short pale ribbon escapes from underneath, one small identifiable white jasmine bud with olive-sage leaves rests close to binding. Glazed painterly realism with photographic material detail, irregular cloth weave, upper-left pearly daylight and subtle violet/sage shadow grading, matches pale reading table world. Asymmetry and personality, not generic library clipart. Landscape canvas3:2. OBJECTS confined to central lower/right60%, rest truly transparent, soft shadow fades to alpha, no rectangular background. No lettering/text/title/labels/logos/border/wall/floor/table/flowers repeated all over, no hands/person, no fake UI or status. One book only. Rich but quiet natural grounded little encounter."
+    }
+  ]
+}

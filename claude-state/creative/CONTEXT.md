@@ -23,6 +23,8 @@ Sky Living page: /FloralDreamDemo?direction=living&section=sky. Approval is reco
 
 ## Evidence to read
 
+6 October, further correction: a complete place/material/light language must continue through useful body content. Naturally blurred edge flora is an example, not the entire answer. Halli's reading-table example puts a stack, open book/stem and vase in a coherent header; title in the clearing beneath; purposeful bookmark/book/abstract details continue lower. Table is one concept, not a universal template. Sky garden can move gently. See Bible §10.5.14. The celestial study's technical checks do not establish aesthetic approval or whole-page coherence.
+
 - BRAND_IDENTITY.md §§1–6, 10.5.1–13, 11, 17, 19.
 - connected-life/five-demos-verification.md: full preserved capability inventory and genuine connection proof.
 - connected-life/reality-audit-2026-10-05.md and atom-workflow.md: actual code/data journeys and queued connectivity.

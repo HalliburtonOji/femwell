@@ -184,8 +184,8 @@ function CarryItWithYou({ seed, onMarkRead, read, connectedDemo = false }) {
 }
 
 export default function SkyFocus({ userProfile, actionRequest, onActionState, onActionHandled, portalChart = false, continuous = false, celestial = false, dailyLessons = false, direction, artDirection, cycleContext }) {
-  const artful = artDirection === "marginalia";
-  const lessonRoute = artful ? "/LivingAtelierDemo" : undefined;
+  const artful = ["marginalia","reading-room"].includes(artDirection);
+  const lessonRoute = artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artful ? "/LivingAtelierDemo" : undefined;
   const { user, astro, reading, userProfile: up, loading, generatingReading, setAstro } = useBirthChart(userProfile);
   const prof = userProfile || up;
   const chart = useMemo(() => deriveChart(astro, prof), [astro, prof]);

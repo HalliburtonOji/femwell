@@ -1,6 +1,6 @@
 import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -13,6 +13,32 @@ const active = { id: "sky", title: "The sky around you" };
 const quarter = { name: "First quarter", position: .25, illumination: 50 };
 
 describe("Living Sky header", () => {
+  it("stops the opt-in breeze, replays once, and settles without changing measured Moon data",()=>{
+    vi.useFakeTimers();
+    try {
+      const {container,unmount}=render(<LivingSkyHeader active={active} moon={quarter} breeze/>);
+      const moon=screen.getByRole("img",{name:"First quarter, approximately 50% illuminated"}).innerHTML;
+      fireEvent.click(screen.getByRole("button",{name:"Still the garden"}));
+      expect(container.querySelector("header")).toHaveAttribute("data-moving","false");
+      fireEvent.click(screen.getByRole("button",{name:"Replay garden movement"}));
+      act(()=>vi.advanceTimersByTime(6499));
+      expect(container.querySelector("header")).toHaveAttribute("data-moving","true");
+      act(()=>vi.advanceTimersByTime(1));
+      expect(screen.getByRole("button",{name:"Replay garden movement"})).toBeVisible();
+      expect(screen.getByRole("img",{name:"First quarter, approximately 50% illuminated"}).innerHTML).toBe(moon);
+      fireEvent.click(screen.getByRole("button",{name:"Replay garden movement"}));
+      unmount();expect(vi.getTimerCount()).toBe(0);
+    } finally {vi.useRealTimers();}
+  });
+  it("keeps the opt-in garden static when reduced motion is requested",()=>{
+    const preference=vi.spyOn(window,"matchMedia").mockReturnValue({matches:true,addEventListener:vi.fn(),removeEventListener:vi.fn()});
+    try {
+      const {container}=render(<LivingSkyHeader active={active} moon={quarter} breeze/>);
+      expect(container.querySelector("header")).toHaveAttribute("data-moving","false");
+      fireEvent.click(screen.getByRole("button",{name:"Replay garden movement"}));
+      expect(container.querySelector("header")).toHaveAttribute("data-moving","false");
+    } finally {preference.mockRestore();}
+  });
   let fetchSpy;
   beforeEach(() => { vi.stubGlobal("fetch", fetchSpy = vi.fn()); });
   afterEach(() => { expect(fetchSpy).not.toHaveBeenCalled(); vi.unstubAllGlobals(); });

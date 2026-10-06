@@ -1,0 +1,14 @@
+[
+  {
+    "source": "C:/Users/Halli/.codex/generated_images/01a0e28c-de58-74a3-b2fd-c62f5d849aa7/exec-16e37bb5-a3fe-44ea-9bcb-23022cd1d97b.png",
+    "web": "/images/reading-room/table-v2.webp",
+    "prompt": "Edit target: preserve the entire supplied reading-table composition exactly: all books, open pages, glass vase, linen scarf, wooden table, side supports, positions, light, shadows, alpha and large lower title clearing. CHANGE ONLY THE PLANTS, replacing every blossom and leaf in vase/on open page/on tabletop with botanically accurate airy Jasminum officinale (common jasmine). Small delicate white FIVE-LOBED POINTED STAR corollas, slim tubular flowers with discreet ivory centre, no visible yellow stamen brushes; narrow slender closed jasmine buds, pinnate groups of 7–9 smooth entire-edged leaflets, thin flexible green stems. Existing blossoms are incorrectly apple/wild-rose-like with serrated leaves and conspicuous yellow stamens; correct that morphology, do not add more plants or a bouquet. Same original realistic artsy glazed painterly craft and photographic truth. Keep all nonplant pixels/composition/materials unchanged. Transparent background preserved, no text.",
+    "note": "Targeted botanical correction preserving composition."
+  },
+  {
+    "source": "C:/Users/Halli/.codex/generated_images/01a0e28c-de58-74a3-b2fd-c62f5d849aa7/exec-ca4635b5-791b-4862-830b-44c6a60e51e4.png",
+    "web": "/images/reading-room/resting-book-v2.webp",
+    "prompt": "Edit target supplied resting plum book. Preserve entire book, paper, cloth weave, ribbon, perspective, positions, light, alpha shadows exactly. CHANGE ONLY flower bud/foliage: existing bud looks like rose or camellia. Replace with a smaller slender elongated closed common jasmine Jasminum officinale tubular bud, ivory white and green calyx, with pinnate groups of small smooth entire-edged pointed leaflets on a very thin flexible stem. No thick leaf rosette, no yellow stamens, no rose/camellia/apple blossom. Same original realistic artsy glazed painterly light and material truth. Transparent background preserved. No text.",
+    "note": "Targeted botanical correction preserving composition."
+  }
+]

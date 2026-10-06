@@ -34,6 +34,13 @@ describe("daily astronomy and exact identity",()=>{
   });
 });
 describe("real save and private source-linked note contracts",()=>{
+  it("returns an older save to its exact edition in the room and rejects an arbitrary preview destination",async()=>{
+    const lesson=SKY_LESSONS.find(item=>item.id==="earthshine");
+    expect(skyLessonRoute(lesson,"living","https://example.com")).toMatch(/^\/LivingLifestyleDemo\?/);
+    mock.filter.mockResolvedValue([{id:"old",title:lesson.title,meta_json:JSON.stringify({kind:"sky-lesson",lessonId:lesson.id,lessonVersion:1,route:"/LivingAtelierDemo?lesson=earthshine"})}]);
+    render(<SavedSkyLessons userId="owner" direction="living" previewRoute="/LivingReadingRoomDemo"/>);
+    expect(await screen.findByRole("link",{name:/Earth lends/})).toHaveAttribute("href","/LivingReadingRoomDemo?direction=living&section=sky&lesson=earthshine&lessonVersion=1#daily-sky-lesson");
+  });
   it("keeps the creative preview on its own exact lesson return, including older saves",async()=>{
     mock.filter.mockResolvedValue([{id:"one",title:"Earth lends a little light",meta_json:JSON.stringify({kind:"sky-lesson",lessonId:"earthshine",lessonVersion:1,route:"/LivingLifestyleDemo?lesson=earthshine"})}]);
     render(<SavedSkyLessons userId="owner" direction="letter" previewRoute="/LivingAtelierDemo"/>);
