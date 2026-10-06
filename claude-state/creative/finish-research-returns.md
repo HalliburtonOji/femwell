@@ -26,3 +26,15 @@ SDK source inspection found each `entities.JournalEntries` property access retur
 - **Pending:** root must prove deployed pixels and real taps at 360/390/430, authenticated read/write read-back and actual joy/club destination. Child browser has no enabled surfaces; no local tests are labelled iPhone, persistence or real-account proof. Community age/consent gates remain intact. Unknown source/version gets no invented link.
 
 Conformance: AGENTS §§3.1–3.4, 4–6; BRAND_IDENTITY §§11, 17.3, 19.8–19.9. No feature removal or new function/schema. Main Lifestyle promotion still requires Halli's go-ahead; these shared returns are prerequisites for the selected Ideas preview.
+
+## Correction — real default Planner is Clipboard, 7 October
+
+Root's native audit proved the remaining P1: `src/pages/Planner.jsx:48` imports `PlannerV2ShellClipboard` under the alias `PlannerV2Shell`. My earlier complete V2 test exercised its sibling module, so its description as routed Planner proof was incorrect. The default import and approved Clipboard design remain unchanged; claim `93b7f8e` covers this corrective port.
+
+Clipboard now uses the shared provenance/duration adapter at lines 55/661, the metadata/minute-preserving patch at 1233, exact source returns in the existing Plan-a-day list (1607), tomorrow list (4887), timeline (5350) and editor (5509). The editor retains all title/hour/duration/type/anchor/delete/cancel/save controls, dynamically includes the actual duration and displays its retained original minute. The existing 6–23 timeline rail also includes any real earlier-hour block, rather than hiding it. Boards, Jess, voice scheduling, lists, rituals, cycle controls, stage/condition surfaces, nourishment, care, exports and other sheets retain their implementation and layout.
+
+The new source/completion regression also exposed an existing P1 in Plan-a-day: `nextDone` was assigned inside a React state updater, after the server payload could already be constructed as false. Line 1523 now derives it from the current record before updating state; the real completion checkbox and source link remain together.
+
+**Six regressions pass against the actual Clipboard module**, including real Hour-by-hour tile → five-minute editor → save preserving an existing `19:10`, notes, source/ref and recurrence; rejected save with an identical retry; seven-minute selection; failed Delete; Plan-a-day completion; tomorrow canonical club. Targeted ESLint and whitespace check pass. Root's native record was created at **19:00**; the 19:10 fixture proves minute round-trip only, not that the browser entered/persisted 19:10. Native pixels, actual account writes and source destination still need root's deployed re-proof. Pre-existing identical duplicate `boxSizing` is P2 and remains outside this atom.
+
+Combined unchanged return proof after the port: **five suites / 35 tests pass in 26.06 seconds** (`C:/Users/Halli/femwell-handoff/finish-clipboard-return.log`). The previous 31-file full-suite result predates this Clipboard correction and is not presented as its final full-suite proof.

@@ -37,6 +37,7 @@
 /* The entire Sky: open ink grammar with tissue belonging to the lesson edge. */
 .fw-sky-worlds[data-world=petal-press] [data-section=sky] .fw-world-reading{padding:12px 0 0!important;background:transparent!important;border:0!important;border-radius:0!important}
 .fw-sky-worlds[data-world=petal-press] [data-section=sky] .fw-world-weather-entry{border-color:#c8bacb}.fw-sky-worlds[data-world=petal-press] [data-section=sky] .fw-world-note-label{color:#51444e;font-weight:600}
+.fw-sky-worlds[data-world=petal-press] [data-section=sky] .fw-world-weather-entry{display:block}.fw-sky-worlds[data-world=petal-press] [data-section=sky] .fw-world-note-label{padding-top:0;margin-bottom:7px}
 .fw-sky-worlds[data-world=petal-press] [data-section=sky] .daily-sky-movement{margin-top:28px;margin-bottom:34px}
 .fw-sky-worlds[data-world=petal-press] [data-section=sky] .daily-sky-movement>.daily-sky{position:relative;isolation:isolate;overflow:visible!important;padding:18px 16px 8px!important;border:0!important;border-top:1px solid #c8bacb!important;border-bottom:1px solid #c8bacb!important;border-radius:0!important;background:#fff!important;box-shadow:none!important}
 .fw-sky-worlds[data-world=petal-press] [data-section=sky] .daily-sky-movement>.daily-sky:after{content:"";position:absolute;z-index:-1;right:-10px;top:-28px;width:86px;height:58px;background:url('/images/sky-worlds/petal-note-v1.webp') right center/contain no-repeat;pointer-events:none}
@@ -103,6 +104,9 @@
 .fw-sky-worlds[data-world=petal-press] .fw-selected-now .fw-folio-card__media{margin:0 0 14px;padding:0;border:0}
 .fw-sky-worlds[data-world=petal-press] .fw-selected-now .fw-folio-card__title{font:italic 600 26px/1.2 var(--selected-serif)!important}
 .fw-sky-worlds[data-world=petal-press] .fw-selected-audio{margin-left:10px;border-left:1px solid #bac8bc;padding-left:12px!important}
+.fw-sky-worlds[data-world=petal-press] .fw-folio-card__media .fw-audio-transport{background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;box-shadow:none!important}
+.fw-sky-worlds[data-world=petal-press] .fw-folio-card__media .fw-audio-garden{height:48px;max-width:150px;margin-left:auto}
+.fw-sky-worlds[data-world=petal-press] .fw-folio-card__media .fw-audio-garden>svg{height:48px!important;width:100%!important;display:block}
 .fw-sky-worlds[data-world=petal-press] .fw-selected-watch .fw-folio-card__media{margin-inline:-2px}
 .fw-sky-worlds[data-world=petal-press] .fw-selected-time h2{font-size:25px!important}
 .fw-sky-worlds[data-world=petal-press] .fw-selected-joys .fw-folio-card[data-media]{border:0}
@@ -110,6 +114,7 @@
 .fw-sky-worlds[data-world=petal-press] .fw-selected-doors a>span:last-child{flex:1 1 92px}
 .fw-sky-worlds[data-world=petal-press] .fw-selected-phase{background:transparent!important;padding:24px 0!important;border-top:2px solid #bfc9ca!important}
 .fw-sky-worlds[data-world=petal-press] .fw-selected-phase .fw-folio-card__hook{font-size:15px!important}
+.fw-sky-worlds[data-world=petal-press] .fw-selected-room--yours .fw-selected-phase{background:transparent!important;padding:24px 0!important;border-top:2px solid #bfc9ca!important}
 .fw-sky-worlds[data-world=petal-press] .fw-selected-material[data-material-section=read]{top:auto;bottom:-22px;right:-10px}
 .fw-sky-worlds[data-world=petal-press] .fw-selected-material[data-material-section=good]{top:auto;bottom:-18px;right:4px}
 .fw-sky-worlds[data-world=petal-press] .fw-selected-material[data-material-section=yours]{top:24px;right:auto;left:-32px;opacity:.7}

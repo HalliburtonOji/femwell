@@ -61,7 +61,7 @@ export default function GoodLifeFocus({ timeLens, joys = [], onSlip, onPlan, tim
       {joys.length ? (
         <GoodCard className="fw-selected-joys" eyebrow={presentation ? "For the pleasure of it" : "No streaks, nothing owed"} title={presentation ? "Small joys" : "Small joys & permission"} accent="plum">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {joys.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => onSlip && onSlip(it)} onConsume={presentation && onPlan ? ()=>onPlan(it) : undefined} consumeLabel="Plan a time" />)}
+            {joys.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} previewText={presentation ? (it.type === "quote" ? "Book a quiet hour, just for you." : it.subtitle) : undefined} compact onOpen={() => onSlip && onSlip(it)} onConsume={presentation && onPlan ? ()=>onPlan(it) : undefined} consumeLabel="Plan a time" />)}
           </div>
         </GoodCard>
       ) : null}

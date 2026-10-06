@@ -323,7 +323,7 @@ function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, o
           <Eyebrow cw="lavender" align="left">{artful && reading?.reading_date ? `Your sky · ${new Date(`${reading.reading_date}T12:00:00`).toLocaleDateString("en-GB",{day:"numeric",month:"short"})}` : "Your sky today"}</Eyebrow>
           <h2 style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 30, lineHeight: 1.1, letterSpacing: -0.4, color: C.ink, margin: "0 0 10px", textShadow: "none" }}>{headline}</h2>
         </div>
-        <ShareButton iconOnly label="Share today's sky" artifact={shareArtifact} />
+        <ShareButton iconOnly label={complete && readingDate ? `Share your sky reading from ${readingDate}` : "Share today's sky"} artifact={shareArtifact} />
       </div>
       <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "6px 12px", fontFamily: UI, fontSize: 12, fontWeight: 600, color: C.slate, letterSpacing: ".04em", margin: "0 0 14px" }}>
         {stateBits.map((b, i) => (<React.Fragment key={b}>{i ? <span style={{ width: 3, height: 3, borderRadius: 99, background: C.goldHair }} /> : null}<span>{b}</span></React.Fragment>))}

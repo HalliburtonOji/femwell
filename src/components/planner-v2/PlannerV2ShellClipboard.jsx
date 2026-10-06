@@ -52,6 +52,8 @@ import MonthRibbon from "@/components/planner/cycle/MonthRibbon";
 // every "+ Add" affordance instead of rendering its own.
 import { openLogger } from "@/components/UniversalLogger";
 import { base44 } from "@/api/base44Client";
+import { plannerItemToBlock, plannerItemToPlanRow, plannerBlockPatch } from "./plannerItems";
+import PlannerSourceLink from "./PlannerSourceLink";
 import StageRow from "@/components/planner-v2/StageRows";
 import ConditionRow from "@/components/planner-v2/ConditionRows";
 import CardStack from "@/components/planner-v2/CardStack";
@@ -321,37 +323,6 @@ const astraReading = {
   full:
     "Day 25. Progesterone is doing the heavy lifting. Your body is winding the cycle down — and the work you did at ovulation is now consolidating. This is a finishing week, not a starting week. Close loops you've left open. Say no to one thing that doesn't need you. The rooms you walk into this week want you softer, not louder.",
 };
-
-// Phase B3 — adapter: PlannerItems entity row → schedule block shape used
-// throughout the demo (id, hour, duration, title, type, anchor, done).
-function plannerItemToBlock(row) {
-  if (!row || typeof row !== "object") return null;
-  // Parse "HH:MM" or "HH" out of PlannerItems.time. Default to 9 if missing.
-  let hour = 9;
-  if (row.time) {
-    const m = /^(\d{1,2})/.exec(String(row.time));
-    if (m) {
-      const h = Number(m[1]);
-      if (Number.isFinite(h) && h >= 0 && h <= 23) hour = h;
-    }
-  }
-  const cat = String(row.category || "").toLowerCase();
-  let type = "task";
-  if (cat === "habit" || cat === "wellbeing") type = "habit";
-  else if (cat === "reminder" || cat === "medication" || cat === "med") type = "med";
-  else if (cat === "appointment" || cat === "event") type = "event";
-  return {
-    id: row.id,
-    hour,
-    duration: Number(row.duration_minutes) || 30,
-    title: row.title || "Untitled",
-    type,
-    anchor: !!(row.is_anchor || row.anchor),
-    done: !!row.is_completed,
-    // Keep the raw row so save/delete handlers can round-trip cleanly.
-    _raw: row,
-  };
-}
 
 const initialBlocks = [
   { id: "b1", hour: 7,  duration: 15, title: "Morning stretch",    type: "habit", anchor: true,  done: true },
@@ -687,7 +658,7 @@ export default function PlannerV2ShellClipboard({
           200,
         );
         if (cancelled) return;
-        const next = (rows || []).map(plannerItemToBlock);
+        const next = (rows || []).filter(row => row?.user_id === user.id).map(plannerItemToBlock).filter(Boolean);
         setBlocks(next);
       } catch {
         if (!cancelled) setBlocks([]);
@@ -1256,25 +1227,18 @@ export default function PlannerV2ShellClipboard({
         block={blockEdit ? blocks.find((b) => b.id === blockEdit) : null}
         onClose={() => setBlockEdit(null)}
         onSave={async (next) => {
-          setBlocks((bs) => bs.map((b) => b.id === next.id ? next : b));
-          setBlockEdit(null);
           // Phase B3 — persist edits to PlannerItems. We only push the
           // fields the demo's BlockEditSheet exposes (title, hour, duration,
           // done). Everything else stays as the server has it.
-          try {
-            const hh = Number.isFinite(next.hour) ? String(next.hour).padStart(2, "0") : "09";
-            await base44.entities.PlannerItems.update(next.id, {
-              title: next.title,
-              time: `${hh}:00`,
-              duration_minutes: next.duration,
-              is_completed: !!next.done,
-            });
-          } catch { /* silent */ }
+          const patch = plannerBlockPatch(next);
+          await base44.entities.PlannerItems.update(next.id, patch);
+          setBlocks((bs) => bs.map((b) => b.id === next.id ? { ...next, _raw: { ...next._raw, ...patch } } : b));
+          setBlockEdit(null);
         }}
         onDelete={async (id) => {
+          await base44.entities.PlannerItems.delete(id);
           setBlocks((bs) => bs.filter((b) => b.id !== id));
           setBlockEdit(null);
-          try { await base44.entities.PlannerItems.delete(id); } catch { /* silent */ }
         }}
       />
 
@@ -1524,14 +1488,9 @@ function PlanADaySheet({ open, onClose, user }) {
         const todays = (rows || [])
           .filter((r) => {
             const d = (r.date_str || r.date || "").toString().split("T")[0];
-            return d === todayISO;
+            return r.user_id === user.id && d === todayISO;
           })
-          .map((r) => ({
-            id: r.id,
-            time: (r.start_time || r.time || "").toString().slice(0, 5),
-            title: r.title || "Untitled",
-            done: !!(r.completed || r.is_completed),
-          }))
+          .map(plannerItemToPlanRow)
           .sort((a, b) => String(a.time || "99:99").localeCompare(String(b.time || "99:99")));
         setTodayPlan(todays);
       } finally {
@@ -1562,12 +1521,10 @@ function PlanADaySheet({ open, onClose, user }) {
     } catch { /* silent */ }
   }
   async function togglePlanItem(id) {
-    let nextDone = false;
-    setTodayPlan((prev) => prev.map((p) => {
-      if (p.id !== id) return p;
-      nextDone = !p.done;
-      return { ...p, done: nextDone };
-    }));
+    const item = todayPlan.find(row => row.id === id);
+    if (!item) return;
+    const nextDone = !item.done;
+    setTodayPlan((prev) => prev.map((p) => p.id === id ? { ...p, done: nextDone } : p));
     try {
       await base44.entities.PlannerItems.update(id, {
         completed: nextDone, is_completed: nextDone,
@@ -1647,6 +1604,7 @@ function PlanADaySheet({ open, onClose, user }) {
                       textDecoration: p.done ? "line-through" : "none",
                       opacity: p.done ? 0.5 : 1,
                     }}>{p.title}</span>
+                    <PlannerSourceLink item={p} compact />
                   </li>
                 ))}
               </ul>
@@ -2999,6 +2957,7 @@ function SchedulePreviewCard({ blocks, onExpand }) {
                 <span style={miniRowTime}>{(b.hour <= 12 ? b.hour : b.hour - 12) + (b.hour < 12 ? "am" : "pm")}</span>
                 <span style={miniRowTitle}>{b.title}</span>
                 <span style={miniRowDur}>{b.duration}m</span>
+                <PlannerSourceLink item={b} compact />
               </li>
             );
           })}
@@ -4855,7 +4814,7 @@ function TomorrowPreviewCard({ user, phase: todayPhase, cycleDay: todayCycleDay,
         if (cancelled) return;
         const tomorrowItems = (evts || []).filter((e) => {
           const d = (e.date_str || e.date || "").toString().split("T")[0];
-          return d === tomorrowStr;
+          return e.user_id === user.id && d === tomorrowStr;
         }).slice().sort((a, b) => String(a?.start_time || a?.time || "99:99").localeCompare(String(b?.start_time || b?.time || "99:99")));
         const tomorrowTasks = (tks || []).filter((t) => {
           const d = (t.date || "").toString().split("T")[0];
@@ -4866,7 +4825,7 @@ function TomorrowPreviewCard({ user, phase: todayPhase, cycleDay: todayCycleDay,
             id: `pi-${e.id}`,
             time: (e.start_time || e.time || "").toString().slice(0, 5),
             title: e.title || "Event",
-            kind: "event",
+            kind: "event", source: e.source, ref: e.ref, _raw: e,
           })),
           ...tomorrowTasks.map((t) => ({
             id: `pt-${t.id}`,
@@ -4925,6 +4884,7 @@ function TomorrowPreviewCard({ user, phase: todayPhase, cycleDay: todayCycleDay,
                 )}
                 {it.title}
               </span>
+              <PlannerSourceLink item={it} compact />
             </li>
           ))}
         </ul>
@@ -5317,7 +5277,7 @@ function GPReportCard() {
 // ─────────────────────────────────────────────────────────────────────────────
 function FullScheduleOverlay({ open, onClose, blocks, onBlockTap }) {
   if (!open) return null;
-  const hours = Array.from({ length: 18 }, (_, i) => i + 6);
+  const hours = [...new Set([...Array.from({ length: 18 }, (_, i) => i + 6), ...blocks.map(block => block.hour)])].sort((a, b) => a - b);
   return (
     <div style={overlayShell} role="dialog" aria-modal="true">
       <div style={overlayHead}>
@@ -5373,7 +5333,7 @@ function ScheduleBlock({ block, onTap }) {
   const IconForType = block.type === "habit" ? Footprints
     : block.type === "med" ? Pill : block.type === "event" ? CalendarClock : ListChecks;
   return (
-    <button onClick={onTap} style={{
+    <div><button onClick={onTap} style={{
       ...schedBlock,
       background: tones.bg,
       borderLeft: `3px solid ${tones.bar}`,
@@ -5387,7 +5347,7 @@ function ScheduleBlock({ block, onTap }) {
         <div style={schedBlockMeta}>{block.duration} MIN · {block.type.toUpperCase()}</div>
       </div>
       {block.anchor && <span style={anchorPill}>ANCHOR</span>}
-    </button>
+    </button><PlannerSourceLink item={block} /></div>
   );
 }
 
@@ -5524,19 +5484,31 @@ function DayDetailSheet({ iso, onClose }) {
   );
 }
 
-function BlockEditSheet({ block, onClose, onSave, onDelete }) {
+export function BlockEditSheet({ block, onClose, onSave, onDelete }) {
   const [draft, setDraft] = useState(block);
-  useEffect(() => { setDraft(block); }, [block]);
+  const [busy, setBusy] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  useEffect(() => { setDraft(block); setSaveError(""); }, [block]);
   if (!block || !draft) return null;
   function set(k, v) { setDraft((d) => ({ ...d, [k]: v })); }
+  async function submit(remove = false) {
+    if (busy) return;
+    setBusy(true); setSaveError("");
+    try { await (remove ? onDelete(draft.id) : onSave(draft)); }
+    catch { setSaveError(remove ? "That block couldn’t be removed. It’s still here." : "That didn’t save. Your draft is still here — try again."); }
+    finally { setBusy(false); }
+  }
   return (
-    <div style={modalBackdrop} onClick={onClose}>
-      <div style={modalCard} onClick={(e) => e.stopPropagation()}>
+    <div style={modalBackdrop} onClick={() => !busy && onClose()}>
+      <div className="fw-sheet-safe" role="dialog" aria-modal="true" aria-label="Edit planned block" style={modalCard} onClick={(e) => e.stopPropagation()}>
         <div style={modalHead}>
           <span style={kicker}>EDIT BLOCK</span>
-          <button onClick={onClose} style={drawerCloseBtn}><X size={14} /></button>
+          <button disabled={busy} onClick={onClose} aria-label="Close block editor" style={drawerCloseBtn}><X size={14} /></button>
         </div>
         <h3 style={modalTitle}>{draft.title}</h3>
+        <PlannerSourceLink item={draft} disabled={busy} />
+        {saveError && <p role="alert" style={{ color: C.espresso, fontSize: 13 }}>{saveError}</p>}
+        <fieldset disabled={busy} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
         <label style={{ display: "block", marginBottom: 10 }}>
           <span style={miniLabel}>TITLE</span>
           <input type="text" value={draft.title} onChange={(e) => set("title", e.target.value)} style={modalInput} />
@@ -5545,15 +5517,15 @@ function BlockEditSheet({ block, onClose, onSave, onDelete }) {
           <label>
             <span style={miniLabel}>HOUR</span>
             <select value={draft.hour} onChange={(e) => set("hour", Number(e.target.value))} style={modalInput}>
-              {Array.from({ length: 18 }, (_, i) => i + 6).map((h) => (
-                <option key={h} value={h}>{h <= 12 ? h : h - 12}:00 {h < 12 ? "AM" : "PM"}</option>
+              {Array.from({ length: 24 }, (_, i) => i).map((h) => (
+                <option key={h} value={h}>{h === 0 ? 12 : h <= 12 ? h : h - 12}:{h === block.hour ? String(block._raw?.time || block._raw?.start_time || "").match(/^\d{1,2}:(\d{2})/)?.[1] || "00" : "00"} {h < 12 ? "AM" : "PM"}</option>
               ))}
             </select>
           </label>
           <label>
             <span style={miniLabel}>DURATION (MIN)</span>
             <select value={draft.duration} onChange={(e) => set("duration", Number(e.target.value))} style={modalInput}>
-              {[5, 15, 30, 45, 60, 90, 120].map((d) => <option key={d} value={d}>{d}</option>)}
+              {[...new Set([5, 15, 30, 45, 60, 90, 120, draft.duration])].sort((a, b) => a - b).map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
           </label>
         </div>
@@ -5573,12 +5545,13 @@ function BlockEditSheet({ block, onClose, onSave, onDelete }) {
           <span style={{ fontSize: 12, color: C.espresso }}>Mark as anchor (non-moveable)</span>
         </label>
         <div style={modalFoot}>
-          <button onClick={() => onDelete(draft.id)} style={{ ...modalCancelBtn, color: C.rose, borderColor: `${C.rose}55` }}>
+          <button onClick={() => submit(true)} style={{ ...modalCancelBtn, color: C.rose, borderColor: `${C.rose}55` }}>
             <Trash2 size={12} /> Delete
           </button>
           <button onClick={onClose} style={modalCancelBtn}>Cancel</button>
-          <button onClick={() => onSave(draft)} style={modalSaveBtn}>Save</button>
+          <button onClick={() => submit()} style={modalSaveBtn}>{busy ? "Saving…" : "Save"}</button>
         </div>
+        </fieldset>
       </div>
     </div>
   );

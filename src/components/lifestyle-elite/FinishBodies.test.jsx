@@ -28,8 +28,9 @@ describe('selected Lifestyle body actions',()=>{
     const fetchSpy=vi.spyOn(globalThis,'fetch').mockResolvedValue({ok:true,json:async()=>({results:[]})});
     window.history.replaceState({},'', '/SkyWorldsDemo?direction=petal-press&section=yours');
     render(<LifestyleEliteShell enableFocus layout="living" artDirection="sky-worlds" skyWorld="petal-press" initialSection="yours"/>);
-    fireEvent.click(await screen.findByRole('button',{name:'Details & tools'}));
-    fireEvent.click(screen.getAllByRole('button',{name:'Save',exact:true})[0]);
+    await waitFor(()=>expect(mock.profiles).toHaveBeenCalledWith({user_id:'owner'}));
+    fireEvent.click(await screen.findByRole('button',{name:'Details & tools'}, {timeout:5000}));
+    fireEvent.click(screen.getAllByRole('button',{name:'Remove from saved',exact:true})[0]);
     await waitFor(()=>expect(mock.updateProfile).toHaveBeenCalledWith('profile',{saved_item_ids:[]}));
     expect(mock.remove).not.toHaveBeenCalled();
     fetchSpy.mockRestore();
@@ -81,5 +82,6 @@ describe('selected Lifestyle body actions',()=>{
     await act(async()=>finish(false));expect(screen.queryByText('Saved',{exact:true})).toBeNull();
     fireEvent.click(screen.getAllByRole('button',{name:'Save',exact:true})[0]);await act(async()=>finish(true));
     expect(await screen.findByText('Saved',{exact:true})).toBeVisible();
+    expect(screen.getAllByRole('button',{name:'Remove from saved',exact:true})[0]).toHaveAttribute('aria-pressed','true');
   });
 });
