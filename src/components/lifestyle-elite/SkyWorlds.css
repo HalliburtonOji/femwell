@@ -23,6 +23,7 @@ body:has(.fw-sky-worlds) [aria-label="Open Ideas (Design Lab — dev only)"]{top
 .fw-world-header[data-moving=true] .fw-world-art{animation:worldGardenLight 4.2s ease-out both}
 @keyframes worldGardenLight{0%{opacity:.82}60%{opacity:.97}100%{opacity:1}}
 .fw-sky-worlds[data-world=petal] .fw-world-header[data-moving=true] .fw-world-art{animation:worldPetalSettle 4.2s ease-out both}
+.fw-sky-worlds[data-world=petal] .fw-world-art{mask-image:linear-gradient(to bottom,transparent,#000 8%,#000 91%,transparent),linear-gradient(to right,#000 95%,transparent);mask-composite:intersect;-webkit-mask-composite:source-in}
 @keyframes worldPetalSettle{0%{transform:rotate(-.6deg) translateY(1px)}55%{transform:rotate(.25deg)}100%{transform:none}}
 .fw-sky-worlds [data-art-direction=sky-worlds][data-section=sky]{--ff-plum:#51444e;--ff-line:#d4ccd2}
 .fw-sky-worlds [data-section=sky] .fw-ff-actions [aria-label="Section actions"]>button{border-radius:999px!important}

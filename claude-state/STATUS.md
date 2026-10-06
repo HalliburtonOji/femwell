@@ -7,6 +7,9 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-06 · FINAL TITLE CASCADE DEPLOYED
+> - Repairs **4633f9c + b9307f0** pushed; stable production build and frontend deploy succeed. HTTP **index-CDx1mgNg.js** confirmed. Exact scoped title rule fixes inherited black/bold override, retains Press/Workbench editorial variants. Main held. Final native matrix in progress; source/full145 previously passes, actual chart opens and Ask focuses correct composer.
+>
 > ### CURRENT STATE — 2026-10-06 · LIVE FIVE-WORLD PIXEL REPAIRS
 > - First source **00d7728** deployed as **index-CwQdn2ru.js**, HTTP and native browser confirmed. Live audit found Ideas pill over content, preview nav showing Menu, inherited black/bold title styles and potential Petal Moon occlusion. Additional Layout claim **6997e0a** committed before repair; fixes **34cd6a1** pushed. Stable rebuilt frontend deploy running. Main untouched; final fifteen-width matrix/taps next.
 > - Actual Petal/Press lessons Next→earthshine and quiet floral/material learning seam confirmed. No new source/runtime errors in captured logs. Production build/lint0errors pass; full145 previously passes. Header Moon stays calculated, now fully in front of petal edge; hardware motion is light-only, finite4.2s.
