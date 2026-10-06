@@ -1317,7 +1317,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
     read: [choose("Choose a read", [...articleCards, ...storyCards], openReadCard), choose("Saved reads", actionSavedCards.filter((i) => ["article", "daily_story"].includes(i.type)), openReadCard, "No saved reads yet. Save a piece you enjoy and it will appear here.")],
     listen: [choose("Choose a listen", audioCards), choose("Choose a watch", videoCards)],
     books: [{ label: "Today's chapter", run: () => setChapterOpen(true) }, choose("Choose a book", [...shelfBookCards, ...classicCards])],
-    good: [{ label: "Time for yourself", description: "Choose the time you have, then open a suggestion. Saving closes this picker and shows confirmation on the page.", content: (afterClose) => <TimePickerLens pickFor={pickFor} isSaved={isSaved} onSave={(it) => afterClose(toggleSave, it)} onOpen={(it) => afterClose(openItem, it)} onTry={(title) => afterClose(saveTryThis, title)} /> }, choose("A small joy", [...ritualCards, ...permissionCards], (it) => setGLFace({ slip: it }))],
+    good: [{ label: "Time for yourself", description: "Choose the time you have, then open a suggestion. Saving closes this picker and shows confirmation on the page.", content: (afterClose) => <TimePickerLens presentation={selectedPresentation} pickFor={pickFor} isSaved={isSaved} onSave={(it) => afterClose(toggleSave, it)} onOpen={(it) => afterClose(openItem, it)} onTry={(title) => afterClose(saveTryThis, title)} /> }, choose("A small joy", [...ritualCards, ...permissionCards], (it) => setGLFace({ slip: it }))],
     yours: [livingDemo ? {label:"Open your saves",run:()=>window.location.assign("/Saved?tab=LIFESTYLE")} : choose("Open your saves", actionSavedCards), choose("Continue reading", continueCards, openReadCard, "No reading in progress yet. Start a book and your place will appear here.")],
     sky: [skyActionState.hasChart ? { label: "Ask the sky", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "ask" }) } : { label: "Set up your sky", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "chart" }) }, skyActionState.hasChart ? { label: "Edit your chart", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "chart" }) } : { label: "What you'll need", description: "Your birth date starts your sky. Add time and place only if you know them; do not guess. Unknown birth time limits what can be calculated.", content: <p style={{ lineHeight: 1.6 }}>Use Set up your sky when you are ready. You can review your details in the chart sheet before saving.</p> }],
   };
@@ -1673,7 +1673,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
             continueCards={continueCards} shelfBookCards={shelfBookCards} classicCards={classicCards} onOpenBook={(it) => (it && it._library ? (livingDemo ? jumpTo(5) : setFocusSection("yours")) : openBook(it._continue || it._raw || it))} lifeStage={profile?.life_stage} /></div>;
           if (sec === "listen") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--listen" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{livingDemo && <nav aria-label="Full media directories" style={{display:"flex",justifyContent:"space-between",gap:12,marginBottom:12,fontFamily:UI,fontSize:12}}><a href="/WatchListen?mode=listen" style={{color:C.ink,minHeight:44,alignContent:"center"}}>All listens & shows</a><a href="/WatchListen?mode=watch" style={{color:C.ink,minHeight:44,alignContent:"center"}}>All watches</a></nav>}<ListenFocus presentation={selectedPresentation} audioCards={audioCards} videoCards={videoCards} onOpen={setExpanded} /></div>;
           if (sec === "read") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--read" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><ReadFocus presentation={selectedPresentation} continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} /></div>;
-          if (sec === "good") { const h = new Date().getHours(); const timeOfDay = h < 12 ? "morning" : h < 18 ? "afternoon" : "evening"; return <div className={selectedPresentation ? "fw-living-content fw-selected-room--good" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><GoodLifeFocus presentation={selectedPresentation} timeOfDay={timeOfDay} timeLens={<TimePickerLens pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />} joys={[...ritualCards, ...permissionCards]} onSlip={(it) => setGLFace({ slip: it })} /></div>; }
+          if (sec === "good") { const h = new Date().getHours(); const timeOfDay = h < 12 ? "morning" : h < 18 ? "afternoon" : "evening"; return <div className={selectedPresentation ? "fw-living-content fw-selected-room--good" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><GoodLifeFocus presentation={selectedPresentation} timeOfDay={timeOfDay} timeLens={<TimePickerLens presentation={selectedPresentation} pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />} joys={[...ritualCards, ...permissionCards]} onSlip={(it) => setGLFace({ slip: it })} /></div>; }
           if (sec === "yours") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--yours" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{livingDemo && <SavedSkyLessons userId={user?.id} human={artDirection === "sky-worlds"} direction={worldDirection} previewRoute={artDirection === "sky-worlds" ? "/SkyWorldsDemo" : artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artDirection === "marginalia" ? "/LivingAtelierDemo" : undefined}/>}{selectedPresentation && keepsError && <div role="alert" style={{fontFamily:UI,fontSize:13,marginBottom:16}}><p>{keepsError}</p><button type="button" onClick={()=>setKeepsRevision(value=>value+1)}>Retry keeps</button> <a href="/Saved?tab=LIFESTYLE">Open the full saved collection</a></div>}<YoursFocus presentation={selectedPresentation} savedCards={savedCards} savedSummary={savedSummary} phaseCards={phaseCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={setExpanded} skySavedCount={livingDemo ? skySavedCount : 0} /></div>;
           // every section is bespoke — the generic slider-free layout is only ever the LANDING deck
           return <div style={{ marginTop: 22 }}><FocusLayout layout={layout} groups={landingGroups} clean={clean} /></div>;
@@ -1727,7 +1727,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
       {calOpen && <CalendarOverlay user={user} profile={profile} onClose={() => setCalOpen(false)} />}
       {/* tap-to-expand — the shared card language's full-screen detail (§6.7.7).
           Save is CONTROLLED → real persistence + the feed's learning loop. */}
-      {expanded && <ExpandDetailCard item={expanded} onClose={() => setExpanded(null)} saved={isCardSaved(expanded)} onSave={onCardSave} />}
+      {expanded && <ExpandDetailCard item={expanded} presentation={selectedPresentation} onClose={() => setExpanded(null)} saved={isCardSaved(expanded)} onSave={onCardSave} />}
       {/* These sheets' buttons used to be no-ops that just closed — a button that lies is worse
           than no button. Each now does the real thing. */}
       {chapterOpen && (
@@ -1946,7 +1946,7 @@ function PermissionSlipLens({ item, done, onDo }) {
     </div>
   );
 }
-function TimePickerLens({ pickFor, isSaved, onSave, onOpen, onTry }) {
+function TimePickerLens({ pickFor, isSaved, onSave, onOpen, onTry, presentation }) {
   const [band, setBand] = useState(TIME_BANDS[0]);
   const picks = pickFor(band.key);
   const read = picks.read, listen = picks.listen;
@@ -1954,9 +1954,9 @@ function TimePickerLens({ pickFor, isSaved, onSave, onOpen, onTry }) {
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 10px" }}>Pick by the time you have — a small, chosen handful, never an endless scroll.</p>
       <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>{TIME_BANDS.map((b) => { const c = cwOf(b.cw).petal; const on = b.key === band.key; return (
-        <button key={b.key} onClick={() => setBand(b)} className="fw-elite-press" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "9px 4px", borderRadius: 12, cursor: "pointer", background: on ? c : `${c}12`, border: `1px solid ${on ? c : c + "55"}` }}>
-          <b.Icon size={16} color={on ? "#fff" : c} />
-          <span style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: on ? "#fff" : T.inkSoft, textAlign: "center", lineHeight: 1.2 }}>{b.label}</span>
+        <button key={b.key} onClick={() => setBand(b)} aria-pressed={on} className="fw-elite-press" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "9px 4px", borderRadius: 12, cursor: "pointer", background: on ? c : `${c}12`, border: `1px solid ${on ? c : c + "55"}` }}>
+          <b.Icon size={16} color={on ? (presentation === "folio" ? T.ink : "#fff") : c} />
+          <span style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: on ? (presentation === "folio" ? T.ink : "#fff") : T.inkSoft, textAlign: "center", lineHeight: 1.2 }}>{b.label}</span>
         </button>
       ); })}</div>
       <div style={{ ...lbl, marginBottom: 6 }}>For {band.label.toLowerCase()}</div>

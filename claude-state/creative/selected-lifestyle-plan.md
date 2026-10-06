@@ -34,4 +34,11 @@ The wider Community → consented DM → exact public object graph remains mappe
 
 ## Definition of done
 
+### Live-audit repair atoms
+
+- **A01 readable detail controls:** live Read exposed white text on decorative cream. Brainstorm decision: preserve the original type-specific cover, use dark semantic ink for selected detail labels/actions across every type. Re-prove Read/Listen and saved state; no content removal. [W3C contrast guidance](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html).
+- **A02 reader tap layers:** actual Books back tap turned a chapter because the page-turn zone sat above the toolbar. Raise the existing toolbar above the zones; preserve hidden chrome, page navigation/settings/bookmarks. Source regression plus actual close/settings taps required. [W3C target guidance](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html).
+- **A03 Ask semantic icon:** use the existing filled CTA variant for selected Sky so its icon matches its white label. Preserve source defaults.
+- **A04 selected time controls:** Good life's gold/sage active choices use dark text/icons while retaining their meaning-bearing colours, in both the body and focused picker. Add pressed-state semantics. Verify both locations at phone widths; shared default colours remain unchanged. Same W3C contrast source as A01.
+
 Ideas board contains the selected preview and all six direct section links, concise design note, cited research, checks and known gaps. Test actual tap paths and native pixels at 360/390/430. Audit P0/P1/P2 with source/pixel proof and re-prove repairs. Canon §10.5.16 and its HTML mirror updated in this cycle; conformance also targets §§1/2.7/5/11/15/17.3/19.7–9. Halli's aesthetic acceptance and main promotion are separate.

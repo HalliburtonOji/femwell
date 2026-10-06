@@ -16,7 +16,7 @@
  *  - Theme variables are applied to the root.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import DailyStoryReader from "../DailyStoryReader";
 
 const storyApi = vi.hoisted(() => ({ filter: vi.fn() }));
@@ -216,6 +216,51 @@ describe("DailyStoryReader — v4 contract", () => {
     render(<DailyStoryReader source={bookSource()} totalCount={2} defaultImmersive />);
     const root = document.querySelector(".ds-reader-root");
     expect(root.classList.contains("ds-chrome-visible")).toBe(true);
+  });
+
+  it("places visible immersive controls above both page-turn zones while settings remain above the controls", () => {
+    render(<DailyStoryReader source={bookSource()} bookId="layers" defaultImmersive onExit={vi.fn()} />);
+    const toolbar = screen.getByRole("toolbar", { name: "Reader controls" });
+    const toolbarLayer = Number(getComputedStyle(toolbar).zIndex);
+    for (const label of ["Previous chapter", "Next chapter"]) {
+      const turnZone = screen.getByRole("button", { name: label });
+      expect(toolbarLayer).toBeGreaterThan(Number(getComputedStyle(turnZone).zIndex));
+    }
+    expect(getComputedStyle(toolbar).pointerEvents).toBe("auto");
+    expect(within(toolbar).getByRole("button", { name: "Close book" })).toBeEnabled();
+    expect(within(toolbar).getByRole("button", { name: "Bookmark this page" })).toBeEnabled();
+    fireEvent.click(within(toolbar).getByRole("button", { name: "Reader settings" }));
+    expect(Number(getComputedStyle(screen.getByRole("dialog", { name: "Reader settings" })).zIndex)).toBeGreaterThan(toolbarLayer);
+    expect(Number(getComputedStyle(document.querySelector(".ds-reader-scrim")).zIndex)).toBeGreaterThan(toolbarLayer);
+  });
+
+  it("closes, changes settings and bookmarks without turning a page, then still turns forwards and backwards", async () => {
+    vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: true })));
+    const source = bookSource();
+    source.items = source.items.map(item => ({ ...item, body: "A short, complete chapter." }));
+    const onExit = vi.fn(), reached = vi.fn();
+    render(<DailyStoryReader source={source} bookId="controls" defaultImmersive onExit={onExit} onChapterReached={reached} />);
+    const firstHeading = () => screen.getByRole("heading", { name: "Chapter 1 — Tide House Inn" });
+    fireEvent.click(screen.getByRole("button", { name: "Close book" }));
+    expect(onExit).toHaveBeenCalledTimes(1);
+    expect(firstHeading()).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Reader settings" }));
+    fireEvent.click(within(screen.getByRole("dialog", { name: "Reader settings" })).getByRole("button", { name: /Honey/ }));
+    expect(document.querySelector(".ds-reader-root")).toHaveClass("fw-theme-honey");
+    fireEvent.click(screen.getByRole("button", { name: "Close settings" }));
+    expect(screen.queryByRole("dialog", { name: "Reader settings" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Bookmark this page" }));
+    expect(screen.getByRole("button", { name: "Remove bookmark" })).toHaveAttribute("aria-pressed", "true");
+    expect(JSON.parse(localStorage.getItem("fw_reader_bookmarks_controls"))).toEqual([
+      expect.objectContaining({ chapterIndex: 0, pageInChapter: 0 }),
+    ]);
+    expect(firstHeading()).toBeVisible();
+    expect(reached.mock.calls).toEqual([[0, source.items[0]]]);
+    fireEvent.click(screen.getByRole("button", { name: "Next chapter" }));
+    await screen.findByRole("heading", { name: "Chapter 2 — Lime Mortar" });
+    fireEvent.click(screen.getByRole("button", { name: "Previous chapter" }));
+    await waitFor(() => expect(firstHeading()).toBeVisible());
+    expect(reached.mock.calls).toEqual([[0, source.items[0]], [1, source.items[1]], [0, source.items[0]]]);
   });
 
   it("applies the active text-size class", () => {

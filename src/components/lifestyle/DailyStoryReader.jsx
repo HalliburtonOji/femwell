@@ -1383,7 +1383,8 @@ function ReaderStyles({ reducedMotion }) {
         align-items: center;
         justify-content: space-between;
         background: linear-gradient(to bottom, var(--paper, #ECE7DA) 60%, rgba(255,250,245,0) 100%);
-        z-index: 4;
+        /* Visible controls must receive taps above the page-turn overlays. */
+        z-index: 20;
         transition: opacity 200ms ease, transform 200ms ease;
       }
       .ds-reader-root.ds-immersive.ds-chrome-hidden .ds-reader-immersive-bar {

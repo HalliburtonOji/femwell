@@ -195,7 +195,7 @@ export function AskTheSky({ userId, inputRef, celestial = false, human=false, co
       <div style={{ display: "flex", flexWrap: "wrap", gap: 7, margin: "10px 0 12px" }}>
         {ASK_CHIPS.map((c) => <Chip key={c} onClick={() => { setQ(c); if (!celestial) submit(c); else inputRef?.current?.focus(); }} style={{ fontSize: celestial ? 12 : 11.5, fontWeight: 600 }}>{celestial ? c : c.length > 34 ? c.slice(0, 32) + "…" : c}</Chip>)}
       </div>
-      <Cta Icon={Send} onClick={() => submit()} disabled={asking}>{asking ? "Asking…" : "Ask the sky"}</Cta>
+      <Cta Icon={Send} filled={complete} onClick={() => submit()} disabled={asking}>{asking ? "Asking…" : "Ask the sky"}</Cta>
       {error ? <div style={{ fontFamily: UI, fontSize: 12, color: C.crimson, marginTop: 10, textAlign: "center" }}>{error}</div> : null}
       {answer ? (
         <div style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${C.hair}` }}>

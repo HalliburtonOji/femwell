@@ -778,7 +778,7 @@ export function CoverCard({ item: raw, onOpen, compact = false, presentation }) 
 }
 
 // ── EXPANDED full-screen detail card — ONE expand, typed blocks ───────────────
-export function ExpandDetailCard({ item: raw, onClose, saved: savedProp, onSave }) {
+export function ExpandDetailCard({ item: raw, onClose, saved: savedProp, onSave, presentation }) {
   const item = resolveCard(raw);
   const [show, setShow] = useState(false);
   // SAVE is controlled when `saved`/`onSave` are supplied (so a page can persist it);
@@ -786,7 +786,10 @@ export function ExpandDetailCard({ item: raw, onClose, saved: savedProp, onSave 
   const [savedLocal, setSavedLocal] = useState(false);
   const saved = savedProp !== undefined ? savedProp : savedLocal;
   const toggleSave = () => { if (onSave) onSave(!saved, item); else setSavedLocal((s) => !s); };
-  const c = cwOf(item.cw);
+  // Flower petals are decoration; pale petals cannot carry white action labels.
+  // The selected folio keeps the original cover colourway, with readable semantic ink.
+  const colourway = cwOf(item.cw);
+  const c = presentation === "folio" ? { ...colourway, petal: "#51444e", accent: "#51444e" } : colourway;
   const I = ICON[item.Icon] || Sparkles;
   const close = useCallback(() => { setShow(false); setTimeout(onClose, reduceMotion() ? 0 : 280); }, [onClose]);
   useEffect(() => {
