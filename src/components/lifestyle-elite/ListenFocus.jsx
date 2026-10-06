@@ -4,23 +4,23 @@
 // complete Listen section, in the cream design, deliberately ordered now → hear → watch. Reads the
 // feed's real ranking (her interests + history + phase). Tap a card → it plays / opens the exact item.
 import React from "react";
-import { Headphones, Play } from "lucide-react";
+import { Headphones } from "lucide-react";
 import { CoverCard } from "@/components/brand/expandCards";
-import { SERIF, UI } from "@/components/journal/Editorial";
-import { cwOf } from "@/components/brand/flora";
+import { SERIF } from "@/components/journal/Editorial";
 import { C } from "@/components/brand/cleanTokens";
 import { Eyebrow, Title, Card as CleanCard, Summary, Foot } from "@/components/brand/cleanKit";
+import { SelectedRoomDetail } from "./SelectedLifestyleHeader";
 
 const durOf = (it) => {
   const m = (it?.meta || []).find((row) => /min|hr|:/.test(String(row?.[1] || "")));
   return m ? String(m[1]) : null;
 };
 
-function ListenCard({ eyebrow, title, accent = "sage", children, style }) {
+function ListenCard({ eyebrow, title, accent = "sage", children, style, className }) {
   // CLEAN (§2.7): one shared clean surface — white, a single soft lift, a gold eyebrow carrying its
   // colourway meaning-rosette (the per-card floral detail Halli kept). No texture, no rainbow rim.
   return (
-    <CleanCard style={style}>
+    <CleanCard style={style} className={className}>
       {eyebrow ? <Eyebrow cw={accent} align="left">{eyebrow}</Eyebrow> : null}
       {title ? <Title align="left" size={21}>{title}</Title> : null}
       {children}
@@ -28,21 +28,22 @@ function ListenCard({ eyebrow, title, accent = "sage", children, style }) {
   );
 }
 
-export default function ListenFocus({ audioCards = [], videoCards = [], onOpen }) {
+export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, presentation }) {
   const featured = audioCards[0] || videoCards[0] || null;
   const restAudio = audioCards.slice(featured && featured === audioCards[0] ? 1 : 0);
+  const watches = presentation && featured === videoCards[0] ? videoCards.slice(1) : videoCards;
   const hasAny = featured || restAudio.length || videoCards.length;
 
   if (!hasAny) {
     return (
       <ListenCard eyebrow="Something to hear" title="Fresh listens land here">
-        <p style={{ fontFamily: SERIF, fontSize: 16, color: C.ink, lineHeight: 1.6, margin: 0 }}>Podcasts, shows and short listens will appear here as they're published — press play and they keep going while you wander the app.</p>
+        <p style={{ fontFamily: SERIF, fontSize: 16, color: C.ink, lineHeight: 1.6, margin: 0 }}>{presentation ? "A quiet sound room today. New episodes and shows will land here." : "Podcasts, shows and short listens will appear here as they're published — press play and they keep going while you wander the app."}</p>
       </ListenCard>
     );
   }
 
   const fDur = durOf(featured);
-  const summary = featured
+  const summary = presentation ? `${audioCards.length} listen${audioCards.length === 1 ? "" : "s"} · ${videoCards.length} watch${videoCards.length === 1 ? "" : "es"}${fDur ? ` · start with ${fDur}` : ""}.` : featured
     ? `Something to hear — ${featured.title}${fDur ? ` (${fDur})` : ""}. Press play and it keeps going while you wander.`
     : "Something to hear — press play and it keeps going while you wander the app.";
 
@@ -53,30 +54,31 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen }
 
       {/* 1 · NOW — the featured listen, player-forward (plays inline, keeps going) */}
       {featured ? (
-        <ListenCard eyebrow="Start here" title="Today's listen" accent="sage">
-          <CoverCard item={featured} onOpen={() => onOpen && onOpen(featured)} />
+        <ListenCard className="fw-selected-now" eyebrow="Start here" title={presentation && !audioCards.length ? "Today's watch" : "Today's listen"} accent="sage">
+          {presentation && <SelectedRoomDetail section="listen"/>}
+          <CoverCard presentation={presentation} item={featured} onOpen={() => onOpen && onOpen(featured)} />
         </ListenCard>
       ) : null}
 
       {/* 2 · PODCASTS & SHOWS */}
       {restAudio.length ? (
-        <ListenCard eyebrow="For the kettle or the commute" title="Podcasts & shows" accent="sage">
+        <ListenCard className="fw-selected-audio" eyebrow="For the kettle or the commute" title="Podcasts & shows" accent="sage">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {restAudio.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />)}
+            {restAudio.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />)}
           </div>
         </ListenCard>
       ) : null}
 
       {/* 3 · WATCH & TRENDING */}
-      {videoCards.length ? (
-        <ListenCard eyebrow="Ten minutes to watch" title="Watch & trending" accent="gold">
+      {watches.length ? (
+        <ListenCard className="fw-selected-watch" eyebrow="Something worth watching" title="Watch & trending" accent="gold">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {videoCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />)}
+            {watches.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />)}
           </div>
         </ListenCard>
       ) : null}
 
-      <Foot>Press play and let it run — it keeps going, on the lock screen too, while you read or wander.</Foot>
+      <Foot>{presentation ? "Audio can come along while you browse. Videos like your company here." : "Press play and let it run — it keeps going, on the lock screen too, while you read or wander."}</Foot>
     </div>
   );
 }

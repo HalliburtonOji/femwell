@@ -3,13 +3,14 @@
 // permission to enjoy it (opens in place), then the 11 whole-life rooms as doors she can step into.
 // Deliberately ordered time → joy → rooms. The picker + slips are the real wired widgets in cream.
 import React from "react";
-import { Clock, Shirt, Dumbbell, Users, Compass, PartyPopper, Coffee, Moon, Sprout, Feather, Trees, Coins, ChevronRight } from "lucide-react";
+import { Clock, Shirt, Dumbbell, Users, Compass, PartyPopper, Coffee, Moon, Sprout, Feather, Trees, Coins } from "lucide-react";
 import { CoverCard } from "@/components/brand/expandCards";
 import { createPageUrl } from "@/utils";
 import { SERIF, UI } from "@/components/journal/Editorial";
 import { cwOf } from "@/components/brand/flora";
 import { C } from "@/components/brand/cleanTokens";
 import { Eyebrow, Title, Card as CleanCard, Summary, Foot } from "@/components/brand/cleanKit";
+import { SelectedRoomDetail } from "./SelectedLifestyleHeader";
 
 
 // the 11 whole-life rooms (health is one room, not the house) — doors into the deeper surfaces.
@@ -27,11 +28,11 @@ const ROOMS = [
   { label: "Money", sub: "money, gently", href: "Money", Icon: Coins, cw: "gold" },
 ];
 
-function GoodCard({ eyebrow, title, accent = "gold", children, style }) {
+function GoodCard({ eyebrow, title, accent = "gold", children, style, className }) {
   // CLEAN (§2.7): one shared clean surface — white, a single soft lift, a gold eyebrow carrying its
   // colourway meaning-rosette (the per-card floral detail Halli kept). No texture, no rainbow rim.
   return (
-    <CleanCard style={style}>
+    <CleanCard style={style} className={className}>
       {eyebrow ? <Eyebrow cw={accent} align="left">{eyebrow}</Eyebrow> : null}
       {title ? <Title align="left" size={21}>{title}</Title> : null}
       {children}
@@ -39,33 +40,34 @@ function GoodCard({ eyebrow, title, accent = "gold", children, style }) {
   );
 }
 
-export default function GoodLifeFocus({ timeLens, joys = [], onSlip, timeOfDay }) {
+export default function GoodLifeFocus({ timeLens, joys = [], onSlip, timeOfDay, presentation }) {
   const greet = timeOfDay === "morning" ? "What have you got time for this morning?"
     : timeOfDay === "evening" ? "What have you got time for this evening?"
     : "What have you got time for right now?";
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* 0 · section-specific summary */}
-      <Summary Icon={Clock} cw="gold">{greet} A small joy — and permission to enjoy it.</Summary>
+      <Summary Icon={Clock} cw="gold">{greet}{!presentation && " A small joy — and permission to enjoy it."}</Summary>
 
       {/* 1 · TIME — the real picker, filters to what's worth the minutes she has */}
       {timeLens ? (
-        <GoodCard eyebrow="Pick by the time you have" title="A few minutes, or a whole evening" accent="gold">
+        <GoodCard className="fw-selected-time" eyebrow="Pick by the time you have" title={presentation ? "How long have you got?" : "A few minutes, or a whole evening"} accent="gold">
+          {presentation && <SelectedRoomDetail section="good"/>}
           {timeLens}
         </GoodCard>
       ) : null}
 
       {/* 2 · A SMALL JOY / PERMISSION — opens in place */}
       {joys.length ? (
-        <GoodCard eyebrow="No streaks, nothing owed" title="Small joys & permission" accent="plum">
+        <GoodCard className="fw-selected-joys" eyebrow={presentation ? "For the pleasure of it" : "No streaks, nothing owed"} title={presentation ? "Small joys" : "Small joys & permission"} accent="plum">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {joys.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => onSlip && onSlip(it)} />)}
+            {joys.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => onSlip && onSlip(it)} />)}
           </div>
         </GoodCard>
       ) : null}
 
       {/* 3 · YOUR ROOMS — the 11 whole-life doors (health is one room, not the house) */}
-      <GoodCard eyebrow="The rest of your life" title="Step into a room" accent="crimson">
+      <GoodCard className="fw-selected-doors" eyebrow="The rest of your life" title="Step into a room" accent="crimson">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           {ROOMS.map((r) => (
             <a key={r.href} href={createPageUrl(r.href)} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", background: C.sunk, border: `1px solid ${C.hair}`, borderRadius: 13, padding: "11px 12px" }}>
@@ -79,7 +81,7 @@ export default function GoodLifeFocus({ timeLens, joys = [], onSlip, timeOfDay }
         </div>
       </GoodCard>
 
-      <Foot>Leisure is the point — a little is plenty, and “not today” is a fine answer.</Foot>
+      <Foot>{presentation ? "Some things are worth doing badly, just for fun." : "Leisure is the point — a little is plenty, and “not today” is a fine answer."}</Foot>
     </div>
   );
 }

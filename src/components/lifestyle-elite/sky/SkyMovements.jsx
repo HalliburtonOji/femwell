@@ -4,12 +4,14 @@
 // stays readable. Parity targets: 6 profections + Saturn · 7 red/white moon · 8 compatibility ·
 // 9 ask-the-sky · 10 sky diary (timeline + right-now + void-of-course) · 11 quiet mode ·
 // 12 science footer · 13 privacy · 14 atelier · 15 paid shelf.
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Sparkles, Send, Copy, Check, Lock, ChevronRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { SERIF, UI } from "@/components/journal/Editorial";
 import { C, PHASE_CLEAN } from "@/components/brand/cleanTokens";
 import { Eyebrow, Title, Body, Card, Block, Cta, Quiet, Chip, Meta } from "@/components/brand/cleanKit";
+import { decodeSkyPairing, sanitiseSkyLetter, validSkyBirthday } from "./skyCompletion";
+import { PLUS_PARKED } from "@/config/plusTier";
 
 const clean = (s) => String(s || "").replace(/<[^>]+>/g, "").replace(/\*(.+?)\*/g, "$1").replace(/\s+/g, " ").trim();
 const cap = (s) => (s ? String(s).charAt(0).toUpperCase() + String(s).slice(1) : s);
@@ -87,7 +89,21 @@ export function YearMovement({ profections, diary, celestial = false }) {
 }
 
 // ── III (tail) · RED / WHITE MOON — the archetype, honest when there isn't enough data ─────────
-export function RedWhiteMoon({ rw, celestial = false }) {
+export function RedWhiteMoon({ rw, celestial = false, complete = false, loading, error, onRetry }) {
+  if (complete) {
+    const phases = { new:"new moon",waxing_crescent:"waxing crescent",first_quarter:"first quarter",waxing_gibbous:"waxing gibbous",full:"full moon",waning_gibbous:"waning gibbous",last_quarter:"last quarter",waning_crescent:"waning crescent" };
+    const names = { red_moon:"Red moon",white_moon:"White moon",pink_moon:"Pink moon",purple_moon:"Purple moon",mixed:"A moon of your own",insufficient_data:"Your dates, under the Moon" };
+    const counts = (rw?.bleeds_at_phases || []).reduce((result, phase) => ({ ...result, [phase]: (result[phase] || 0) + 1 }), {});
+    return <Card style={{marginTop:14}}><Eyebrow cw="crimson" align="left">Your cycle &amp; the Moon</Eyebrow>
+      <Title align="left" size={21}>{names[rw?.archetype] || "Your dates, under the Moon"}</Title>
+      {loading ? <p role="status">Looking at your logged dates…</p> : error ? <><p role="alert">{error}</p><Quiet onClick={onRetry}>Try again</Quiet></> : <>
+        {Object.keys(counts).length ? <><Body size={16}>Your last {rw.bleeds_at_phases.length} logged starts:</Body><ul style={{fontFamily:UI,fontSize:13,color:C.ink,paddingLeft:20}}>{Object.entries(counts).map(([phase,count])=><li key={phase}>{cap(phases[phase] || "phase unavailable")} · {count}</li>)}</ul></> : <Body size={16}>No cycle starts here yet. Add a date and we can put it beside the Moon.</Body>}
+        {rw?.archetype === "insufficient_data" && Object.keys(counts).length > 0 && <Body size={16}>A pattern needs at least three logged starts. No rush.</Body>}
+        <p style={{fontFamily:UI,fontSize:12,lineHeight:1.5,color:C.slate}}>Colour names vary in lunar folklore. Your logged phases are shown above; they aren't a prediction or a personality test.</p>
+        <a href="/Health" style={{fontFamily:UI,fontSize:13,color:C.ink,minHeight:44,display:"inline-flex",alignItems:"center"}}>Your cycle dates</a>
+      </>}
+    </Card>;
+  }
   const map = {
     red_moon: { name: "Red moon", body: "You tend to bleed with the full moon — the old name for the woman who turns her energy outward, teaching and making, rather than inward." },
     white_moon: { name: "White moon", body: "You tend to bleed with the new moon — the old name for the inward season, the one that draws energy home and mothers what's close." },
@@ -115,42 +131,49 @@ export function RedWhiteMoon({ rw, celestial = false }) {
 
 // ── VI · ASK THE SKY — the real askStars function + persisted history ──────────────────────────
 const ASK_CHIPS = ["What should I put my energy into this week?", "Why does this feel harder than it should?", "What am I not seeing?"];
-export function AskTheSky({ userId, inputRef, celestial = false, human=false }) {
+export function AskTheSky({ userId, inputRef, celestial = false, human=false, complete=false }) {
   const [q, setQ] = useState("");
   const [answer, setAnswer] = useState("");
   const [history, setHistory] = useState([]);
   const [asking, setAsking] = useState(false);
   const [error, setError] = useState("");
+  const [historyError, setHistoryError] = useState("");
+  const [historyRevision, setHistoryRevision] = useState(0);
+  const [showHistory, setShowHistory] = useState(false);
+  const owner = useRef(userId); owner.current = userId;
 
   useEffect(() => {
     let dead = false;
+    if (complete) { setHistory([]); setAnswer(""); setQ(""); setHistoryError(""); }
     (async () => {
       if (!userId) return;
       try {
         const threads = await base44.entities.AdviceThreads.filter({ user_id: userId, topic: "horoscope" }, "-created_date", 5);
         if (dead || !Array.isArray(threads)) return;
         const out = [];
-        for (const t of threads.slice(0, 5)) {
+        for (const t of threads.filter(thread=> !complete || thread.user_id === userId).slice(0, 5)) {
           try {
-            const msgs = await base44.entities.AdviceMessages.filter({ thread_id: t.id }, "created_date", 4);
+            const fetched = await base44.entities.AdviceMessages.filter(complete ? {thread_id:t.id,user_id:userId} : { thread_id: t.id }, "created_date", 4);
+            const msgs = complete ? fetched?.filter(message=>message.user_id === userId && message.thread_id === t.id) : fetched;
             const question = msgs?.find((m) => m.role === "user")?.content;
             const ans = msgs?.find((m) => m.role === "assistant")?.content;
             if (question) out.push({ id: t.id, question, answer: ans || "" });
-          } catch { /* a thread that won't load isn't an error worth showing */ }
+          } catch { if (complete && !dead) setHistoryError("Some earlier answers didn't load. Try again?"); }
         }
         if (!dead) setHistory(out);
-      } catch { /* history is a nicety — never block the ask */ }
+      } catch { if (complete && !dead) setHistoryError("Your earlier answers didn't load. Try again?"); }
     })();
     return () => { dead = true; };
-  }, [userId]);
+  }, [userId, complete, historyRevision]);
 
   const submit = async (text) => {
     const question = (text || q).trim();
-    if (!question) return;
+    if (!question || asking) return;
     if (!userId) { setError("Sign in to ask."); return; }
     setError(""); setAsking(true); setAnswer("");
     try {
       const res = await base44.functions.invoke("askStars", { user_id: userId, question });
+      if (complete && owner.current !== userId) return;
       const ans = res?.data?.answer || res?.answer || "";
       if (!ans) setError(res?.data?.error || res?.error || "No answer came through.");
       else {
@@ -183,15 +206,17 @@ export function AskTheSky({ userId, inputRef, celestial = false, human=false }) 
       {history.length ? (
         <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.hair}` }}>
           <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color: C.faint, marginBottom: 6 }}>You've asked before</div>
-          {history.slice(0, 3).map((h) => (
+          {(complete && showHistory ? history : history.slice(0, 3)).map((h) => (
             <button key={h.id} onClick={() => { setQ(h.question); setAnswer(h.answer); }} className="fw-elite-press"
               style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left", background: "transparent", border: "none", padding: "8px 0", cursor: "pointer", fontFamily: SERIF, fontSize: 15, color: C.slate, borderTop: `1px solid ${C.hair}` }}>
               <span style={{ flex: 1, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{h.question}</span>
               <ChevronRight size={14} color={C.faint} />
             </button>
           ))}
+          {complete && history.length > 3 && <Quiet onClick={() => setShowHistory(value => !value)}>{showHistory ? "Show fewer" : `All ${history.length} earlier answers`}</Quiet>}
         </div>
       ) : null}
+      {complete && historyError && <div><p role="alert">{historyError}</p><Quiet onClick={()=>setHistoryRevision(value=>value+1)}>Reload earlier answers</Quiet></div>}
     </Card>
   );
 }
@@ -204,47 +229,58 @@ const Bar = ({ label, val }) => (
     <div style={{ height: 4, borderRadius: 99, background: C.hair, overflow: "hidden" }}><div style={{ width: `${Math.max(0, Math.min(10, val || 0)) * 10}%`, height: "100%", background: C.ink }} /></div>
   </div>
 );
-export function Compatibility({ userId, celestial = false, human=false }) {
+export function Compatibility({ userId, celestial = false, human=false, complete=false }) {
   const [name, setName] = useState("");
   const [d, setD] = useState(""); const [m, setM] = useState(""); const [y, setY] = useState("");
   const [reading, setReading] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [manualLink, setManualLink] = useState("");
+  const [resultPair, setResultPair] = useState(null);
+  const owner = useRef(userId); owner.current = userId;
+  useEffect(() => { if(complete) {setReading(null);setResultPair(null);setManualLink("");} }, [userId, complete]);
 
   // a shared ?compat= link pre-fills and auto-runs once (the original's shareable-link feature)
   useEffect(() => {
     try {
       const raw = new URLSearchParams(window.location.search).get("compat");
       if (!raw) return;
-      const [n, bd] = atob(raw).split("|");
+      const {name:n,birthday:bd} = complete ? decodeSkyPairing(raw) : (()=>{const [name,birthday]=atob(raw).split("|");return {name,birthday};})();
       if (n) setName(n);
       if (bd) { const [yy, mm, dd] = bd.split("-"); setY(yy); setM(String(Number(mm))); setD(String(Number(dd))); }
-    } catch { /* a malformed link just doesn't pre-fill */ }
-  }, []);
+    } catch (failure) { if(complete) setError(failure.message || "This pairing link couldn't be opened."); }
+  }, [complete]);
 
   const birthday = y && m && d ? `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}` : "";
   const run = async () => {
+    if (loading) return;
     setError("");
     if (!userId) { setError("Sign in to run a reading."); return; }
     if (!birthday) { setError("Their birthday is needed."); return; }
+    if (complete && !validSkyBirthday(birthday)) { setError("That birthday isn't a real past date. Check the day, month and year."); return; }
+    const pair = {name:name.trim(), birthday};
+    if (complete) {setReading(null);setCopied(false);setManualLink("");}
     setLoading(true);
     try {
       const res = await base44.functions.invoke("generateCompatibility", { user_id: userId, their_name: name.trim(), their_birthday: birthday });
+      if (complete && owner.current !== userId) return;
       const row = res?.data?.reading || res?.reading || null;
       if (!row) setError(res?.data?.error || res?.error || "Couldn't read this pairing.");
-      else setReading(row);
+      else {setReading(row);setResultPair(pair);}
     } catch (e) { setError(e?.message || "Couldn't read this pairing."); }
     finally { setLoading(false); }
   };
   const copyLink = async () => {
+    let url = "";
     try {
       const link = new URL(window.location.href);
       if(!human)link.search="";
-      link.hash="";link.searchParams.set("compat",btoa(`${name}|${birthday}`));
-      const url=link.toString();
+      link.hash="";link.searchParams.set("compat",complete ? JSON.stringify(resultPair) : btoa(`${name}|${birthday}`));
+      url=link.toString();
       await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 1600);
-    } catch { /* clipboard blocked — nothing to say */ }
+      if(complete){setManualLink("");setError("");}
+    } catch { if(complete){setError("Couldn't copy automatically. Select the link below.");setManualLink(url);} }
   };
 
   return (
@@ -252,7 +288,7 @@ export function Compatibility({ userId, celestial = false, human=false }) {
       <Eyebrow cw="blush" align="left">You &amp; someone</Eyebrow>
       <Title align="left" size={21}>{human ? "You two, under the stars." : "How you two run"}</Title>
       {celestial && <p className="sky-note">{human ? "Two charts, one conversation starter. Chemistry still has to show up." : "Two charts, plenty to talk about. A conversation starter, never a verdict on someone you love."}</p>}
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Their name" style={{ ...input, marginBottom: 9 }} />
+      <input aria-label="Their name" maxLength={complete ? 100 : undefined} value={name} onChange={(e) => setName(e.target.value)} placeholder="Their name" style={{ ...input, marginBottom: 9 }} />
       <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
         <input value={d} onChange={(e) => setD(e.target.value.replace(/\D/g, "").slice(0, 2))} placeholder="Day" inputMode="numeric" aria-label="Day" style={{ ...input, flex: 1, textAlign: "center" }} />
         <select value={m} onChange={(e) => setM(e.target.value)} aria-label="Month" style={{ ...input, flex: 1.3, fontFamily: UI, fontSize: 14 }}>
@@ -274,6 +310,8 @@ export function Compatibility({ userId, celestial = false, human=false }) {
             <abbr title="Synastry — comparing two charts to each other, the traditional way of reading a pairing." style={{ textDecoration: "none", borderBottom: `1px dotted ${C.faint}`, cursor: "help" }}>Synastry</abbr>, held lightly — never a verdict on a person.
           </div>
           <Quiet onClick={copyLink}>{copied ? <><Check size={13} style={{ verticalAlign: -2 }} /> Link copied</> : <><Copy size={13} style={{ verticalAlign: -2 }} /> Copy a link to this reading</>}</Quiet>
+          {complete && <p style={{fontFamily:UI,fontSize:12,color:C.slate}}>The link includes the name and birthday you entered. It opens those details for a new pairing, not your private answer.</p>}
+          {complete && manualLink && <input aria-label="Pairing link to copy" readOnly value={manualLink} onFocus={event=>event.target.select()} style={input}/>}
         </div>
       ) : null}
     </Card>
@@ -286,36 +324,42 @@ const PRODUCTS = [
   { key: "chart_atelier", title: "The chart atelier", price: "£29", line: "Your whole chart read as one piece, in Astra's hand." },
   { key: "choose_the_day", title: "Choose the day", price: "£55", line: "A date chosen with you — a move, a launch, a conversation." },
 ];
-export function Atelier({ userId, hasAtelier, letter, celestial = false }) {
+export function Atelier({ userId, hasAtelier, letter, celestial = false, complete = false, loading, error, onRetry }) {
   const [busy, setBusy] = useState("");
+  const [checkoutError, setCheckoutError] = useState("");
+  const bodyHtml = complete ? sanitiseSkyLetter(letter?.body_html) : "";
   const checkout = async (fn, payload) => {
+    if(complete && (!userId || busy)) {if(!userId)setCheckoutError("Sign in to continue.");return;}
+    setCheckoutError("");
     setBusy(payload.product_key || "plus");
     try {
       const res = await base44.functions.invoke(fn, { user_id: userId, ...payload });
       const url = res?.data?.url || res?.url;
       if (url) window.location.assign(url);
-      else console.warn("[atelier] checkout returned no url — price id likely missing in env", res);
-    } catch (e) { console.warn("[atelier] checkout failed", e); }
+      else {if(complete)setCheckoutError(res?.data?.error || res?.error || "Checkout isn't available right now.");else console.warn("[atelier] checkout returned no url — price id likely missing in env", res);}
+    } catch (e) { if(complete)setCheckoutError("Couldn't open checkout. Try again?");else console.warn("[atelier] checkout failed", e); }
     finally { setBusy(""); }
   };
   return (
     <Block>
       <Eyebrow cw="gold">The atelier</Eyebrow>
-      <Title>Written, not generated</Title>
+      <Title>{complete ? "A letter for the month" : "Written, not generated"}</Title>
       <Card wash="gold">
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: C.gold, marginBottom: 8 }}>
-          <Sparkles size={12} /> Backed by Astra Cole, MA, FAS
+          <Sparkles size={12} /> {complete ? "Astra · AI-assisted astrology" : "Backed by Astra Cole, MA, FAS"}
         </div>
-        {hasAtelier && letter ? (
+        {complete && loading ? <p role="status">Opening your monthly letter…</p> : complete && error ? <><p role="alert">{error}</p><Quiet onClick={onRetry}>Try again</Quiet></> : hasAtelier && letter ? (
           <>
             <Title align="left" size={20}>{clean(letter.title) || "This month's letter"}</Title>
-            <Body size={16.5} style={{ fontStyle: "italic" }}>{celestial ? clean(letter.body) : clean(letter.body).slice(0, 460)}</Body>
+            {complete && <p style={{fontFamily:UI,fontSize:12,color:C.slate}}>{letter.month || "Your latest published letter"}</p>}
+            {complete && bodyHtml ? <div className="sky-letter-body" style={{fontFamily:SERIF,fontSize:16.5,lineHeight:1.65,color:C.ink}} dangerouslySetInnerHTML={{__html:bodyHtml}} /> : <Body size={16.5} style={{ fontStyle: "italic",whiteSpace:complete ? "pre-wrap" : undefined }}>{complete ? letter.body || "This letter has no text yet." : celestial ? clean(letter.body) : clean(letter.body).slice(0, 460)}</Body>}
           </>
-        ) : (
+        ) : complete && hasAtelier ? <><Title align="left" size={20}>No letter here just yet.</Title><Body size={16.5}>Your published monthly letter will appear here when there's one to read.</Body>{PLUS_PARKED && <p style={{fontFamily:UI,fontSize:12,color:C.slate}}>Monthly-letter access is open during the build.</p>}</>
+        : (
           <>
-            <Title align="left" size={20}>A letter each month, in her hand</Title>
+            <Title align="left" size={20}>{complete ? "Your monthly astrology letter" : "A letter each month, in her hand"}</Title>
             <Body size={16.5} style={{ fontStyle: "italic", color: C.slate }}>
-              “The year you're in doesn't ask you to become someone else. It asks you to stop rehearsing the person you already stopped being…”
+              {complete ? "A longer look at the month, using your chart." : "“The year you're in doesn't ask you to become someone else. It asks you to stop rehearsing the person you already stopped being…”"}
             </Body>
             <Cta Icon={Lock} onClick={() => checkout("stripeCheckout", { plan: "plus" })} disabled={!!busy}>
               {busy === "plus" ? "Opening…" : "Unlock the Atelier · £8.99/month"}
@@ -328,7 +372,7 @@ export function Atelier({ userId, hasAtelier, letter, celestial = false }) {
           <div key={p.key} style={{ display: "flex", alignItems: "center", gap: 12, background: C.surface, borderRadius: 14, padding: "14px 16px", boxShadow: "0 1px 3px rgba(25,21,16,.03)" }}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: C.ink }}>{p.title}</div>
-              <div style={{ fontFamily: SERIF, fontSize: 14.5, color: C.slate, lineHeight: 1.4, marginTop: 2 }}>{p.line}</div>
+              <div style={{ fontFamily: SERIF, fontSize: 14.5, color: C.slate, lineHeight: 1.4, marginTop: 2 }}>{complete ? ({year_ahead:"Your twelve months, house by house.",chart_atelier:"Your whole chart, in one reading.",choose_the_day:"A date for a move, a launch or a conversation."}[p.key]) : p.line}</div>
             </div>
             <button onClick={() => checkout("createOneShotCheckout", { product_key: p.key })} disabled={!!busy} className="fw-elite-press"
               style={{ flexShrink: 0, background: "transparent", border: `1px solid ${C.ink}`, borderRadius: 999, padding: "8px 14px", fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: C.ink, cursor: "pointer" }}>
@@ -337,6 +381,7 @@ export function Atelier({ userId, hasAtelier, letter, celestial = false }) {
           </div>
         ))}
       </div>
+      {complete && checkoutError && <p role="alert" style={{fontFamily:UI,fontSize:13,color:C.crimson}}>{checkoutError}</p>}
     </Block>
   );
 }
@@ -344,7 +389,7 @@ export function Atelier({ userId, hasAtelier, letter, celestial = false }) {
 // ── VIII · YOUR SKY, YOUR WAY — quiet mode + soft sky + the science footer + privacy ───────────
 function Toggle({ on, onChange, label, sub, disabled }) {
   return (
-    <button onClick={() => !disabled && onChange(!on)} disabled={disabled} className="fw-elite-press"
+    <button role="switch" aria-checked={on} aria-label={label} onClick={() => !disabled && onChange(!on)} disabled={disabled} className="fw-elite-press"
       style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left", background: "transparent", border: "none", padding: "12px 2px", cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.45 : 1, borderTop: `1px solid ${C.hair}` }}>
       <span style={{ flex: 1, minWidth: 0 }}>
         <span style={{ display: "block", fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: C.ink }}>{label}</span>
@@ -356,33 +401,62 @@ function Toggle({ on, onChange, label, sub, disabled }) {
     </button>
   );
 }
-export function YourWay({ userId, celestial = false }) {
+export function YourWay({ userId, celestial = false, complete = false }) {
   const [quiet, setQuiet] = useState(false);
   const [soft, setSoft] = useState(false);
   const [rowId, setRowId] = useState(null);
+  const [pending, setPending] = useState(complete);
+  const [error, setError] = useState("");
+  const [status, setStatus] = useState("");
+  const [revision, setRevision] = useState(0);
+  const busy = useRef(false);
+  const owner = useRef(userId); owner.current = userId;
 
   useEffect(() => {
     let dead = false;
+    if(complete) { setQuiet(false);setSoft(false);setRowId(null);setError("");setStatus("");setPending(!!userId); }
     (async () => {
       if (!userId) return;
       try {
-        const rows = await base44.entities.UserPreferences.filter({ user_id: userId }, "-created_date", 1);
-        const row = Array.isArray(rows) ? rows[0] : null;
+        const rows = await base44.entities.UserPreferences.filter({ user_id: userId }, complete ? "-updated_at" : "-created_date", 1);
+        const row = Array.isArray(rows) ? rows.find(row=> !complete || row.user_id === userId) : null;
         if (dead || !row) return;
         setRowId(row.id); setQuiet(!!row.horoscope_quiet_mode); setSoft(!!row.horoscope_soft_sky);
-      } catch { /* preferences are a nicety — default to off */ }
+      } catch { if(complete && !dead) setError("Your settings didn't load. Try again before changing them."); }
+      finally { if(complete && !dead) setPending(false); }
     })();
     return () => { dead = true; };
-  }, [userId]);
+  }, [userId,complete,revision]);
 
   const persist = async (patch) => {
     if (!userId) return;
+    const previous = { quiet, soft };
+    if(complete) {
+      if(busy.current || pending || error) return;
+      busy.current = true;setPending(true);setError("");setStatus("");
+    }
     try {
-      if (rowId) await base44.entities.UserPreferences.update(rowId, patch);
-      else { const created = await base44.entities.UserPreferences.create({ user_id: userId, ...patch }); setRowId(created?.id || null); }
-    } catch { /* a failed write shouldn't throw under her finger */ }
+      const payload = complete ? {...patch,updated_at:new Date().toISOString()} : patch;
+      let savedId = rowId;
+      if (rowId) await base44.entities.UserPreferences.update(rowId, payload);
+      else {
+        const created = await base44.entities.UserPreferences.create({ user_id: userId, ...payload });
+        savedId = created?.id || null;
+        if(!complete || owner.current === userId)setRowId(savedId);
+      }
+      if(complete) {
+        if(!savedId) throw new Error("No saved settings returned.");
+        const rows = await base44.entities.UserPreferences.filter({ user_id:userId,id:savedId }, "-updated_at",1);
+        const row = rows?.find(value=>value.user_id === userId && value.id === savedId);
+        if(!row || Object.entries(patch).some(([key,value])=>row[key] !== value)) throw new Error("Settings weren't confirmed.");
+        if(owner.current === userId) {setQuiet(!!row.horoscope_quiet_mode);setSoft(!!row.horoscope_soft_sky);setStatus("Saved for future readings.");}
+      }
+    } catch {
+      if(complete && owner.current === userId) {setQuiet(previous.quiet);setSoft(previous.soft);setError("Couldn't confirm that change. Your previous setting is still shown.");}
+    } finally {busy.current=false;if(complete && owner.current === userId)setPending(false);}
   };
   const setQuietMode = (v) => {
+    if(complete && (!userId || busy.current || pending || error)) return;
     setQuiet(v);
     // turning Quiet off also clears Soft sky — otherwise the reading keeps hiding retrogrades she
     // can no longer see the reason for (the original's rule, kept).
@@ -395,8 +469,12 @@ export function YourWay({ userId, celestial = false }) {
       <Eyebrow cw="sage">Your sky, your way</Eyebrow>
       <Title>How much you want to hear</Title>
       <Card>
-        <Toggle on={quiet} onChange={setQuietMode} label="Quiet mode" sub="Softens the shadow-language in your readings." />
-        <Toggle on={soft} disabled={!quiet} onChange={(v) => { setSoft(v); persist({ horoscope_soft_sky: v }); }} label="Soft sky" sub="Hides retrogrades and storm-windows entirely." />
+        <Toggle on={quiet} disabled={complete && (!userId || pending || !!error)} onChange={setQuietMode} label="Quiet mode" sub={complete ? "Gentler language in future readings." : "Softens the shadow-language in your readings."} />
+        <Toggle on={soft} disabled={!quiet || (complete && (!userId || pending || !!error))} onChange={(v) => { if(complete && busy.current)return;setSoft(v); persist({ horoscope_soft_sky: v }); }} label="Soft sky" sub={complete ? "Leaves retrogrades and storm-windows out of future readings." : "Hides retrogrades and storm-windows entirely."} />
+        {complete && pending && <p role="status">Checking your settings…</p>}
+        {complete && !userId && <p>Sign in to keep your settings.</p>}
+        {complete && error && <><p role="alert">{error}</p><Quiet onClick={()=>setRevision(value=>value+1)}>Reload settings</Quiet></>}
+        {complete && status && <p role="status">{status}</p>}
       </Card>
       <div style={{ marginTop: 16, padding: "14px 16px", border: `1px dashed ${C.hair}`, borderRadius: 14 }}>
         <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color: C.gold, marginBottom: 6 }}>Where the science sits</div>

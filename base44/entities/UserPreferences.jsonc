@@ -53,6 +53,16 @@
       "type": "boolean",
       "default": true
     },
+    "horoscope_quiet_mode": {
+      "type": "boolean",
+      "default": false,
+      "description": "Existing Sky setting: gentler language for future readings."
+    },
+    "horoscope_soft_sky": {
+      "type": "boolean",
+      "default": false,
+      "description": "Existing Sky setting: omit retrogrades and storm windows from future readings."
+    },
     "created_at": {
       "type": "string"
     },

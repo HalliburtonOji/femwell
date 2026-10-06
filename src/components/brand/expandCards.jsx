@@ -703,11 +703,19 @@ function CardMediaFace({ item, accent, kind, compact }) {
   );
 }
 
-export function CoverCard({ item: raw, onOpen, compact = false }) {
+export function CoverCard({ item: raw, onOpen, compact = false, presentation }) {
   const item = resolveCard(raw);
   const c = cwOf(item.cw);
   const I = ICON[item.Icon] || Sparkles;
   const playKind = facePlayable(item);
+
+  if (presentation === "folio") {
+    const details = <><span className="fw-folio-card__kind"><I size={13}/>{item.kind}</span><span className="fw-folio-card__title">{item.title}</span>{summaryOf(item) && <span className="fw-folio-card__hook">{summaryOf(item)}</span>}<span className="fw-folio-card__meta">{item.meta.map(([ic,label]) => {const M = ICON[ic] || Clock; return <span key={label}><M size={13}/>{label}</span>;})}</span><span className="fw-folio-card__actions">{playKind ? "Details" : item.external ? "Open source" : "Open"}<ChevronRight size={15}/></span></>;
+    return <div className="fw-folio-card" data-compact={compact} data-media={playKind || undefined}>
+      {playKind && <div className="fw-folio-card__media">{playKind === "audio" ? <FloraAudio src={item.audioSrc} label={item.playerLabel || item.title} accent={c.petal} initialDuration={item.duration || 0} item={item}/> : <CardMediaFace item={item} accent={c.petal} kind={playKind} compact={compact}/>}</div>}
+      <button type="button" className="fw-folio-card__open" onClick={onOpen}>{details}</button>
+    </div>;
+  }
 
   // ── playable media: player ON THE FACE (§ audit fix). The whole card is no longer one
   // "Open" button — the media area plays in place in ONE tap; the text area below is a

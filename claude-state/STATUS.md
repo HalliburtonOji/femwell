@@ -7,6 +7,15 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-06 · SELECTED IMPLEMENTATION + SCHEMA REPAIR
+> - Claimed additional shared cards/assets **f556486**, Saved/Planner return repairs **aaca3a4/c90c060**, existing preference schema **0b97b18**. Source implementation in progress, not shipped; live remains **index-rEG30ljq.js**. Four original transparent section assets generated, full selected headers/body presentation integrated; approved Books and five older worlds preserved.
+> - Sky now loads owner-scoped published correspondence and observed cycle dates, all Ask history, Unicode-safe pairing links, confirmed settings and exact daily reading completion; preview reads existing forecasts without triggering generation. Targeted **95 tests** pass. Remote read confirms own current reading, no published monthly letter and one preference row; local+remote schema lack the two existing settings. Additive booleans flagged to Halli before repair. Existing producers already use them; no new function names/access permissions.
+> - Next: stable production build, single-schema push and frontend deploy, six-section native360/390/430 taps/pixels and independent catalogue. Canon§10.5.16/mirror and atomic plan updated. Main design promotion/notification decisions held; broader consented DM graph remains staged.
+>
+> ### CURRENT STATE — 2026-10-06 · PETAL × STAR PRESS SELECTED
+> - Halli selects Petal Observatory + Star Press; explicitly confirms finish Sky then remaining Lifestyle sections. Claim **6e2f2f2** committed first. Bible10.5.16 + mirror/context updated this cycle. Main held, Books approved room retained. Creative/Craft research and existing feature/backend inventory in progress; root owns implementation.
+> - Reality main dccabc0 before claim, live **index-rEG30ljq.js** matches docs. Done: scope/canon/claim. Next: hybrid whole page + Sky wiring repairs, then Read/Listen/Goodlife/Yours review builds. No new backend names/schema planned.
+>
 > ### CURRENT STATE — 2026-10-06 · FINAL REVIEW HANDOFF SHIPPED
 > - Verification/brief **86edb5d** pushed; frontend/static deploy succeeds, deterministic **index-rEG30ljq.js** unchanged and confirmed HTTP/native. Actual final comparison's Checks displays145/three phone widths/held release; board left open with normal viewport restored. Source **b84ad39**, no main visual promotion.
 > - Five original worlds and accepted Books room available through Ideas READY TO TRY and Lifestyle SKY · FIVE WORLDS. Authored human copy/canon corrected. Full audit/limits **creative/sky-worlds-verification.md**; both claims released. No untouched app-wide copy/backend/connectivity completion claim.

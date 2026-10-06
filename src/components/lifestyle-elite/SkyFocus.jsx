@@ -26,7 +26,7 @@ import { ASTEROID_NAMES, ASTEROID_ARCHETYPES } from "@/lib/astrology/asteroids";
 import BirthDataSheet from "@/components/horoscope/BirthDataSheet";
 import JessAstraBanner from "@/components/horoscope/JessAstraBanner";
 import ShareButton from "@/components/share/ShareButton";
-import { recordProgress } from "@/components/community/readingActivity";
+import { recordProgress, hasReadLocally } from "@/components/community/readingActivity";
 import { createPageUrl } from "@/utils";
 import { SERIF, UI, SCRIPT } from "@/components/journal/Editorial";
 import { C, PHASE_CLEAN } from "@/components/brand/cleanTokens";
@@ -37,6 +37,9 @@ import SkyMeaning from "@/components/lifestyle-elite/sky/SkyMeaning";
 import ObservedSkyDiary from "@/components/lifestyle-elite/sky/ObservedSkyDiary";
 import DailySkyLesson, { PrivateSkyNotes } from "@/components/lifestyle-elite/sky/DailySkyLesson";
 import { AtelierIncident } from "./AtelierHeader";
+import useSkyCompletion from "./sky/useSkyCompletion";
+import { skyReadingKey } from "./sky/skyCompletion";
+import useSelectedSkyChart from "./sky/useSelectedSkyChart";
 
 const cap = (s) => (s ? String(s).charAt(0).toUpperCase() + String(s).slice(1) : s);
 const clean = (s) => String(s || "").replace(/<[^>]+>/g, "").replace(/\*(.+?)\*/g, "$1").replace(/\s+/g, " ").trim();
@@ -166,7 +169,7 @@ function GoddessBench({ signs, goddessRead }) {
 }
 
 // ── "carry it with you" — reflect · discuss · ask Jess · mark read (the connectivity keystone) ──
-function CarryItWithYou({ seed, onMarkRead, read, connectedDemo = false }) {
+function CarryItWithYou({ seed, onMarkRead, read, connectedDemo = false, readDisabled = false, readError = "" }) {
   const go = (href) => window.location.assign(href);
   const act = { display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flex: 1, background: "transparent", border: "none", cursor: "pointer", padding: "10px 4px", fontFamily: UI, fontSize: 12, fontWeight: 700, color: C.slate };
   const s = encodeURIComponent(String(seed || "").slice(0, 180));
@@ -177,20 +180,35 @@ function CarryItWithYou({ seed, onMarkRead, read, connectedDemo = false }) {
         <button className="fw-elite-press" style={act} onClick={() => go(`${createPageUrl("Journal")}?compose=1&type=horoscope&seed=${s}`)}><PenLine size={16} color={C.ink} strokeWidth={1.7} /> Reflect</button>
         <button className="fw-elite-press" style={act} onClick={() => go(`${createPageUrl("Community")}?room=${connectedDemo ? "lounge" : "the-sky"}&seed=${s}`)}><MessageCircle size={16} color={C.ink} strokeWidth={1.7} /> {connectedDemo ? "Lounge" : "Discuss"}</button>
         <button className="fw-elite-press" style={act} onClick={() => { try { window.dispatchEvent(new CustomEvent("fw_open_assistant", { detail: connectedDemo ? { prompt: `Help me think about this sky reading: ${seed}` } : { seed } })); } catch { go(createPageUrl("Jess")); } }}><Sparkles size={16} color={C.ink} strokeWidth={1.7} /> Ask Jess</button>
-        <button className="fw-elite-press" style={{ ...act, color: read ? "#5F8A6B" : C.slate }} onClick={onMarkRead}><Check size={16} color={read ? "#5F8A6B" : C.ink} strokeWidth={1.7} /> {read ? "Read" : "Mark read"}</button>
+        <button className="fw-elite-press" disabled={readDisabled} style={{ ...act, color: read ? "#5F8A6B" : C.slate, opacity: readDisabled ? .5 : 1 }} onClick={onMarkRead}><Check size={16} color={read ? "#5F8A6B" : C.ink} strokeWidth={1.7} /> {read ? "Read" : "Mark read"}</button>
       </div>
+      {readError && <p role="alert" style={{fontFamily:UI,fontSize:12,color:C.crimson}}>{readError}</p>}
     </div>
   );
 }
 
-export default function SkyFocus({ userProfile, actionRequest, onActionState, onActionHandled, portalChart = false, continuous = false, celestial = false, dailyLessons = false, direction, artDirection, cycleContext }) {
+export default function SkyFocus(props) {
+  return props.artDirection === "sky-worlds" && props.direction === "petal-press" ? <SelectedSkyFocus {...props}/> : <LegacySkyFocus {...props}/>;
+}
+function SelectedSkyFocus(props) {
+  const chartState = useSelectedSkyChart(props.userProfile);
+  return <SkyFocusBody {...props} chartState={chartState}/>;
+}
+function LegacySkyFocus(props) {
+  const chartState = useBirthChart(props.userProfile);
+  return <SkyFocusBody {...props} chartState={chartState}/>;
+}
+function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, onActionHandled, portalChart = false, continuous = false, celestial = false, dailyLessons = false, direction, artDirection, cycleContext }) {
   const world = artDirection === "sky-worlds";
+  const complete = world && direction === "petal-press";
   const artful = world || ["marginalia","reading-room"].includes(artDirection);
   const lessonFirst = world && ["workbench","light"].includes(direction);
   const movementClass = name => world ? `fw-world-${name}` : artful ? `fw-atelier-${name}` : undefined;
   const lessonRoute = world ? "/SkyWorldsDemo" : artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artful ? "/LivingAtelierDemo" : undefined;
-  const { user, astro, reading, userProfile: up, loading, generatingReading, setAstro } = useBirthChart(userProfile);
-  const prof = userProfile || up;
+  const { user, astro, reading, userProfile: up, loading, generatingReading, setAstro, error:chartError, refresh } = chartState;
+  const completion = useSkyCompletion(user, complete);
+  const readingKey = skyReadingKey(user?.id, reading?.user_id === user?.id ? reading : null);
+  const prof = complete ? up : userProfile || up;
   const chart = useMemo(() => deriveChart(astro, prof), [astro, prof]);
   const derivedCycle = useMemo(() => derivePhaseInfo(prof), [prof]);
   const cyc = artful && cycleContext ? cycleContext : derivedCycle;
@@ -199,6 +217,18 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
   const asteroids = useAsteroids(astro, prof);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [markedRead, setMarkedRead] = useState(false);
+  const [readError, setReadError] = useState("");
+  useEffect(() => {
+    if (!complete) return;
+    setMarkedRead(!!readingKey && hasReadLocally(readingKey, 0)); setReadError("");
+  }, [complete, readingKey]);
+  const markReading = () => {
+    if (!complete) { setMarkedRead(true); recordProgress("your-sky", 0, user?.id); return; }
+    if (!readingKey || markedRead) return;
+    recordProgress(readingKey, 0, user?.id);
+    const saved = hasReadLocally(readingKey, 0);
+    setMarkedRead(saved); setReadError(saved ? "" : "Couldn't keep your reading progress on this device.");
+  };
   const [triadOpen, setTriadOpen] = useState({});
   const toggleTriad = key => setTriadOpen(previous => ({...previous, [key]: !previous[key]}));
   const refs = useRef({});
@@ -242,6 +272,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
   }, [cyc.phase, reading, moon]);
 
   if (loading) return <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, color: C.slate, textAlign: "center", padding: "28px 0" }}>Reading the sky…</div>;
+  const chartFailure = complete && chartError ? <div role="alert" style={{fontFamily:UI,fontSize:13,color:C.crimson}}><p>{chartError}</p><Quiet onClick={refresh}>Try again</Quiet></div> : null;
 
   // ── no chart → the onboarding, in the same language ──
   if (!astro) {
@@ -249,6 +280,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
       <div className={world ? "sky-celestial sky-world-body" : celestial ? "sky-celestial" : undefined} style={{ display: "flex", flexDirection: "column" }}>
         {celestial && <style>{CELESTIAL_CSS}</style>}
         <JessAstraBanner />
+        {chartFailure}
         <Summary Icon={Moon} cw="lavender">{moon?.name ? `The moon is ${moon.name.toLowerCase()}${moon.illumination != null ? `, ${moon.illumination}% lit` : ""} tonight — your own sky opens once you add your birth date.` : "Your own sky opens once you add your birth date."}</Summary>
         <section>
           <Eyebrow cw="lavender">Read me the sky</Eyebrow>
@@ -278,6 +310,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
     <div className={world ? "sky-celestial sky-world-body" : celestial ? "sky-celestial" : undefined} style={{ display: "flex", flexDirection: "column" }}>
       {celestial && <style>{CELESTIAL_CSS}</style>}
       <JessAstraBanner />
+      {chartFailure}
 
       {/* I · TONIGHT — the masthead (the page's ONE header sits above this) */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
@@ -324,7 +357,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
           </div>
         ) : null}
         {dailyLessons && <div className={world ? "fw-world-weather-notes" : artful ? "fw-atelier-weather-notes" : undefined}>{[["Power",reading?.power_title,reading?.power_body],["Pressure",reading?.pressure_title,reading?.pressure_body],["Trouble",reading?.trouble_title,reading?.trouble_body]].map(([label,title,body])=>title || body ? <div key={label} className={world ? `fw-world-weather-entry fw-world-weather-entry--${label.toLowerCase()}` : artful ? `fw-atelier-weather-entry fw-atelier-weather-entry--${label.toLowerCase()}` : undefined} style={artful ? undefined : {borderTop:`1px solid ${C.hair}`,padding:"14px 0 0",marginTop:14}}>{artful ? <span className={world ? "fw-world-note-label" : "fw-atelier-note-label"}>{label}</span> : <Eyebrow cw="gold" align="left">{label}</Eyebrow>}{title && <Title align="left" size={26}>{clean(title)}</Title>}{body && <Body>{clean(body)}</Body>}</div> : null)}</div>}
-        <CarryItWithYou connectedDemo={dailyLessons} seed={headline} read={markedRead} onMarkRead={() => { setMarkedRead(true); try { recordProgress("your-sky", 0, user?.id); } catch { /* the garden write is a nicety, never a blocker */ } }} />
+        <CarryItWithYou connectedDemo={dailyLessons} seed={headline} read={markedRead} onMarkRead={markReading} readDisabled={complete && (!readingKey || markedRead)} readError={readError} />
       </Movement>
 
       {artful && !world && <AtelierIncident/>}
@@ -345,7 +378,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
         {celestial && [["sun","Sun",reading?.triad_sun_desc],["moon","Moon",reading?.triad_moon_desc],["rising","Rising",reading?.triad_rising_desc]].map(([key,label,description]) => triadOpen[key] && description ? <div key={key} style={{padding:"16px 0",borderBottom:`1px solid ${C.hair}`}}><p className="sky-kicker">{label} · your reading</p><p className="sky-note" style={{margin:0}}>{clean(description)}</p></div> : null)}
         <div style={{ fontFamily: UI, fontSize: 11, letterSpacing: ".06em", color: C.faint, textAlign: "center", marginTop: 14 }}>{[chart.element, chart.modality, chart.sunRuler ? `ruled by ${chart.sunRuler}` : null].filter(Boolean).join(" · ")}</div>
         <GoddessBench signs={asteroids} goddessRead={reading?.goddess_read} />
-        <RedWhiteMoon celestial={celestial} rw={null} />
+        <RedWhiteMoon celestial={celestial} complete={complete} rw={complete ? completion.rw : null} loading={completion.loading} error={completion.cycleError} onRetry={completion.retry} />
       </Movement>
 
       {!artful && <Fleuron my={24} />}
@@ -373,19 +406,19 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
       <Movement id="ask" refs={refs} className={movementClass("ask")}>
         <Eyebrow cw="lavender">Ask &amp; connect</Eyebrow>
         <Title>{world ? "What’s on your mind?" : "Put a question to it"}</Title>
-        <AskTheSky human={world} celestial={celestial} userId={user?.id} inputRef={questionRef} />
-        <Compatibility human={world} celestial={celestial} userId={user?.id} />
+        <AskTheSky key={complete ? user?.id || "signed-out" : "legacy"} complete={complete} human={world} celestial={celestial} userId={user?.id} inputRef={questionRef} />
+        <Compatibility key={complete ? user?.id || "signed-out" : "legacy"} complete={complete} human={world} celestial={celestial} userId={user?.id} />
       </Movement>
 
       {!artful && <Fleuron my={24} />}
 
       {/* VII · THE ATELIER — the letter + the shelf */}
-      <Movement id="atelier" refs={refs} className={movementClass("atelier")}><Atelier celestial={celestial} userId={user?.id} hasAtelier={!!user?.has_atelier} letter={null} /></Movement>
+      <Movement id="atelier" refs={refs} className={movementClass("atelier")}><Atelier complete={complete} celestial={celestial} userId={user?.id} hasAtelier={complete ? completion.unlocked : !!user?.has_atelier} letter={complete ? completion.letter : null} loading={completion.loading} error={completion.letterError} onRetry={completion.retry} /></Movement>
 
       {!artful && <Fleuron my={24} />}
 
       {/* VIII · YOUR SKY, YOUR WAY — quiet mode · science · privacy */}
-      <Movement id="yours" refs={refs} className={movementClass("way")}><YourWay celestial={celestial} userId={user?.id} /></Movement>
+      <Movement id="yours" refs={refs} className={movementClass("way")}><YourWay key={complete ? user?.id || "signed-out" : "legacy"} complete={complete} celestial={celestial} userId={user?.id} /></Movement>
 
       <Foot>Held lightly — folklore and your own chart, never fate or a score.</Foot>
       {birthSheet(astro)}

@@ -11,10 +11,12 @@ const FALLBACK_ROUTES = {
   LIFESTYLE: null,
 };
 
-export default function SavedItemCard({ item, onRemove }) {
+export default function SavedItemCard({ item, onRemove, disabled = false }) {
   const meta = parseSavedMeta(item);
   const href = meta.route || meta.url || meta.content_url || FALLBACK_ROUTES[item.item_type] || "#";
   const actionLabel = item.item_type === "ADVICE" ? "Open Assistant" : item.item_type === "EVENT" ? "Open event" : "Open";
+  const savedDate = item.created_at || item.created_date;
+  const validSavedDate = savedDate && Number.isFinite(new Date(savedDate).getTime());
 
   return (
     <div className="rounded-[24px] p-4" style={{ border: "1px solid var(--border)", backgroundColor: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
@@ -26,10 +28,12 @@ export default function SavedItemCard({ item, onRemove }) {
           </div>
           <h3 className="mt-3 text-base font-semibold" style={{ color: "var(--plum)" }}>{item.title}</h3>
           {item.preview_text && <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--mauve)" }}>{item.preview_text}</p>}
-          <p className="mt-3 text-xs" style={{ color: "var(--mauve)", opacity: 0.6 }}>Saved {new Date(item.created_at || item.created_date).toLocaleDateString()}</p>
+          {validSavedDate && <p className="mt-3 text-xs" style={{ color: "var(--mauve)", opacity: 0.6 }}>Saved {new Date(savedDate).toLocaleDateString("en-GB")}</p>}
         </div>
         <button
           onClick={() => onRemove(item)}
+          aria-label={`Remove ${item.title || "this save"}`}
+          disabled={disabled}
           className="inline-flex h-9 w-9 items-center justify-center rounded-2xl transition-colors"
           style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}
         >

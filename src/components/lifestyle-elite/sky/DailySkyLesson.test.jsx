@@ -29,12 +29,26 @@ describe("daily astronomy and exact identity",()=>{
   it("keeps arrow focus and respects ends without wrapping or changing automatically",()=>{
     render(<DailySkyLesson/>);const next=screen.getByRole("button",{name:"Next sky lesson"});next.focus();fireEvent.click(next);expect(next).toHaveFocus();expect(screen.getByText("2 / 5 · keep exploring")).toBeVisible();for(let i=0;i<3;i++)fireEvent.click(next);expect(next).toBeDisabled();expect(screen.getByRole("button",{name:"Previous sky lesson"})).not.toBeDisabled();
   });
+  it("shares the active public lesson's exact edition to the lounge without carrying private words",()=>{
+    window.history.replaceState({},"","/SkyWorldsDemo?direction=petal-press&section=sky");
+    const deck=dailyLessonDeck(localSkyDay());
+    render(<DailySkyLesson userId="owner" direction="petal-press" previewRoute="/SkyWorldsDemo"/>);
+    fireEvent.click(screen.getByRole("button",{name:"A private note"}));
+    fireEvent.change(screen.getByLabelText("What caught your eye?"),{target:{value:"These are my private words."}});
+    const target=()=>new URL(screen.getByRole("link",{name:"Take this lesson to the lounge"}).getAttribute("href"),"https://femwells.com");
+    expect(target().pathname).toBe("/Community");expect(target().searchParams.get("room")).toBe("lounge");
+    expect(target().searchParams.get("seed")).toBe(`${deck[0].title}\n\nhttps://femwells.com${skyLessonRoute(deck[0],"petal-press","/SkyWorldsDemo")}`);
+    fireEvent.click(screen.getByRole("button",{name:"Next sky lesson"}));
+    expect(target().searchParams.get("seed")).toBe(`${deck[1].title}\n\nhttps://femwells.com${skyLessonRoute(deck[1],"petal-press","/SkyWorldsDemo")}`);
+    expect([...target().searchParams.keys()].sort()).toEqual(["room","seed"]);
+    expect(target().href).not.toContain("private");expect(mock.create).not.toHaveBeenCalled();
+  });
   it("reports an unavailable requested edition without pretending today's card is the saved edition",()=>{
     window.history.replaceState({},"","/LivingLifestyleDemo?lesson=earthshine&lessonVersion=9");render(<DailySkyLesson/>);expect(screen.getByRole("alert")).toHaveTextContent("edition is unavailable");
   });
 });
 describe("real save and private source-linked note contracts",()=>{
-  it.each(["conservatory","press","petal","workbench","light"])("reopens an older owner's exact saved edition inside the %s world",async direction=>{
+  it.each(["conservatory","press","petal","workbench","light","petal-press"])("reopens an older owner's exact saved edition inside the %s world",async direction=>{
     const lesson=SKY_LESSONS.find(item=>item.id==="earthshine");
     const key=skyLessonKey(lesson);
     mock.filter.mockResolvedValue([{id:"old",user_id:"owner",item_id:key,title:lesson.title,meta_json:JSON.stringify({kind:"sky-lesson",lessonId:lesson.id,lessonVersion:1,date:"2026-09-15",route:"/LivingLifestyleDemo?direction=letter&lesson=earthshine"})}]);
@@ -49,7 +63,7 @@ describe("real save and private source-linked note contracts",()=>{
     expect(await screen.findByRole("button",{name:"Kept · undo"})).toHaveAttribute("aria-pressed","true");
     expect(mock.save).not.toHaveBeenCalled();
   });
-  it.each(["conservatory","press","petal","workbench","light"])("saves the same canonical lesson in %s while retaining its world return",async direction=>{
+  it.each(["conservatory","press","petal","workbench","light","petal-press"])("saves the same canonical lesson in %s while retaining its world return",async direction=>{
     window.history.replaceState({},"",`/SkyWorldsDemo?direction=${direction}&section=sky&lesson=earthshine&lessonVersion=1`);
     render(<DailySkyLesson userId="owner" direction={direction} previewRoute="/SkyWorldsDemo"/>);
     const keep=screen.getByRole("button",{name:"Keep this"});await waitFor(()=>expect(keep).not.toBeDisabled());

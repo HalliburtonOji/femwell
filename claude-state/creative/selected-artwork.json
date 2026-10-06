@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-06",
+  "method": "built-in image_gen; transparent originals; lossless alpha-preserving WebP conversion only",
+  "assets": [
+    {
+      "section": "read",
+      "prompt": "Create an original premium realistic artsy botanical composition for a women's whole-life app. Transparent RGBA landscape 1536x1024. Genuine alpha background. Physical objects mostly upper 55%, bottom 40% empty transparent, asymmetric composition with generous centre-left clear space for LIVE HTML headings beneath it. Material feels tactile, original and intimate, realistic botanical anatomy with subtle soft edges and attached shadows, coherent alabaster light, restrained plum sage amber palette. No text, logos, writing, labels, controls, fake data, people, raster panel/rectangle/checkerboard or opaque haze. Not a stock flower sticker. Feather the physical scene into empty alpha naturally without amputating specimens. Original oblique folded translucent vellum folio, only a partial upper page curve. A recognisable violet bearded iris with 3 upright standards, 3 falling segments and sword-shaped leaf. Iris tissue and folio edge intertwine into a wide sideways fan in the upper third. Narrow slanting spine lower left. Not an open book on a table, no rose. Elegant almost sculptural reading object.",
+      "original": "C:\\Users\\Halli\\.codex\\generated_images\\01a0e28c-de58-74a3-b2fd-c62f5d849aa7\\exec-e4ae2ea9-5cd3-42f8-a96b-e17d882baf4c.png",
+      "asset": "/images/selected-lifestyle/read-v1.webp"
+    },
+    {
+      "section": "listen",
+      "prompt": "Create an original premium realistic artsy botanical composition for a women's whole-life app. Transparent RGBA landscape 1536x1024. Genuine alpha background. Physical objects mostly upper 55%, bottom 40% empty transparent, asymmetric composition with generous centre-left clear space for LIVE HTML headings beneath it. Material feels tactile, original and intimate, realistic botanical anatomy with subtle soft edges and attached shadows, coherent alabaster light, restrained plum sage amber palette. No text, logos, writing, labels, controls, fake data, people, raster panel/rectangle/checkerboard or opaque haze. Not a stock flower sticker. Feather the physical scene into empty alpha naturally without amputating specimens. Original shallow open acoustic paper diaphragm with visibly fine real radial pleats and imperfect edge, offset upper left; an incomplete oval rather than an orbital circle. One natural English bluebell raceme bends through its edge, nodding violet-blue bells on ONE side of stem, thin linear leaves. Pale plum sound-room light. No headphone/vinyl icon, waveform, metal dial or hardware. Beautiful unexpected botanical sound sculpture.",
+      "original": "C:\\Users\\Halli\\.codex\\generated_images\\01a0e28c-de58-74a3-b2fd-c62f5d849aa7\\exec-a800f085-8618-418c-80f0-becd80bdecfe.png",
+      "asset": "/images/selected-lifestyle/listen-v1.webp"
+    },
+    {
+      "section": "good",
+      "prompt": "Create an original premium realistic artsy botanical composition for a women's whole-life app. Transparent RGBA landscape 1536x1024. Genuine alpha background. Physical objects mostly upper 55%, bottom 40% empty transparent, asymmetric composition with generous centre-left clear space for LIVE HTML headings beneath it. Material feels tactile, original and intimate, realistic botanical anatomy with subtle soft edges and attached shadows, coherent alabaster light, restrained plum sage amber palette. No text, logos, writing, labels, controls, fake data, people, raster panel/rectangle/checkerboard or opaque haze. Not a stock flower sticker. Feather the physical scene into empty alpha naturally without amputating specimens. Realistic densely tufted amber Tagetes patula marigold, NOT a calendula daisy, breaking through a loose off-white linen fold. Three fallen narrow petals catch diagonal warm daylight, slender finely divided foliage. Markedly low rising diagonal silhouette. No surface/table/clock, bouquet or full room. A warm tactile moment with purposeful negative space.",
+      "original": "C:\\Users\\Halli\\.codex\\generated_images\\01a0e28c-de58-74a3-b2fd-c62f5d849aa7\\exec-0445bb79-acb1-4b0e-8fd2-fb68837e7932.png",
+      "asset": "/images/selected-lifestyle/good-v1.webp"
+    },
+    {
+      "section": "yours",
+      "prompt": "Create an original premium realistic artsy botanical composition for a women's whole-life app. Transparent RGBA landscape 1536x1024. Genuine alpha background. Physical objects mostly upper 55%, bottom 40% empty transparent, asymmetric composition with generous centre-left clear space for LIVE HTML headings beneath it. Material feels tactile, original and intimate, realistic botanical anatomy with subtle soft edges and attached shadows, coherent alabaster light, restrained plum sage amber palette. No text, logos, writing, labels, controls, fake data, people, raster panel/rectangle/checkerboard or opaque haze. Not a stock flower sticker. Feather the physical scene into empty alpha naturally without amputating specimens. Three thin imperfect archival paper leaves slightly overlapping at different shallow angles, open through centre. One tiny realistic branching forget-me-not with five blue petals and yellow eye crosses a seam. Minute fine stem and restrained leaf. Slate/plum side light. Original intimate archive arrangement, no invented photos, letters, printed handwriting or books. Delicate memory with uneven paper edges.",
+      "original": "C:\\Users\\Halli\\.codex\\generated_images\\01a0e28c-de58-74a3-b2fd-c62f5d849aa7\\exec-bfc2a6ab-e081-4b42-a68e-9badb574d5de.png",
+      "asset": "/images/selected-lifestyle/yours-v1.webp"
+    }
+  ]
+}

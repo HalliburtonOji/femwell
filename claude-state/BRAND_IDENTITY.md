@@ -855,6 +855,12 @@ The art direction must carry through the useful section, not stop at its header.
 
 Sky's accepted Living garden can feel alive through gentle, physically plausible plant/light movement. Keep measured Moon data separate from imagined art; provide stillness and reduced-motion support. Full original header language, heart, section selectors, changing focused actions and every existing capability stay. Creative Director must critique whole-page coherence, not just hero quality. New executions remain Ideas-only until Halli approves them; this records the direction, not aesthetic approval of an implementation.
 
+### 10.5.16 PETAL × STAR PRESS — Halli's selected direction, 6 October 2026
+
+Halli selects combining Petal Observatory and Star Press, then finishing Sky before the remaining Lifestyle sections. The five delivered candidates remain review history; this is one selected development direction. Petal supplies realistic living tissue, soft edges and the calculated Moon's clearing; Press supplies dated folios, disciplined ink rules, readable forecast annotations and full-width chart rows. Carry this through lessons, tides, diary, questions, pairing and preferences. Avoid stacking both hero pictures or every old border. All existing controls, states and substantive content stay.
+
+Then apply the same deliberate header/focused-action/whole-page workflow to Read (iris), Listen (bluebell), Good life (marigold) and Yours (forget-me-not), with their own compositions and useful lower details. Keep Books' approved table room. This is not permission to reuse Sky art in other sections. Interface voice remains short, personal, smart and human. Wire real existing touchpoints before inventing systems. Unknown/empty/error states must work. Main release and held notification decisions remain separate from build approval. Every section stays in organised Ideas · Dev until Halli gives the go-ahead.
+
 ### 10.6 CRAFT THAT CARRIES MEANING (format = feeling) — ⏳ PROPOSED (awaiting sign-off)
 - **Wax rose seal + sealed letters:** Health becomes *correspondence* — each letter arrives **sealed with a wax rose** (her signature flower, phase-coloured); opening breaks the seal (once-only lift). Extends to a monthly **"letter from your body,"** a milestone certificate, a sealed **"letter to future you"** in Journal, Jess's notes as folds.
 - **Vines that grow with progress** (a leaf per session, a bloom at the end — growth, not a progress bar).

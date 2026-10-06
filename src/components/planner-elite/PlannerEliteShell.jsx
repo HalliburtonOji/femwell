@@ -30,6 +30,7 @@ import { phaseForDay } from "@/hooks/useCycleDay";
 import { pickProfile } from "@/utils/userProfile";
 import MonthlyCalendarCard from "@/components/planner/MonthlyCalendarCard";
 import DayDetailSheet from "@/components/planner/DayDetailSheet";
+import { SKY_LESSONS, skyLessonRoute } from "@/components/lifestyle-elite/sky/skyLessons";
 import {
   OXBLOOD, lbl, subCard, focusPill, Pill, Panel, Deck, StackedCard, BoardBody, TopChrome, SheetShell,
   JumpSheet, SliderArrows, makeCalendarOverlay, fieldLabel, inputBase,
@@ -62,9 +63,9 @@ const TYPE_META = {
   focus: { label: "Focus", Icon: Briefcase, cw: "plum", load: 2, energy: "deep", cat: "work" },
   task: { label: "Task", Icon: ListChecks, cw: "gold", load: 1, energy: "admin", cat: "personal" },
   life: { label: "Life", Icon: Users, cw: "sage", load: 1, energy: "social", cat: "social" },
-  move: { label: "Move", Icon: Footprints, cw: "sage", load: 0.5, energy: "restorative", cat: "wellness" },
-  meal: { label: "Meal", Icon: Utensils, cw: "blush", load: 0.5, energy: "restorative", cat: "wellness" },
-  rest: { label: "Rest", Icon: Moon, cw: "plum", load: 0.5, energy: "rest", cat: "wellness" },
+  move: { label: "Move", Icon: Footprints, cw: "sage", load: 0.5, energy: "restorative", cat: "wellbeing" },
+  meal: { label: "Meal", Icon: Utensils, cw: "blush", load: 0.5, energy: "restorative", cat: "wellbeing" },
+  rest: { label: "Rest", Icon: Moon, cw: "plum", load: 0.5, energy: "rest", cat: "wellbeing" },
 };
 const DOMAINS = [
   { id: "career", label: "Career", Icon: Briefcase, cw: "plum", prompt: "One real move on the thing that matters." },
@@ -95,6 +96,10 @@ const RESETS = [
 const HOURS = Array.from({ length: 16 }, (_, i) => i + 7);
 const partOfDay = (h) => (h < 12 ? "Morning" : h < 17 ? "Afternoon" : "Evening");
 const fmtHour = (h) => `${h > 12 ? h - 12 : h || 12}${h >= 12 ? "pm" : "am"}`;
+const fmtBlockTime = block => {
+  const minute = /^\d{1,2}:(\d{2})/.exec(String(block.time || ""))?.[1];
+  return minute && minute !== "00" ? `${block.hour > 12 ? block.hour - 12 : block.hour || 12}:${minute}${block.hour >= 12 ? "pm" : "am"}` : fmtHour(block.hour);
+};
 function energyCurve(phaseKey) {
   const mult = PHASE[phaseKey].mult;
   return HOURS.map((h) => { const base = h < 9 ? 0.4 + (h - 7) * 0.12 : h <= 12 ? 0.7 + (h - 9) * 0.1 : h <= 15 ? 0.95 - (h - 12) * 0.13 : h <= 18 ? 0.6 + (h - 15) * 0.04 : 0.7 - (h - 18) * 0.12; return Math.max(0.12, Math.min(1, base * (0.7 + mult * 0.3))); });
@@ -105,6 +110,26 @@ const dayLabel = (off) => { const d = new Date(); d.setDate(d.getDate() + off); 
 const nowISO = () => new Date().toISOString();
 // notes encoding (no schema change): blocks "t:<type>;d:<dur>", intentions "intent;dom:<domain>"
 const blkNotes = (type, dur) => `t:${type};d:${dur}`;
+export function preserveBlockNotes(notes, type, dur) {
+  const existing = String(notes || "");
+  const withoutControls = existing.replace(/(?:^|;)t:[^;]*(?=;|$)/g, "").replace(/(?:^|;)d:\d+(?=;|$)/g, "").replace(/^;/, "");
+  return `${blkNotes(type, dur)}${withoutControls ? `;${withoutControls}` : ""}`;
+}
+export function plannerReturnLink(block) {
+  const ref = String(block?.ref || "");
+  if (block?.source === "books") {
+    const gutenberg = /^gutenberg:([1-9]\d*)$/.exec(ref);
+    if (gutenberg) return { href: `/BookReader?gutenberg_id=${gutenberg[1]}`, label: "Open this book" };
+    const club = /^club:([\w-]+)$/.exec(ref);
+    if (club) return { href: `/Community?club=${encodeURIComponent(club[1])}`, label: "Open the book club" };
+  }
+  if (["sky", "sky-lesson", "lifestyle"].includes(block?.source)) {
+    const key = /^sky-lesson:([\w-]+):v(\d+)$/.exec(ref);
+    const lesson = key && SKY_LESSONS.find(entry => entry.id === key[1] && entry.version === Number(key[2]));
+    if (lesson) return { href: skyLessonRoute(lesson, "petal-press", "/SkyWorldsDemo"), label: "Open this Sky lesson" };
+  }
+  return null;
+}
 const parseBlk = (notes) => { const t = /t:(\w+)/.exec(notes || "")?.[1]; const d = Number(/d:(\d+)/.exec(notes || "")?.[1]); return { type: TYPE_META[t] ? t : "task", dur: d || 30 }; };
 const isIntent = (notes) => /^intent/.test(notes || "");
 const intNotes = (dom) => `intent;dom:${dom}`;
@@ -139,6 +164,12 @@ export default function PlannerEliteShell() {
   const [jumpOpen, setJumpOpen] = useState(false);
   const [addLoadOpen, setAddLoadOpen] = useState(null); // 'invisible' | 'admin' | null
   const [toast, setToast] = useState(null);
+  const [blockError, setBlockError] = useState(false);
+  const [blockLoading, setBlockLoading] = useState(false);
+  const [blockSaveError, setBlockSaveError] = useState("");
+  const [blockSaving, setBlockSaving] = useState(false);
+  const blockSaveRef = useRef(false);
+  const blockLoadRef = useRef(0);
   const sliderRef = useRef(null);
 
   const flash = (m) => { setToast(m); window.clearTimeout(flash._t); flash._t = window.setTimeout(() => setToast(null), 2300); };
@@ -160,11 +191,14 @@ export default function PlannerEliteShell() {
 
   // ── loaders ────────────────────────────────────────────────────────────────
   const loadBlocks = useCallback(async (uid, off) => {
+    const request = ++blockLoadRef.current;
+    setBlockLoading(true);
     try {
       const rows = await base44.entities.PlannerItems.filter({ user_id: uid, date: dkOf(off) }, "-created_date", 200);
-      const bl = (rows || []).filter((r) => !isIntent(r.notes)).map((r) => { const { type, dur } = parseBlk(r.notes); return { id: r.id, hour: hourOf(r.time), title: r.title || "Untitled", type, dur, done: !!r.is_completed }; }).sort((a, b) => a.hour - b.hour);
-      setBlocks(bl);
-    } catch { setBlocks([]); }
+      const bl = (rows || []).filter((r) => r.user_id === uid && !isIntent(r.notes)).map((r) => { const { type, dur } = parseBlk(r.notes); return { id: r.id, hour: hourOf(r.time), time: r.time, title: r.title || "Untitled", type, dur, done: !!r.is_completed, source: r.source, ref: r.ref, notes: r.notes, category: r.category, repeat: r.repeat }; }).sort((a, b) => a.hour - b.hour);
+      if (request === blockLoadRef.current) { setBlocks(bl); setBlockError(false); }
+    } catch { if (request === blockLoadRef.current) { setBlocks([]); setBlockError(true); } }
+    finally { if (request === blockLoadRef.current) setBlockLoading(false); }
   }, []);
   const loadToday = useCallback(async (uid) => {
     const tk = dkOf(0);
@@ -226,10 +260,30 @@ export default function PlannerEliteShell() {
     try { await base44.entities.PlannerItems.update(id, { is_completed: !b.done, updated_at: nowISO() }); } catch { setBlocks((bs) => bs.map((x) => x.id === id ? { ...x, done: b.done } : x)); }
   };
   const saveBlock = async (d) => {
-    setBlocks((bs) => bs.map((b) => b.id === d.id ? d : b).sort((a, b) => a.hour - b.hour)); setEditBlock(null); flash("Updated");
-    try { await base44.entities.PlannerItems.update(d.id, { title: d.title, time: `${pad(d.hour)}:00`, category: TYPE_META[d.type].cat, notes: blkNotes(d.type, d.dur), is_completed: !!d.done, updated_at: nowISO() }); } catch { flash("Couldn't save"); }
+    const original = blocks.find(block => block.id === d.id);
+    if (!user?.id || !original || blockSaveRef.current) return;
+    blockSaveRef.current = true; setBlockSaving(true); setBlockSaveError("");
+    const notes = preserveBlockNotes(original.notes, d.type, d.dur);
+    const time = d.hour === original.hour && original.time ? original.time : `${pad(d.hour)}:00`;
+    const updated = { ...original, ...d, notes, time };
+    const fields = { title: d.title, time, category: d.type === original.type && original.category ? original.category : TYPE_META[d.type].cat, notes, is_completed: !!d.done, updated_at: nowISO() };
+    if (original.source !== undefined) fields.source = original.source;
+    if (original.ref !== undefined) fields.ref = original.ref;
+    if (original.repeat !== undefined) fields.repeat = original.repeat;
+    try {
+      await base44.entities.PlannerItems.update(d.id, fields);
+      setBlocks(bs => bs.map(block => block.id === d.id ? { ...updated, category: fields.category } : block).sort((a, b) => a.hour - b.hour));
+      setEditBlock(null); flash("Updated");
+    } catch { setBlockSaveError("That change couldn’t save. Your draft is still here."); }
+    finally { blockSaveRef.current = false; setBlockSaving(false); }
   };
-  const deleteBlock = async (id) => { setBlocks((bs) => bs.filter((b) => b.id !== id)); setEditBlock(null); flash("Removed"); try { await base44.entities.PlannerItems.delete(id); } catch { /* ignore */ } };
+  const deleteBlock = async (id) => {
+    if (!user?.id || blockSaveRef.current || !blocks.some(block => block.id === id)) return;
+    blockSaveRef.current = true; setBlockSaving(true); setBlockSaveError("");
+    try { await base44.entities.PlannerItems.delete(id); setBlocks(bs => bs.filter(block => block.id !== id)); setEditBlock(null); flash("Removed"); }
+    catch { setBlockSaveError("That block couldn’t be removed. Try again."); }
+    finally { blockSaveRef.current = false; setBlockSaving(false); }
+  };
   const toggleAnchor = async (habit) => {
     if (!user) return; const a = anchors.find((x) => x.habit === habit); if (!a) return; const next = !a.done;
     setAnchors((as) => as.map((x) => x.habit === habit ? { ...x, done: next } : x));
@@ -311,8 +365,8 @@ export default function PlannerEliteShell() {
                 <AddInline onAdd={addToDay} dayName={dayLabel(offset).split(" · ").pop()} />
                 <div style={{ flex: 1, minHeight: 0 }}>
                   <Deck accent={gold}>
-                    <Panel label="Agenda" Icon={ListChecks} accent={gold}><Agenda blocks={blocks} anchors={anchors} peakIdx={peakIdx} phase={ph} offset={offset} onToggle={toggleBlock} onEdit={setEditBlock} onAnchor={toggleAnchor} /></Panel>
-                    <Panel label="Hour by hour" Icon={Clock} accent={gold}><Hours blocks={blocks} peakHour={HOURS[peakIdx]} onEdit={setEditBlock} onAddHour={(h) => addToDay(`block at ${fmtHour(h)}`)} /></Panel>
+                    <Panel label="Agenda" Icon={ListChecks} accent={gold}>{blockError && <p role="alert">Your blocks couldn’t load. <button onClick={() => user?.id && loadBlocks(user.id, offset)}>Try again</button></p>}{blockLoading ? <p role="status">Opening this day…</p> : <Agenda blocks={blocks} anchors={anchors} peakIdx={peakIdx} phase={ph} offset={offset} dataUnavailable={blockError} onToggle={toggleBlock} onEdit={(block) => { setBlockSaveError(""); setEditBlock(block); }} onAnchor={toggleAnchor} />}</Panel>
+                    <Panel label="Hour by hour" Icon={Clock} accent={gold}>{blockLoading ? <p role="status">Opening this day…</p> : <Hours blocks={blocks} peakHour={HOURS[peakIdx]} onEdit={(block) => { setBlockSaveError(""); setEditBlock(block); }} onAddHour={(h) => addToDay(`block at ${fmtHour(h)}`)} />}</Panel>
                     <Panel label="The week" Icon={CalendarDays} accent={gold}><Week active={offset} onPick={(o) => setOffset(o)} blockCount={blocks.length} cycleDay={cycleDay} /></Panel>
                   </Deck>
                 </div>
@@ -356,7 +410,7 @@ export default function PlannerEliteShell() {
         <p style={{ textAlign: "center", fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, margin: "6px auto 0", maxWidth: 300, lineHeight: 1.55 }}>A planned day is a tended one. Only the few things that are truly yours.</p>
       </div>
 
-      {editBlock && <BlockSheet draft={editBlock} peakHour={HOURS[peakIdx]} onClose={() => setEditBlock(null)} onSave={saveBlock} onDelete={() => deleteBlock(editBlock.id)} />}
+      {editBlock && <BlockSheet draft={editBlock} peakHour={HOURS[peakIdx]} busy={blockSaving} error={blockSaveError} onClose={() => !blockSaving && setEditBlock(null)} onSave={saveBlock} onDelete={() => deleteBlock(editBlock.id)} />}
       {intentDraft && <IntentionSheet draft={intentDraft} onClose={() => setIntentDraft(null)} onSave={saveIntention} />}
       {voiceOpen && <VoiceSheet onClose={() => setVoiceOpen(false)} onParse={(t) => { addToDay(t); setVoiceOpen(false); }} />}
       {jumpOpen && <JumpSheet boards={BOARDS} onClose={() => setJumpOpen(false)} onJump={jumpTo} />}
@@ -398,7 +452,7 @@ function AddInline({ onAdd, dayName }) {
     </div>
   );
 }
-function Agenda({ blocks, anchors, peakIdx, phase, offset, onToggle, onEdit, onAnchor }) {
+function Agenda({ blocks, anchors, peakIdx, phase, offset, onToggle, onEdit, onAnchor, dataUnavailable = false }) {
   const groups = ["Morning", "Afternoon", "Evening"];
   const byGroup = groups.map((g) => ({ g, items: blocks.filter((b) => partOfDay(b.hour) === g) })).filter((x) => x.items.length);
   return (
@@ -416,7 +470,7 @@ function Agenda({ blocks, anchors, peakIdx, phase, offset, onToggle, onEdit, onA
           </div>
         </div>
       )}
-      {byGroup.length === 0 && <div style={{ textAlign: "center", padding: "24px 8px", fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted }}>Nothing planned yet — a soft, open day. Add the first thing above, or speak it.</div>}
+      {byGroup.length === 0 && !dataUnavailable && <div style={{ textAlign: "center", padding: "24px 8px", fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted }}>Nothing planned yet — a soft, open day. Add the first thing above, or speak it.</div>}
       {byGroup.map(({ g, items }) => (
         <div key={g} style={{ marginBottom: 10 }}>
           <div style={{ ...lbl, color: phase.hue, marginBottom: 6 }}>{g}</div>
@@ -427,7 +481,7 @@ function Agenda({ blocks, anchors, peakIdx, phase, offset, onToggle, onEdit, onA
               return (
                 <div key={b.id} style={{ display: "flex", alignItems: "center", gap: 9, ...subCard(tcw), padding: "7px 10px", background: T.paperHi }}>
                   <button onClick={() => onToggle(b.id)} aria-label={b.done ? "Mark not done" : "Mark done"} className="fw-elite-press" style={{ width: 22, height: 22, borderRadius: 7, flexShrink: 0, cursor: "pointer", border: `1.5px solid ${b.done ? cwOf("sage").petal : T.paperDeep}`, background: b.done ? cwOf("sage").petal : "transparent", display: "grid", placeItems: "center" }}>{b.done && <Check size={12} color="#fff" />}</button>
-                  <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted, width: 40, flexShrink: 0 }}>{fmtHour(b.hour)}</span>
+                  <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted, width: 46, flexShrink: 0 }}>{fmtBlockTime(b)}</span>
                   <button onClick={() => onEdit(b)} style={{ flex: 1, minWidth: 0, textAlign: "left", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}>
                     <div style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: b.done ? T.muted : T.ink, textDecoration: b.done ? "line-through" : "none", lineHeight: 1.2 }}>{b.title}</div>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 1, flexWrap: "wrap" }}>
@@ -436,6 +490,7 @@ function Agenda({ blocks, anchors, peakIdx, phase, offset, onToggle, onEdit, onA
                       {peak && <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: phase.hue }}>· peak</span>}
                     </div>
                   </button>
+                  {plannerReturnLink(b) && <a href={plannerReturnLink(b).href} aria-label={`${plannerReturnLink(b).label}: ${b.title}`} style={{ display: "grid", placeItems: "center", minWidth: 36, minHeight: 44, color: tcw, flexShrink: 0 }}><ArrowRight size={16} aria-hidden="true" /></a>}
                 </div>
               );
             })}
@@ -636,23 +691,27 @@ function FocusLens({ blocks, onStart, onFirstStep }) {
 }
 
 // ── sheets ──
-function BlockSheet({ draft, peakHour, onClose, onSave, onDelete }) {
+function BlockSheet({ draft, peakHour, onClose, onSave, onDelete, busy = false, error = "" }) {
   const [d, setD] = useState(draft);
   const set = (k, v) => setD((x) => ({ ...x, [k]: v }));
   return (
     <SheetShell title="Edit" eyebrowText="Your day" accent={cwOf("gold").petal} onClose={onClose}>
+      {plannerReturnLink(d) && <a href={plannerReturnLink(d).href} aria-disabled={busy || undefined} onClick={event => busy && event.preventDefault()} style={{ display: "inline-flex", alignItems: "center", gap: 6, minHeight: 44, color: T.ink, fontFamily: UI, fontSize: 13, fontWeight: 600 }}>{plannerReturnLink(d).label}<ArrowRight size={14} aria-hidden="true" /></a>}
+      <fieldset disabled={busy} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
       <label style={fieldLabel}>What is it?</label>
       <input autoFocus value={d.title} onChange={(e) => set("title", e.target.value)} style={{ ...inputBase, marginBottom: 12 }} />
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
-        <div><label style={fieldLabel}>When</label><select value={d.hour} onChange={(e) => set("hour", Number(e.target.value))} style={inputBase}>{HOURS.map((h) => <option key={h} value={h}>{fmtHour(h)}{h === peakHour ? " · peak" : ""}</option>)}</select></div>
+        <div><label style={fieldLabel}>When</label><select value={d.hour} onChange={(e) => set("hour", Number(e.target.value))} style={inputBase}>{(HOURS.includes(d.hour) ? HOURS : [...HOURS, d.hour].sort((a, b) => a - b)).map((h) => <option key={h} value={h}>{h === d.hour && d.time && h === hourOf(d.time) ? fmtBlockTime(d) : fmtHour(h)}{h === peakHour ? " · peak" : ""}</option>)}</select></div>
         <div><label style={fieldLabel}>How long</label><select value={d.dur} onChange={(e) => set("dur", Number(e.target.value))} style={inputBase}>{[15, 30, 45, 60, 90, 120].map((m) => <option key={m} value={m}>{m} min</option>)}</select></div>
       </div>
       <label style={fieldLabel}>Kind · energy</label>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>{Object.entries(TYPE_META).map(([k, v]) => <button key={k} onClick={() => set("type", k)} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 999, background: d.type === k ? cwOf(v.cw).petal : T.paper, color: d.type === k ? "#fff" : T.inkSoft, border: `1px solid ${d.type === k ? cwOf(v.cw).petal : T.paperDeep}`, fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer" }}><v.Icon size={12} color={d.type === k ? "#fff" : cwOf(v.cw).petal} /> {v.label} · {v.energy}</button>)}</div>
       <div style={{ display: "flex", gap: 8 }}>
         <button onClick={onDelete} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "12px 14px", borderRadius: 12, background: "transparent", color: T.crimson, border: `1px solid ${T.crimson}55`, fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer" }}><Trash2 size={13} /> Remove</button>
-        <button onClick={() => d.title.trim() && onSave(d)} style={{ flex: 1, padding: "13px", borderRadius: 12, background: cwOf("gold").petal, color: "#fff", border: "none", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Save</button>
+        <button onClick={() => d.title.trim() && onSave(d)} style={{ flex: 1, padding: "13px", borderRadius: 12, background: cwOf("gold").petal, color: "#fff", border: "none", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>{busy ? "Saving…" : "Save"}</button>
       </div>
+      </fieldset>
+      {error && <p role="alert" style={{ color: T.crimson, fontFamily: UI, fontSize: 13 }}>{error}</p>}
     </SheetShell>
   );
 }

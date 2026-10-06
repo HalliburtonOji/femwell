@@ -6,6 +6,7 @@ import { SECTION_STILL } from "./sectionStills";
 import { MoonDisc } from "./sky/CelestialSky";
 import SkyMeaning from "./sky/SkyMeaning";
 import ReadingRoomHeader from "./ReadingRoomHeader";
+import SelectedLifestyleHeader from "./SelectedLifestyleHeader";
 import GardenHeader from "./GardenHeader";
 import LivingDirectionHeader from "./LivingDirections";
 import { getSkyWorld } from "./skyWorlds";
@@ -42,6 +43,7 @@ export default function SkyWorldHeader({ active, moon, direction }) {
     return () => window.clearTimeout(timer);
   }, [moving, arrival, reduced]);
 
+  if (world.id === "petal-press") return <SelectedLifestyleHeader active={active} moon={moon}/>;
   if (section === "books") return <div className="fw-reading-room"><ReadingRoomHeader active={active} moon={moon}/></div>;
   if (section === "yours") return <LivingDirectionHeader active={active} moon={moon} direction="letter"/>;
   if (section !== "sky") return <GardenHeader active={active} moon={moon}/>;

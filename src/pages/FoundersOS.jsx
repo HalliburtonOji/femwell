@@ -203,6 +203,8 @@ const GROUP_BLURB = {
 const COLLAPSED_BY_DEFAULT = new Set([CAT.ARCHIVE]);
 
 const CATALOG = [
+  {kind:"route",href:"/SkyWorldsDemo?direction=petal-press&section=sky",group:CAT.CURRENT,sub:"Lifestyle · selected design",status:"new",added:"2026-10-06",accent:"plum",title:"Selected · Petal × Star Press",desc:"Living Sky, printed clarity. Full Sky with repaired account wiring; all six Lifestyle sections follow their own materials and layout. Books keeps its approved room."},
+  {kind:"route",href:"/selected-lifestyle/index.html",group:CAT.CURRENT,sub:"Lifestyle · selected design",status:"new",added:"2026-10-06",accent:"sage",title:"Selected Lifestyle · six rooms & checks",desc:"Six direct previews, a short design note, optional research and verification. Main promotion waits for your go-ahead."},
   {kind:"route",href:"/SkyWorldsDemo?direction=workbench&section=sky",group:CAT.CURRENT,sub:"Sky · five worlds",status:"new",added:"2026-10-06",accent:"gold",title:"1 · Lunar Workbench",desc:"Fine brass, a living tendril and your real Moon. Lessons lead; chart readouts, tides and diary form a small observatory."},
   {kind:"route",href:"/SkyWorldsDemo?direction=conservatory&section=sky",group:CAT.CURRENT,sub:"Sky · five worlds",status:"new",added:"2026-10-06",accent:"sage",title:"2 · Moonlight Conservatory",desc:"Morning glory grows through clear glass. Open readings, learning panes and dated notes share its light."},
   {kind:"route",href:"/SkyWorldsDemo?direction=press&section=sky",group:CAT.CURRENT,sub:"Sky · five worlds",status:"new",added:"2026-10-06",accent:"plum",title:"3 · The Star Press",desc:"Celestial ink, a printed forecast, horizontal chart entries and a lesson folio. A different rhythm through the whole page."},
@@ -658,6 +660,7 @@ const SECTION_ORDER = ["skyreview","lsredesign","brand","pages","community","cal
 
 // A CURRENT-group entry routes to a section by its `sub`.
 const SUB_TO_SECTION = {
+  "Lifestyle · selected design":       "lsredesign",
   "Sky · five worlds":                 "lsredesign",
   "Lifestyle · continuous worlds":     "lsredesign",
   "Sky · review before main":          "skyreview",
