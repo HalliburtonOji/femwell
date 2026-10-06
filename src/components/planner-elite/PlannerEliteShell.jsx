@@ -30,7 +30,7 @@ import { phaseForDay } from "@/hooks/useCycleDay";
 import { pickProfile } from "@/utils/userProfile";
 import MonthlyCalendarCard from "@/components/planner/MonthlyCalendarCard";
 import DayDetailSheet from "@/components/planner/DayDetailSheet";
-import { SKY_LESSONS, skyLessonRoute } from "@/components/lifestyle-elite/sky/skyLessons";
+import { lifestyleReturnLink } from "@/lib/lifestyleReturns";
 import {
   OXBLOOD, lbl, subCard, focusPill, Pill, Panel, Deck, StackedCard, BoardBody, TopChrome, SheetShell,
   JumpSheet, SliderArrows, makeCalendarOverlay, fieldLabel, inputBase,
@@ -116,19 +116,7 @@ export function preserveBlockNotes(notes, type, dur) {
   return `${blkNotes(type, dur)}${withoutControls ? `;${withoutControls}` : ""}`;
 }
 export function plannerReturnLink(block) {
-  const ref = String(block?.ref || "");
-  if (block?.source === "books") {
-    const gutenberg = /^gutenberg:([1-9]\d*)$/.exec(ref);
-    if (gutenberg) return { href: `/BookReader?gutenberg_id=${gutenberg[1]}`, label: "Open this book" };
-    const club = /^club:([\w-]+)$/.exec(ref);
-    if (club) return { href: `/Community?club=${encodeURIComponent(club[1])}`, label: "Open the book club" };
-  }
-  if (["sky", "sky-lesson", "lifestyle"].includes(block?.source)) {
-    const key = /^sky-lesson:([\w-]+):v(\d+)$/.exec(ref);
-    const lesson = key && SKY_LESSONS.find(entry => entry.id === key[1] && entry.version === Number(key[2]));
-    if (lesson) return { href: skyLessonRoute(lesson, "petal-press", "/SkyWorldsDemo"), label: "Open this Sky lesson" };
-  }
-  return null;
+  return lifestyleReturnLink(block);
 }
 const parseBlk = (notes) => { const t = /t:(\w+)/.exec(notes || "")?.[1]; const d = Number(/d:(\d+)/.exec(notes || "")?.[1]); return { type: TYPE_META[t] ? t : "task", dur: d || 30 }; };
 const isIntent = (notes) => /^intent/.test(notes || "");
@@ -702,7 +690,7 @@ function BlockSheet({ draft, peakHour, onClose, onSave, onDelete, busy = false, 
       <input autoFocus value={d.title} onChange={(e) => set("title", e.target.value)} style={{ ...inputBase, marginBottom: 12 }} />
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
         <div><label style={fieldLabel}>When</label><select value={d.hour} onChange={(e) => set("hour", Number(e.target.value))} style={inputBase}>{(HOURS.includes(d.hour) ? HOURS : [...HOURS, d.hour].sort((a, b) => a - b)).map((h) => <option key={h} value={h}>{h === d.hour && d.time && h === hourOf(d.time) ? fmtBlockTime(d) : fmtHour(h)}{h === peakHour ? " · peak" : ""}</option>)}</select></div>
-        <div><label style={fieldLabel}>How long</label><select value={d.dur} onChange={(e) => set("dur", Number(e.target.value))} style={inputBase}>{[15, 30, 45, 60, 90, 120].map((m) => <option key={m} value={m}>{m} min</option>)}</select></div>
+        <div><label style={fieldLabel}>How long</label><select value={d.dur} onChange={(e) => set("dur", Number(e.target.value))} style={inputBase}>{[...new Set([5, 15, 30, 45, 60, 90, 120, d.dur])].sort((a, b) => a - b).map((m) => <option key={m} value={m}>{m} min</option>)}</select></div>
       </div>
       <label style={fieldLabel}>Kind · energy</label>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>{Object.entries(TYPE_META).map(([k, v]) => <button key={k} onClick={() => set("type", k)} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 999, background: d.type === k ? cwOf(v.cw).petal : T.paper, color: d.type === k ? "#fff" : T.inkSoft, border: `1px solid ${d.type === k ? cwOf(v.cw).petal : T.paperDeep}`, fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer" }}><v.Icon size={12} color={d.type === k ? "#fff" : cwOf(v.cw).petal} /> {v.label} · {v.energy}</button>)}</div>

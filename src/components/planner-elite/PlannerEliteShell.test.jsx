@@ -28,6 +28,22 @@ describe("Planner precise source returns and note preservation",()=>{
 });
 
 describe("Planner actual edit and failure lifecycle",()=>{
+  it.each([5,7])("opens and saves an exact joy at its stored %i minutes and precise time",async minutes=>{
+    const joy={...block,title:"Let the kettle win",time:"19:10",source:"lifestyle",ref:"joy:quiet-kettle",notes:`d:${minutes};A small pause`,category:"wellbeing"};
+    mock.blocks.mockResolvedValue([joy]);render(<PlannerEliteShell/>);
+    const source=await screen.findByRole("link",{name:"Open this small joy: Let the kettle win"});
+    expect(source).toHaveAttribute("href","/SkyWorldsDemo?direction=petal-press&section=good&joy=quiet-kettle");
+    fireEvent.click(await screen.findByRole("button",{name:/Let the kettle win.*Task/}));
+    const title=await screen.findByDisplayValue(joy.title);const fieldset=title.closest("fieldset");
+    const selects=within(fieldset).getAllByRole("combobox");
+    expect(selects[0]).toHaveValue("19");expect(selects[0]).toHaveDisplayValue("7:10pm");
+    expect(selects[1]).toHaveValue(String(minutes));expect(within(selects[1]).getByRole("option",{name:`${minutes} min`,exact:true})).toHaveValue(String(minutes));
+    expect(screen.getByRole("link",{name:"Open this small joy",exact:true})).toHaveAttribute("href","/SkyWorldsDemo?direction=petal-press&section=good&joy=quiet-kettle");
+    fireEvent.change(title,{target:{value:"Tea, then the world"}});fireEvent.click(screen.getByRole("button",{name:"Save",exact:true}));
+    await waitFor(()=>expect(mock.update).toHaveBeenCalledWith("block",expect.objectContaining({title:"Tea, then the world",time:"19:10",notes:`t:task;d:${minutes};A small pause`,source:"lifestyle",ref:"joy:quiet-kettle",category:"wellbeing",repeat:"weekly",is_completed:false})));
+    await waitFor(()=>expect(screen.queryByDisplayValue("Tea, then the world")).not.toBeInTheDocument());
+    expect(screen.getByRole("link",{name:"Open this small joy: Tea, then the world"})).toHaveAttribute("href","/SkyWorldsDemo?direction=petal-press&section=good&joy=quiet-kettle");
+  });
   it("retains a failed edit draft and retries without losing precise time, notes or source metadata",async()=>{
     mock.update.mockRejectedValueOnce(new Error("offline"));const {container}=render(<PlannerEliteShell/>);
     await screen.findByRole("button",{name:/Read Pride and Prejudice.*Task/});
