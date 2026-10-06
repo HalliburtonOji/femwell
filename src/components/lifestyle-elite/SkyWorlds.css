@@ -15,7 +15,7 @@ body:has(.fw-sky-worlds) [aria-label="Open Ideas (Design Lab — dev only)"]{top
 .fw-world-moon{position:absolute;transform:translate(-50%,-50%);z-index:2;aspect-ratio:1;line-height:0}
 .fw-world-moon>svg{width:100%;height:auto;display:block}.fw-world-bloom-fallback{position:absolute;left:14%;top:20%}
 .fw-world-clearing{position:relative;z-index:3;max-width:100%;padding:0 2px}
-.fw-world-clearing h1{font:400 clamp(44px,9.5vw,56px)/1.14 Ephesis,cursive;color:#7a1a12;margin:0 0 8px;overflow-wrap:break-word}
+.fw-sky-worlds .fw-world-header .fw-world-clearing h1{font:400 clamp(44px,9.5vw,56px)/1.14 Ephesis,cursive!important;color:#7a1a12!important;filter:none!important;text-shadow:none!important;margin:0 0 8px;overflow-wrap:break-word}
 .fw-world-last{display:inline-block;white-space:nowrap}.fw-world-last>svg{display:inline-block;margin-left:7px;vertical-align:middle;color:#bc2e27}
 .fw-world-flower{margin:0;color:#51444e;font:italic 500 17px/1.4 var(--world-serif);display:flex;flex-direction:column;gap:2px}.fw-world-flower strong{font-weight:600;font-size:20px}
 .fw-world-caption{position:relative;z-index:3;display:flex;align-items:flex-start;gap:6px;margin-top:10px;color:#51444e;font:500 12px/1.45 var(--world-ui)}
