@@ -96,7 +96,7 @@ body:has(.fw-living-atelier) a[aria-label="Open Ideas (Design Lab — dev only)"
 .fw-living-atelier .fw-atelier-year>section:first-child>section>p{font:500 16px/1.55 'FemWell Editorial',Georgia,serif!important;text-align:left!important}
 .fw-living-atelier .fw-atelier-ask>section{background:none!important;box-shadow:none!important;border-radius:0!important;padding:16px 0!important}
 
-body:has(.fw-living-atelier) a[aria-label="Open Ideas (Design Lab — dev only)"]{left:50%!important;right:auto!important;top:7px!important;bottom:auto!important;transform:translateX(-50%)!important;min-height:44px;display:flex;align-items:center;padding:8px 12px!important;font:600 11px/1 var(--atelier-ui,system-ui)!important;letter-spacing:.08em!important;box-shadow:none!important}
+body:has(.fw-living-atelier) a[aria-label="Open Ideas (Design Lab — dev only)"]{left:50%!important;right:auto!important;top:7px!important;bottom:auto!important;transform:translateX(-50%)!important;min-height:44px;display:flex;align-items:center;padding:8px 12px!important;font:600 12px/1 var(--atelier-ui,system-ui)!important;letter-spacing:.08em!important;box-shadow:none!important}
 .fw-atelier-thread{position:absolute;right:0;top:-32px;width:40px;height:60px;stroke:#A8893F;stroke-width:.7;opacity:.7;pointer-events:none}
 
 .fw-living-atelier .fw-atelier-weather-entry>p{grid-column:1/-1}
