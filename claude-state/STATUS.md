@@ -7,6 +7,10 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-07 · ACTUAL SELECTED BODIES DEPLOYED
+> - Source **9225d24 pushed**, frontend deploy succeeds; HTTP confirms **index-B8nX4YF0.js**. All **31 files /349 tests pass** on the final unchanged two-worker run. Production build/scoped lint/whitespace pass. Approved headers and all prior demos remain; main aesthetic promotion held. No backend/schema/function names changed.
+> - Six actual bodies plus canonical Books/Community shelf/club adapters, acknowledged saves, chosen-time plans and routed Planner V2/Journal exact returns are implemented. Earlier research/brainstorms reconciled and linked through the existing Ideas selected board/workshop. Bible10.5.18 and HTML mirror updated. **Next/current:** root native360/390/430 taps/pixels, independent craft catalogue and repair re-proof. Live write/social/iPhone evidence is still bounded; tests are not blanket approval of the48 audit atoms or wider social graph.
+>
 > ### CURRENT STATE — 2026-10-07 · SOURCE RECONCILIATION / CORRECTIONS
 > - Actual six-section implementation and return adapters are ready for integrated regression/build/native proof. Canonical club now shared by Books, LibraryTogether and all three reachable Community adapters. No new function/schema, no main aesthetic promotion. Live remains index-B9M4N95s.js.
 > - Correction: early source audit alleged Books’ full index was absent because of pos && !room; closer inspection shows that gate hid only its divider. The index existed. This pass improves six-column44px chapter targets and existing controls; no removed-index restoration claimed. Earlier planning saved-field error corrected to saved_item_ids.
