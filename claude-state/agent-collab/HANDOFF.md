@@ -157,6 +157,8 @@ line: **no generative AI writing about her reading** (the Fable incident, Jan 20
 
 ## 6. IN FLIGHT — claim a surface before you edit it
 
+| Codex + Ms Verify | Reader control tap-layer repair found in selected Books live verification | src/components/lifestyle/DailyStoryReader.jsx, src/components/lifestyle/__tests__/DailyStoryReader.test.jsx | 2026-10-06 | ACTIVE. Existing page-turn zones overlap the visible close/settings bar. Preserve reader navigation and raise controls above the zones; source test and native re-proof required. |
+
 Additional claim, 6 October 2026: **Codex** owns `src/Layout.jsx` for new SkyWorldsDemo navigation identity only (preview treated as Lifestyle). RELEASED:6997e0a claim,34cd6a1 repair, native preview nav reproof. Found by live audit; main routing/appearance unchanged.
 
 Current claim, 6 October 2026: **Codex + Creative Director** own five complete Sky visual worlds, Books demo voice correction and review records. Files: `src/components/lifestyle-elite/`, `src/pages/{SkyWorldsDemo,FoundersOS}.jsx`, `src/pages.config.js`, `claude-state/creative/`, `claude-state/{STATUS,BRAND_IDENTITY}.md`, Bible HTML mirror, `public/images/sky-worlds/`, `public/sky-worlds/`. RELEASED:source00d7728 + final repairs b84ad39; live index-rEG30ljq.js. Native all15 headers, all5 lessons/charts, exact kept-return and independent audit;145 tests. See creative/sky-worlds-verification.md. Main held. Preserve every existing feature; no main promotion. Creative/Atelier are read-only until separately delegated an isolated file surface.
