@@ -203,6 +203,7 @@ const GROUP_BLURB = {
 const COLLAPSED_BY_DEFAULT = new Set([CAT.ARCHIVE]);
 
 const CATALOG = [
+  {kind:"route",href:"/lifestyle-workshop/index.html",group:CAT.CURRENT,sub:"Lifestyle · selected design",status:"new",added:"2026-10-06",accent:"plum",title:"Lifestyle · every section in detail",desc:"Headers approved. Six body plans, tappable local state studies, source wiring, cited options and minute build steps. Planning only; main remains held."},
   {kind:"route",href:"/SkyWorldsDemo?direction=petal-press&section=sky",group:CAT.CURRENT,sub:"Lifestyle · selected design",status:"new",added:"2026-10-06",accent:"plum",title:"Selected · Petal × Star Press",desc:"Living Sky, printed clarity. Full Sky with repaired account wiring; all six Lifestyle sections follow their own materials and layout. Books keeps its approved room."},
   {kind:"route",href:"/selected-lifestyle/index.html",group:CAT.CURRENT,sub:"Lifestyle · selected design",status:"new",added:"2026-10-06",accent:"sage",title:"Selected Lifestyle · six rooms & checks",desc:"Six direct previews, a short design note, optional research and verification. Main promotion waits for your go-ahead."},
   {kind:"route",href:"/SkyWorldsDemo?direction=workbench&section=sky",group:CAT.CURRENT,sub:"Sky · five worlds",status:"new",added:"2026-10-06",accent:"gold",title:"1 · Lunar Workbench",desc:"Fine brass, a living tendril and your real Moon. Lessons lead; chart readouts, tides and diary form a small observatory."},

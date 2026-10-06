@@ -1,0 +1,533 @@
+[
+  {
+    "id": "sky",
+    "name": "Sky",
+    "title": "An almanac you can use",
+    "species": "Morning glory",
+    "material": "Living canopy → printed sky → a personal notebook",
+    "pair": "Ask the sky / Edit your chart; incomplete chart gets the real setup pair.",
+    "order": [
+      "Your dated forecast, complete",
+      "One daily lesson clearing",
+      "Chart, bench and observed Moon history",
+      "The two independent tides",
+      "Year, earlier skies and private notes",
+      "Questions, pairing and correspondence",
+      "Quiet / soft settings and evidence"
+    ],
+    "why": "Reading now, a small discovery, then the deeper chart. Personal history is distinct from public teaching; every movement stays on the continuous Lifestyle page.",
+    "setup": "A usable chart leads with the actual reading date, not merely today’s header date. No birth time: explain what can still be read and what needs it. No chart: keep factual Moon/lessons useful while the direct setup action opens the existing sheet. Loading never masquerades as missing details.",
+    "anatomy": [
+      [
+        "Forecast",
+        "Date and authored title above the full reading. Keep its music, Share, Reflect, Lounge, Jess and Mark read. Power / Pressure / Trouble form three directed editorial entries, with a short label and full text. No new three-tab gate."
+      ],
+      [
+        "Daily learning",
+        "The five manual slides keep source, date, Previous / Next, Keep and private-note action. A single tissue fold marks the edge; the number means the actual lesson position. Help explains the current idea in place. The eight-phase instrument remains separate from the daily deck."
+      ],
+      [
+        "Chart and setup",
+        "Sun / Moon / Rising are full-width expandable rows, not three narrow reading columns. Keep real degrees, element, ruler, birth details and all bench readings. Fields stack on phones; birth time is optional where the existing calculation allows it."
+      ],
+      [
+        "Tides and diary",
+        "Lunar illumination and cycle date are independently labelled. Logged starts show measured phase counts and sample size. Earlier forecasts keep dates; current notebook draft and previous notes stay accessible. No invented synchrony, personality or hidden full history."
+      ],
+      [
+        "Ask / pairing",
+        "One obvious question field with suggested questions and prior answers. Pairing labels both people, validates calendar dates and makes the actual link payload visible before copying. Preserve the four dimensions and full answer; no new compatibility score."
+      ],
+      [
+        "Letters / controls",
+        "Published owner letter or honest empty state, real date and attribution. Existing products remain available without new sales pressure. Preferences show saving/failure on the affected row; important astronomy/symbolism distinction stays visible."
+      ]
+    ],
+    "craft": "Open writing dominates. A tiny orbital index belongs to the phase instrument; a petal-vein seam belongs to learning; a fallen fragment belongs beside the dated notebook. The Moon never becomes a second hero and brass/printed instruments do not wobble. Help dots have large real targets.",
+    "copy": [
+      "“A little sky wisdom.”",
+      "“One line for your notebook?”",
+      "“The sky has notes. You have the deciding vote.”"
+    ],
+    "atoms": [
+      [
+        "SK1",
+        "First-fold specificity",
+        "Owner reading + AstroProfile + actual date feed the glance and authored Jess template. No reading: say that and retain teaching. Refresh both after chart change; previous owner clears immediately."
+      ],
+      [
+        "SK2",
+        "Lesson term → useful help",
+        "Bind the rosette to the selected lesson/phase. Expanded text sits beneath that term and does not hide controls or the full forecast. Arrow/swipe/date-change keep exact version and active draft."
+      ],
+      [
+        "SK3",
+        "Reflection → the same note",
+        "Existing JournalEntries / SkyNote stores retain their different meanings. Implement an owner-checked exact entry return; a generic Journal landing is not “Open this note”. Pending, failed and retained-draft states are distinct."
+      ],
+      [
+        "SK4",
+        "Read → an honest Garden record",
+        "Exact reading ID + date, not one permanent chapter key. Readback agrees after remount; a failed remote record cannot be announced as cross-device confirmation. Do not auto-complete from scrolling."
+      ],
+      [
+        "SK5",
+        "Public lesson → editable conversation",
+        "Keep title/versioned source URL public; private chart, cycle and reflection stay separate. Reuse the actual lounge composer, consented post-to-DM request and participant message flow. Verify reply → original lesson, block/report and deleted source."
+      ],
+      [
+        "SK6",
+        "Earlier answers / two identities",
+        "Audit full answers, future/invalid birth dates, Unicode link roundtrip and copy failure. Submitted question is retained on error. Sharing restores inputs only unless actual published answer access is supported."
+      ],
+      [
+        "SK7",
+        "Settings / letter integrity",
+        "Read newest actual owner preference row; await confirmed writes with rollback. Published letter sanitisation and AI-assisted attribution remain. Conditional/no-letter/unavailable product states are tested without fabricating a letter."
+      ]
+    ],
+    "first": "SK2 — the current lesson and its meaning dot, with exact keep and reflection states.",
+    "states": "First visit / no chart / unknown birth time / real dated reading / archived lesson / midnight with draft / failed save / another owner / unpublished letter."
+  },
+  {
+    "id": "read",
+    "name": "Read",
+    "title": "An editorial desk, not a feed",
+    "species": "Iris",
+    "material": "Vellum threshold → a bookmarked reading margin → fiction",
+    "pair": "Choose a read / Saved reads; real continuation may make the first action Resume [short title].",
+    "order": [
+      "A real unfinished read, when there is one",
+      "The editorial lead, kept available even when resuming",
+      "Fresh essays and guides with varied life subjects",
+      "Stories and fiction with their own reading rhythm",
+      "Useful exact-object connections at the relevant item"
+    ],
+    "why": "Return to her actual place first. Then introduce something worth beginning. Fiction is a different pleasure, not another clinical article in the same stack.",
+    "setup": "No onboarding questionnaire before reading. Existing interests can influence order only if the feed actually uses them. Anonymous readers can consume public content; a save tells them sign-in is needed. No prior place means a fresh lead, not an invented continuation.",
+    "anatomy": [
+      [
+        "Resume strip",
+        "An actual title, source/edition and stored place with one direct Resume. A ribbon marks this saved place, not a progress reward. The current article page index is not yet a robust cross-device paragraph anchor; the interface must name only what it stores."
+      ],
+      [
+        "Leading essay",
+        "One generous headline and a short real source excerpt. Author, editorial source and verified duration appear once. Open reaches the actual full item; Keep is a distinct control. Full article text remains intact, including paragraph breaks and links."
+      ],
+      [
+        "Fresh reads",
+        "Open editorial entries with varied headline lengths and occasional meaning rosette. Topic/source earns its place; no repeated “A few minutes” placeholder. Health remains, alongside relationships, work, money, creativity and entertainment when real content exists."
+      ],
+      [
+        "Fiction",
+        "A chapter-leaf treatment with a real first line and author/series identity. Stories use indent-without-extra-gap; essays use paragraph spacing. Full readers and saved place remain. No invented book cover or fake serial release."
+      ],
+      [
+        "Within the reader",
+        "One padding owner for reading measure; accessible close/settings/bookmark above tap zones. Selection, if implemented, retains version + passage context. Resume is separate from explicitly completed. Closing returns to the same item and scroll position."
+      ],
+      [
+        "Contextual action",
+        "A selected public idea can enter an editable Community draft or Jess question with exact source. Her own annotation is private until explicitly included. No generic related-by-phase strip or five social actions on every row."
+      ]
+    ],
+    "craft": "The leading essay is a clear white folio. Continuation uses a functional bookmark; fresh entries are open; fiction gets a quiet chapter opening. One iris-veined edge carries into the lead and a thin pressed trace marks the fiction seam. No flower-sized column steals the prose width.",
+    "copy": [
+      "“Back to that good bit.” — only with a stored place",
+      "“A rabbit hole, with better punctuation.”",
+      "“Not saved yet. Try again.”"
+    ],
+    "atoms": [
+      [
+        "RD1",
+        "A genuine content lead",
+        "Reconcile the existing personalised feed and engagement library. Rank actual eligible items, retain editorial choice and expose an honest reason only from real inputs. Test an empty library and a one-topic-heavy set; never invent whole-life inventory."
+      ],
+      [
+        "RD2",
+        "Exact continuation",
+        "Distinguish book/fiction reader positions from local article page indices. Keep content ID/version/last location; cross-device paragraph continuation needs a separate storage decision. Last place ≠ furthest reached ≠ finished."
+      ],
+      [
+        "RD3",
+        "Paragraphs survive opening",
+        "Full LifestyleDetail → typed reading pane must preserve blocks, quotations, inline links and headings. No flattening all paragraphs into one string. Test a real multi-paragraph article, revised source and long title."
+      ],
+      [
+        "RD4",
+        "Keep / unkeep tells the truth",
+        "Existing UserProfile save IDs await acknowledgement, with one pending action per object, retained intent on failure and no “Saved” for no-auth. Yours and full Saved reconcile afterwards; no new third save store."
+      ],
+      [
+        "RD5",
+        "A passage with provenance",
+        "Optional quote/prefix/suffix + content version where rights allow. Ambiguous/revised passage keeps the note and exposes a recoverable source state. Private reflection never becomes a public post automatically."
+      ],
+      [
+        "RD6",
+        "One useful conversation",
+        "Public exact article/selected passage → editable existing composer → consented conversation → original item. Jess receives source and her actual question, not an invented recap about her."
+      ],
+      [
+        "RD7",
+        "Whole-life voice / metadata",
+        "Audit source titles, short excerpts and medically absolute wording separately. Keep complete existing articles; editorial corrections retain version history. No copy budget can silently delete substance."
+      ]
+    ],
+    "first": "RD3 / RD4 reliability, then RD1 / RD2 bookmark-led desk.",
+    "states": "No history / one unfinished item / source updated / content removed / save pending / failure / signed out / long title / no suitable fresh content."
+  },
+  {
+    "id": "listen",
+    "name": "Listen",
+    "title": "A sound room with a real programme",
+    "species": "Bluebell",
+    "material": "Acoustic pleats → one living player → programme slips → a watch clearing",
+    "pair": "Choose a listen / Choose a watch; a paused episode may give a direct Resume action after proof.",
+    "order": [
+      "The actual active or paused episode",
+      "A new editorial listen, still available",
+      "Programme rows grouped by real show/subject",
+      "A visibly different watch movement",
+      "Transcripts and source depth beside their item"
+    ],
+    "why": "Sound is an activity, not a list of cover cards. The transport owns the first useful space; programme rows suggest what follows, while video retains its own poster and watch behaviour.",
+    "setup": "Play needs no preference interview. Existing PodcastListens and singleton playback context can provide a real position. Resolve metadata before seeking; loading, buffering and playing are different. An external-only show opens its actual show page and is never advertised as playable inside FemWell.",
+    "anatomy": [
+      [
+        "The player",
+        "Title/show and verified duration once, then large Play / Pause, accessible seek/skip and current position. Unmeasured time stays unknown. A small playing indicator may move only with actual playback; it freezes while paused/buffering/reduced motion."
+      ],
+      [
+        "Paused versus featured",
+        "Returning audio gets the lead, but today’s editorial choice stays as a smaller direct programme entry. Stop the old item when selecting a new one. Saving an episode does not mean listened; seeking does not mean finished."
+      ],
+      [
+        "Programme",
+        "Compact show rows: actual episode title, supplied date, source, duration and a short genuine excerpt. Same source is not repeated as two leads. Programme order explains chronology/subject rather than pretending personalised ranking."
+      ],
+      [
+        "Chapters / transcript",
+        "Use supplied timestamps or authored segments when they exist. A coherent short segment can fit spare time, clearly labelled as part of a longer episode. An untimed transcript is readable but cannot pretend to seek; a synopsis is not a transcript."
+      ],
+      [
+        "Watch",
+        "A wider poster and direct real video play. No “A short listen” on a video. Preserve details, source link, caption availability and watch directory. Removed/private/unembeddable content keeps a useful source escape and error."
+      ],
+      [
+        "A moment shared",
+        "A deliberate episode + timestamp can become a public conversation reference. Preview what will open for the recipient, and offer the full episode when segment precision is unsupported. Existing consented DM, not new arbitrary-recipient chat."
+      ]
+    ],
+    "craft": "Transport sits in a low, open acoustic console; programme rows share one aligned title/source rail. Watches get a genuine screen silhouette. A bluebell curve meets the housing seam once; one fine acoustic pleat carries down to transcript, never a fake random waveform.",
+    "copy": [
+      "“Back where you paused.”",
+      "“Listen here” / “Open the show” reflect actual capability",
+      "“Worth your headphones.”"
+    ],
+    "atoms": [
+      [
+        "LS1",
+        "Paused episode on the first face",
+        "Read existing singleton player + PodcastListens by owner; choose actual paused item and position. Do not build another player/progress store. Metadata-ready seek, expiry, owner switch and new episode selection get explicit acceptance."
+      ],
+      [
+        "LS2",
+        "Transport and persistence",
+        "Surface existing provider capabilities; do not imply lock-screen playback until iPhone proof. Pause/seek/rate/interruption/source failure stay coherent. Save accepted position with pending/failure handling; resume does not auto-play on arrival."
+      ],
+      [
+        "LS3",
+        "Real transcript / short segment",
+        "Inspect actual supplied transcripts/timestamps before creating UI. Authored segment range + whole-episode duration; no six-minute random cut labelled a chapter. Remove nothing when metadata is absent."
+      ],
+      [
+        "LS4",
+        "Programme truth",
+        "Keep all current shows/audio/video. De-duplicate exact lead; fix media-kind duration labels and false “new podcasts will land” when the real problem is no short episode. Programme/source ordering replaces unsupported ranking claims."
+      ],
+      [
+        "LS5",
+        "Watch lifecycle",
+        "One real player, correct source, actual playing event, stop on departure; caption/source fallback. Error 100/101/150 semantics checked against current official docs before building."
+      ],
+      [
+        "LS6",
+        "Timestamp travels",
+        "Exact public episode/source + known time → editable composer → accepted conversation → seek after metadata. Never embed her listening history or infer mood from a show."
+      ],
+      [
+        "LS7",
+        "Time lens joins Listen",
+        "Good life queries genuinely fitting episode/segment duration. If nothing fits, give a real longer option with explicit length or another action; do not pretend a 45-minute episode fits five minutes."
+      ]
+    ],
+    "first": "LS1 — paused episode console using the existing player.",
+    "states": "Never played / paused / playing / buffering / seek before metadata / unknown duration / external show / expired media / no timed transcript / interrupted phone audio."
+  },
+  {
+    "id": "books",
+    "name": "Books",
+    "title": "The next chapter, with company",
+    "species": "Jasmine",
+    "material": "Approved reading table → chapter leaf → shelf register → club correspondence",
+    "pair": "Today’s chapter / Choose a book; literal direct actions retain the existing chapter/chooser.",
+    "order": [
+      "Your actual serial chapter and place",
+      "Complete monthly chapter index and low-capacity choices",
+      "This month’s free full book",
+      "Your real shelf and status controls",
+      "The actual current club and safe checkpoint",
+      "Alternates, reading preference and library door"
+    ],
+    "why": "The personal next page leads; a monthly book and a shared club are separate real identities. Company follows the reading rather than replacing it with a generic social feed.",
+    "setup": "No shelf filler. No status guessed from opening a book. First-use reading preference remains optional and its device-only storage is stated. Book/edition/chapter are the key; an incompatible edition does not inherit a spoiler unlock.",
+    "anatomy": [
+      [
+        "Chapter leaf",
+        "Real serial title, chapter title/number, excerpt and stored place. Read goes straight to that chapter. Previously and backlog stay as currently directed; silent-backlog remains Halli’s decision. No replacement by a progress scoreboard."
+      ],
+      [
+        "Index / capacity",
+        "All released and future chapters remain with accurate labels. Next opens only when the existing rule allows. Re-read, shortest waiting chapter and “Just a page” keep their real destinations. Permission copy becomes shorter, not another repeated paragraph."
+      ],
+      [
+        "Monthly full book",
+        "Real monthly title/author and public-domain edition, Start / Resume, shelf status, Plan a time and Talk about it. Its cover is distinguishable from the serial. Existing alternates/reveal dates/library remain."
+      ],
+      [
+        "Shelf register",
+        "Reading / Want / Finished / Set aside are actual canonical UserBook states. Switching an already-shelved book must update status rather than silently deduplicate. Show actual pending/failure state, then confirmed readback."
+      ],
+      [
+        "Club correspondence",
+        "Live BookClubPick controls title and checkpoints consistently across Today, Books and Community. Label book/edition/reached boundary before discussion. No preview or notification excerpt leaks past that boundary."
+      ],
+      [
+        "Calendar / return",
+        "Chosen time creates existing PlannerItems source/ref to the exact edition or checkpoint; reschedule retains notes and provenance. Return opens that book/checkpoint. Six-week batch reports partial success and resists repeat duplication."
+      ]
+    ],
+    "craft": "Keep the approved table untouched. One bookmark points to current chapter, a quiet spine rule carries the index, the shelf is a register and club is correspondence. A small turned-book fragment can sit by alternates only if it adds a compositional pause; no repeated book pictures under every heading.",
+    "copy": [
+      "“Just one more chapter. Famous last words.”",
+      "“Your place is kept.” — only when stored",
+      "“Want / Reading / Finished / Set aside” remain clear"
+    ],
+    "atoms": [
+      [
+        "BK1",
+        "One current club truth",
+        "Reconcile SEED_PICK fallback with actual BookClubPick across Books/Today/Community. Real missing/unpublished pick is distinct from loading. Test a changed pick with old shelf/progress still intact."
+      ],
+      [
+        "BK2",
+        "Shelf transition actually changes",
+        "Existing UserBook add/update adapter must distinguish new record from Reading transition. Await write, preserve old status on failure and notify shared consumers. Never make a fifth book system."
+      ],
+      [
+        "BK3",
+        "Chapter placement and completion",
+        "Keep serial/edition/chapter identities separate; verify reader close/settings/marks during animation and immediate glance refresh. Opening, fast skim and completion are different; do not broaden existing reach semantics accidentally."
+      ],
+      [
+        "BK4",
+        "Spoiler-safe same edition",
+        "Checkpoint access follows the real reached chapter + edition. Different edition, abandoned book, deleted comment, blocked author and notification excerpt all keep the gate. Reuse existing club/checkpoint infrastructure."
+      ],
+      [
+        "BK5",
+        "Plan and return",
+        "Chosen date/time/minutes → accepted Planner row → exact edition/checkpoint. Batch six weeks with dedup + partial-failure repair, not a second click creating six duplicates."
+      ],
+      [
+        "BK6",
+        "Reading to conversation",
+        "Reached public checkpoint → editable reflection → book club post → accepted DM → same checkpoint/book. Her private marginal note is never auto-published."
+      ],
+      [
+        "BK7",
+        "Small-capacity and voice",
+        "Retain all routes but replace duplicated generic permission paragraphs with useful source-specific lines. Backlog count versus silence and notification nudge remain Halli’s open choices."
+      ]
+    ],
+    "first": "BK1 / BK2 source consistency and real shelf transition before further ornament.",
+    "states": "New reader / saved chapter / unreleased chapter / existing shelf entry / changed club pick / different edition / failed status save / partial six-week plan / exhausted reading capacity."
+  },
+  {
+    "id": "good",
+    "name": "Good life",
+    "title": "Minutes become something worth doing",
+    "species": "Marigold",
+    "material": "Daylight linen → a useful time choice → small joy slips → eleven open rooms",
+    "pair": "Time for yourself / A small joy; choose a real activity close to its direct action.",
+    "order": [
+      "A few minutes / fifteen / a whole evening",
+      "One genuinely fitting read, listen or do option",
+      "A chosen joy with Do now / Plan a time",
+      "All existing joys and permission lines",
+      "Eleven readable whole-life doors"
+    ],
+    "why": "Move from available time to a concrete action. Reading should not be the only answer to spare time. All eleven domains remain directly accessible without another preference maze.",
+    "setup": "Time is an explicit choice, not inferred energy or a calendar claim. No clinical mood questionnaire to unlock fun. Default is a practical suggestion from real content; unknown duration cannot qualify as “fits five minutes”. An activity can be kept, planned or done: three different states.",
+    "anatomy": [
+      [
+        "Time control",
+        "Three labelled choices with dark active foreground, pressed semantics and no clipped support. Changing time updates the actual candidates in place. Keep the choice while a planner write fails."
+      ],
+      [
+        "Useful candidate",
+        "Readable actual title + verified time + short instruction. Direct Read/Play/Do button does that thing. Missing short media says “No short listen in this set”, rather than pretending podcasts do not exist. Full source/Why remains optional depth."
+      ],
+      [
+        "A chosen activity",
+        "A white linen slip with one useful instruction and primary Do now. Plan a time reveals compact date/time beside that activity or seeds the existing calendar sheet; choose after phone comparison. Save is not Done. No invisible default 21:00 placement."
+      ],
+      [
+        "Accepted plan",
+        "The same activity face reads back Tomorrow · 18:30 with Edit and a exact Planner return. The server-accepted date/time is the truth, not draft values. Conflict/failure retains the draft and leaves the activity available."
+      ],
+      [
+        "Small joys",
+        "Retain wander/duvet/market/meeting/poem and permission lines, but their real actions appear on the face where possible. Three repeated “no streaks” speeches do not teach the action. Genuine Why/citations stay reachable."
+      ],
+      [
+        "Eleven doors",
+        "Mirror, Move, Kindred, Curious, Delight, Nest, Tonight, Becoming, Make, Outside, Money. Two columns where labels fit, descriptions wrap; no 11px clipped mini-copy. Room states/useful routes need their own later inventory, not pretend blank previews."
+      ]
+    ],
+    "craft": "The time choice is horizontal and compact; activity is a linen work slip; joys are smaller open notes; doors are a readable directory. One marigold petal meets the action edge and a subtle seam continues to the room list. No repeated calendar art or ornamental countdown.",
+    "copy": [
+      "“A little room in your day.”",
+      "“Do it now” / “Plan a time”",
+      "“Some things are worth doing badly, just for fun.”"
+    ],
+    "atoms": [
+      [
+        "GL1",
+        "Honest fit by minutes",
+        "Actual duration or authored segment range determines eligible content. Unknown is not short. Keep full set available with accurate longer labels; no generic phase-only picking."
+      ],
+      [
+        "GL2",
+        "Do / keep / plan are different",
+        "Existing joy/slip handler outcome and interface verbs agree. Doing can record progress only when chosen; planning creates a plan; keep stores the real object where supported. No tap-to-open secretly marks done."
+      ],
+      [
+        "GL3",
+        "A real chosen time",
+        "PlannerItems chosen date/time/minutes + exact activity provenance, dedup and pending/failed/success states. Preserve draft. Calendar opens the same exact object and returns without losing the selected time lens."
+      ],
+      [
+        "GL4",
+        "Activity speaks back",
+        "After accepted planning, original face reads the actual plan with Edit; Today and Planner agree. Completion reads back to Garden only from a real action, not a schedule row."
+      ],
+      [
+        "GL5",
+        "Readable room doorway",
+        "All eleven routes verified individually after real source inventory. Descriptions wrap at360/390/430 and target stays ≥44px; no scrolling chip clipping as the only way to find Money."
+      ],
+      [
+        "GL6",
+        "A shared plan, later",
+        "Reuse existing Community room/consented DM. An explicit invitation may contain public activity + selected proposed time; “suggested” and “accepted” are separate. No social RSVP capability claimed before real infrastructure audit."
+      ],
+      [
+        "GL7",
+        "Permission and useful depth",
+        "Shorten interface boilerplate, preserve instructions/source evidence. Reflection and Jess carry the real activity plus her question. No deterministic “your phase asks for” instruction."
+      ]
+    ],
+    "first": "GL1 / GL3 — time-fit choice and genuine chosen-time confirmation.",
+    "states": "Few minutes / long evening / no fitting audio / unknown duration / unscheduled / draft / saving / failed / confirmed / already planned / deliberately completed."
+  },
+  {
+    "id": "yours",
+    "name": "Yours",
+    "title": "A drawer that remembers the source",
+    "species": "Forget-me-not",
+    "material": "Archive leaves → one real return → a mixed index → optional collections",
+    "pair": "Open your saves / Continue reading; real no-continuation state gets a useful honest alternative.",
+    "order": [
+      "One useful actual continuation, if stored",
+      "Real keeps across both existing origins",
+      "Mixed source-labelled index with optional filters/search",
+      "Complete existing kind collections",
+      "Clearly separate recommended phase set"
+    ],
+    "why": "Her objects lead, not a recommendation disguised as a save. Mixed keeps provide a quick route back; type filters help only when there is enough real content. No obligatory category-click before opening an item.",
+    "setup": "Profile saved IDs and SavedItems are reconciled without migration/deletion. Some profile IDs have no saved date: label them undated, never “kept today”. Empty and failed-to-load differ. Missing/deleted source retains its remembered object and Retry where recovery is possible.",
+    "anatomy": [
+      [
+        "Useful return",
+        "One exact unfinished object with its real reader/page/episode state. No continuation exists: begin directly with actual keeps. A bookmark marker means a stored place; a forget-me-not marks collection continuity, not an invented personal souvenir."
+      ],
+      [
+        "Archive entry",
+        "Title, content kind, source/version, real saved date if available, short genuine excerpt and direct Open / Resume / Play. Unknown kinds remain visible with appropriate source/error handling. One removal control is separate from opening."
+      ],
+      [
+        "Mixed versus grouped",
+        "Recent dated items can be mixed in one reading lane. Existing categories remain available; filter/search only narrows, never deletes or migrates. Undated legacy keeps stay in their own truthful group. Empty search preserves other collections."
+      ],
+      [
+        "Annotations",
+        "Her own note is shown only from real stored content and clearly distinguished from source text. Quote/version context lets an exact passage return survive revised content. Unmatched passage stays recoverable. No AI narrative about why she saved it."
+      ],
+      [
+        "Removal / failure",
+        "Pending disables only the affected object, retains old view on failure and reports partial store success honestly. If destructive removal needs confirmation, use the existing recovery contract. Do not advertise Undo without an actual reversible operation."
+      ],
+      [
+        "Recommendations",
+        "Keep the current phase set, explicitly separate from saved things. It never inflates saved count or pretends she chose it. Whole-life subject relevance still comes from actual interest/history, not a clinical default."
+      ]
+    ],
+    "craft": "Different sizes earn different jobs: one bookmarked return, then a narrow index with aligned provenance; category dividers use quiet archive leaf edges. No flower wallpaper, scrapbook clutter or fabricated dates. An occasional pressed outline can identify a saved section, not every item.",
+    "copy": [
+      "“Good things, kept close.”",
+      "“No date kept for this one.”",
+      "“The source moved. Your note is still here.” — only when retained"
+    ],
+    "atoms": [
+      [
+        "YR1",
+        "One complete actual collection",
+        "Pagination and exact-ID lookups retain Profile saved IDs + SavedItems across every type. Counts mean real owner keeps, not loaded-window rows; failures/unknown kinds survive. No third store."
+      ],
+      [
+        "YR2",
+        "Dates, duplicates and provenance",
+        "Dedup actual object/version across origins; preserve different annotations where meaningful. Dated sorting excludes invented dates; undated IDs remain. Version supersession does not silently rewrite a kept edition."
+      ],
+      [
+        "YR3",
+        "One direct useful return",
+        "Article paragraph only when anchored, episode seek after metadata, book edition/chapter, lesson exact version, activity exact plan. Deleted sources expose stored title/context and recovery rather than a broken link."
+      ],
+      [
+        "YR4",
+        "Private versus public at the object",
+        "Source and selected passage can travel explicitly; her note, chart/cycle and save history do not travel by default. Recipient source availability is independent of sender’s access. Never expose owner IDs publicly."
+      ],
+      [
+        "YR5",
+        "Removal without lies",
+        "Await both applicable existing-origin updates; partial failure retains unresolved origin and visible Retry. Keep source/read position independent from removal. No false success or invented undo."
+      ],
+      [
+        "YR6",
+        "Small versus large archive",
+        "No filters required for one item. At larger counts, optional search/type filtering preserves direct object opens and focused pair. Recommendations remain a distinct final band."
+      ],
+      [
+        "YR7",
+        "Returns from social / Planner / Jess",
+        "Safe exact reference resolution plus owner checks for private notes; rejected/deleted/blocked/unknown reference gets useful source state. Each adapter reuses existing stores and dispatchers; no generic Lifestyle landing substitutes."
+      ]
+    ],
+    "first": "YR2 / YR3 — honest dated provenance and exact mixed-object returns.",
+    "states": "Empty / one item / undated legacy IDs / many kinds / old edition / duplicate origins / unknown source / private note / failed removal / blocked conversation / no entitled source."
+  }
+]

@@ -7,6 +7,14 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-06 · SIX-SECTION DETAIL WORKSHOP READY
+> - Complete actual six-room source inventory: **48 granular atoms**, with 42 grouped overview work packages; original craft compositions and cited primary research. Accepted headers preserved, body planning remains distinct from approval. Queued repairs include **routed Planner V2 exact returns**, acknowledged saves, actual club pick/shelf state, shared player/resume, time-fit activity identity and full archive provenance. No body/backend/schema implementation claimed.
+> - Workshop **/lifestyle-workshop/index.html** registered in Ideas → Lifestyle · selected design and six-room brief; local sample studies cover all six rooms. Bible **10.5.17**, mirror and creative context updated. Build succeeds, generator syntax and Founders scoped lint pass. New bundle **index-B9M4N95s.js** built; deploy and independent native 360/390/430 proof next. Prior live still tpCgLP8I; no new production account-write tests or main promotion.
+>
+> ### CURRENT STATE — 2026-10-06 · HEADERS ACCEPTED / DETAILED SECTION THINKING
+> - Halli: **all headers look good**; now requests minute-detail thought for every section's setup, look and behaviour. Accepted scope is the six selected headers, not main promotion or blanket body approval. Claim **8a9ef7f** committed before edits; current live **index-tpCgLP8I.js**, source f867c26 verified against Git/HTTP. Main remains held.
+> - Done this pass: approval captured, named Lead/Deep Search/Creative-Atelier dispatched, fresh signed-in visual/body and complete source inspection underway. Queued: per-section atom specifications, existing two-way data/return mapping, cited research and a phone-readable Ideas workshop with clearly labelled local states. No production UI/backend/schema changes planned this pass; inherited 230 checks are prior-build evidence, not tests of a new section implementation.
+>
 > ### CURRENT STATE — 2026-10-06 · FINAL REVIEW RECORD PUBLISHED
 > - **29ab662** pushes the final native verification/craft catalogue, released claims and public six-room checks. Static review deployed successfully with unchanged **index-tpCgLP8I.js**; live browser brief shows230 checks and explicit age-gate/write/iPhone gaps. HTTP agrees. Selected Sky and concise review board left open; no open observed craft P0/P1, main aesthetics held for Halli. This follow-up is repository memory only; frontend remains the verified2e40e74 bundle.
 >

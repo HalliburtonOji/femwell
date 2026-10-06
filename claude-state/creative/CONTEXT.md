@@ -19,6 +19,8 @@ Sky Living page: /FloralDreamDemo?direction=living&section=sky. Approval is reco
 
 ## Latest correction
 
+6 October, header acceptance: **all six selected headers look good**. Halli now asks for detailed thinking in minute detail for every section's setup, look and behaviour. Preserve these headers; source/visual audit and section-by-section body workshops next. Canon §10.5.17 records acceptance scope and the full atom contract; main promotion is still held. Body proposals are not approved merely because their headers are.
+
 6 October, selected direction: Halli chooses Petal Observatory × Star Press. Finish Sky, then remaining Lifestyle sections (explicit answer). Five real studies delivered; selected development supersedes more concept work. Keep accepted Books art. Petal organic structure + Press information structure through whole page; Read iris, Listen bluebell, Good life marigold, Yours forget-me-not each composed separately. Bible §10.5.16. Ideas-only; main held.
 
 6 October, newest: Books art is good, its “imagined scenery” explanation is rejected. Short personal, human, funny/cool authored UI copy, no construction disclaimers. Sky remains creatively inadequate. Deliver FIVE complete different whole-page Sky demos, not one proof plus four concepts. This supersedes the earlier root scope reduction below; see Bible §10.5.15. Books art stays. Main promotion remains held.
