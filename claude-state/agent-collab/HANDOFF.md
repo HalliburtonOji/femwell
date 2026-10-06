@@ -157,6 +157,8 @@ line: **no generative AI writing about her reading** (the Fable incident, Jan 20
 
 ## 6. IN FLIGHT — claim a surface before you edit it
 
+2026-10-07 correction / claim: Codex owns src/components/planner-elite/PlannerEliteShell.jsx and its regression tests. Full default-prop branch inspection proves /Planner defaults to Elite, not the Clipboard import alias. Carry exact joy returns and actual short duration into Elite; preserve all existing controls. Earlier Clipboard changes remain valid for /PlannerLiveTest; its route inference above is superseded.
+
 2026-10-07 extension: Ms Deep Search / Mr Fix-it owns `src/components/planner-v2/PlannerV2ShellClipboard.jsx` and its dedicated regression tests for the exact-source/duration prerequisite. Live taps proved `/Planner` imports that file under the V2 alias; the sibling-only repair must be carried into the actual default route without changing its design. Root owns integration and native re-proof.
 
 
