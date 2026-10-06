@@ -7,6 +7,12 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-06 · READING ROOM PREVIEW DEPLOYED
+> - Source **111a8f8** pushed; frontend deploy succeeds. HTTP confirms **index-cuzr3XaV.js**. Books reading-room / living Sky previews and brief reachable through Ideas entries; main held. Full102 checks and build pass. Live mobile pixels, actual taps and independent craft/source reproof underway; not yet claiming final verification.
+>
+> ### CURRENT STATE — 2026-10-06 · READING ROOM PUSHED / DEPLOY NEXT
+> - Source **111a8f8** pushed to main without force; demo-only Books reading room and controlled Living Sky garden, Ideas entries and Bible §10.5.14. Main promotion held. Production build passes; full **14 files / 102 checks** pass, targeted lint zero errors (inherited warnings recorded). Current live **index-DxitWe4z.js**; frontend deploy and final live pixel/tap/craft reproof next. No schema/backend changes.
+>
 > ### CURRENT STATE — 2026-10-06 · READING ROOM BUILT, AUDIT REPAIRS BEFORE SHIP
 > - Root's claimed working build now composes actual Books features into a chapter leaf/index, linen capacity note, truthful shelf marker/coded volumes and club correspondence; generated table/page/resting book art shares light/materials. Creative corrected jasmine anatomy with targeted imagegen edits. Bible §10.5.14 + mirror/context and linked phone-readable brief complete. No main/schema/backend delta; currently live **index-DxitWe4z.js**, source commit pending.
 > - Provisional production build passed; full **100/100** includes exact older-save room return/allowlist. Independent source/craft found Yours→Read fallback, wrong index CSS target, clipped bookmark focus and single-newline Markdown loss; repaired with actual Yours header, explicit run class, decorative-only clipping and line/body split. Sky accepted layout retained, breeze scoped/finite/reduced-motion; meaningful motion tests added. Done: source/art/plan and repair. Queued: final build/tests, push/deploy, settled mobile pixels/taps and independent reproof.
