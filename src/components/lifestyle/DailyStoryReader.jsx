@@ -521,6 +521,16 @@ export default function DailyStoryReader({
 }) {
   const [chapters, setChapters] = useState(providedSource?.items || []);
   const [currentIndex, setCurrentIndex] = useState(providedSource?.currentIndex ?? 0);
+  // A requested chapter or saved position must settle before it is shown or recorded.
+  const [positionReady, setPositionReady] = useState(false);
+  const initialPositionRef = useRef(false);
+  const fetchingChaptersRef = useRef(!providedSource);
+  const [appliedJump, setAppliedJump] = useState(null);
+  const jumpKind = typeof goToChapter === "number" ? "number" : "object";
+  const rawJumpIndex = jumpKind === "number" ? goToChapter : goToChapter?.index;
+  const jumpIndex = Number.isFinite(rawJumpIndex) ? Math.trunc(rawJumpIndex) : null;
+  const jumpNonce = jumpKind === "number" ? jumpIndex : (goToChapter?.nonce ?? jumpIndex);
+  const jumpPending = jumpIndex !== null && !(appliedJump?.kind === jumpKind && Object.is(appliedJump?.nonce, jumpNonce));
   // pageInChapter — measured pagination tracks WHICH page within the current
   // chapter is visible. Resets to 0 on chapter change.
   const [pageInChapter, setPageInChapter] = useState(0);
@@ -684,6 +694,10 @@ export default function DailyStoryReader({
     if (providedSource) return;
     let cancelled = false;
     (async () => {
+      fetchingChaptersRef.current = true;
+      initialPositionRef.current = false;
+      setPositionReady(false);
+      setAppliedJump(null);
       setLoading(true);
       try {
         const today = todayISO();
@@ -699,12 +713,14 @@ export default function DailyStoryReader({
           setChapters([]);
         } else {
           setChapters(visible);
-          setCurrentIndex(visible.length - 1);
         }
       } catch {
         if (!cancelled) setError(true);
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          fetchingChaptersRef.current = false;
+          setLoading(false);
+        }
       }
     })();
     return () => { cancelled = true; };
@@ -727,7 +743,6 @@ export default function DailyStoryReader({
   useEffect(() => {
     if (pendingPageRef.current != null) {
       setPageInChapter(pendingPageRef.current);
-      pendingPageRef.current = null;
     } else if (pendingAnchorRef.current == null) {
       setPageInChapter(0);
     }
@@ -739,9 +754,49 @@ export default function DailyStoryReader({
   useEffect(() => {
     if (pendingAnchorRef.current == null || !currentChapterRef) return;
     if (measuredPages === undefined) return;   // wait for the measurement pass
-    setPageInChapter(pageForParagraph(currentChapterRef.id, pendingAnchorRef.current));
+    const restoredPage = pageForParagraph(currentChapterRef.id, pendingAnchorRef.current);
+    pendingPageRef.current = restoredPage;
+    setPageInChapter(restoredPage);
     pendingAnchorRef.current = null;
   }, [measuredPages, currentChapterRef, pageForParagraph]);
+
+  // Resolve once after loading. Explicit numeric/marks-bar selections outrank resume;
+  // an ordinary book open retains its saved paragraph anchor or legacy page number.
+  useEffect(() => {
+    if (loading || fetchingChaptersRef.current || !chapters.length) return;
+    const clamp = value => Math.min(Math.max(0, Number.isFinite(value) ? Math.trunc(value) : 0), chapters.length - 1);
+    if (!initialPositionRef.current) {
+      let index = providedSource ? clamp(providedSource.currentIndex ?? 0) : chapters.length - 1;
+      let page = 0;
+      if (jumpIndex !== null) {
+        index = clamp(jumpIndex);
+        setAppliedJump({kind: jumpKind, nonce: jumpNonce});
+      } else if (posKey) {
+        try {
+          const saved = JSON.parse(localStorage.getItem(posKey) || "null");
+          if (saved) {
+            index = clamp(saved.chapterIndex);
+            pendingAnchorRef.current = Number.isFinite(saved.paragraphIndex) ? Math.max(0, saved.paragraphIndex) : null;
+            page = pendingAnchorRef.current == null && Number.isFinite(saved.pageInChapter) ? Math.max(0, saved.pageInChapter) : 0;
+            pendingPageRef.current = page;
+          }
+        } catch { /* invalid saved positions leave the normal starting chapter intact */ }
+      }
+      initialPositionRef.current = true;
+      setCurrentIndex(index);
+      setPageInChapter(page);
+      setPositionReady(true);
+      return;
+    }
+    if (!jumpPending) return;
+    // Consume the request only when it can actually be applied, never before fetch.
+    pendingAnchorRef.current = null;
+    pendingPageRef.current = null;
+    setShowLocked(false);
+    setPageInChapter(0);
+    setCurrentIndex(clamp(jumpIndex));
+    setAppliedJump({kind: jumpKind, nonce: jumpNonce});
+  }, [loading, chapters.length, posKey, jumpIndex, jumpKind, jumpNonce, jumpPending, providedSource?.currentIndex]);
 
   // Phase-1 Books — fire the chapter-boundary hook whenever the reader REACHES a
   // chapter (initial mount included). Fire-and-forget + guarded so a throwing or
@@ -751,32 +806,18 @@ export default function DailyStoryReader({
   useEffect(() => {
     const cb = onChapterReachedRef.current;
     if (typeof cb !== "function") return;
+    if (!positionReady || fetchingChaptersRef.current || jumpPending) return;
     if (!chapters.length || currentIndex < 0 || currentIndex >= chapters.length) return;
-    try { cb(currentIndex); } catch { /* never let a handler break the reader */ }
-  }, [currentIndex, chapters.length]);
-
-  // v4d — restore reading position once, on first mount with chapters loaded.
-  const positionRestoredRef = useRef(false);
-  useEffect(() => {
-    if (!posKey || positionRestoredRef.current || !chapters.length) return;
-    try {
-      const raw = localStorage.getItem(posKey);
-      if (raw) {
-        const pos = JSON.parse(raw);
-        const chIdx = Math.min(Math.max(0, pos.chapterIndex || 0), chapters.length - 1);
-        // Prefer the PARAGRAPH ANCHOR; fall back to the legacy page index for anyone
-        // mid-book with an old saved position (so nobody loses their place on this deploy).
-        pendingAnchorRef.current = Number.isFinite(pos.paragraphIndex) ? pos.paragraphIndex : null;
-        pendingPageRef.current = pendingAnchorRef.current == null ? (pos.pageInChapter || 0) : 0;
-        setCurrentIndex(chIdx);
-      }
-    } catch { /* silent */ }
-    positionRestoredRef.current = true;
-  }, [posKey, chapters.length]);
+    try { cb(currentIndex, chapters[currentIndex]); } catch { /* never let a handler break the reader */ }
+  }, [currentIndex, chapters, positionReady, jumpPending]);
 
   // v4d — save reading position whenever it changes (after restore).
   useEffect(() => {
-    if (!posKey || !positionRestoredRef.current) return;
+    if (!posKey || !positionReady || fetchingChaptersRef.current || jumpPending || pendingAnchorRef.current != null) return;
+    if (pendingPageRef.current != null) {
+      if (pageInChapter !== pendingPageRef.current) return;
+      pendingPageRef.current = null;
+    }
     try {
       const slices = currentChapterRef ? chapterSlicesRef.current[currentChapterRef.id] : null;
       const paragraphIndex = slices && slices[pageInChapter] ? slices[pageInChapter][0] : null;
@@ -789,26 +830,15 @@ export default function DailyStoryReader({
         ts: Date.now(),
       }));
     } catch { /* silent */ }
-  }, [posKey, currentIndex, pageInChapter]);
-
-  // Two marks — external jump (from the host's marks bar). Idempotent per nonce.
-  const goNonceRef = useRef(null);
-  useEffect(() => {
-    if (!goToChapter || typeof goToChapter.index !== "number") return;
-    if (goNonceRef.current === goToChapter.nonce) return;
-    goNonceRef.current = goToChapter.nonce;
-    if (!chapters.length) return;
-    setShowLocked(false);
-    setPageInChapter(0);
-    setCurrentIndex(Math.min(Math.max(0, goToChapter.index), chapters.length - 1));
-  }, [goToChapter, chapters.length]);
+  }, [posKey, currentIndex, pageInChapter, measuredPages, positionReady, jumpPending]);
 
   // Report the live marks (current chapter + bookmarks) up to the host marks bar.
   const onMarksRef = useRef(onMarks);
   onMarksRef.current = onMarks;
   useEffect(() => {
+    if (!positionReady || fetchingChaptersRef.current || jumpPending) return;
     if (typeof onMarksRef.current === "function") onMarksRef.current({ currentIndex, bookmarks });
-  }, [currentIndex, bookmarks]);
+  }, [currentIndex, bookmarks, positionReady, jumpPending]);
 
   const flipForward = useCallback(() => {
     if (showLocked) return;
@@ -931,7 +961,7 @@ export default function DailyStoryReader({
     touchStartRef.current = null;
   };
 
-  if (loading) {
+  if (loading || (!positionReady && chapters.length > 0)) {
     return (
       <div className="ds-reader-loading">
         <div className="ds-reader-spinner" aria-label="Loading chapter" />

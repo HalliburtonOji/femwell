@@ -1746,8 +1746,8 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
             goToChapter={readerStart ?? (storyPick?.index ?? 0)}
             defaultImmersive
             onExit={() => setReaderOpen(false)}
-            onChapterReached={(i) => {
-              const c = chapters[i]; if (!c?.id) return;
+            onChapterReached={(i, reachedChapter) => {
+              const c = reachedChapter; if (!c?.id) return;
               markChapterRead(c.id);
               recordProgress(c.id, c.day_number ?? i, user?.id);
             }}

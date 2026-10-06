@@ -1,0 +1,12 @@
+[
+  {
+    "source": "C:/Users/Halli/.codex/generated_images/01a0e28c-de58-74a3-b2fd-c62f5d849aa7/exec-1a14ec61-c3e0-4868-ae30-f641c04cf51c.png",
+    "web": "/images/reading-room/table-v3.webp",
+    "prompt": "Edit target supplied reading table artwork. Preserve tabletop, open book, jasmine stem on page, glass vase with five-pointed white Jasminum officinale flowers, linen scarf and stacked books; their positions, proportions, realistic artsy light and detail. Critical integration correction: REMOVE ALL painted background haze/vignette above and below the table to fully transparent alpha. No charcoal, black, brown, grey or green atmospheric backdrop anywhere. The space behind all objects and UNDER the table is completely transparent, particularly the central clearing for live title text. Only retain tiny physically attached contact shadows on the wood under objects. Shorten the two outer wooden supports to small brackets ending just beneath tabletop; soften only their last tips into actual transparency. Scarf can trail down left with feathered edge, but no backdrop. This is a crisp delicate cutout ensemble meant to live on a very light alabaster webpage, not a rectangular scene. No text or white background. Transparent background."
+  },
+  {
+    "source": "C:/Users/Halli/.codex/generated_images/01a0e28c-de58-74a3-b2fd-c62f5d849aa7/exec-850cc920-970d-4b96-b49e-ecf3bfe2f0b1.png",
+    "web": "/images/reading-room/resting-book-v3.webp",
+    "prompt": "Edit supplied resting book cutout. Preserve the plum linen face-down tented book, pages, ribbon, thin common-jasmine stem and slender ivory bud exactly, same positions/material detail and truthful artsy daylight. Remove ALL black/grey/brown halo and ambient painted backdrop to actual fully transparent alpha, including any baked checkerboard. No visible checkerboard or rectangular patch. Only a tiny soft physically attached contact shadow immediately under book and ribbon. The entire empty surrounding area must have alpha=0. The isolated ensemble will sit on a pure white webpage. Do not add a background colour. Transparent output, no text."
+  }
+]

@@ -7,6 +7,10 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-06 · LIVE AUDIT FINDS / REPAIR IN FLIGHT
+> - Live390 shows table ambient halo and resting-book patch/heading overlap. Independent Atelier P1 confirms poor art integration; imagegen targeted edits remove backdrops to actual alpha, capacity placement clears wording. P2 chapter curl stray spine, heavy choice explanations and generic black CTA repaired with scoped material/type treatments.
+> - Actual Chapter2 tap opens Chapter30. Inherited **P1**: numeric request rejected, object nonce consumed before load, provisional reach/save and global-series index mapping. Claim **0a56965** expands reader ownership to Ms Verify; regression-driven initialisation repair underway, root callback uses exact reached row. This audit did not intentionally mark a chapter, but existing reach callbacks can write progress on reader entry; no claim of zero entity side effects. Main held; live **index-cuzr3XaV.js** pending repair deploy.
+>
 > ### CURRENT STATE — 2026-10-06 · READING ROOM PREVIEW DEPLOYED
 > - Source **111a8f8** pushed; frontend deploy succeeds. HTTP confirms **index-cuzr3XaV.js**. Books reading-room / living Sky previews and brief reachable through Ideas entries; main held. Full102 checks and build pass. Live mobile pixels, actual taps and independent craft/source reproof underway; not yet claiming final verification.
 >

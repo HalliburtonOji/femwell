@@ -652,6 +652,7 @@ const SECTION_ORDER = ["skyreview","lsredesign","brand","pages","community","cal
 
 // A CURRENT-group entry routes to a section by its `sub`.
 const SUB_TO_SECTION = {
+  "Lifestyle · continuous worlds":     "lsredesign",
   "Sky · review before main":          "skyreview",
   "Lifestyle redesigns (UX audit)":   "lsredesign",
   "Lifestyle redesigns — earlier sketches": "lssketches",

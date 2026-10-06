@@ -24,7 +24,7 @@ export default function ReadingRoomHeader({ active, moon }) {
     <style>{ALMANAC_TYPE}</style>
     <div className="fw-room-folio"><span>Lifestyle / Books</span><time>{new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long"})}</time></div>
     <div className="fw-room-threshold">
-      <div className="fw-room-table" aria-hidden="true">{failed ? <SpeciesBloom name="jasmine" size={110}/> : <img src={`/images/reading-room/table-v2.webp${attempt ? `?retry=${attempt}` : ""}`} width="1536" height="1024" alt="" fetchPriority="high" onError={()=>setFailed(true)}/>}</div>
+      <div className="fw-room-table" aria-hidden="true">{failed ? <SpeciesBloom name="jasmine" size={110}/> : <img src={`/images/reading-room/table-v3.webp${attempt ? `?retry=${attempt}` : ""}`} width="1536" height="1024" alt="" fetchPriority="high" onError={()=>setFailed(true)}/>}</div>
       <div className="fw-room-clearing"><h1 className="fw-heading">{words.join(" ")}{words.length>0 && " "}<span>{last}<Heart size={14}/></span></h1><p className="fw-room-flower"><strong>{flower.name}</strong><span>{flower.note}</span></p></div>
     </div>
     <div className="fw-room-caption"><SkyMeaning label="the reading room" explanation="Jasmine carries devoted attachment — the story that keeps. The table and unlettered books are imagined scenery; your actual chapter, shelf and reading choices are below."><span>The room keeps your place.</span></SkyMeaning>{failed && <button type="button" onClick={()=>{setAttempt(n=>n+1);setFailed(false);}}>Reload room artwork</button>}</div>
@@ -32,5 +32,5 @@ export default function ReadingRoomHeader({ active, moon }) {
 }
 
 export function RestingBook() {
-  return <div className="fw-room-resting-book" aria-hidden="true"><img src="/images/reading-room/resting-book-v2.webp" alt="" loading="lazy" width="1536" height="1024"/></div>;
+  return <div className="fw-room-resting-book" aria-hidden="true"><img src="/images/reading-room/resting-book-v3.webp" alt="" loading="lazy" width="1536" height="1024"/></div>;
 }
