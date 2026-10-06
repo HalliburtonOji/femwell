@@ -7,6 +7,9 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-06 · FINAL ROOM REPAIRS DEPLOYED
+> - Source **5208087** pushed; stable production build and frontend deploy succeed. HTTP **index-JXnF2W0I.js** confirmed. Final Start/Quiet hierarchy, Ideas font/clearance and immediate Books reading-position refresh live. Final tap/pixel reproof and review-board verification record next; main design promotion held.
+>
 > ### CURRENT STATE — 2026-10-06 · FINAL ROOM AUDIT REPAIRS
 > - Native360/390/430 header/chapter/capacity/club captures and actual section taps confirm complete language/controls; v3 art clears backdrop/overlap. Actual Chapter2 now opens its true authored chapter. Independent Atelier accepts reviewed object/material continuity against §10.5.14, while aesthetic acceptance remains Halli's.
 > - Remaining audit repairs: explicit Start-reading wrapper (previous broad selector styled Quiet dismissal); valid font outside wrapper clears Ideas/Jump overlap; alternate description weight lightened. Books' device read position must recompute on reader close with stable source rows: removed stale memo so its summary/index/shortest refresh together. Final production build/deploy and immediate read→close reproof next. Live **index-seW7wfuG.js**; main visual held, 107 checks previously pass. Rare inherited flip-timer versus simultaneous marks jump remains documented separately.
