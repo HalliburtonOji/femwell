@@ -12,6 +12,36 @@ import { C } from "@/components/brand/cleanTokens";
 import { Eyebrow, Title, Card as CleanCard, Summary, Foot } from "@/components/brand/cleanKit";
 import { SelectedRoomDetail } from "./SelectedLifestyleHeader";
 
+// Authored invitations belong to the actual activity. Full prose/tools stay in Details.
+const JOY_HOOKS = {
+  "A slow Sunday, just for you": "The bath can wait. Or you can stay in it.",
+  "A long walk somewhere new": "Give your usual route the day off.",
+  "Cook something that takes all afternoon": "Something bubbling. Absolutely no rush.",
+  "Visit a gallery alone": "Stay with the painting you like. Skip the rest.",
+  "A film and an early night": "The credits roll. So do you, into bed.",
+  "A pottering day — small jobs you actually like, in no order": "Follow the small job that takes your fancy.",
+  "A making day — paint, write, bake, nobody watching": "Make a little mess. See what happens.",
+  "A whole day with a friend and no plan": "Excellent company. Questionable itinerary.",
+  "A wander through town with nowhere to be": "Turn down the street you usually pass.",
+  "A duvet, a stack of books, and the door shut": "A very selective guest list: you and the books.",
+  "A morning market, a long lunch, an afternoon nap": "A little browsing. A proper lunch. Horizontal finale.",
+  "Write one line you're proud of": "Keep it. Even if nobody else reads it.",
+  "Ten minutes outside, no phone": "Leave the small screen. Try the very big sky.",
+  "Text the friend you've been meaning to": "Start with hello. The perfect message can retire.",
+  "Wear the good earrings on a nothing day": "The earrings didn't ask for an occasion.",
+  "Play the song you loved at fifteen": "You probably still know every word.",
+  "Buy the flowers, not for an occasion": "The occasion is that you like flowers.",
+  "Learn the name of a tree on your street": "Meet a neighbour with considerably more leaves.",
+  "Send a voice note instead of a text": "Let them hear your laugh in the middle.",
+  "Take the long way home for no reason": "A small detour. See what you notice.",
+  "Start the book you keep circling": "Page one. Finally.",
+  "Tuck a little something away for future-you": "A small kindness with a later delivery date.",
+  "Dance to one song in the kitchen": "The kitchen has no audition process.",
+  "Move one thing back to where it makes you happy": "Your favourite corner could use its favourite thing.",
+  "Say the idea out loud in the meeting": "Let the thought leave your notebook.",
+  "Read one poem, out loud, to no one": "Let the words have a voice. Yours will do.",
+  "Watch the sky change for five whole minutes": "Clouds have excellent commitment to the bit.",
+};
 
 // the 11 whole-life rooms (health is one room, not the house) — doors into the deeper surfaces.
 const ROOMS = [
@@ -61,7 +91,7 @@ export default function GoodLifeFocus({ timeLens, joys = [], onSlip, onPlan, tim
       {joys.length ? (
         <GoodCard className="fw-selected-joys" eyebrow={presentation ? "For the pleasure of it" : "No streaks, nothing owed"} title={presentation ? "Small joys" : "Small joys & permission"} accent="plum">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {joys.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} previewText={presentation ? (it.type === "quote" ? "Book a quiet hour, just for you." : it.subtitle) : undefined} compact onOpen={() => onSlip && onSlip(it)} onConsume={presentation && onPlan ? ()=>onPlan(it) : undefined} consumeLabel="Plan a time" />)}
+            {joys.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} previewText={presentation ? (it.type === "quote" ? "" : JOY_HOOKS[it.title] ?? it.subtitle) : undefined} compact onOpen={() => onSlip && onSlip(it)} onConsume={presentation && onPlan ? ()=>onPlan(it) : undefined} consumeLabel="Plan a time" />)}
           </div>
         </GoodCard>
       ) : null}
