@@ -157,6 +157,8 @@ line: **no generative AI writing about her reading** (the Fable incident, Jan 20
 
 ## 6. IN FLIGHT — claim a surface before you edit it
 
+Current claim, 6 October 2026: **Codex + Creative Director** own five complete Sky visual worlds, Books demo voice correction and review records. Files: `src/components/lifestyle-elite/`, `src/pages/{SkyWorldsDemo,FoundersOS}.jsx`, `src/pages.config.js`, `claude-state/creative/`, `claude-state/{STATUS,BRAND_IDENTITY}.md`, Bible HTML mirror, `public/images/sky-worlds/`, `public/sky-worlds/`. ACTIVE. Preserve every existing feature; no main promotion. Creative/Atelier are read-only until separately delegated an isolated file surface.
+
 **Protocol:** add a row before you start; commit the claim; remove it when the work lands (and record
 the landing in STATUS.md). If a surface is claimed, don't touch its files — propose instead.
 
