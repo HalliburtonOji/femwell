@@ -7,6 +7,14 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-06 · RE-PROOF FOUND DETAIL CASCADE COLLISION
+> - Native reader close passes at360/390/430; settings receives taps without changing chapter. Good life active time labels/icons now readable at all3widths; Ask icon white and readable. Actual article primary lands the exact LifestyleDetail row; actual Watch starts the real source YouTube player.
+> - Read primary remained white-on-white despite repaired inline accent: live matched CSS proves inherited **.fw-clean .fw-ce-press background:white!important** overrode it. Added explicit selected-detail primary class/stronger scoped semantic style, preserving default behaviour. New stable build **index-tpCgLP8I.js** ready; deploy/final primary re-proof pending. Live stillDUJA_CKp; audit correctly remains open until pixels prove the fix.
+>
+> ### CURRENT STATE — 2026-10-06 · LIVE AUDIT REPAIRS DEPLOYED
+> - Repair **1e10ed8** pushed and deployed; HTTP confirms **index-DUJA_CKp.js**. Reader toolbar now sits above page-turn zones; selected full details use dark semantic accents; selected time bands retain gold/sage with dark foreground and pressed states; Ask uses its filled icon variant. Main visual design remains held; existing shared reader bug repair is intentionally functional across callers.
+> - Full **18 files /230 tests** pass, including two new reader regressions; scoped lint zero errors. All six header sets360/390/430 and Good/Yours lower bodies inspected independently. Native repair re-proof and final review record now in progress. Community public-lesson handoff reached the existing age gate; no age confirmation/post/DM performed.
+>
 > ### CURRENT STATE — 2026-10-06 · NATIVE AUDIT REPAIRS IN PROGRESS
 > - Live remains **index-D43LVPj5.js** / source49bf504. Native selected Sky/Read/Listen/Books headers fit360/390/430; chart opens, question action focuses, lesson next/help work, real podcast progresses4.8s. Actual Books chapter4 opens correctly.
 > - **P1 found:** pale decorative petals made the Read primary action/eyebrows unreadable. Selected-only detail ink repair preserves original art/content/defaults. **P1 found:** reader page-turn zonesz10 cover toolbarz4; actual close tap turns a chapter. Reader repair claim **8275d0e**, Ms Verify owns minimal tap-layer repair/tests. **P2:** Ask send icon dark on plum; filled semantic variant repaired. Rebuild/deploy/re-proof pending; no aesthetic/main approval implied.

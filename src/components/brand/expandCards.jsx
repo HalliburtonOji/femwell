@@ -801,7 +801,7 @@ export function ExpandDetailCard({ item: raw, onClose, saved: savedProp, onSave,
   const anim = reduceMotion() ? {} : { opacity: show ? 1 : 0, transform: show ? "scale(1) translateY(0)" : "scale(0.96) translateY(14px)", transition: "opacity .28s ease, transform .32s cubic-bezier(.32,.72,.24,1)" };
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(28,20,12,0.28)", backdropFilter: "blur(2px)", display: "flex", justifyContent: "center" }} onClick={close}>
+    <div className={presentation === "folio" ? "fw-selected-detail" : undefined} style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(28,20,12,0.28)", backdropFilter: "blur(2px)", display: "flex", justifyContent: "center" }} onClick={close}>
       <style>{floraKeyframes}{`.fw-ce-press{transition:transform .12s ease}.fw-ce-press:active{transform:scale(0.98)}`}</style>
       <div onClick={(e) => e.stopPropagation()} style={{ ...PAPER_BG, width: "100%", maxWidth: 460, height: "100%", overflowY: "auto", position: "relative", ...anim }}>
         <div style={{ position: "relative" }}>
@@ -910,7 +910,7 @@ export function ExpandDetailCard({ item: raw, onClose, saved: savedProp, onSave,
         <div style={{ position: "sticky", bottom: 0, left: 0, right: 0, padding: "12px 16px calc(14px + env(safe-area-inset-bottom))", background: "linear-gradient(180deg, transparent, var(--paper,#ECE7DA) 34%)", display: "flex", gap: 10, maxWidth: 460, margin: "0 auto" }}>
           <button onClick={toggleSave} className="fw-ce-press" aria-label="Save" style={{ flex: "0 0 auto", display: "inline-flex", alignItems: "center", gap: 7, background: T.paperHi, border: `1px solid ${saved ? c.petal : T.paperDeep}`, color: saved ? c.petal : T.muted, borderRadius: 14, padding: "13px 15px", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>{saved ? <BookmarkCheck size={17} /> : <Bookmark size={17} />}{item.actions.length < 2 ? (saved ? " Saved" : " Save") : ""}</button>
           {item.actions.map((a) => { const A = ICON[a.Icon] || ChevronRight; return (
-            <button key={a.label} onClick={() => a.onClick?.(item)} className="fw-ce-press" style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, background: a.primary ? c.petal : T.paperHi, color: a.primary ? "#fff" : c.petal, border: a.primary ? "none" : `1px solid ${c.petal}`, borderRadius: 14, padding: "13px 12px", fontFamily: UI, fontSize: 13.5, fontWeight: 800, cursor: "pointer", boxShadow: a.primary ? `0 4px 16px ${c.petal}44` : "none" }}><A size={16} /> {a.label}</button>
+            <button key={a.label} onClick={() => a.onClick?.(item)} className={a.primary ? "fw-ce-press fw-ce-primary" : "fw-ce-press"} style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, background: a.primary ? c.petal : T.paperHi, color: a.primary ? "#fff" : c.petal, border: a.primary ? "none" : `1px solid ${c.petal}`, borderRadius: 14, padding: "13px 12px", fontFamily: UI, fontSize: 13.5, fontWeight: 800, cursor: "pointer", boxShadow: a.primary ? `0 4px 16px ${c.petal}44` : "none" }}><A size={16} /> {a.label}</button>
           ); })}
         </div>
       </div>

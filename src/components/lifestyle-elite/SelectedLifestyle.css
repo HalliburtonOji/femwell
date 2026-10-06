@@ -60,6 +60,7 @@
 .fw-sky-worlds[data-world=petal-press] .fw-folio-card :is(input,textarea,select){font-size:16px!important}
 
 /* Read is a folio: a substantial lead, a kept place, then open editorial entries. */
+.fw-sky-worlds[data-world=petal-press] .fw-selected-detail .fw-ce-primary{background:#51444e!important;color:#fff!important;border-color:#51444e!important;min-height:44px}
 .fw-sky-worlds[data-world=petal-press] .fw-selected-room--read>div>section{padding:18px 0!important;background:transparent!important;border-top:1px solid #cec7d0}
 .fw-sky-worlds[data-world=petal-press] .fw-selected-room--read .fw-selected-resume{border-left:2px solid #a999ae;padding-left:12px!important}
 .fw-sky-worlds[data-world=petal-press] .fw-selected-room--read .fw-selected-lead{position:relative;padding:20px 16px!important;background:#fff!important;border-top:1px solid #cec7d0;overflow:visible!important}
