@@ -106,7 +106,9 @@ function WayIn({ Icon, title, line, onClick, first }) {
 
 export default function BooksStoryFocus({ chapters = [], story, pick, onRead, continueCards = [], shelfBookCards = [], classicCards = [], onOpenBook, lifeStage, userId, onSchedule, onCorner, artDirection }) {
   const room = artDirection === "reading-room";
-  const pos = useMemo(() => readingPosition(chapters, pick), [chapters, pick, story]);
+  // Reader exit re-renders this surface with the same source rows; read marks are
+  // device state, so derive position afresh rather than memoising only those rows.
+  const pos = readingPosition(chapters, pick);
   const [doorway, setDoor] = useState(() => getDoorway());
   const [passTick, setPassTick] = useState(0);
   // THE ONE SHELF (2026-09-27): Books and Community's Library now read/write the SAME UserBook
@@ -292,7 +294,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
                 <b style={{ color: C.ink, fontWeight: 700 }}>Worth knowing:</b> {set.featured.notes}.
               </div>
             ) : null}
-            <div style={{ marginTop: 14 }}><Cta filled Icon={BookOpen} onClick={() => openBook(set.featured)}>Start reading</Cta></div>
+            <div className={room ? "fw-room-feature-reading" : undefined} style={{ marginTop: 14 }}><Cta filled Icon={BookOpen} onClick={() => openBook(set.featured)}>Start reading</Cta></div>
             {/* the three doors out — shelf (UserBook, shared with Community) · plan a time
                 (PlannerItems) · talk about it (this book's readers' corner in Community). */}
             <div className={room ? "fw-room-connections" : undefined} style={{ display: "flex", gap: 8, marginTop: 10 }}>
