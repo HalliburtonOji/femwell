@@ -3,7 +3,7 @@ import { ArrowLeft, ExternalLink, Users, Bookmark, CalendarDays, RefreshCw } fro
 import { useNavigate, Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { dailyReadClubKey } from "@/components/community/clubsConfig";
-import { SEED_PICK } from "@/components/community/bookClubConfig";
+import { loadBookClubPick } from "@/components/community/bookClubConfig";
 import { base44 } from "@/api/base44Client";
 import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
 import ChapterEndCard from "@/components/community/ChapterEndCard";
@@ -147,6 +147,8 @@ export default function BookReader() {
   const [loadingMsg, setLoadingMsg] = useState("Loading the book…");
   const [error, setError] = useState("");
   const [retryTick, setRetryTick] = useState(0);   // bump → re-run the fetch (manual retry)
+  const [club, setClub] = useState({ status: "loading", pick: null });
+  const [clubRetryTick, setClubRetryTick] = useState(0);
   const [me, setMe] = useState(null);
   // Phase-1 Books — the chapter-end card (projective prompt + guess + cohort) and a crisis sheet.
   const [cardChapter, setCardChapter] = useState(null);   // 0-based index, or null = closed
@@ -172,15 +174,30 @@ export default function BookReader() {
   // club" when it's the active Book Club pick — its discussion lives in the Book Club, not a
   // generic readers' corner.
   const bookId = gutenbergId != null ? String(gutenbergId) : null;
-  const inClub = bookId != null && String(SEED_PICK.gutenberg_id) === bookId;
+  const inClub = club.status === "ready" && bookId != null && String(club.pick?.gutenberg_id) === bookId;
+
+  useEffect(() => {
+    if (!gutenbergId) return;
+    let cancelled = false;
+    setClub({ status: "loading", pick: null });
+    // Reuse the same pick/checkpoints contract as the club. Only a successful empty
+    // query permits its authored seed; a failed read never identifies another book.
+    loadBookClubPick().then((pick) => {
+      if (!cancelled) setClub({ status: "ready", pick });
+    }).catch(() => {
+      if (!cancelled) setClub({ status: "error", pick: null });
+    });
+    return () => { cancelled = true; };
+  }, [gutenbergId, clubRetryTick]);
 
   // The book's OWN community thread: the Book Club for the club pick, else this book's
   // readers' corner (a per-book club keyed by the Gutenberg id). Never the generic page.
   const communityHref = useMemo(() => {
+    if (club.status !== "ready") return null;
     if (inClub) return createPageUrl("Community?view=bookclub");
     if (gutenbergId == null) return null;
     return createPageUrl(`Community?club=${dailyReadClubKey(gutenbergId)}&title=${encodeURIComponent(book?.title || "")}`);
-  }, [inClub, gutenbergId, book?.title]);
+  }, [club.status, inClub, gutenbergId, book?.title]);
 
   // smart (schedule) mark — the daily read advances ~1 chapter/day from the day she first
   // opened this book (device-local; no backend). "Where the daily read expects you today."
@@ -361,6 +378,11 @@ export default function BookReader() {
       cornerLabel={inClub
         ? "Discuss this book in the Book Club"
         : "Others reading this — join the readers' corner (spoiler-safe)"}
+      clubStatus={club.status}
+      onClubRetry={() => {
+        setClub({ status: "loading", pick: null });
+        setClubRetryTick((tick) => tick + 1);
+      }}
     >
       {/* Two marks — your physical bookmark + the smart (daily-read schedule) mark. */}
       {chaptersReal && (
@@ -500,7 +522,7 @@ function MarksBar({ current, expected, physical, total, onJump }) {
   );
 }
 
-function Frame({ children, onBack, title, author, sourceUrl, cornerHref, cornerLabel }) {
+function Frame({ children, onBack, title, author, sourceUrl, cornerHref, cornerLabel, clubStatus, onClubRetry }) {
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#ECE7DA" }}>
       <div className="max-w-2xl mx-auto px-4 pt-8 pb-8">
@@ -541,6 +563,24 @@ function Frame({ children, onBack, title, author, sourceUrl, cornerHref, cornerL
             <Users className="w-3.5 h-3.5" style={{ color: "#E8B4B8" }} />
             {cornerLabel || "Others reading this — join the readers' corner (spoiler-safe)"}
           </Link>
+        )}
+        {(clubStatus === "loading" || clubStatus === "error") && (
+          <div style={{ marginBottom: 20, color: "#191510", fontSize: 14, lineHeight: 1.5 }}>
+            <p role="status" aria-label="Book club lookup" style={{ margin: "0 0 8px" }}>
+              {clubStatus === "loading"
+                ? "Checking the current club book… You can keep reading."
+                : "We couldn't check the current club book. Your book is still open."}
+            </p>
+            {clubStatus === "error" && (
+              <button
+                type="button"
+                onClick={onClubRetry}
+                style={{ display: "inline-flex", alignItems: "center", gap: 7, minHeight: 44, padding: "9px 13px", background: "#FFFFFF", color: "#191510", border: "1px solid #D8CFBC", borderRadius: 12, fontFamily: 'ui-sans-serif,system-ui,sans-serif', fontSize: 14, cursor: "pointer" }}
+              >
+                <RefreshCw className="w-4 h-4" /> Retry club lookup
+              </button>
+            )}
+          </div>
         )}
       </div>
       <div className="max-w-2xl mx-auto px-4">

@@ -1,6 +1,6 @@
-import React from "react";
+import React, { StrictMode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import Saved, { mergeSavedCollections, savedReturnRoute } from "./Saved";
 import SavedItemCard from "@/components/saved/SavedItemCard";
 
@@ -104,5 +104,206 @@ describe("Saved card dates and pending removal",()=>{
   it("does not show an invented or invalid date when the stored date is malformed",()=>{
     render(<SavedItemCard item={{...row(),created_at:"not-a-date"}} onRemove={vi.fn()}/>);
     expect(screen.queryByText(/Saved |Invalid Date/)).not.toBeInTheDocument();expect(screen.getByRole("heading",{name:"An actual keep"})).toBeVisible();
+  });
+});
+
+describe("Saved confirmed collection recovery", () => {
+  const deferred = () => {
+    let resolve, reject;
+    const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
+    return { promise, resolve, reject };
+  };
+  const retry = () => fireEvent.click(screen.getAllByRole("button", { name: "Try again" })[0]);
+
+  it("shows every confirmed first-page reference with an error when page two fails, then reconciles complete remaining/empty reads", async () => {
+    const first = Array.from({ length: 150 }, (_, i) => ({ ...row(`save-${i}`, `find-${i}`), title: `Kept reference ${i}` }));
+    mock.saved.mockImplementation(async (_query, _order, _limit, skip) => {
+      if (skip === 0) return first;
+      throw new Error("second page unavailable");
+    });
+    render(<Saved />);
+    await screen.findByRole("heading", { name: "Kept reference 149" });
+    expect(screen.getAllByRole("heading", { name: /Kept reference/ })).toHaveLength(150);
+    expect(screen.getByRole("alert")).toHaveTextContent("Some saves couldn’t load.");
+    expect(screen.queryByText("Nothing saved here yet")).toBeNull();
+    mock.saved.mockResolvedValue([first[149]]);
+    mock.profiles.mockRejectedValue(new Error("profile unavailable"));
+    retry();
+    await screen.findByRole("heading", { name: "Kept reference 149" });
+    expect(screen.getAllByRole("heading", { name: /Kept reference/ })).toHaveLength(1);
+    mock.saved.mockResolvedValue([]); mock.profiles.mockResolvedValue([]);
+    retry();
+    expect(await screen.findByText("Nothing saved here yet")).toBeVisible();
+  });
+
+  it("retains known rows, profile-only metadata and removal tools after failed refresh without claiming a failed source exists", async () => {
+    mock.saved.mockResolvedValue([row("known", "known")]);
+    mock.profiles.mockResolvedValue([{ ...profile, saved_item_ids: ["profile-only", "unresolved"] }]);
+    mock.lifestyle.mockImplementation(async ({ id }) => {
+      if (id === "unresolved") throw new Error("source unavailable");
+      return [{ id, title: `Confirmed ${id}`, summary: "A confirmed full description", content_type: "ARTICLE" }];
+    });
+    render(<Saved />);
+    await screen.findByRole("heading", { name: "Confirmed profile-only" });
+    expect(screen.getByRole("heading", { name: "An actual keep" })).toBeVisible();
+    mock.saved.mockRejectedValue(new Error("saved unavailable")); mock.profiles.mockRejectedValue(new Error("profile unavailable"));
+    mock.lifestyle.mockRejectedValue(new Error("exact source unavailable"));
+    retry();
+    await screen.findByRole("heading", { name: "Confirmed profile-only" });
+    expect(screen.getByRole("heading", { name: "An actual keep" })).toBeVisible();
+    expect(screen.getByText("A confirmed full description")).toBeVisible();
+    expect(screen.getAllByText("This find couldn’t load.")).toHaveLength(3);
+    expect(screen.queryByText("This find is no longer available.")).toBeNull();
+    expect(screen.queryByRole("link", { name: "Open", exact: true })).toBeNull();
+    expect(screen.getAllByRole("button", { name: "Remove this save" })).toHaveLength(3);
+    mock.saved.mockResolvedValue([]); mock.profiles.mockResolvedValue([]);
+    retry();
+    expect(await screen.findByText("Nothing saved here yet")).toBeVisible();
+  });
+
+  it("keeps confirmed profile references when a profile response is malformed", async () => {
+    mock.profiles.mockResolvedValue([{ ...profile, saved_item_ids: ["profile-only"] }]);
+    mock.saved.mockRejectedValue(new Error("saves unavailable"));
+    render(<Saved />);
+    await screen.findByRole("heading", { name: "Find profile-only" });
+    mock.profiles.mockResolvedValue(null);
+    retry();
+    await screen.findByRole("heading", { name: "Find profile-only" });
+    expect(screen.getByRole("alert")).toHaveTextContent("Your Lifestyle keeps couldn’t load.");
+  });
+
+  it("clears prior owner rows and profile references before handling the new owner's failed reads", async () => {
+    mock.saved.mockResolvedValue([row()]); mock.profiles.mockResolvedValue([profile]);
+    mock.lifestyle.mockRejectedValue(new Error("source unavailable"));
+    render(<Saved />); await screen.findByRole("heading", { name: "An actual keep" });
+    mock.me.mockResolvedValue({ id: "next-owner" });
+    mock.saved.mockRejectedValue(new Error("new owner scan failed")); mock.profiles.mockRejectedValue(new Error("new profile failed"));
+    mock.lifestyle.mockClear(); retry();
+    await screen.findByText("Some saves couldn’t load.");
+    expect(screen.queryByRole("heading", { name: "An actual keep" })).toBeNull();
+    expect(mock.lifestyle).not.toHaveBeenCalled();
+  });
+
+  it("never resurrects an acknowledged deleted duplicate when the partial-removal read-back fails", async () => {
+    mock.saved.mockResolvedValueOnce([row("first"), row("second")]).mockRejectedValue(new Error("read-back unavailable"));
+    mock.remove.mockImplementation(async id => { if (id === "second") throw new Error("delete unavailable"); });
+    render(<Saved />);
+    fireEvent.click(await screen.findByRole("button", { name: "Remove An actual keep" }));
+    await screen.findByText("Some saves couldn’t load.");
+    expect(screen.getByRole("heading", { name: "An actual keep" })).toBeVisible();
+    expect(screen.getByText("That save couldn’t be removed completely. Try again.")).toBeVisible();
+    mock.remove.mockResolvedValue();
+    fireEvent.click(screen.getByRole("button", { name: "Remove An actual keep" }));
+    await waitFor(() => expect(screen.queryByRole("heading", { name: "An actual keep" })).toBeNull());
+    expect(mock.remove.mock.calls.map(([id]) => id)).toEqual(["first", "second", "second"]);
+  });
+
+  it("does not restore a successfully removed profile-only save during a later failed refresh", async () => {
+    mock.profiles.mockResolvedValue([{ ...profile, saved_item_ids: ["find", "unresolved"] }]);
+    mock.lifestyle.mockImplementation(async ({ id }) => id === "unresolved" ? [] : [{ id, title: "Confirmed profile keep", content_type: "ARTICLE" }]);
+    render(<Saved />);
+    fireEvent.click(await screen.findByRole("button", { name: "Remove Confirmed profile keep" }));
+    await waitFor(() => expect(screen.queryByRole("heading", { name: "Confirmed profile keep" })).toBeNull());
+    mock.profiles.mockRejectedValue(new Error("refresh unavailable")); retry();
+    await screen.findByText("Your Lifestyle keeps couldn’t load.");
+    expect(screen.queryByRole("heading", { name: "Confirmed profile keep" })).toBeNull();
+    expect(screen.getByRole("heading", { name: "A kept Lifestyle find" })).toBeVisible();
+    expect(mock.update).toHaveBeenCalledExactlyOnceWith("profile", { saved_item_ids: ["unresolved"] });
+  });
+
+  it("ignores an old exact-source response after unmount instead of contaminating a new owner's archive", async () => {
+    const source = deferred();
+    mock.saved.mockResolvedValue([row()]); mock.lifestyle.mockReturnValueOnce(source.promise);
+    const old = render(<Saved />);
+    await waitFor(() => expect(mock.lifestyle).toHaveBeenCalled()); old.unmount();
+    mock.me.mockResolvedValue({ id: "next-owner" }); mock.saved.mockResolvedValue([]);
+    render(<Saved />); await screen.findByText("Nothing saved here yet");
+    await act(async () => source.resolve([{ id: "find", title: "Old owner source" }]));
+    expect(screen.queryByRole("heading", { name: "An actual keep" })).toBeNull();
+    expect(screen.getByText("Nothing saved here yet")).toBeVisible();
+  });
+
+  it("ignores a superseded auth lookup in StrictMode", async () => {
+    const previous = deferred(); mock.me.mockReturnValueOnce(previous.promise).mockResolvedValueOnce({ id: "next-owner" });
+    render(<StrictMode><Saved /></StrictMode>);
+    await screen.findByText("Nothing saved here yet");
+    await act(async () => previous.resolve({ id: "owner" }));
+    expect(mock.saved).toHaveBeenCalledExactlyOnceWith({ user_id: "next-owner" }, "-created_at", 150, 0);
+  });
+
+  it("retains the complete mixed collection across tabs after a failed refresh", async () => {
+    const types = [["ADVICE", "Advice"], ["CONTENT", "Sessions"], ["PROGRAM", "Programs"], ["JOURNAL", "Journal"], ["EVENT", "Events"]];
+    mock.saved.mockResolvedValue(types.map(([type]) => ({ ...row(type, type), item_type: type, title: `Kept ${type}` })));
+    mock.profiles.mockRejectedValue(new Error("profile unavailable"));
+    render(<Saved />); await screen.findByText("Your Lifestyle keeps couldn’t load.");
+    mock.saved.mockRejectedValue(new Error("scan unavailable")); retry();
+    await screen.findByText("Some saves couldn’t load.");
+    for (const [type, label] of types) {
+      fireEvent.click(screen.getByRole("button", { name: label, exact: true }));
+      expect(screen.getByRole("heading", { name: `Kept ${type}` })).toBeVisible();
+      expect(screen.getByRole("button", { name: `Remove Kept ${type}` })).toBeEnabled();
+    }
+  });
+
+  it("does not continue duplicate deletions after the archive unmounts", async () => {
+    const deletion = deferred();
+    mock.saved.mockResolvedValue([row("first"), row("second")]); mock.remove.mockReturnValueOnce(deletion.promise);
+    const view = render(<Saved />);
+    fireEvent.click(await screen.findByRole("button", { name: "Remove An actual keep" }));
+    expect(mock.remove).toHaveBeenCalledExactlyOnceWith("first");
+    view.unmount();
+    await act(async () => deletion.resolve());
+    expect(mock.remove).toHaveBeenCalledExactlyOnceWith("first");
+  });
+
+  it("filters acknowledged deleted rows even out of a stale successful page followed by a failed page", async () => {
+    const stale = [row("first"), row("second"), ...Array.from({ length: 148 }, (_, i) => ({ ...row(`other-${i}`, `other-${i}`), item_type: "JOURNAL" }))];
+    let readBack = false;
+    mock.saved.mockImplementation(async (_query, _order, _limit, skip) => {
+      if (!readBack) return [row("first"), row("second")];
+      if (skip === 0) return stale;
+      throw new Error("page two failed");
+    });
+    mock.remove.mockImplementation(async id => { if (id === "second") { readBack = true; throw new Error("delete failed"); } });
+    render(<Saved />);
+    fireEvent.click(await screen.findByRole("button", { name: "Remove An actual keep" }));
+    await screen.findByText("Some saves couldn’t load.");
+    mock.remove.mockResolvedValue();
+    fireEvent.click(screen.getByRole("button", { name: "Remove An actual keep" }));
+    await waitFor(() => expect(screen.queryByRole("heading", { name: "An actual keep" })).toBeNull());
+    expect(mock.remove.mock.calls.map(([id]) => id)).toEqual(["first", "second", "second"]);
+  });
+
+  it("accepts a confirmed same-profile re-add on a fresh explicit retry without remounting", async () => {
+    const currentProfile = { ...profile, saved_item_ids: ["find", "unresolved"] };
+    mock.profiles.mockResolvedValue([currentProfile]);
+    mock.lifestyle.mockImplementation(async ({ id }) => id === "unresolved" ? [] : [{ id, title: "Re-addable find", content_type: "ARTICLE" }]);
+    render(<Saved />);
+    fireEvent.click(await screen.findByRole("button", { name: "Remove Re-addable find" }));
+    await waitFor(() => expect(screen.queryByRole("heading", { name: "Re-addable find" })).toBeNull());
+    // Another surface added the same reference back to this same profile. The unrelated
+    // unavailable reference exposes the existing retry path; this is the same mounted Saved.
+    mock.profiles.mockResolvedValue([currentProfile]); retry();
+    expect(await screen.findByRole("heading", { name: "Re-addable find" })).toBeVisible();
+    expect(screen.getByRole("link", { name: "Open", exact: true })).toHaveAttribute("href", "/LifestyleDetail?id=find");
+    expect(mock.update).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps removal acknowledged after a profile refresh started from being revived by that older response", async () => {
+    const currentProfile = { ...profile, saved_item_ids: ["find", "unresolved"] };
+    const acknowledgement = deferred(), olderRead = deferred();
+    mock.profiles.mockResolvedValueOnce([currentProfile]).mockResolvedValueOnce([currentProfile]).mockReturnValueOnce(olderRead.promise);
+    mock.update.mockReturnValueOnce(acknowledgement.promise);
+    mock.lifestyle.mockImplementation(async ({ id }) => id === "unresolved" ? [] : [{ id, title: "Removed find", content_type: "ARTICLE" }]);
+    render(<Saved />);
+    fireEvent.click(await screen.findByRole("button", { name: "Remove Removed find" }));
+    await waitFor(() => expect(mock.update).toHaveBeenCalledTimes(1));
+    retry();
+    await waitFor(() => expect(mock.profiles).toHaveBeenCalledTimes(3));
+    await act(async () => acknowledgement.resolve({}));
+    await act(async () => olderRead.resolve([currentProfile]));
+    await screen.findByRole("heading", { name: "A kept Lifestyle find" });
+    expect(screen.queryByRole("heading", { name: "Removed find" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Open", exact: true })).toBeNull();
   });
 });

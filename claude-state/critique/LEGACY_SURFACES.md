@@ -33,3 +33,7 @@ Initial source contradictions: CLAUDE's blanket PAPER_BG signature and Bible HTM
 ## Done / queued this correction
 
 Done: direction/cycle/canon/mirror/critic/saved cursor and existing four-hour heartbeat updated; source candidates and stale guidance identified/corrected. Source5cd9a4b/3f56cd5 pushed; siteindex-D-3r8LdK.js, scopedlint/build/JSON/cadence/heldchoice checks, actual360/390/430 report/plan/Bible proof and independent bounded source/nine-pixel review. New Bible plan-link nested navigation reproduced/repaired and top-level source→plan→Ideas re-proved3widths. See [workflow report](legacy-workflow-2026-10-07.md). Queued: actual old/unfinished build registry, live button/overlay inventory, mapped design repairs, research and per-family proof. **No production popup or burnt-page migration is claimed completed by this workflow update.**
+
+## 7 October — S03 affordable-growth intersection
+
+Every registry row also requires §10.5.23/CAPACITY_COST acceptance. Books/Yours source inventory and actual BookReader/full Saved recovery mapped in run0004; whole-reader/dialog visual migration remains A05, not implied by function repair. Founder critique report and rolling-plan backgrounds changed to approved clean foundations within their existing layouts; live mobile/return proof pending. Bible’s historical example presentation and enclosing founder shell remain separate visual candidates.

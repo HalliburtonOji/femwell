@@ -4,6 +4,8 @@ Owner: Codex. Halli's staged-delivery instruction, 7 October 2026. Forward queue
 
 ## Where we are
 
+- Affordable-growth standing gate added (§10.5.23) with prior-build ledger/current primary research. S03 A01 canonical reader and A02 typed keeps/A03 bounded feed/owner recovery/full Saved are implemented in verification; remaining exact club returns, classic continuation, notes and complete opened-state design stay open. Release evidence in [run0004](critique/reports/0004-books-yours-growth-2026-10-07.md); no cost/capacity guarantee.
+
 - Halli's whole-journey/legacy correction is published in Ideas/Bible and the existing four-hour brief: source5cd9a4b/3f56cd5, finalsiteindex-D-3r8LdK.js, actual report/plan/Bible360/390/430 and repaired top-level Bible→plan→Ideas returns, independent source/HTTP/twelve-region review. S03-A01 stays next, all-stage secondary-surface gate and S06 catch-up added. Actual routed legacy inventory/migrations remain queued; [bounded workflow report](critique/legacy-workflow-2026-10-07.md).
 
 - The six accepted Lifestyle rooms and complete bodies are promoted to actual main with Halli's approval. Everything, summaries/Jess, focused actions and all existing tools remain. See [promotion evidence](creative/promotion-verification.md) and [finish evidence](creative/finish-verification.md).
@@ -13,6 +15,8 @@ Owner: Codex. Halli's staged-delivery instruction, 7 October 2026. Forward queue
 - Read/Listen stage complete within mapped scope: source6656d33/b600d01 pushed, siteindex-BvAwXabK.js,502full tests plus final timing regression26targeted. Actual root360/390/430 complete article/exact resume/audio-through-reader/controls, independent source/fresh9pixels and owned354/2700 existing-row read-back. Final public report release follows; [run0003](critique/reports/0003-read-listen-2026-10-07.md) retains exact limitations and verification correction.
 
 ## Inputs carried forward, every batch
+
+**Affordable-growth gate (§10.5.23, Halli7October):** every stage/atom, secondary surface and earlier build gets a concrete operation/cost/capacity card. Trace reads/rows/writes/functions/AI/assets/jobs/fan-out and retries, actual billing/limits and uncertainty. Preserve full functionality and paginated collection access; use safe owner/public cache scopes, existing data reuse and bounded acknowledged work. [Capacity/cost ledger](critique/CAPACITY_COST.md) holds retrospective priorities and measured-vs-source-only evidence. No promised£/usercapacity, upgrade/migration/schema or production load storm. Budget optional, not a blocker for bounded existing-feature repairs. Immediate S03 plus earlier Sky/Read/Listen review; carry through S04–S06/B02/B03.
 
 The previous big build's [research reconciliation](creative/finish-research-reconciliation.md) is required input, not just its original brainstorm. Active batch/stage/nextAtom outranks the seed critique rotation; keep STATE.current section/atom in sync when advancing. The rotation resumes as coverage fallback once this batch completes.
 
@@ -32,12 +36,24 @@ Carry-over **CR-0003 P2 closed:** Ideas historical descriptions corrected agains
 |---|---|---|---|
 | B01-S01 · Sky | Daily refresh; saved history keeps its edition; failed reads recover honestly. Retain full chart, forecast, diary, questions and preferences. | Day-change, failed-read/retry and exact-edition atoms.241tests, actual360/390/430 root taps, separate function deploy, independent source/pixel review. | Complete within mapped scope; run0002 contains deferred boundaries |
 | B01-S02 · Read, then Listen | Exact reading/episode resume, progress, real playback, transcripts and returns agree with existing state. | R01–R03/L01–L03; A01article structure/retry; A02lastplace/recency; A03latest audio intent; A04metadata/recovery/persistence; A05internal reader navigation. | Complete within mapped scope;502full tests,26final timing gate, actual360/390/430 journeys, independent source/pixels/owned read-back. See run0003 limits |
-| B01-S03 · Books, then Yours | Shelf, club, checkpoints, private notes/keeps and Planner/Journal returns act as one existing system. | Reconcile B/Y atoms and deployed stores. No duplicate shelf/notebook, fake catalogue, new nudge or silent completion. Real persistence claims need authorised read-back. | Next B01-S03-A01: inventory actual Books/shelf/club/checkpoints/Planner/Journal producers-consumers, reconcile earlier research and closed repairs; claim before any edits |
+| B01-S03 · Books, then Yours | Shelf, club, checkpoints, private notes/keeps and Planner/Journal returns act as one existing system. | Reconcile B/Y atoms and deployed stores. No duplicate shelf/notebook, fake catalogue, new nudge or silent completion. Real persistence claims need authorised read-back. | In progress B01-S03-A03 release proof; A01 reader/A02 typed keeps/A03 recovery+work reuse implemented. Exact club return, classic continuation, notes and opened-state clean migration remain mapped below |
 | B01-S04 · Good life, Everything/shared shell | Actual activity duration, focused actions, real summaries/Jess and all eleven doors remain coherent. | Inventory all tools and header worlds; accepted plans, refresh, errors and exact returns before bounded improvements. | Planned inspection |
 | B01-S05 · Connections and release proof | Today ↔ Lifestyle ↔ Planner ↔ Journal/Garden/Jess agree on object, date, version, ownership and outcome. | Trace both producers/consumers, reuse canonical stores, real source→action→read-back→return. Nearby regressions, full no-strip inventory, independent P0/P1/P2 catalogue/reproof. | Planned inspection |
 | B01-S06 · Legacy surfaces and unfinished build closure | Retire burnt-page UI; complete the intended old active builds and make opened surfaces match their room without losing features. | A01 actual trigger/branch/build registry; A02 clean shared families with consumer map; A03 bespoke complete secondary states/wiring; A04 independent mobile/backend/exact-return reproof. Per-family atoms/research/Ideas; no mass token replacement. | New catch-up scope; source candidates in LEGACY_SURFACES, no implementation or whole-app coverage claimed |
 
 S01's mapped scopes **A01** daily boundary, **A02** recovery/races and **A03** exact unavailable editions are completed. S02 readiness and primary research are recorded in [run0002 next-stage section](critique/reports/0002-sky-reliability-2026-10-07.md). Existing feed ranking, article continuation eligibility, direct Read/Details, active Listen lead, honest known-duration choices and Good-life shared playback stay; do not resurrect their repaired historical gaps. Root claims new source/test surfaces and reads them in full before S02 repair; source-supported hypotheses are not new runtime claims. Finish a coherent stage, or save the precise next atom at a real interruption, unavailable dependency or review boundary; do not stop merely because one tiny atom finished.
+
+## B01-S03 atom board — actual reconciliation, 7 October
+
+| Atom | Existing job / precise remainder | State |
+|---|---|---|
+| A01 | Canonical reader edition and exact club Planner return; preserve book/chapter/checkpoint identity and all reader tools | Reader repaired under controlled proof; historical/current Planner consumer remainder CR0016 open |
+| A02 | Typed physical/profile keeps and every real continuation, including numeric classics | Resolved item retained without extra query; exact classic continuation CR0020 open |
+| A03 | Failed/partial archive recovery and owner-scoped reuse; one personalised response serves both views; full Saved acknowledges each removal and later legitimate re-add | Implemented; independent review/tests and release/mobile checkpoint in progress |
+| A04 | Private notes and explicit social delivery, truthful pending/failure/ack and exact chapter-to-room connection | CR0015 open; routine honest storage/write state first. Checkpoint mapping/audience proposal before substantial connection |
+| A05 | Every actual opened control/state/return uses approved clean section language with all features and full prose | Source inventory complete; native branch registry/consumer craft/legacy migration pending |
+
+Cost cards/research in CAPACITY_COST; complete feature inventory/primary references/independent catalogue in run0004. No new catalogue, parallel shelf, generative personal recap, implicit notification or architecture. Held choices unchanged.
 
 ## B02 — Community and DM with meaningful shared context
 

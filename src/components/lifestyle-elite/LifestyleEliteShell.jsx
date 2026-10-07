@@ -32,8 +32,8 @@ import {
   Wind, ChevronRight, ChevronLeft, Music2, Compass, Loader, ExternalLink, Clock, Coffee, Sunset, Check, Star, Sprout, Leaf, Coins, X,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { mergeSavedCollections, readOwnerSavedRows } from "@/lib/savedCollections";
-import { parseSavedMeta } from "@/lib/savedItems";
+import { useLifestyleKeeps } from "./useLifestyleKeeps";
+import { useLifestyleFeed } from "./useLifestyleFeed";
 import { authoredJoyId, timeFit, rankedReads, continuePositions, gutenbergReaderHref, newestOwnedReading } from "./finishLifestyle";
 import LifestylePlanSheet from "./LifestylePlanSheet";
 import { FloraAudio } from "@/components/brand/expandCards";
@@ -506,9 +506,6 @@ function LifestyleShell({ navigate, enableFocus = false, layout = null, clean = 
   const {rows:keptSkyLessons,loading:skySavesLoading,error:skySavesError} = useLessonSaves(livingDemo ? user?.id : null);
   const skySavedCount = !skySavesLoading && !skySavesError ? keptSkyLessons.filter(row=>row.user_id===user?.id).length : 0;
   const [profile, setProfile] = useState(null);
-  const [resolvedKeeps, setResolvedKeeps] = useState([]);
-  const [archiveKeeps,setArchiveKeeps] = useState([]);
-  const [keepsError, setKeepsError] = useState("");
   const [keepsRevision, setKeepsRevision] = useState(0);
   const [loading, setLoading] = useState(true);
   // CHIP-FOCUS (demo-flag, default OFF → live /Lifestyle is byte-identical). When on, tapping a
@@ -526,8 +523,6 @@ function LifestyleShell({ navigate, enableFocus = false, layout = null, clean = 
   const [horoscope, setHoroscope] = useState(null);// today's HoroscopeReading
   const [savedIds, setSavedIds] = useState([]);    // UserProfile.saved_item_ids (the SAVE field)
   const [skyNotes, setSkyNotes] = useState([]);    // recent SkyNote rows (real, persisted)
-  const [feed, setFeed] = useState(null);          // personalised reads from getLifestyleFeed (or null)
-  const [phaseFeed, setPhaseFeed] = useState([]);  // phase-ranked picks from getLifestyleFeed(phase)
   const [continueItems, setContinueItems] = useState([]); // books she's part-way through (device-local)
 
   // overlays
@@ -574,6 +569,10 @@ function LifestyleShell({ navigate, enableFocus = false, layout = null, clean = 
   // surface (measured live at 00:14 BST: this shell said Day 7, the morning brief said
   // Day 8). One derivation, one answer.
   const cycleDay = useCycleDay(profile).cycleDay;
+  const { feed, phaseFeed } = useLifestyleFeed(loading ? null : user?.id, phaseKey);
+  const { archiveKeeps, resolvedKeeps, keepsError, removeConfirmed: removeConfirmedKeeps, invalidateSources: invalidateKeptSources } = useLifestyleKeeps({
+    ownerId: user?.id, enabled: !!selectedPresentation, profile, savedIds, items, revision: keepsRevision,
+  });
 
   // ── grouped content (per-type rows, like LifestyleForYou) ─────────────────
   const grouped = useMemo(() => {
@@ -608,33 +607,6 @@ function LifestyleShell({ navigate, enableFocus = false, layout = null, clean = 
     const seen = new Set();
     return pool.filter(i => savedIds.includes(i.id) && !seen.has(i.id) && seen.add(i.id));
   }, [items, savedIds, selectedPresentation, resolvedKeeps]);
-  useEffect(() => {
-    let cancelled=false;
-    if(!selectedPresentation || !user?.id) { setResolvedKeeps([]);setArchiveKeeps([]);setKeepsError("");return; }
-    setKeepsError("");
-    (async()=>{
-      let physical=[], failed=false;
-      try { physical=await readOwnerSavedRows(user.id); } catch { failed=true; }
-      if(cancelled)return;
-      physical=physical.filter(row=>row.user_id===user.id);
-      const ids=[...new Set([...savedIds,...physical.filter(row=>row.item_type==="LIFESTYLE" && parseSavedMeta(row)?.kind!=="sky-lesson").map(row=>row.item_id)])];
-      const resolutions=new Map();
-      for(let start=0;start<ids.length;start+=6){
-        const batch=await Promise.allSettled(ids.slice(start,start+6).map(async id=>{
-          const cached=items.find(item=>item.id===id);
-          return cached || (await withTimeout(base44.entities.LifestyleItems.filter({id},undefined,1),6000,"kept-item"))?.[0] || null;
-        }));
-        if(cancelled)return;
-        batch.forEach((result,index)=>resolutions.set(ids[start+index],result.status==="fulfilled" ? {item:result.value} : {error:true}));
-      }
-      if(cancelled)return;
-      const merged=mergeSavedCollections(physical,{...profile,user_id:user.id,saved_item_ids:savedIds},resolutions);
-      setResolvedKeeps([...resolutions.values()].map(value=>value.item).filter(Boolean));
-      setArchiveKeeps(merged.filter(row=>parseSavedMeta(row)?.kind!=="sky-lesson"));
-      setKeepsError(failed ? "Some keeps couldn’t load. Your saved references are still safe." : "");
-    })();
-    return()=>{cancelled=true;};
-  },[selectedPresentation,user?.id,savedIds,items,keepsRevision,profile]);
   const isSaved = useCallback((id) => savedIds.includes(id) || archiveKeeps.some(keep=>keep.item_id===id), [savedIds,archiveKeeps]);
 
   // ── loaders (real, guarded — same calls as Lifestyle.jsx) ─────────────────
@@ -669,19 +641,6 @@ function LifestyleShell({ navigate, enableFocus = false, layout = null, clean = 
     setHoroscope(previous => selectedPresentation ? newestOwnedReading(previous, incomingReading, ownerId) : incomingReading);
   }, [selectedPresentation]);
 
-  // PERSONALISED reads — the existing getLifestyleFeed engine (interests + interaction history +
-  // freshness + diversity; privacy-safe — no symptom/journal/cycle-day data). `phase` is only the
-  // derived cycle-phase LABEL, a soft boost for content already tagged for that phase. Background,
-  // guarded; on any failure `feed` stays null and the deck uses the page's loaded reads.
-  const loadFeed = useCallback(async (phase) => {
-    try {
-      const res = await withTimeout(base44.functions.invoke("getLifestyleFeed", { mode: "for_you", page: 0, page_size: 12, phase: phase || "" }), 14000, "feed");
-      const rows = res?.data?.items || res?.items || [];
-      const reads = (Array.isArray(rows) ? rows : []).filter((r) => r && r.title && /ARTICLE|STORY|GUIDE|FICTION/.test(String(r.content_type || "").toUpperCase()));
-      if (reads.length) setFeed(reads);
-    } catch { /* leave feed null → deck falls back to loaded reads */ }
-  }, []);
-
   // CONTINUE READING — resolve her device-local saved positions into real rows (a tiny by-id
   // fetch, ≤3). Guarded; if a book has since gone it's simply dropped, never a broken card.
   const loadContinue = useCallback(async () => {
@@ -703,23 +662,6 @@ function LifestyleShell({ navigate, enableFocus = false, layout = null, clean = 
       ));
       setContinueItems(dbPositions.map((p, i) => (rows[i] && rows[i].title ? { item: rows[i], pos: p } : null)).filter(Boolean).slice(0, 3));
     } catch { setContinueItems([]); }
-  }, []);
-
-  // REAL phase-tuned picks (Track A follow-up, unblocked by the 2026-07-18 phase_tags backfill:
-  // canonical tags 245→376, per-phase pools 127–222). We do NOT query `phase_tags` directly —
-  // base44's scalar filter can't array-CONTAINS it (measured: returns 0). Instead we use the
-  // EXISTING getLifestyleFeed fn, which already ranks by phase server-side across the whole
-  // pool. No new function. Guarded; on failure phaseCards falls back to the loaded-items filter.
-  const loadPhaseFeed = useCallback(async (phase) => {
-    if (!phase || !CANON_PHASES.includes(phase)) { setPhaseFeed([]); return; }
-    try {
-      // 14s, not 6: measured live, getLifestyleFeed answers 200 but takes >6s cold, so the
-      // old 6s guard aborted it and the rail stayed empty. This is a BACKGROUND fetch — it
-      // never blocks paint, so a longer leash costs nothing and actually lets the rail fill.
-      const res = await withTimeout(base44.functions.invoke("getLifestyleFeed", { mode: "for_you", page: 0, page_size: 12, phase }), 14000, "phasefeed");
-      const rows = res?.data?.items || res?.items || [];
-      setPhaseFeed((Array.isArray(rows) ? rows : []).filter((r) => r && r.title));
-    } catch { setPhaseFeed([]); }
   }, []);
 
   // record a real action (open / save) so the feed LEARNS — fire-and-forget, never blocks UX,
@@ -778,19 +720,12 @@ function LifestyleShell({ navigate, enableFocus = false, layout = null, clean = 
         loadGutenberg();          // background — never blocks the loader
         loadSkyNotes(u?.id);      // background — real sky-diary rows
         loadContinue();           // background — "pick up where you left off"
-        if (u?.id) loadFeed(getCurrentCyclePhase(p));  // background — personalised "Reads for you"
-        try { unsubItems = base44.entities.LifestyleItems.subscribe(() => loadContent(u?.id)); } catch { /* no-op */ }
+        try { unsubItems = base44.entities.LifestyleItems.subscribe(() => { invalidateKeptSources(); loadContent(u?.id); }); } catch { /* no-op */ }
       } catch { /* unauth / offline — render gracefully */ }
       if (alive) setLoading(false);
     })();
     return () => { alive = false; unsubItems?.(); };
-  }, [loadContent, loadGutenberg, loadSkyNotes, loadFeed, loadContinue]);
-
-  // The phase rail is driven REACTIVELY off `phaseKey`, not off the init closure's profile:
-  // init's local `p` can still be null//incomplete when it runs (measured — the fetch never
-  // fired because the guard saw a non-canonical phase), whereas `phaseKey` is the same value
-  // the phase pill renders, so it's correct by the time it settles. Re-runs if her phase changes.
-  useEffect(() => { loadPhaseFeed(phaseKey); }, [phaseKey, loadPhaseFeed]);
+  }, [loadContent, loadGutenberg, loadSkyNotes, loadContinue, invalidateKeptSources]);
 
   // ── SAVE toggle (persists to UserProfile.saved_item_ids — optimistic + rollback) ──
   const toggleSave = useCallback(async (item) => {
@@ -811,13 +746,13 @@ function LifestyleShell({ navigate, enableFocus = false, layout = null, clean = 
         : await base44.entities.UserProfile.create({ user_id: owner, user_email: user.email, saved_item_ids: next });
       if (!result?.id || ownerRef.current !== owner) return false;
       setProfile(p => ({ ...p, ...result, saved_item_ids: next })); setSavedIds(next);
-      setArchiveKeeps(keeps=>was ? keeps.filter(keep=>keep.item_id!==item.id) : keeps);
+      if (was) removeConfirmedKeeps(owner, keep => keep.item_id === item.id);
       flash(was ? "Removed from saved" : "Kept for later");
       if (!was) recordAction(item, "save");
       return true;
     } catch { if (ownerRef.current === owner) { flash("Couldn't update your keeps — try again"); setKeepsRevision(n=>n+1); } return false; }
     finally { savePending.current = false; }
-  }, [savedIds, user, profile, recordAction,isSaved]);
+  }, [savedIds, user, profile, recordAction,isSaved,removeConfirmedKeeps]);
 
   // ── Sky diary → SkyNote.create (real persistence; optimistic + rollback) ──
   const addSkyNote = useCallback(async (text) => {
@@ -1338,10 +1273,10 @@ function LifestyleShell({ navigate, enableFocus = false, layout = null, clean = 
     try{
       if((await base44.auth.me())?.id!==user.id)throw new Error("Account changed");
       for(const row of (it._keep._savedRecords || []).filter(row=>row.user_id===user.id))await base44.entities.SavedItems.delete(row.id);
-      setArchiveKeeps(rows=>rows.filter(row=>row.id!==it._keep.id));flash("Removed from your keeps");return true;
+      removeConfirmedKeeps(user.id, row => row.item_type === it._keep.item_type && (row.item_id || row.id) === (it._keep.item_id || it._keep.id));flash("Removed from your keeps");return true;
     }catch{flash("Couldn’t update your keeps — try again");setKeepsRevision(n=>n+1);return false;}
     finally{savePending.current=false;}
-  }, [toggleSave,user]);
+  }, [toggleSave,user,removeConfirmedKeeps]);
 
   // ── CHIP-FOCUS wiring (only live when enableFocus) ────────────────────────────────────────────
   // chip id → { the board index it collapses to, its display label, the For-you sections it keeps }.

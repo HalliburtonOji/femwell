@@ -23,11 +23,11 @@ const buildStages = [
 // Sanitised founder summary only. Detailed evidence stays in claude-state/critique/.
 // Do not import the ledger: bundled frontend content is publicly downloadable.
 export default function CritiqueDoc() {
-  const card = { padding: "18px 16px", border: "1px solid #D8CFBC", borderRadius: 18, background: "#F4EFE3", marginTop: 14 };
-  const heading = { fontFamily: "Fraunces, Georgia, serif", fontWeight: 500, lineHeight: 1.2, margin: "0 0 10px", color: "#4A2A3A" };
+  const card = { padding: "18px 16px", border: "1px solid #E6E1DA", borderRadius: 18, background: "#FFFFFF", boxShadow: "0 5px 20px rgba(35,27,32,.035)", marginTop: 14 };
+  const heading = { fontFamily: "Cormorant Garamond, Georgia, serif", fontWeight: 500, lineHeight: 1.2, margin: "0 0 10px", color: "#4A2A3A" };
   const action = { display: "inline-flex", alignItems: "center", minHeight: 44, color: "#72251F", textDecoration: "underline", textUnderlineOffset: 4 };
   return (
-    <article aria-labelledby="critique-title" style={{ color: "#3A3025", fontFamily: "Inter, sans-serif", lineHeight: 1.55, overflowWrap: "anywhere", paddingBottom: 64 }}>
+    <article aria-labelledby="critique-title" style={{ color: "#343036", fontFamily: "system-ui, sans-serif", lineHeight: 1.55, overflowWrap: "anywhere", paddingBottom: 64 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#685434", fontSize: 12 }}><Sprout size={18} aria-hidden="true" /> Whole app · ongoing polish</div>
       <h1 id="critique-title" style={{ ...heading, fontSize: "clamp(28px, 7vw, 38px)", marginTop: 10 }}>A fresh pair of eyes.</h1>
       <p style={{ margin: 0 }}>One section, properly looked at. Then the next.</p>
@@ -36,23 +36,29 @@ export default function CritiqueDoc() {
         <p style={{ fontSize: 14, margin: "9px 0 0" }}>Work resumes its saved stage each run. No need to keep typing “continue”. Routine fixes proceed; substantial choices come to you.</p>
       </section>
       <section style={card} aria-labelledby="critique-current">
-        <h2 id="critique-current" style={{ ...heading, fontSize: 23 }}>Where we are · Read & Listen</h2>
-        <p style={{ margin: 0 }}>Batch 01 · Read and Listen’s repairs are live and mobile-checked. The accepted design and every tool stay.</p>
-        <p style={{ fontSize: 14 }}><strong>Read:</strong> proper paragraphs, a retry when a lookup fails, and your last place saved as you leave.</p>
-        <p style={{ fontSize: 14 }}><strong>Listen:</strong> one player follows you into a read. Saved places, buffering, retries and real episode links now agree.</p>
-        <p style={{ fontSize: 14 }}>Regression checks, real taps at 360, 390 and 430px, and independent source and screenshot review pass. Episode progress reads back from the existing account record.</p>
+        <h2 id="critique-current" style={{ ...heading, fontSize: 23 }}>Where we are · Books & Yours</h2>
+        <p style={{ margin: 0 }}>Batch 01 · Books and Yours are in progress. Sky, Read and Listen’s earlier repairs stay live. The accepted design and every tool stay.</p>
+        <p style={{ fontSize: 14 }}><strong>This build:</strong> one recommendation request serves both views. Keeps reuse their loaded sources and retain known references when a refresh fails. Physical-only saves get their proper content type and tools.</p>
+        <p style={{ fontSize: 14 }}><strong>Books:</strong> the reader checks the current club edition and offers a separate retry. Your full book stays available.</p>
+        <p style={{ fontSize: 14 }}>Controlled regression and independent source checks pass for these changes. Release checks follow the real mobile journeys; fault branches remain controlled tests. The whole Books/Yours stage is still open.</p>
         <p style={{ fontSize: 14 }}>Physical iPhone, VoiceOver and opening an external episode window remain unverified.</p>
-        <a href="/Lifestyle?section=read" style={action}>Open Read</a>{" · "}<a href="/Lifestyle?section=listen" style={action}>Open Listen</a>
+        <a href="/Lifestyle?section=books" style={action}>Open Books</a>{" · "}<a href="/Lifestyle?section=yours" style={action}>Open Yours</a>
       </section>
       <section style={card} aria-labelledby="critique-batch">
         <h2 id="critique-batch" style={{ ...heading, fontSize: 23 }}>Next big build</h2>
         <p style={{ margin: 0 }}><strong>Batch 01 · Lifestyle polish & connections</strong></p>
-        <p style={{ fontSize: 14 }}>Books and Yours next: one shelf, club checkpoints, private notes and exact Planner/Journal returns. Then Good life, the shared shell and cross-app proof.</p>
+        <p style={{ fontSize: 14 }}>Finish Books and Yours: honest notes, exact club/Planner returns and every opened surface. Then Good life, the shared shell and cross-app proof.</p>
         <p style={{ fontSize: 14 }}><strong>The whole journey gets the same care.</strong> Popups, overlays and details must belong to their room. Burnt styling goes; unfinished older builds join the catch-up pass. Features and each section’s personality stay.</p>
         <p style={{ fontSize: 14 }}>This rule is now in the cycle. The actual surface migrations are queued, including earlier rooms whose functional repairs are already complete.</p>
         <ol style={{ paddingLeft: 23, fontSize: 14 }}>{buildStages.map((stage) => <li key={stage} style={{ padding: "5px 0" }}>{stage}</li>)}</ol>
         <p style={{ fontSize: 14 }}>Then Community & DM, followed by the remaining app. New substantial features stay in Ideas for your go-ahead.</p>
         <a href="/staged-builds/index.html" style={action}>Open the rolling build plan</a>
+      </section>
+      <section style={card} aria-labelledby="critique-growth">
+        <h2 id="critique-growth" style={{ ...heading, fontSize: 23 }}>Room to grow. Bills that behave.</h2>
+        <p style={{ margin: 0 }}>Cost and capacity now belong in every build, including a review of older work. We keep the features and artwork; cut repeated work.</p>
+        <p style={{ fontSize: 14 }}>Database traffic affects speed and limits. AI, media and other services need separate cost checks. Actual bills and supported user numbers still need real usage evidence.</p>
+        <details><summary style={{ cursor: "pointer", minHeight: 44 }}>The checks behind it</summary><p style={{ fontSize: 14 }}>Queries, complete history, owner-safe reuse, bytes, paid calls, retries and scheduled work. Current priorities: shared feeds and keeps, book fetching, audio progress, older bundled documents and reminder fan-out.</p><a href="https://docs.base44.com/Account-and-billing/Credits" target="_blank" rel="noreferrer" style={action}>Base44’s billing rules</a></details>
       </section>
       <section style={card} aria-labelledby="critique-decisions">
         <h2 id="critique-decisions" style={{ ...heading, fontSize: 23 }}>Your decision desk</h2>
@@ -72,7 +78,7 @@ export default function CritiqueDoc() {
         <ol style={{ paddingLeft: 23, marginBottom: 0, fontSize: 14 }}>{stages.map((stage) => <li key={stage} style={{ padding: "5px 0" }}>{stage}</li>)}</ol>
         <p style={{ fontSize: 14 }}>A section can take several runs. Regressions take priority; new live rooms join the route as they are discovered.</p>
       </details>
-      <p style={{ fontSize: 12, color: "#685434", marginTop: 20 }}>Local runs need the computer on and Codex running. The audit remembers evidence and your feedback; it does not train the model. Brand Bible §§10.5.20–22.</p>
+      <p style={{ fontSize: 12, color: "#685434", marginTop: 20 }}>Local runs need the computer on and Codex running. The audit remembers evidence and your feedback; it does not train the model. Brand Bible §§10.5.20–23.</p>
     </article>
   );
 }

@@ -62,18 +62,26 @@ export function mergeSavedCollections(rows, profile, resolutions) {
         : !item ? "This find is no longer available." : null
       : row._unavailable || null;
     const route = unavailable ? null : savedReturnRoute(row, item);
-    return { ...row, _unavailable: unavailable, _href: route, meta_json: JSON.stringify({ ...meta, route, url: null, content_url: null }) };
+    return { ...row, _lifestyleItem: item || null, _unavailable: unavailable, _href: route, meta_json: JSON.stringify({ ...meta, route, url: null, content_url: null }) };
   }).sort((a, b) => String(b.created_at || b.created_date || "").localeCompare(String(a.created_at || a.created_date || "")));
 }
 
 export async function readOwnerSavedRows(userId) {
   const rows = [], seen = new Set();
+  if (!userId) return rows;
   for (let skip = 0; ; skip += 150) {
-    const page = await base44.entities.SavedItems.filter({ user_id: userId }, "-created_at", 150, skip);
-    const fresh = page.filter(row => !seen.has(row.id));
-    fresh.forEach(row => { seen.add(row.id); rows.push(row); });
-    if (page.length < 150) return rows;
-    if (!fresh.length) throw new Error("Saved pagination did not advance");
+    try {
+      const page = await base44.entities.SavedItems.filter({ user_id: userId }, "-created_at", 150, skip);
+      if (!Array.isArray(page)) throw new Error("Invalid saved collection response");
+      const fresh = page.filter(row => row?.id && row.user_id === userId && !seen.has(row.id));
+      fresh.forEach(row => { seen.add(row.id); rows.push(row); });
+      if (page.length < 150) return rows;
+      if (!fresh.length) throw new Error("Saved pagination did not advance");
+    } catch (cause) {
+      const error = new Error("Saved collection could not finish", { cause });
+      error.partialRows = rows;
+      throw error;
+    }
   }
 }
 

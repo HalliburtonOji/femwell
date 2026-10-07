@@ -24,6 +24,15 @@ const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
   letterSpacing: "0.12em", color: "var(--mauve)", };
 
+function ownerSnapshot(ownerId) {
+  return { ownerId, rows: [], profile: null, resolutions: new Map(), deletedRows: new Set(), removedProfileKeeps: new Map(), profileMutation: 0 };
+}
+function survivingProfile(profile, snapshot) {
+  if (!profile) return null;
+  const removed = snapshot.removedProfileKeeps.get(profile.id);
+  return removed ? { ...profile, saved_item_ids: (profile.saved_item_ids || []).filter(id => !removed.has(id)) } : profile;
+}
+
 export default function Saved() {
   const [user, setUser] = useState(null);
   const [items, setItems] = useState([]);
@@ -32,6 +41,7 @@ export default function Saved() {
   const [removing, setRemoving] = useState(null);
   const removingRef = useRef(false);
   const generation = useRef(0);
+  const confirmed = useRef(null);
   const [tab, setTab] = useState(() => {
     const requested = new URLSearchParams(window.location.search).get("tab")?.toUpperCase();
     return BASE_TABS.some(item => item.id === requested) || requested === "EVENT" ? requested : "ADVICE";
@@ -40,20 +50,46 @@ export default function Saved() {
 
   const load = useCallback(async () => {
     const request = ++generation.current;
+    let authenticated = false;
     setLoading(true); setErrors([]);
       try {
         const currentUser = await base44.auth.me();
         if (request !== generation.current) return;
+        if (!currentUser?.id) throw new Error("No authenticated owner");
+        authenticated = true;
+        if (confirmed.current?.ownerId !== currentUser.id) {
+          confirmed.current = ownerSnapshot(currentUser.id);
+          removingRef.current = false;
+          setItems([]); setRemoveError(""); setRemoving(null);
+        }
+        const snapshot = confirmed.current;
         setUser(currentUser);
+        const profileReadVersion = snapshot.profileMutation;
         const [savedRead, profileRead] = await Promise.allSettled([
           readOwnerSavedRows(currentUser.id),
           base44.entities.UserProfile.filter({ user_id: currentUser.id }),
         ]);
+        if (request !== generation.current) return;
         const messages = [];
         if (savedRead.status === "rejected") messages.push("Some saves couldn’t load.");
-        if (profileRead.status === "rejected") messages.push("Your Lifestyle keeps couldn’t load.");
-        const saved = savedRead.status === "fulfilled" ? savedRead.value.filter(row => row.user_id === currentUser.id) : [];
-        const profile = profileRead.status === "fulfilled" ? pickProfile(profileRead.value.filter(row => row.user_id === currentUser.id)) : null;
+        const profileComplete = profileRead.status === "fulfilled" && Array.isArray(profileRead.value);
+        if (!profileComplete) messages.push("Your Lifestyle keeps couldn’t load.");
+        if (profileComplete) {
+          // A successful read started after an acknowledgement is fresh authority: the
+          // same reference may legitimately have been re-added elsewhere. Earlier reads
+          // and failed reads must still respect acknowledgements newer than their start.
+          for (const [profileId, removed] of snapshot.removedProfileKeeps) {
+            for (const [id, version] of removed) if (version <= profileReadVersion) removed.delete(id);
+            if (!removed.size) snapshot.removedProfileKeeps.delete(profileId);
+          }
+        }
+        // Absence is authoritative only after a complete successful scan. A failed later
+        // page still contributes its confirmed physical rows, without losing older known ones.
+        const partial = Array.isArray(savedRead.reason?.partialRows) ? savedRead.reason.partialRows : [];
+        const candidates = savedRead.status === "fulfilled" ? savedRead.value : [...snapshot.rows, ...partial];
+        const saved = [...new Map(candidates.filter(row => row?.id && row.user_id === currentUser.id && !snapshot.deletedRows.has(row.id)).map(row => [row.id, row])).values()];
+        const profile = survivingProfile(profileComplete
+          ? pickProfile(profileRead.value.filter(row => row?.user_id === currentUser.id)) : snapshot.profile, snapshot);
         const ids = [...new Set([
           ...(Array.isArray(profile?.saved_item_ids) ? profile.saved_item_ids : []),
           ...saved.filter(row => row.item_type === "LIFESTYLE" && parseSavedMeta(row)?.kind !== "sky-lesson").map(row => row.item_id),
@@ -63,19 +99,31 @@ export default function Saved() {
         for (let start = 0; start < ids.length; start += 6) {
           const batch = ids.slice(start, start + 6);
           const resolved = await Promise.allSettled(batch.map(id => base44.entities.LifestyleItems.filter({ id }, undefined, 1)));
-          resolved.forEach((result, index) => resolutions.set(batch[index], result.status === "fulfilled"
-            ? { item: result.value.find(row => row.id === batch[index]) || null } : { error: true }));
+          resolved.forEach((result, index) => {
+            const id = batch[index];
+            resolutions.set(id, result.status === "fulfilled" && Array.isArray(result.value)
+              ? { item: result.value.find(row => row?.id === id) || null }
+              : { error: true, item: snapshot.resolutions.get(id)?.item || null });
+          });
           if (request !== generation.current) return;
         }
         if (request !== generation.current) return;
-        setItems(mergeSavedCollections(saved, profile, resolutions)); setErrors(messages);
-      } catch (err) {
-        if (request === generation.current) { setItems([]); setErrors(["Your saves couldn’t open. Sign in, or try again."]); }
+        // An acknowledged removal can finish while a refresh is in flight. Apply its
+        // owner-local tombstones again so neither failed nor stale read-back revives it.
+        snapshot.rows = saved.filter(row => !snapshot.deletedRows.has(row.id));
+        snapshot.profile = survivingProfile(profile, snapshot);
+        snapshot.resolutions = resolutions;
+        setItems(mergeSavedCollections(snapshot.rows, snapshot.profile, resolutions)); setErrors(messages);
+      } catch {
+        if (request === generation.current) {
+          if (!authenticated) { confirmed.current = null; removingRef.current = false; setRemoving(null); setUser(null); setItems([]); }
+          setErrors(["Your saves couldn’t open. Sign in, or try again."]);
+        }
       } finally {
         if (request === generation.current) setLoading(false);
       }
   }, []);
-  useEffect(() => { load(); return () => { generation.current++; }; }, [load]);
+  useEffect(() => { load(); return () => { generation.current++; confirmed.current = null; removingRef.current = false; }; }, [load]);
 
   const tabs = useMemo(() => {
     const extra = tab === "EVENT" || items.some((item) => item.item_type === "EVENT") ? [{ id: "EVENT", label: "Events" }] : [];
@@ -86,24 +134,42 @@ export default function Saved() {
 
   const removeItem = async (item) => {
     if (!user?.id || removingRef.current || item.user_id !== user.id) return;
-    removingRef.current = true; setRemoving(item.id); setRemoveError("");
+    const snapshot = confirmed.current;
+    if (snapshot?.ownerId !== user.id) return;
+    const stillOwner = () => confirmed.current === snapshot;
+    const removal = {};
+    removingRef.current = removal; setRemoving(item.id); setRemoveError("");
     try {
       for (const record of item._savedRecords || []) {
-        if (record.user_id !== user.id) throw new Error("Owner changed");
+        if (!stillOwner()) return;
+        if (record.user_id !== snapshot.ownerId) throw new Error("Owner changed");
+        if (snapshot.deletedRows.has(record.id)) continue;
         await base44.entities.SavedItems.delete(record.id);
+        // Record each acknowledgement, not only the final all-or-nothing UI outcome.
+        snapshot.deletedRows.add(record.id);
+        snapshot.rows = snapshot.rows.filter(row => row.id !== record.id);
       }
+      if (!stillOwner()) return;
       if (item._profileId) {
-        const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
-        const ownerProfile = profiles.find(row => row.id === item._profileId && row.user_id === user.id);
+        const profiles = await base44.entities.UserProfile.filter({ user_id: snapshot.ownerId });
+        if (!stillOwner()) return;
+        const ownerProfile = Array.isArray(profiles) && profiles.find(row => row?.id === item._profileId && row.user_id === snapshot.ownerId);
         if (!ownerProfile) throw new Error("Profile unavailable");
         await base44.entities.UserProfile.update(ownerProfile.id, { saved_item_ids: (ownerProfile.saved_item_ids || []).filter(id => id !== item.item_id) });
+        const removed = snapshot.removedProfileKeeps.get(ownerProfile.id) || new Map();
+        removed.set(item.item_id, ++snapshot.profileMutation); snapshot.removedProfileKeeps.set(ownerProfile.id, removed);
+        snapshot.profile = survivingProfile(snapshot.profile, snapshot);
       }
+      if (!stillOwner()) return;
       setItems(current => current.filter(entry => entry.id !== item.id));
       window.dispatchEvent(new CustomEvent("fw_sky_lesson_saved"));
     } catch {
+      if (!stillOwner()) return;
       setRemoveError("That save couldn’t be removed completely. Try again.");
       await load(); // Read back any successful part; never restore a row already removed remotely.
-    } finally { removingRef.current = false; setRemoving(null); }
+    } finally {
+      if (removingRef.current === removal) { removingRef.current = false; if (stillOwner()) setRemoving(null); }
+    }
   };
 
   if (loading) {
