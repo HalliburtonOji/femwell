@@ -1405,6 +1405,8 @@ function CleanReaderStyles() {
     .ds-reader-root.fw-reader-clean.fw-theme-plum { --paper: #22262B; --reader-control: #30363B; --ink: #F3F4F1; --ink-mute: #BCC4C5; --accent: #B3CCBD; --rule: #4B545B; --border: #4B545B; }
     .ds-reader-root.fw-reader-clean.ds-immersive { background: var(--paper); }
     .fw-reader-clean .ds-reader-stage { background: var(--paper); color: var(--ink); border: 0; border-radius: 0; box-shadow: none; padding: 28px 20px 24px; }
+    /* The absolute measurement mirror must share the prose column after stage padding. */
+    .fw-reader-clean .ds-reader-page { position: relative; }
     .ds-reader-root.fw-reader-clean.ds-immersive .ds-reader-stage { padding: 84px 20px 64px; }
     .fw-reader-clean .ds-reader-controls { margin: 0; padding: 12px 20px; gap: 8px; border-block: 0; border-bottom: 1px solid var(--rule); background: var(--paper); }
     .fw-reader-clean .ds-reader-series-label { color: var(--ink-mute); font-family: ui-sans-serif,system-ui,sans-serif; font-size: 13px; line-height: 1.5; font-weight: 400; text-transform: none; letter-spacing: normal; white-space: normal; overflow-wrap: anywhere; }

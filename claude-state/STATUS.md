@@ -7,6 +7,14 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-07 · A05 FINAL-LINE AUDIT FINDS CR0029
+> - Native **index-DtDNjtPn.js** confirms CR0028's actual 360px range and tools each 44px high, same-row centre hits, neutral range and clear label. Device QA note confirms/reopens; visible textarea Home26→Right27 keeps page9/114 and Escape returns to Reflect. Initial generic probe read another hidden empty field; corrected scoped DOM evidence, no invented caret defect.
+> - **CR0029 P1** interrupts closure: immersive Honey page9/65 real prose column320px versus hidden measurer360px. The last paragraph exceeds the padded page and overlaps the footer; a real scroll cannot recover it. Same A05 claim owns a clean-only containing-block repair with all words, preferences and tall-paragraph recovery preserved. Fresh primary MDN containing-block research maps actual measurements. Default reader remains a separate source candidate until actual native proof; no blanket migration or main approval.
+>
+> ### CURRENT STATE — 2026-10-07 · A05 MOBILE REPAIRS DEPLOYED FOR REPROOF
+> - Source **14642ef** pushed normally after completed build; Base44 site deployment succeeded. Dist and public HTTP match **index-DtDNjtPn.js**. CR0028 clean-only toolbar/range/header-label repairs and independent craft corrections preserve full prose, every tool and shared preferences. The actual range target is now 44px in source; no CSS-copy tests substituted for mobile hit proof. Post-repair component checks **85/85**, preceding full **704/51**, scoped lint zero errors and independent source review pass.
+> - Fresh native 360/390/430 layout, note, settings, source/Back and canonical main checks are next. Frontend-only Ideas preview, no main layout promotion, backend/entity/schema/social changes or new paid work. S03/A05 and older opened-state/cost coverage remain open.
+>
 > ### CURRENT STATE — 2026-10-07 · A05 NATIVE DESIGN AUDIT INTERRUPTS CLOSURE
 > - Signed-in preview/public **index-5foGl7Tp.js** confirmed. Real360 title/fullsource/47chapters/marks load correctly, but actualclient345px includes15pxscrollbar: cleantoolbarFullScreen wrapsalone, oldpinkrangeinput backgroundleaks, previewlabel overlapsfixedIdeas/calendar. Mapped **CR0028 P2** withinclaimedA05, scopedtoolbar/colour andheaderlabelrepair before finalrelease; no droppedtools/smaller44pxtargets/mainstyle/persistence/network change. Currentnativeproof incomplete, no visualapproval.
 >

@@ -44,7 +44,7 @@
   "current": {
     "section": "Lifestyle / Books and Yours",
     "atom": "B01-S03-A05",
-    "status": "A05 actualpreview360 audit findsCR0028P2 cleantoolbarwrap/pinkrangeleak/headerlabelcollision. Sameclaimsactive, boundedscopedrepair before finalpreviewclosure; exactfullbook/currentplaceverifiedbutmobilethemereturnproofunfinished. Site5foGl7Tp, no mainpromotion/socialapproval."
+    "status": "A05 preview live index-DtDNjtPn.js; CR0028 actual360 input/tools44px same-row centre hits, clear label and neutral range pass. Note acknowledgement/reopen/visible caret and exact return pass. CR0029 P1 real immersive clipping interrupts closure: hidden measurer360 versus actual body320; scoped containing-block repair under current claim."
   },
   "lastCompleted": {
     "run": 5,
@@ -279,6 +279,13 @@
       "title": "Opt-in reader toolbar reflows awkwardly, range leaks old colour and preview label collides with fixed chrome",
       "status": "Actualnative360 reproducedonindex-5foGl7Tp.js, client345/toolbar305 vs320 basis; source scopedrepair underway under87184b7. Need rebuilt3width reproof.",
       "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
+    },
+    {
+      "id": "CR-0029",
+      "severity": "P1",
+      "title": "Clean immersive reader measures a wider column and clips final lines",
+      "status": "Open: native360 Honey page9/65 actualbody320 versus hiddenmeasurer360; stage overflowhidden, lastparagraph extends beyond padded content/footer. Scoped clean-only containing-block repair claimed; default matching source candidate unproved.",
+      "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
     }
   ],
   "decisions": [
@@ -348,7 +355,7 @@
     "batch": "B01",
     "stage": "B01-S03",
     "atom": "B01-S03-A05",
-    "nextStep": "FinishCR0028 scopedclean toolbarflex/pinkrange androotpreviewlabel repairs; meaningfulreader/BookReader checks, buildnormalpush/site, then completeactual360/390/430 note/control/settings/themes/preferences/identicalplace/Back +canonicaldefaultproof/independentfinalpixels.",
+    "nextStep": "Finish mapped CR0029 clean-only measurement containing-block repair, meaningful reader checks/build/push/site; reprove actual final-line geometry at360/390/430 plus note/settings/allthemes/sharedpreferences/exactIdeasBack and default main. Then independent audit and actual staged review boundary.",
     "readyWork": "Classic ready→anytime Reflect→acknowledged Keep/failure→Close to identical passage, with all full prose/frontmatter/settings3themes/5preferences/bookmarks/immersive/locks/warnings/hunch/reveal/sourceBack preserved. No invented FictionReader Reflect. Zero new asset/font/query/store/engine/socialdelivery. Source candidate hidden-route portal lifetime gets exact fixture/native proof before closure.",
     "acceptance": "Actual360/390/430 open/interact/close/theme/preferences/exactsource/Back, controlledfailure/owner/keyboard/touch plus independentP0/P1/P2; bespoke clean§2.7/6.7.8 with safe sheets/44px controls, short human copy and peratom costcard§10.5.23. Link working preview/research/checks/gaps in Ideas before main promotion.",
     "heldBranch": "A04 exact reached-checkpoint→selectedwords/destinationpreview→explicitPost proposal is published/asked, unanswered; do notimplement socialdelivery/defaults orreattest/reask unchangedchoices. Continue independentA05 work.",
