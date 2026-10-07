@@ -6,7 +6,7 @@
     "title": "Approved Lifestyle polish and existing connections",
     "status": "in progress",
     "currentStage": "B01-S03",
-    "nextAtom": "B01-S03-A04",
+    "nextAtom": "B01-S03-A05",
     "stageOrder": [
       "B01-S01",
       "B01-S02",
@@ -42,8 +42,8 @@
   },
   "current": {
     "section": "Lifestyle / Books and Yours",
-    "atom": "B01-S03-A04",
-    "status": "Run0005 final local checks666/51 pass; independent exact continuation/club58, note/hunch25, actual backend6 pass. Build then normal push, separate Gutenberg deploy and site release/native3width proof next. Live remains index-4ISGcDjK.js. Social checkpoint/preview/Post proposal staged/unapproved; A05 full clean opened-state craft remains."
+    "atom": "B01-S03-A05",
+    "status": "Run0005 repairs3b134cf and toolbar1e1ce8f pushed/siteindex-CpFTKGqP.js, Gutenberg separatelydeployed.666/51 plus independent41toolbar pass. Root360 actualcontinuation/note→Books/settings/return verified. CR0027 native390 stolen caret and source/controlled touch/modal ownership interrupts final closure; same claimextended before repair. Resume exact CR27 verification/build/mobile then A05 clean opened-state preview. Social proposal published/asked, no approval."
   },
   "lastCompleted": {
     "run": 4,
