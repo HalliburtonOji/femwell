@@ -7,7 +7,10 @@
   "rotation": ["Lifestyle / Sky", "Lifestyle / Read", "Lifestyle / Listen", "Lifestyle / Books", "Lifestyle / Good life", "Lifestyle / Yours", "Lifestyle / Everything and shared shell", "Today", "Planner", "Community and DM", "Journal", "Garden", "Nutrition", "Health", "Movement, rest and programmes", "Jess and notifications", "Account, auth, settings and Saved"],
   "nextRunNumber": 2,
   "latestReport": "claude-state/critique/reports/0001-sky-lessons-2026-10-07.md",
-  "findings": [{ "id": "CR-0001", "severity": "P2", "title": "Daily lesson carousel semantics", "status": "source repaired; live reproof pending", "report": "claude-state/critique/reports/0001-sky-lessons-2026-10-07.md" }],
+  "findings": [
+    { "id": "CR-0001", "severity": "P2", "title": "Daily lesson carousel semantics", "status": "closed: source review, 33 tests, root 360/390/430 taps and independent fresh pixels", "report": "claude-state/critique/reports/0001-sky-lessons-2026-10-07.md" },
+    { "id": "CR-0002", "severity": "P2", "title": "Ideas header Back/calendar collision", "status": "source repaired; final deployment/reproof pending", "report": "claude-state/critique/reports/0001-sky-lessons-2026-10-07.md" }
+  ],
   "decisions": [],
   "deferredChecks": ["Physical iPhone behaviour", "Community 18+ access without attesting on Halli's behalf", "Social sends, purchases and held reading nudge remain separate decisions"],
   "learningFile": "claude-state/critique/LEARNING.md"

@@ -30,8 +30,8 @@ export default function CritiqueDoc() {
       <section style={card} aria-labelledby="critique-current">
         <h2 id="critique-current" style={{ ...heading, fontSize: 23 }}>On the desk: Sky</h2>
         <p style={{ margin: 0 }}>First pass: daily lessons, kept sources and their return paths.</p>
-        <p style={{ fontSize: 14 }}><strong>One small repair:</strong> clearer screen-reader structure for the lesson carousel. Same design, full lessons and controls.</p>
-        <p style={{ fontSize: 14 }}>Existing lesson and Journal records connect to the exact source. No critical fault established in this reviewed path. This is one checked journey, not a whole-app sign-off.</p>
+        <p style={{ fontSize: 14 }}><strong>Two small repairs:</strong> clearer lesson screen-reader structure, and space for the Ideas Back button beside the calendar.</p>
+        <p style={{ fontSize: 14 }}>The existing keep → Journal → exact lesson journey checks out. All content and tools stay.</p>
         <p style={{ fontSize: 14 }}><strong>Next:</strong> Sky’s day-change and failure states, then Read. Independent review and detailed evidence live in the audit memory.</p>
         <a href="/Lifestyle?section=sky" style={action}>Open the live Sky room</a>
       </section>

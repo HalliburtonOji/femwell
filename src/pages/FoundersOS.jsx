@@ -1553,7 +1553,7 @@ function FoundersInner({ user }) {
             {tab !== HOME && (
               <button type="button" onClick={goHome} style={{
                 flexShrink: 0, background: T.surface, border: `1px solid ${T.border}`,
-                color: T.textMid, borderRadius: 999, padding: "7px 13px",
+                color: T.textMid, borderRadius: 999, padding: "7px 13px", minHeight: 44, marginRight: 52,
                 fontSize: 12.5, fontWeight: 700, cursor: "pointer",
               }}>← Back</button>
             )}
