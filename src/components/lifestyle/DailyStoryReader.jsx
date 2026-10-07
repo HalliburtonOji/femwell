@@ -84,6 +84,36 @@ function prefersReducedMotion() {
   try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch { return false; }
 }
 
+// Snapshot ownership during capture: a sheet may remove itself before the
+// reader's window listener runs, but that same key must not reach the page below.
+const eventOwners = new WeakMap();
+function isVisibleKeySurface(element) {
+  if (!element?.isConnected) return false;
+  for (let node = element; node instanceof Element; node = node.parentElement) {
+    if (node.hidden || node.inert || node.getAttribute("aria-hidden") === "true") return false;
+    const style = getComputedStyle(node);
+    if (style.display === "none" || style.visibility === "hidden" || style.visibility === "collapse") return false;
+  }
+  return true;
+}
+function eventOwner(event, includeFocus = true) {
+  const native = event.nativeEvent || event;
+  if (eventOwners.has(native)) return eventOwners.get(native);
+  const controls = 'input,textarea,select,button,a[href],summary,[contenteditable]:not([contenteditable="false"]),[role="button"],[role="link"],[role="textbox"],[role="searchbox"],[role="slider"],[role="spinbutton"],[role="combobox"],[role="checkbox"],[role="radio"],[role="switch"],[role="tab"],[role="menuitem"],[role="option"],[role="listbox"],[role="tree"],[role="grid"]';
+  const path = [...(native.composedPath?.() || [event.target]), ...(includeFocus ? [document.activeElement] : [])];
+  const ownedControls = path.flatMap(node => node instanceof Element
+    ? [node.closest(controls) || (node.isContentEditable ? node : null)].filter(Boolean) : []);
+  const context = {
+    controls: ownedControls,
+    dialogs: [...document.querySelectorAll('[role="dialog"],[role="alertdialog"],dialog[open]')].filter(isVisibleKeySurface),
+  };
+  eventOwners.set(native, context);
+  return context;
+}
+function ownsModifiedKey(event) {
+  return event.defaultPrevented || event.isComposing || event.ctrlKey || event.altKey || event.metaKey || event.shiftKey;
+}
+
 // ─── Font-size slider control ─────────────────────────────────────────────────
 // A real range slider — small "A" on the left, large "A" on the right, the
 // thumb drags between five discrete positions (xs · s · m · l · xl).
@@ -133,8 +163,16 @@ function SettingsDrawer({
   margins, setMargins,
   onClose,
 }) {
+  const sheetRef = useRef(null);
   useEffect(() => {
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    const onKey = (e) => {
+      if (e.key !== "Escape" || ownsModifiedKey(e)) return;
+      if (!isVisibleKeySurface(sheetRef.current)) return;
+      // BookReader's reflection/support overlays sit above reader settings.
+      // Their own handlers own Escape, even when focus has not moved there yet.
+      if (eventOwner(e).dialogs.some(dialog => dialog !== sheetRef.current)) return;
+      e.preventDefault(); onClose();
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
@@ -151,6 +189,7 @@ function SettingsDrawer({
         aria-hidden="true"
       />
       <div
+        ref={sheetRef}
         className="ds-reader-sheet"
         role="dialog"
         aria-modal="true"
@@ -519,6 +558,7 @@ export default function DailyStoryReader({
   // host to open a context-aware reflection for wherever she is (not only at chapter end).
   onReflect,
 }) {
+  const readerRootRef = useRef(null);
   const [chapters, setChapters] = useState(providedSource?.items || []);
   const [currentIndex, setCurrentIndex] = useState(providedSource?.currentIndex ?? 0);
   // A requested chapter or saved position must settle before it is shown or recorded.
@@ -680,14 +720,6 @@ export default function DailyStoryReader({
   // Lock body scroll while immersive so the page behind doesn't drift (shared,
   // ref-counted hook — replaces the old ad-hoc document.body.style.overflow lock).
   useScrollLock(immersive);
-  useEffect(() => {
-    if (!immersive) return;
-    const onEsc = (e) => { if (e.key === "Escape") setImmersive(false); };
-    window.addEventListener("keydown", onEsc);
-    return () => {
-      window.removeEventListener("keydown", onEsc);
-    };
-  }, [immersive]);
 
   // Fetch DailyStory rows if no external source provided
   useEffect(() => {
@@ -939,22 +971,47 @@ export default function DailyStoryReader({
 
   // Keyboard nav
   useEffect(() => {
+    const capture = e => {
+      if (["ArrowRight", "ArrowLeft", "Escape"].includes(e.key)) eventOwner(e);
+    };
     const onKey = (e) => {
+      if (!["ArrowRight", "ArrowLeft", "Escape"].includes(e.key) || ownsModifiedKey(e)) return;
+      if (!isVisibleKeySurface(readerRootRef.current)) return;
+      const owner = eventOwner(e);
+      if (owner.dialogs.length) return;
+      // Escape still exits from our own toolbar; native editing controls and
+      // controls outside this reader keep their own keyboard behaviour.
+      const ownEscapeButton = e.key === "Escape" && owner.controls.every(control =>
+        readerRootRef.current.contains(control) && control.matches('button,[role="button"]'));
+      if (owner.controls.length && !ownEscapeButton) return;
       if (e.key === "ArrowRight") { e.preventDefault(); flipForward(); }
       else if (e.key === "ArrowLeft") { e.preventDefault(); flipBackward(); }
+      else if (immersive) { e.preventDefault(); setImmersive(false); }
     };
+    window.addEventListener("keydown", capture, true);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [flipForward, flipBackward]);
+    return () => {
+      window.removeEventListener("keydown", capture, true);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [flipForward, flipBackward, immersive]);
 
   // Touch swipe
+  const controlOwnsTouch = e => {
+    const owner = eventOwner(e, false);
+    return owner.dialogs.length || owner.controls.some(control =>
+      !control.matches(".ds-reader-tap-left,.ds-reader-tap-right,.ds-reader-center-tap"));
+  };
   const onTouchStart = (e) => {
+    touchStartRef.current = null;
+    if (controlOwnsTouch(e)) return;
     if (!e.touches || !e.touches[0]) return;
     touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
   };
   const onTouchEnd = (e) => {
     const start = touchStartRef.current;
-    if (!start) return;
+    touchStartRef.current = null;
+    if (!start || controlOwnsTouch(e)) return;
     const end = (e.changedTouches && e.changedTouches[0]) || null;
     if (!end) return;
     const dx = end.clientX - start.x;
@@ -965,7 +1022,6 @@ export default function DailyStoryReader({
     if (Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 1.6) {
       if (dx < 0) flipForward(); else flipBackward();
     }
-    touchStartRef.current = null;
   };
 
   if (loading || (!positionReady && chapters.length > 0)) {
@@ -1015,6 +1071,7 @@ export default function DailyStoryReader({
 
   const readerBody = (
     <div
+      ref={readerRootRef}
       className={[
         "ds-reader-root",
         `ds-text-${textSize}`,

@@ -25,7 +25,8 @@
     ],
     "heldDecisions": [
       "Reading notification nudge",
-      "Backlog count versus silence"
+      "Backlog count versus silence",
+      "Chapter reflection reached-checkpoint / preview / Post connection: concrete Ideas proposal published and asked run0005; no answer or approval"
     ],
     "resumeRule": "Active batch/stage/nextAtom outranks seed rotation; update current section/atom together. Continue ready authorised atoms without a continue prompt; save exact cursor on interruption; substantial decisions remain staged."
   },
@@ -183,15 +184,15 @@
       "id": "CR-0015",
       "severity": "P1",
       "title": "Reflection false acknowledgement and orphan room consumer",
-      "status": "open A04; no invented checkpoint mapping or social sends",
-      "report": "claude-state/critique/reports/0004-books-yours-growth-2026-10-07.md"
+      "status": "private raw-key read-back/consumer and acknowledged same-owner hunches repaired3b134cf; independent25pass/root360newQA note confirmation/reopen→Books. Directroomdelivery remains open/staged: truthfully guarded, no orphan writes or invented checkpoint/socialsend/age approval",
+      "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
     },
     {
       "id": "CR-0016",
       "severity": "P1",
       "title": "Planned club exact return targets wrong Community namespace",
-      "status": "open A01 return remainder; actual historical/current consumer required",
-      "report": "claude-state/critique/reports/0004-books-yours-growth-2026-10-07.md"
+      "status": "exact current/inactive historical pick returns implemented3b134cf, independent actualPlannerLink→Community→reader→Back/current/missing/requestreset tests pass. Nativecurrentclubroute reaches18+gate; no attestation, nativeinnerclubproof deferred",
+      "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
     },
     {
       "id": "CR-0017",
@@ -218,15 +219,15 @@
       "id": "CR-0020",
       "severity": "P2",
       "title": "Classic numeric book continuation absent from Books/Yours",
-      "status": "open A02 continuation remainder",
-      "report": "claude-state/critique/reports/0004-books-yours-growth-2026-10-07.md"
+      "status": "implemented3b134cf exact numericadapter/currentroute returns, independent actualmountedreader writer→Books/Yours proof; native360/390 exact37106 picker/tile→actualsavedplace. Finalrelease3width proof pending; honestid fallback metadata presentation remainsA05",
+      "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
     },
     {
       "id": "CR-0021",
       "severity": "P2",
       "title": "Gutenberg timeout does not cancel underlying fetch",
-      "status": "open cancellation atom; separate backend deploy if changed",
-      "report": "claude-state/critique/reports/0004-books-yours-growth-2026-10-07.md"
+      "status": "closed bounded pervariant headers/body/unreaderrorbody cancellation: actualservedhandler6pass independently; existingfetchGutenbergBook separately1/1deployed6.5s. Rootnativeexactfullbook loads afterdeploy; liveinjected abort/log/crossinvocation dedupe or cost not certified",
+      "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
     },
     {
       "id": "CR-0022",
@@ -248,6 +249,27 @@
       "title": "First chapter page-back button disabled and page turns mislabelled",
       "status": "closed20 independent measured-page/lock/both-motion/boundary/anchor/bookmark tests and root final360/390/430 page-back/430truefirstpage,390exactprose equality. Boundary itself controlled, not native fullbook traversal",
       "report": "claude-state/critique/reports/0004-books-yours-growth-2026-10-07.md"
+    },
+    {
+      "id": "CR-0025",
+      "severity": "P1",
+      "title": "Older continuation lookup overwrites current marks and keepalive Back stays stale",
+      "status": "generation/unmount/currentmarks intersect and routedreturn snapshot repaired3b134cf; independent actualmountedmain→reader→Back→Yours proof. Finalnative3width reproof pending",
+      "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
+    },
+    {
+      "id": "CR-0026",
+      "severity": "P1",
+      "title": "Invisible page-turn zones cover the inline reader toolbar",
+      "status": "reproducednative390 Reflectcentre→rightzone/pageturn; repaired1e1ce8f andsource41regressions independent. Root360alltoolbarcentres+Reflect/fullscreen/settings pass; final390/430 reproof pending",
+      "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
+    },
+    {
+      "id": "CR-0027",
+      "severity": "P1",
+      "title": "Reader keyboard and touch navigation steals note, settings and dialog interactions",
+      "status": "native390 caret0→0/underlyingpage3→4; controlledrangegesture and15keyboard red→green, final43reader/65independent pass. Finalfull689/51 pass; build/push/site thenactual3width caret/range/modalreproof pending. Hidden originating portal route remainsunprovedS06candidate",
+      "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
     }
   ],
   "decisions": [

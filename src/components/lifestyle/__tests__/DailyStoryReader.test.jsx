@@ -16,8 +16,10 @@
  *  - Theme variables are applied to the root.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { useState } from "react";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import DailyStoryReader from "../DailyStoryReader";
+import ChapterEndCard from "@/components/community/ChapterEndCard";
 
 const storyApi = vi.hoisted(() => ({ filter: vi.fn() }));
 vi.mock("@/api/base44Client", () => ({ base44: { entities: { DailyStory: { filter: storyApi.filter } } } }));
@@ -92,6 +94,148 @@ describe("DailyStoryReader — v4 contract", () => {
   }
   const visibleProse = () => document.querySelector(".ds-reader-body").textContent;
   const footer = () => within(document.querySelector(".ds-reader-nav"));
+
+  it("lets the actual reflection textarea own arrows and Escape without paging or exiting its immersive reader", () => {
+    const source = measuredSource();
+    function ReadingWithReflection() {
+      const [open, setOpen] = useState(false);
+      return <><DailyStoryReader source={source} defaultImmersive onReflect={() => setOpen(true)} />
+        {open && <ChapterEndCard bookId={37106} chapterIndex={0} anytime overridePrompt="What stays with you?" onClose={() => setOpen(false)} />}</>;
+    }
+    render(<ReadingWithReflection />);
+    fireEvent.click(screen.getByRole("button", { name: "Reflect on where you are" }));
+    const input = within(screen.getByRole("dialog", { name: "A moment with this chapter" })).getByRole("textbox");
+    fireEvent.change(input, { target: { value: "A quiet thought" } }); input.focus(); input.setSelectionRange(0, 0);
+    expect(fireEvent.keyDown(input, { key: "ArrowRight" })).toBe(true);
+    expect(visibleProse()).toBe("The first page opens beside the harbour.");
+    expect(input).toHaveValue("A quiet thought");
+    fireEvent.keyDown(input, { key: "Escape" });
+    expect(screen.queryByRole("dialog", { name: "A moment with this chapter" })).toBeNull();
+    expect(document.querySelector(".ds-reader-root")).toHaveClass("ds-immersive");
+    fireEvent.keyDown(window, { key: "ArrowRight" });
+    expect(visibleProse()).toBe("The second page follows the path uphill.");
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(document.querySelector(".ds-reader-root")).not.toHaveClass("ds-immersive");
+  });
+
+  it("gives the settings range its native arrows and closes only settings on Escape", () => {
+    render(<DailyStoryReader source={measuredSource()} defaultImmersive />);
+    fireEvent.click(screen.getByRole("button", { name: "Reader settings" }));
+    const slider = within(screen.getByRole("dialog", { name: "Reader settings" })).getByRole("slider");
+    slider.focus(); expect(fireEvent.keyDown(slider, { key: "ArrowRight" })).toBe(true);
+    expect(visibleProse()).toBe("The first page opens beside the harbour.");
+    fireEvent.change(slider, { target: { value: "3" } });
+    expect(document.querySelector(".ds-reader-root")).toHaveClass("ds-text-l");
+    fireEvent.keyDown(slider, { key: "Escape" });
+    expect(screen.queryByRole("dialog", { name: "Reader settings" })).toBeNull();
+    expect(document.querySelector(".ds-reader-root")).toHaveClass("ds-immersive");
+  });
+  it("closes an actual reflection over settings one layer at a time", () => {
+    const source = measuredSource();
+    function ReadingWithReflection() {
+      const [open, setOpen] = useState(false);
+      return <><DailyStoryReader source={source} defaultImmersive onReflect={() => setOpen(true)} />
+        {open && <ChapterEndCard bookId={37106} chapterIndex={0} anytime overridePrompt="What stays with you?" onClose={() => setOpen(false)} />}</>;
+    }
+    render(<ReadingWithReflection />);
+    fireEvent.click(screen.getByRole("button", { name: "Reader settings" }));
+    // A host-triggered reflection can arrive while settings are already mounted.
+    fireEvent.click(screen.getByRole("button", { name: "Reflect on where you are" }));
+    fireEvent.keyDown(within(screen.getByRole("dialog", { name: "A moment with this chapter" })).getByRole("textbox"), { key: "Escape" });
+    expect(screen.queryByRole("dialog", { name: "A moment with this chapter" })).toBeNull();
+    expect(screen.getByRole("dialog", { name: "Reader settings" })).toBeVisible();
+    expect(document.querySelector(".ds-reader-root")).toHaveClass("ds-immersive");
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByRole("dialog", { name: "Reader settings" })).toBeNull();
+    expect(document.querySelector(".ds-reader-root")).toHaveClass("ds-immersive");
+  });
+
+  it.each(["input", "range", "select", "button SVG", "link child", "editable child", "ARIA slider child"])("preserves native/widget keyboard ownership for %s", kind => {
+    const source = measuredSource();
+    render(<><DailyStoryReader source={source} /><div data-testid="owned-control">
+      {kind === "input" ? <input /> : kind === "range" ? <input type="range" /> : kind === "select" ? <select><option>One</option></select>
+        : kind === "button SVG" ? <button><svg><path /></svg></button> : kind === "link child" ? <a href="#kept"><span>Link</span></a>
+          : kind === "editable child" ? <div contentEditable suppressContentEditableWarning><span>Edit here</span></div>
+            : <div role="slider" tabIndex={0}><span>Value</span></div>}
+    </div></>);
+    const holder = screen.getByTestId("owned-control");
+    const target = holder.querySelector("path,span,input,select");
+    expect(fireEvent.keyDown(target, { key: "ArrowRight" })).toBe(true);
+    expect(visibleProse()).toBe("The first page opens beside the harbour.");
+    holder.querySelector("input,select,button,a,[contenteditable],[role]").focus();
+    expect(fireEvent.keyDown(window, { key: "ArrowRight" })).toBe(true);
+    expect(visibleProse()).toBe("The first page opens beside the harbour.");
+  });
+
+  it("leaves inline text size arrows unprevented while ordinary prose shortcuts still page", () => {
+    render(<DailyStoryReader source={measuredSource()} />);
+    const slider = screen.getByRole("slider"); slider.focus();
+    expect(fireEvent.keyDown(slider, { key: "ArrowRight" })).toBe(true);
+    expect(visibleProse()).toBe("The first page opens beside the harbour."); slider.blur();
+    expect(fireEvent.keyDown(screen.getByRole("article"), { key: "ArrowRight" })).toBe(false);
+    expect(visibleProse()).toBe("The second page follows the path uphill.");
+    expect(fireEvent.keyDown(screen.getByRole("article"), { key: "ArrowLeft" })).toBe(false);
+    expect(visibleProse()).toBe("The first page opens beside the harbour.");
+  });
+
+  it.each([{ ctrlKey: true }, { altKey: true }, { metaKey: true }, { shiftKey: true }, { isComposing: true }])("does not consume a modified/composing key %j", extra => {
+    render(<DailyStoryReader source={measuredSource()} />);
+    expect(fireEvent.keyDown(window, { key: "ArrowRight", ...extra })).toBe(true);
+    expect(visibleProse()).toBe("The first page opens beside the harbour.");
+  });
+  it("retains ordinary reader Escape when its own toolbar button is focused", () => {
+    render(<DailyStoryReader source={measuredSource()} defaultImmersive />);
+    const exit = screen.getByRole("button", { name: "Exit full screen" }); exit.focus();
+    fireEvent.keyDown(exit, { key: "Escape" });
+    expect(document.querySelector(".ds-reader-root")).not.toHaveClass("ds-immersive");
+  });
+  it("respects another handler's prevented key", () => {
+    render(<div onKeyDown={event => event.preventDefault()}><DailyStoryReader source={measuredSource()} /></div>);
+    fireEvent.keyDown(screen.getByRole("article"), { key: "ArrowRight" });
+    expect(visibleProse()).toBe("The first page opens beside the harbour.");
+  });
+  it.each([{ display: "none" }, { visibility: "hidden" }])("ignores dialogs hidden by an ancestor %j", style => {
+    render(<><div style={style}><div role="dialog">Hidden sheet</div></div><DailyStoryReader source={measuredSource()} /></>);
+    fireEvent.keyDown(window, { key: "ArrowRight" });
+    expect(visibleProse()).toBe("The second page follows the path uphill.");
+  });
+  it("does not page a kept-alive hidden reader when the visible reader owns the key", () => {
+    const source = measuredSource();
+    render(<><div aria-hidden="true"><DailyStoryReader source={source} /></div><DailyStoryReader source={source} /></>);
+    fireEvent.keyDown(window, { key: "ArrowRight" });
+    const bodies = document.querySelectorAll(".ds-reader-body");
+    expect(bodies[0]).toHaveTextContent("The first page opens beside the harbour.");
+    expect(bodies[1]).toHaveTextContent("The second page follows the path uphill.");
+  });
+  it("retains captured modal ownership even when an earlier bubble listener removes the dialog", () => {
+    const dialog = document.createElement("dialog"); dialog.open = true; document.body.appendChild(dialog);
+    const close = event => { if (event.key === "Escape") dialog.remove(); };
+    window.addEventListener("keydown", close);
+    try {
+      render(<DailyStoryReader source={measuredSource()} defaultImmersive />);
+      fireEvent.keyDown(window, { key: "Escape" });
+      expect(dialog.isConnected).toBe(false);
+      expect(document.querySelector(".ds-reader-root")).toHaveClass("ds-immersive");
+    } finally { window.removeEventListener("keydown", close); dialog.remove(); }
+  });
+  it("does not turn pages for range drags or dialog gestures, but keeps deliberate reading-area swipes", () => {
+    render(<DailyStoryReader source={measuredSource()} />);
+    const slider = screen.getByRole("slider"), body = document.querySelector(".ds-reader-body");
+    const start = target => fireEvent.touchStart(target, { touches: [{ clientX: 240, clientY: 100 }] });
+    const end = (target, x = 60, y = 100) => fireEvent.touchEnd(target, { changedTouches: [{ clientX: x, clientY: y }] });
+    start(slider); end(slider);
+    expect(visibleProse()).toBe("The first page opens beside the harbour.");
+    start(body); end(slider); end(body);
+    expect(visibleProse()).toBe("The first page opens beside the harbour.");
+    const dialog = document.createElement("div"); dialog.setAttribute("role", "dialog"); document.body.appendChild(dialog);
+    try { start(body); end(body); expect(visibleProse()).toBe("The first page opens beside the harbour."); } finally { dialog.remove(); }
+    start(body); end(body, 200, 300);
+    expect(visibleProse()).toBe("The first page opens beside the harbour.");
+    start(body); end(body);
+    expect(visibleProse()).toBe("The second page follows the path uphill.");
+    const zone = document.querySelector(".ds-reader-tap-right"); start(zone); end(zone);
+    expect(visibleProse()).toBe("The third page reaches the cottage.");
+  });
 
   it("enables footer Previous inside the first measured chapter and returns to the exact prior prose", () => {
     const source = measuredSource();

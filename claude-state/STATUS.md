@@ -7,6 +7,9 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-07 · RUN0005 FINAL KEYBOARD / TOUCH CHECKS PASS
+> - Final bundledNode24 **689 tests/51 suites** pass (2workers/15s fixturetimeout); initial4worker5s run had3heavyfixturetimeouts, affected13/3 rerun pass with assertions unchanged. Independent currentreader/canonical/actualshell **65/4** pass, changedlint0errors/diff/JSON valid. Source repairs keyboard/textarea/range/native/ARIA controls, top sheet Escape and control-touch ownership, preserving prose shortcuts/swipes. No network/store/default/other surface changes. Build→normalpush→site→freshnative360/390/430 next; currentlive **index-CpFTKGqP.js**.
+>
 > ### CURRENT STATE — 2026-10-07 · RUN0005 A05 EVENT OWNERSHIP EXTENSION
 > - CR0027 same sharedcontrol atom includes critic-controlled range swipe causing underlying page flip; claim extended before code. Existing prose keyboard/swipe and all controls stay. STATE current/next both **B01-S03-A05**; stage remainsB01-S03. Creative full-source/primary-research blueprint reconciles prior reading-margin/chapter-leaf worlds for next opt-in full reader→note→samepassage preview, preserving3themes/fivepreferences/source/content. No full redesign built/approved or social choice received.
 >
