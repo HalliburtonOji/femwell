@@ -35,18 +35,17 @@ export default function CritiqueDoc() {
         <p style={{ fontSize: 14, margin: "9px 0 0" }}>Work resumes its saved stage each run. No need to keep typing “continue”. Routine fixes proceed; substantial choices come to you.</p>
       </section>
       <section style={card} aria-labelledby="critique-current">
-        <h2 id="critique-current" style={{ ...heading, fontSize: 23 }}>Where we are · Sky</h2>
-        <p style={{ margin: 0 }}>Batch 01 · Sky reliability is live. The accepted design and every tool stay.</p>
-        <p style={{ fontSize: 14 }}><strong>This pass:</strong> fresh Moon facts, safer day changes, retries that keep your open reading, and protection against late updates. Failed checks stop before another reading is made.</p>
-        <p style={{ fontSize: 14 }}>Saved, Journal and Planner links keep the exact lesson edition—even when it’s unavailable. Earlier previews now show their place in the design history.</p>
-        <p style={{ fontSize: 14 }}>241 checks pass. Real taps at 360, 390 and 430px, plus independent source and screenshot review. Physical iPhone and VoiceOver remain unverified.</p>
-        <p style={{ fontSize: 14 }}><strong>Next:</strong> Read’s full text and exit progress, then Listen’s resume and playback recovery.</p>
-        <a href="/Lifestyle?section=sky" style={action}>Open the live Sky room</a>
+        <h2 id="critique-current" style={{ ...heading, fontSize: 23 }}>Where we are · Read & Listen</h2>
+        <p style={{ margin: 0 }}>Batch 01 · Sky is complete. Read and Listen’s repairs are built; mobile release checks are underway. The accepted design and every tool stay.</p>
+        <p style={{ fontSize: 14 }}><strong>Read:</strong> proper paragraphs, a retry when a lookup fails, and your last place saved as you leave.</p>
+        <p style={{ fontSize: 14 }}><strong>Listen:</strong> one player follows you into a read. Saved places, buffering, retries and real episode links now agree.</p>
+        <p style={{ fontSize: 14 }}>Independent source and regression checks pass. Real taps at 360, 390 and 430px follow deployment. Physical iPhone and VoiceOver remain unverified.</p>
+        <a href="/Lifestyle?section=read" style={action}>Open Read</a>{" · "}<a href="/Lifestyle?section=listen" style={action}>Open Listen</a>
       </section>
       <section style={card} aria-labelledby="critique-batch">
         <h2 id="critique-batch" style={{ ...heading, fontSize: 23 }}>Next big build</h2>
         <p style={{ margin: 0 }}><strong>Batch 01 · Lifestyle polish & connections</strong></p>
-        <p style={{ fontSize: 14 }}>Sky’s first stage is complete. Read and Listen follow, carrying earlier research, shipped fixes and open gaps forward.</p>
+        <p style={{ fontSize: 14 }}>Finish Read and Listen’s mobile proof, then Books and Yours: one shelf, private notes and exact source returns.</p>
         <ol style={{ paddingLeft: 23, fontSize: 14 }}>{buildStages.map((stage) => <li key={stage} style={{ padding: "5px 0" }}>{stage}</li>)}</ol>
         <p style={{ fontSize: 14 }}>Then Community & DM, followed by the remaining app. New substantial features stay in Ideas for your go-ahead.</p>
         <a href="/staged-builds/index.html" style={action}>Open the rolling build plan</a>

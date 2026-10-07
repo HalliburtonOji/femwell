@@ -26,6 +26,7 @@
 //   • SAVE/BOOKMARK toggle → persists to UserProfile.saved_item_ids (exact live mechanism; see
 //     Lifestyle.jsx ArticleSheet.handleSave) — optimistic + rollback + flash, like Nutrition's toggleShop.
 import { useState, useMemo, useEffect, useRef, useCallback, Children, isValidElement } from "react";
+import { useInRouterContext, useNavigate } from "react-router-dom";
 import {
   BookOpen, Feather, Book, Film, Headphones, Moon, Heart, Sparkles, Sun, Bookmark,
   Wind, ChevronRight, ChevronLeft, Music2, Compass, Loader, ExternalLink, Clock, Coffee, Sunset, Check, Star, Sprout, Leaf, Coins, X,
@@ -481,7 +482,16 @@ function FocusableBoards({ focusBoard, sliderRef, gold, children }) {
   return <div style={{ marginTop: 20 }}>{boards[focusBoard] || null}</div>;
 }
 
-export default function LifestyleEliteShell({ enableFocus = false, layout = null, clean = false, previewActions = false, initialSection = null, continuousSky = false, celestialSky = false, botanicalHeader = false, firstFoldVariant = null, dailySkyLessons = false, artDirection = null, skyWorld = null, contentRoute } = {}) {
+function RoutedLifestyleShell(props) {
+  const navigate = useNavigate();
+  return <LifestyleShell {...props} navigate={navigate}/>;
+}
+export default function LifestyleEliteShell(props = {}) {
+  const routed = useInRouterContext();
+  // Standalone founder studies can render without App's router; main keeps one document/player.
+  return routed ? <RoutedLifestyleShell {...props}/> : <LifestyleShell {...props} navigate={href=>window.location.assign(href)}/>;
+}
+function LifestyleShell({ navigate, enableFocus = false, layout = null, clean = false, previewActions = false, initialSection = null, continuousSky = false, celestialSky = false, botanicalHeader = false, firstFoldVariant = null, dailySkyLessons = false, artDirection = null, skyWorld = null, contentRoute } = {}) {
   const foldVariant = clean && (["living", "garden", "almanac", "canopy"].includes(firstFoldVariant) || isLivingDirection(firstFoldVariant)) ? firstFoldVariant : null;
   const livingDemo = isLivingDirection(foldVariant) || ["reading-room","sky-worlds"].includes(artDirection);
   const worldDirection = artDirection === "sky-worlds" ? getSkyWorld(skyWorld).id : foldVariant;
@@ -892,18 +902,18 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
     if (!it) return;
     recordAction(it, "open");
     const raw = it._raw || it;
-    if (it._book === "gutenberg" || it.gutenbergId) { const href=gutenbergReaderHref(it); if(href)window.location.assign(href);else flash("This book’s reader couldn’t open. Try another edition."); return; }
+    if (it._book === "gutenberg" || it.gutenbergId) { const href=gutenbergReaderHref(it); if(href)navigate(href);else flash("This book’s reader couldn’t open. Try another edition."); return; }
     setBookReader(raw);
-  }, [recordAction]);
+  }, [recordAction,navigate]);
 
   // open the exact item full-screen (deep-link parity with live Lifestyle: LifestyleDetail / readers)
   const openItem = useCallback((it) => {
     if (!it) return;
     recordAction(it, "open");   // teach the feed she opened this (fire-and-forget)
-    if (it._book === "gutenberg") { window.location.assign(`/BookReader?gutenberg_id=${it._gutenbergId}`); return; }
-    if (lfTypeOf(it) === "book") { window.location.assign(`/FictionReader?id=${it.id}`); return; }
-    window.location.assign(`/LifestyleDetail?id=${it.id}`);
-  }, [recordAction]);
+    if (it._book === "gutenberg") { const href=gutenbergReaderHref(it); if(href)navigate(href);else flash("This book’s reader couldn’t open. Try another edition.");return; }
+    if (lfTypeOf(it) === "book") { navigate(`/FictionReader?id=${encodeURIComponent(it.id)}`); return; }
+    navigate(`/LifestyleDetail?id=${encodeURIComponent(it.id)}`);
+  }, [recordAction,navigate]);
 
   const jumpTo = (idx) => {
     setJumpOpen(false);
@@ -2061,7 +2071,7 @@ function TimePickerLens({ pickFor, isSaved, onSave, onOpen, onTry, presentation 
               <span style={{ color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{listen.title}</span>
               <span style={{ color: T.muted, fontWeight: 600, flexShrink: 0 }}>· {durLabel(listen) || metaOf(listen)}</span>
             </div>
-            <>{presentation && listen.audio_url ? <FloraAudio item={{id:listen.id,title:listen.title,sourceName:listen.source_name,imageUrl:listen.image_url}} src={listen.audio_url} label={listen.title} accent={cwOf("sage").petal} initialDuration={Number(listen.duration_seconds)||0}/> : <LifestyleMedia item={listen} accent={cwOf("sage").petal} />}</>
+            <>{presentation && listen.audio_url ? <FloraAudio item={listen} src={listen.audio_url} label={listen.title} accent={cwOf("sage").petal} initialDuration={Number(listen.duration_seconds)||0}/> : <LifestyleMedia item={listen} accent={cwOf("sage").petal} />}</>
           </div>
         ) : <EmptyLine>{presentation ? "No listen fits this time. Try another moment." : "A listen lands here as podcasts are added."}</EmptyLine>}
         {/* the make / awe prompt — saves as a soft intention */}

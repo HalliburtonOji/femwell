@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { pickProfile } from "@/utils/userProfile";
 import { ArrowLeft, Bookmark, BookmarkCheck, Heart, HeartOff, Loader2, PlayCircle } from "lucide-react";
@@ -6,7 +7,7 @@ import { format } from "date-fns";
 import { getCategoryGradient, attachFallbackOverlay } from "@/utils/imageFallback";
 import ContentActionBar from "@/components/common/ContentActionBar";
 import ShareButton from "@/components/share/ShareButton";
-import { readTimeLabel, countWords } from "@/components/brand/ReadingColumn";
+import ReadingColumn, { readTimeLabel, countWords } from "@/components/brand/ReadingColumn";
 import { removeSavedItem } from "@/lib/savedItems";
 
 // Map a content category to the best-fit whole-life Community room (default: the Lounge).
@@ -27,7 +28,17 @@ const FEMWELL_GENERATED_PROVIDERS = new Set([
 
 function stripHtml(str) {
   if (!str) return "";
-  return str.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  // Keep source structure. Render only text; executable markup is discarded.
+  return String(str).replace(/<(script|style|template|noscript)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "")
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/<h([1-6])\b[^>]*>/gi, (_, level) => `\n\n${Number(level) === 3 ? "###" : "##"} `)
+    .replace(/<\/h[1-6]\s*>/gi, "\n\n")
+    .replace(/<br\s*\/?\s*>/gi, "\n")
+    .replace(/<li\b[^>]*>/gi, "\n\n• ")
+    .replace(/<\/?(?:p|div|section|article|blockquote|ul|ol|li)\b[^>]*>/gi, "\n\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/\r\n?/g, "\n").replace(/[^\S\n]+/g, " ")
+    .replace(/\n[ \t]+/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 
 function decodeHtmlEntities(str) {
@@ -84,7 +95,7 @@ function stripMarkdown(text) {
 //   eyebrow  — `### Heading` (same rules)
 //   chapter  — `Chapter N` at the start of a paragraph (its own line)
 //   p        — everything else (plain paragraph, with markdown stripped)
-function renderBodyBlocks(body) {
+export function renderBodyBlocks(body) {
   if (!body) return [];
   const decoded = decodeHtmlEntities(body);
   const rawBlocks = decoded.split(/\n\n+/);
@@ -96,16 +107,20 @@ function renderBodyBlocks(body) {
     if (!paragraph) return;
     // Split on embedded heading lines so `Foo\n## Bar` becomes two blocks.
     const segments = paragraph
-      .split(/\n(?=#{2,3}\s)/g)
+      .split(/\n(?=#{2,3}\s)|(?<=\n)/g)
       .map((s) => s.trim())
       .filter(Boolean);
 
+    let pending = "";
+    const flush = () => { if (pending) blocks.push({kind:"p",text:stripMarkdown(pending)}); pending=""; };
     segments.forEach((seg) => {
       if (seg.startsWith("### ")) {
+        flush();
         blocks.push({ kind: "eyebrow", text: stripMarkdown(seg.slice(4).trim()) });
         return;
       }
       if (seg.startsWith("## ")) {
+        flush();
         blocks.push({ kind: "h2", text: stripMarkdown(seg.slice(3).trim()) });
         return;
       }
@@ -113,14 +128,16 @@ function renderBodyBlocks(body) {
       // never runs together with the body text that follows.
       const chapterMatch = seg.match(/^(Chapter\s+\d+\b[^\n.]*)([\s\S]*)$/i);
       if (chapterMatch) {
+        flush();
         const chapterLine = chapterMatch[1].trim();
         const rest = (chapterMatch[2] || "").replace(/^[\s.:—-]+/, "").trim();
         blocks.push({ kind: "chapter", text: stripMarkdown(chapterLine) });
         if (rest) blocks.push({ kind: "p", text: stripMarkdown(rest) });
         return;
       }
-      blocks.push({ kind: "p", text: stripMarkdown(seg) });
+      pending += `${pending ? "\n" : ""}${seg}`;
     });
+    flush();
   };
 
   rawBlocks.forEach((raw) => pushParagraph(raw.trim()));
@@ -128,7 +145,8 @@ function renderBodyBlocks(body) {
 }
 
 export default function LifestyleDetail() {
-  const urlParams = new URLSearchParams(window.location.search);
+  const location = useLocation();
+  const urlParams = new URLSearchParams(location.search);
   const id = urlParams.get("id");
 
   const [item, setItem] = useState(null);
@@ -145,6 +163,9 @@ export default function LifestyleDetail() {
   const actionLock=useRef(false);
   const [related, setRelated] = useState([]);
   const [videoFailed, setVideoFailed] = useState(false);
+  const [loadError, setLoadError] = useState("");
+  const [bodyError, setBodyError] = useState("");
+  const [retry, setRetry] = useState(0);
 
   // YouTube embed errors (153, 101, 150) don't fire iframe.onError — they're
   // surfaced via postMessage from the IFrame Player API. Listen for those and
@@ -171,33 +192,50 @@ export default function LifestyleDetail() {
   useEffect(() => {
     if (!id || !fullBody) return;
     const key = `fw_article_pos_${id}`;
+    let ready = false, dirty = false, snapshot = null;
+    let y = 0;
     try {
-      const y = parseInt(localStorage.getItem(key) || "0", 10);
-      if (y > 40) window.requestAnimationFrame(() => window.scrollTo(0, y));
+      const saved = JSON.parse(localStorage.getItem(key) || "0");
+      y = Number(typeof saved === "number" ? saved : saved?.scrollY) || 0;
     } catch { /* ignore */ }
+    const frame = window.requestAnimationFrame(() => { if (y > 40) window.scrollTo(0,y); ready = true; });
     let t = null;
-    const onScroll = () => {
-      if (t) return;
-      t = window.setTimeout(() => { t = null; try { localStorage.setItem(key, String(Math.round(window.scrollY))); } catch { /* ignore */ } }, 400);
+    const flush = () => {
+      if (t) window.clearTimeout(t); t = null;
+      if (!dirty || !snapshot) return;
+      try { localStorage.setItem(key,JSON.stringify(snapshot)); dirty = false; } catch { /* device storage unavailable */ }
     };
+    const onScroll = () => {
+      if (!ready) return;
+      snapshot = {scrollY:Math.max(0,Math.round(window.scrollY)),ts:Date.now()}; dirty = true;
+      if (t) return;
+      t = window.setTimeout(flush,400);
+    };
+    const onHidden = () => { if (document.visibilityState === "hidden") flush(); };
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => { window.removeEventListener("scroll", onScroll); if (t) window.clearTimeout(t); };
+    window.addEventListener("pagehide",flush);document.addEventListener("visibilitychange",onHidden);
+    return () => { flush(); window.cancelAnimationFrame(frame); window.removeEventListener("scroll",onScroll);window.removeEventListener("pagehide",flush);document.removeEventListener("visibilitychange",onHidden); };
   }, [id, fullBody]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
+      const retaining = retry > 0 && item?.id === id;
+      setLoading(!retaining);
+      setLoadError("");setBodyError("");if (!retaining) {setFullBody("");setItem(null);setRelated([]);}
       setVideoFailed(false);
       try {
+        if (!id) return;
         const user = await base44.auth.me();
         if(cancelled)return;
         setViewer(user);
         const [items, profiles] = await Promise.all([
-          base44.entities.LifestyleItems.filter({ id }).catch(() => []),
+          base44.entities.LifestyleItems.filter({ id }),
           base44.entities.UserProfile.filter({ user_id: user.id }).catch(() => []),
         ]);
         if (cancelled) return;
+        if (!Array.isArray(items)) throw new Error("Article lookup unavailable");
         const fetched = items[0] || null;
         const nextProfile = pickProfile(profiles);   // not [0] — see utils/userProfile
         setItem(fetched);
@@ -226,11 +264,12 @@ export default function LifestyleDetail() {
                   summary: fetched.summary || lede,
                   content_type: fetched.content_type,
                 });
+                if (typeof res?.data?.body !== 'string' || !res.data.body.trim()) throw new Error('Full reading unavailable');
                 if (!cancelled) {
                   setFullBody(stripHtml(res?.data?.body || fetched.summary || lede || ""));
                 }
               } catch {
-                if (!cancelled) setFullBody(stripHtml(fetched.summary || lede || ""));
+                if (!cancelled) { setFullBody(stripHtml(fetched.summary || lede || ""));setBodyError("The rest didn’t load. Your opening is still here."); }
               } finally {
                 if (!cancelled) setBodyLoading(false);
               }
@@ -257,12 +296,13 @@ export default function LifestyleDetail() {
         }
       } catch (err) {
         console.error("LifestyleDetail init failed:", err);
+        if (!cancelled) setLoadError("This read didn’t load. Let’s try again.");
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
     return () => { cancelled = true; };
-  }, [id]);
+  }, [id,retry]);
 
   const updateProfileField = async (field, value) => {
     const me=await base44.auth.me();
@@ -317,7 +357,12 @@ export default function LifestyleDetail() {
     );
   }
 
-  // Genuine not-found, only after fetch settled.
+  if (loadError && !item) return <div className="min-h-screen flex flex-col items-center justify-center" style={{backgroundColor:"#F5F4F1",padding:24,gap:16}}>
+    <p role="alert" style={{fontSize:18,color:"#191510"}}>{loadError}</p>
+    <button type="button" onClick={()=>setRetry(n=>n+1)} style={{minHeight:44,padding:"10px 22px",borderRadius:24,background:"#4B3849",color:"#fff"}}>Retry article</button>
+    <button type="button" onClick={()=>window.history.back()} style={{minHeight:44}}>Go back</button>
+  </div>;
+  // Genuine not-found, only after a successful array response.
   if (!item) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: "#ECE7DA", padding: 24 }}>
@@ -437,15 +482,15 @@ export default function LifestyleDetail() {
            it says. Article variant = spaced paragraphs, NO indent (indent XOR space, Butterick). */
         .fw-reader-card .fw-body-p {
           font-family: "Cormorant Garamond", Georgia, serif;
-          font-size: 17px;
-          line-height: 1.62;
+          font-size: inherit;
+          line-height: inherit;
           color: #0B0805;
           font-weight: 400;
           margin: 0 0 16px;
           text-indent: 0;
         }
         @media (min-width: 768px) {
-          .fw-reader-card .fw-body-p { font-size: 18px; }
+          .fw-reader-card .fw-body-p { font-size: inherit; }
         }
         .fw-reader-card .fw-body-p:last-child { margin-bottom: 0; }
         .fw-reader-card .fw-h2 {
@@ -508,7 +553,7 @@ export default function LifestyleDetail() {
 
       <div className="max-w-2xl mx-auto px-4 pt-12">
         <div className="flex items-center justify-between mb-6">
-          <button onClick={() => window.history.back()} className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid #D8CFBC" }}>
+          <button aria-label="Back" onClick={() => window.history.back()} className="w-11 h-11 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid #D8CFBC" }}>
             <ArrowLeft className="w-4 h-4" style={{ color: "#0B0805" }} />
           </button>
           <div className="flex items-center gap-2">
@@ -733,13 +778,14 @@ export default function LifestyleDetail() {
           )}
 
           {/* Body — editorial blocks */}
+          {(bodyError || loadError) && <div role="alert" style={{marginBottom:18,fontSize:15}}><p>{bodyError || loadError}</p><button type="button" style={{minHeight:44}} onClick={()=>setRetry(n=>n+1)}>Retry full reading</button></div>}
           {bodyLoading ? (
             <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "20px 0" }}>
               <Loader2 style={{ width: 18, height: 18, color: "#E8B4B8", animation: "spin 0.7s linear infinite" }} />
               <span style={{ fontSize: 13, color: "#2E261B", }}>Loading the rest…</span>
             </div>
           ) : (
-            <div>
+            <ReadingColumn variant="article" bleed>
               {blocks.length === 0 && (
                 <p className="fw-body-p" style={{ fontSize: 16, lineHeight: 1.78, color: "#0B0805" }}>
                   {stripMarkdown(decodeHtmlEntities(item.summary || ""))}
@@ -833,7 +879,7 @@ export default function LifestyleDetail() {
 
                 return rendered;
               })}
-            </div>
+            </ReadingColumn>
           )}
 
           {/* Takeaways */}
@@ -958,9 +1004,9 @@ export default function LifestyleDetail() {
                 const cardBg = r.image_gradient || getCategoryGradient(item.category);
                 const metaBits = [r.source ? r.source.toUpperCase() : "", r.rel ? r.rel.toUpperCase() : ""].filter(Boolean);
                 return (
-                  <a
+                  <Link
                     key={r.id}
-                    href={`/LifestyleDetail?id=${encodeURIComponent(r.id)}`}
+                    to={`/LifestyleDetail?id=${encodeURIComponent(r.id)}`}
                     className="fw-related-card"
                   >
                     <div style={{
@@ -1023,7 +1069,7 @@ export default function LifestyleDetail() {
                         {metaBits.join(" · ")}
                       </p>
                     )}
-                  </a>
+                  </Link>
                 );
               })}
             </div>

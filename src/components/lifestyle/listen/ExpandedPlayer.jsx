@@ -3,6 +3,7 @@ import { X, Play, Pause, SkipBack, SkipForward, ExternalLink, Gauge, Moon } from
 import { usePodcastPlayer } from '@/hooks/usePodcastPlayer';
 import { FloraVisualiser } from '@/components/brand/expandCards';
 import { useScrollLock } from '@/utils/useScrollLock';
+import { episodeSourceUrl } from './episode';
 
 // Full-screen modal version of the podcast player. Opens when the user
 // taps the MiniPlayer body. Provides scrubber, ±15/30s skips, large play
@@ -63,6 +64,9 @@ export default function ExpandedPlayer() {
     seekBy,
     collapse,
     error,
+    playbackStatus,
+    progressError,
+    retryProgress,
     playbackRate,
     cyclePlaybackRate,
     sleepRemainingSec,
@@ -70,6 +74,8 @@ export default function ExpandedPlayer() {
     sleepFading,
     setSleepTimer,
   } = player;
+  const externalUrl = episodeSourceUrl(ep);
+  const active = isPlaying || ['loading','buffering'].includes(playbackStatus);
 
   const sleepLabel = sleepTimerMin
     ? `${Math.floor(sleepRemainingSec / 60)}:${String(sleepRemainingSec % 60).padStart(2, '0')}`
@@ -89,6 +95,7 @@ export default function ExpandedPlayer() {
       aria-modal="true"
       aria-label="Podcast player"
       ref={modalRef}
+      className="fw-sheet-safe"
       style={{
         position: 'fixed',
         inset: 0,
@@ -110,8 +117,8 @@ export default function ExpandedPlayer() {
           onClick={collapse}
           aria-label="Close player"
           style={{
-            width: 36,
-            height: 36,
+            width: 44,
+            height: 44,
             borderRadius: 9999,
             background: 'rgba(0,0,0,0.06)',
             border: 'none',
@@ -245,7 +252,7 @@ export default function ExpandedPlayer() {
         <button
           type="button"
           onClick={togglePlay}
-          aria-label={isPlaying ? 'Pause' : 'Play'}
+          aria-label={active ? 'Pause' : error ? 'Retry playback' : 'Play'}
           style={{
             ...ctrlButton,
             width: 72,
@@ -255,7 +262,7 @@ export default function ExpandedPlayer() {
             borderRadius: 9999,
           }}
         >
-          {isPlaying
+          {active
             ? <Pause size={28} fill="currentColor" aria-hidden="true" />
             : <Play size={28} fill="currentColor" aria-hidden="true" style={{ marginLeft: 2 }} />}
         </button>
@@ -367,8 +374,8 @@ export default function ExpandedPlayer() {
           )}
         </div>
 
-        <a
-          href={ep.content_url || ep.episode_url || '#'}
+        {externalUrl && <a
+          href={externalUrl}
           target="_blank"
           rel="noopener noreferrer"
           style={{
@@ -383,10 +390,12 @@ export default function ExpandedPlayer() {
           }}
         >
           <ExternalLink size={14} aria-hidden="true" />
-          Open in your app
-        </a>
+          Open episode
+        </a>}
       </div>
 
+      {['loading','buffering'].includes(playbackStatus) && <p role="status" style={{textAlign:'center',fontSize:15}}>{playbackStatus === 'buffering' ? 'Buffering…' : 'Starting…'}</p>}
+      {progressError && <p role="status" style={{textAlign:'center',fontSize:15}}>{progressError} <button type="button" style={{minHeight:44}} onClick={progressError.includes('load') ? ()=>player.play(ep) : retryProgress}>{progressError.includes('load') ? 'Retry saved place' : 'Retry sync'}</button></p>}
       {error && (
         <p
           role="alert"

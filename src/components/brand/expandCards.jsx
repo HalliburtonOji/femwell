@@ -45,6 +45,7 @@ import { T, SERIF, UI, PAPER_BG, Heart } from "@/components/journal/Editorial";
 import { OXBLOOD } from "@/components/brand/SliderKit";
 import { base44 } from "@/api/base44Client";
 import { usePodcastPlayer } from "@/hooks/usePodcastPlayer";
+import { playableEpisode, episodeSourceUrl } from "@/components/lifestyle/listen/episode";
 import ReadingColumn from "@/components/brand/ReadingColumn";
 import FloraCover from "@/components/brand/FloraCover";
 import { ChapterBlock } from "@/utils/chapterProse";
@@ -402,6 +403,10 @@ export function FloraAudio({ src, label, accent, initialDuration = 0, item = {},
   const [err, setErr] = useState(false);
 
   const isThis = !!player && player.currentEpisode?.id === item.id;
+  const episode = playableEpisode(item,src,initialDuration,label);
+  const externalUrl = episodeSourceUrl(episode);
+  const playerError = isThis && player.error;
+  const busy = isThis && ['loading','buffering'].includes(player.playbackStatus);
   const playing = player ? (isThis && player.isPlaying) : localPlaying;
   const t = player ? (isThis ? player.position : 0) : localT;
   const dur = player ? (isThis ? (player.duration || initialDuration) : initialDuration) : localDur;
@@ -409,12 +414,7 @@ export function FloraAudio({ src, label, accent, initialDuration = 0, item = {},
   const toggle = () => {
     if (player) {
       if (isThis) { player.togglePlay(); return; }
-      player.play({
-        id: item.id, audio_url: src, title: item.title || label,
-        source_name: item.sourceName || item.kind || "FemWell",
-        image_url: item.imageUrl || undefined,
-        duration_seconds: initialDuration || undefined,
-      });
+      player.play(episode);
       return;
     }
     const a = ref.current; if (!a) return;
@@ -427,23 +427,24 @@ export function FloraAudio({ src, label, accent, initialDuration = 0, item = {},
     <div className="fw-audio-transport" style={{ background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 16, padding: "12px 14px 10px", boxShadow: "inset 0 1px 0 rgba(255,253,247,0.6)" }}>
       <div className="fw-audio-garden"><FloraVisualiser playing={playing} height={compact ? 36 : 66} /></div>
       <div style={{ display: "flex", alignItems: "center", gap: 13, marginTop: 6 }}>
-        <button onClick={toggle} aria-label={playing ? "Pause" : "Play"} style={{ width: 46, height: 46, borderRadius: 999, background: accent, color: "#fff", border: "none", display: "grid", placeItems: "center", cursor: "pointer", flexShrink: 0, boxShadow: `0 4px 14px ${accent}55` }}>
-          {playing ? <Pause size={19} /> : <Play size={19} style={{ marginLeft: 2 }} />}
+        <button onClick={toggle} aria-label={playing || busy ? "Pause" : playerError || err ? "Retry playback" : "Play"} style={{ width: 46, height: 46, borderRadius: 999, background: accent, color: "#fff", border: "none", display: "grid", placeItems: "center", cursor: "pointer", flexShrink: 0, boxShadow: `0 4px 14px ${accent}55` }}>
+          {playing || busy ? <Pause size={19} /> : <Play size={19} style={{ marginLeft: 2 }} />}
         </button>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{err ? "This one won't play here — open it instead." : label}</div>
+          <div style={{ fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</div>
           <div style={{ height: 5, borderRadius: 999, background: T.paperDeep, margin: "8px 0 4px", overflow: "hidden" }}>
             <div style={{ width: `${pct}%`, height: "100%", background: accent, borderRadius: 999, transition: "width .2s linear" }} />
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", fontFamily: UI, fontSize: 10.5, fontWeight: 600, color: T.muted }}>
             <span>{fmtTime(t)}</span>
-            <span>{player && isThis ? "keeps playing while you browse" : fmtTime(dur)}</span>
+            <span role="status">{busy ? (player.playbackStatus === 'buffering' ? 'Buffering…' : 'Starting…') : playing ? "keeps playing while you browse" : dur > 0 ? fmtTime(dur) : 'Duration unavailable'}</span>
           </div>
         </div>
       </div>
       {/* SC 1.2.1 — audio-only wants a TRANSCRIPT (not captions). Also just kind: she may
           want to READ the sleep story instead of hearing it. */}
-      {item.transcript && <TranscriptDisclosure text={item.transcript} accent={accent} />}
+      {(playerError || err) && <p role="alert" style={{fontFamily:UI,fontSize:13,lineHeight:1.5,margin:'10px 0 0',color:T.ink}}>{playerError || 'This one didn’t play.'} {externalUrl && <a href={externalUrl} target="_blank" rel="noopener noreferrer" style={{color:accent}}>Open episode</a>}</p>}
+      {episode.transcript && <TranscriptDisclosure text={episode.transcript} accent={accent} />}
       {!player && <audio ref={ref} src={src} preload="none"
         onLoadedMetadata={(e) => setLocalDur(e.currentTarget.duration)}
         onTimeUpdate={(e) => setLocalT(e.currentTarget.currentTime)}

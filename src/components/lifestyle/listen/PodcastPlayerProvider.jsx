@@ -29,6 +29,18 @@ const STORAGE_KEY_SPEED = 'fw_podcast_playback_rate';
 let _singletonAudio = null;
 let _singletonEpisode = null; // current episode object, mirrors React state
 let _singletonRate = 1.0;
+let _singletonIntent = 0;
+let _singletonStatus = 'idle';
+let _singletonOwner = null;
+let _singletonProgressReady = false;
+const _listenWrites = new Map();
+const _pendingPositions = new Map();
+const finiteSeconds = value => Number.isFinite(Number(value)) && Number(value) > 0 ? Number(value) : 0;
+function ownedListens(rows, uid, id) {
+  if (!Array.isArray(rows) || rows.some(row => !row?.id || row.user_id !== uid || row.lifestyle_item_id !== id)) throw new Error('Listen lookup unavailable');
+  const timestamp = row => [row.updated_at,row.updated_date,row.created_at,row.created_date].map(value=>Date.parse(value || '')).find(Number.isFinite) || 0;
+  return [...rows].sort((a,b)=>timestamp(b)-timestamp(a));
+}
 // Subscribers used so other components could read state directly; today
 // only the provider subscribes, but the hook is here for future use.
 const _singletonSubscribers = new Set();
@@ -59,6 +71,10 @@ export const PodcastPlayerContext = createContext(null);
 export function PodcastPlayerProvider({ children }) {
   const audioRef = useRef(null);
   const userIdRef = useRef(null);
+  const episodeOwnerRef = useRef(_singletonOwner);
+  const progressReadyRef = useRef(_singletonProgressReady);
+  const resumeCleanupRef = useRef(null);
+  const controlsRef = useRef(null);
   const lastPersistAtRef = useRef(0);
   const sleepTimerRef = useRef(null);
   // Refs that mirror state so the (mount-once) audio-event handlers can
@@ -71,6 +87,16 @@ export function PodcastPlayerProvider({ children }) {
   const [duration, setDuration] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
   const [error, setError] = useState(null);
+  const [playbackStatus, setPlaybackStatus] = useState('idle');
+  const [progressError, setProgressError] = useState(null);
+  const setTransport = useCallback(status => {
+    _singletonStatus = status;setPlaybackStatus(status);setIsPlaying(status === 'playing');
+  }, []);
+  const cancelResume = useCallback(() => {
+    _singletonIntent += 1;
+    resumeCleanupRef.current?.();resumeCleanupRef.current = null;
+  }, []);
+  const setProgressReady = useCallback(ready => { progressReadyRef.current = ready;_singletonProgressReady = ready; },[]);
   const [playbackRate, setPlaybackRateState] = useState(() => {
     try {
       const stored = typeof localStorage !== 'undefined' ? Number(localStorage.getItem(STORAGE_KEY_SPEED)) : 0;
@@ -97,27 +123,41 @@ export function PodcastPlayerProvider({ children }) {
   // lastPersistAtRef gate (one upsert per ~5s while playing). Used by
   // resume-from-position on the next episode load. Non-fatal — silently
   // skips if user_id is missing.
-  const upsertListenRow = useCallback(async (episode, posSec, durSec, isCompleted) => {
-    const uid = userIdRef.current;
-    if (!uid || !episode?.id) return;
-    try {
-      const existing = await base44.entities.PodcastListens.filter(
-        { user_id: uid, lifestyle_item_id: episode.id }, undefined, 1,
-      ).catch(() => []);
+  const upsertListenRow = useCallback(async (episode, posSec, durSec, isCompleted, owner = episodeOwnerRef.current) => {
+    const uid = owner;
+    if (!uid || !episode?.id || !progressReadyRef.current) return;
+    const key = `${uid}:${episode.id}`;
+    const snapshot = {episode,posSec,durSec,isCompleted,uid};
+    _pendingPositions.set(key,snapshot);
+    const task = (_listenWrites.get(key) || Promise.resolve()).catch(()=>{}).then(async()=>{
+      try {
+      if ((await base44.auth.me())?.id !== uid) return;
+      const existing = ownedListens(await base44.entities.PodcastListens.filter(
+        { user_id: uid, lifestyle_item_id: episode.id }, '-updated_at', 10,
+      ),uid,episode.id);
+      // Auth can change while a read is in flight. Never write using mount-time identity.
+      if ((await base44.auth.me())?.id !== uid) return;
       const payload = {
         user_id: uid,
         lifestyle_item_id: episode.id,
-        position_sec: Math.max(0, Math.floor(posSec || 0)),
-        duration_sec: Math.max(0, Math.floor(durSec || 0)),
+        position_sec: Math.floor(finiteSeconds(posSec)),
+        duration_sec: Math.floor(finiteSeconds(durSec)),
         completed: !!isCompleted,
-        last_played_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
-      if (existing?.[0]?.id) {
-        await base44.entities.PodcastListens.update(existing[0].id, payload);
-      } else {
-        await base44.entities.PodcastListens.create({ ...payload, created_at: new Date().toISOString() });
+      const acknowledgement = existing[0]?.id
+        ? await base44.entities.PodcastListens.update(existing[0].id,payload)
+        : await base44.entities.PodcastListens.create({...payload,created_at:new Date().toISOString()});
+      if (!acknowledgement?.id || (acknowledgement.user_id && acknowledgement.user_id !== uid)) throw new Error('Listen not confirmed');
+      if (_pendingPositions.get(key) === snapshot) _pendingPositions.delete(key);
+      if (currentEpisodeRef.current?.id === episode.id && episodeOwnerRef.current === uid) setProgressError(null);
+      } catch {
+        if (currentEpisodeRef.current?.id === episode.id && episodeOwnerRef.current === uid) setProgressError('Your place hasn’t synced yet.');
       }
-    } catch { /* non-fatal — playback continues regardless */ }
+    });
+    _listenWrites.set(key,task);
+    await task;
+    if (_listenWrites.get(key) === task) _listenWrites.delete(key);
   }, []);
 
   // Mount the singleton <audio> element on first render. Lives at the body
@@ -140,9 +180,9 @@ export function PodcastPlayerProvider({ children }) {
         setCurrentEpisode(_singletonEpisode);
         currentEpisodeRef.current = _singletonEpisode;
       }
-      if (!a.paused) setIsPlaying(true);
-      setPosition(a.currentTime || 0);
-      setDuration(a.duration || 0);
+      setTransport(a.paused ? (_singletonEpisode ? 'paused' : 'idle') : _singletonStatus);
+      setPosition(finiteSeconds(a.currentTime));
+      setDuration(finiteSeconds(a.duration));
     } else {
       a = document.createElement('audio');
       a.preload = 'metadata';
@@ -160,8 +200,8 @@ export function PodcastPlayerProvider({ children }) {
     audioRef.current = a;
 
     const onTime = () => {
-      const pos = a.currentTime || 0;
-      const dur = a.duration || 0;
+      const pos = finiteSeconds(a.currentTime);
+      const dur = finiteSeconds(a.duration);
       setPosition(pos);
       // Debounced persistence — single PodcastListens upsert per ~5s.
       const now = Date.now();
@@ -171,27 +211,35 @@ export function PodcastPlayerProvider({ children }) {
         upsertListenRow(currentEpisodeRef.current, pos, dur, completed);
       }
     };
-    const onMeta = () => setDuration(a.duration || 0);
+    const onMeta = () => setDuration(finiteSeconds(a.duration));
     const onPlay = () => {
-      setIsPlaying(true);
+      if (a.paused || !currentEpisodeRef.current) return;
+      setTransport('loading');
+    };
+    const onPlaying = () => {
+      if (a.paused || !currentEpisodeRef.current) return;
+      setError(null);setTransport('playing');
       if (typeof navigator !== 'undefined' && navigator.mediaSession) {
         navigator.mediaSession.playbackState = 'playing';
       }
     };
     const onPause = () => {
-      setIsPlaying(false);
+      // pause events are queued: a newer Play may already have taken effect.
+      if (!a.paused) return;
+      cancelResume();setTransport(currentEpisodeRef.current ? 'paused' : 'idle');
       if (typeof navigator !== 'undefined' && navigator.mediaSession) {
         navigator.mediaSession.playbackState = 'paused';
       }
       // Persist immediately on pause — captures position before user leaves.
       const ep = currentEpisodeRef.current;
       if (ep) {
-        const dur = a.duration || 0;
-        const pos = a.currentTime || 0;
+        const dur = finiteSeconds(a.duration);
+        const pos = finiteSeconds(a.currentTime);
         upsertListenRow(ep, pos, dur, dur > 0 && pos / dur >= COMPLETED_THRESHOLD);
       }
     };
     const onErr = () => {
+      if (!currentEpisodeRef.current) return;
       // Surface the kind of error so the UI can offer the right fallback.
       // Most podcast playback failures are CORS-style src rejections (code 4
       // MEDIA_ERR_SRC_NOT_SUPPORTED). For those we want the player to show an
@@ -203,14 +251,15 @@ export function PodcastPlayerProvider({ children }) {
         : code === 2
           ? 'Network hiccup — try again or open externally'
           : 'Playback error';
-      setError(msg);
+      cancelResume();setError(msg);setTransport('failed');
     };
+    const onWaiting = () => { if (currentEpisodeRef.current && !a.paused) setTransport('buffering'); };
     const onEnd = () => {
-      setIsPlaying(false);
+      cancelResume();setTransport('ended');
       // Mark completed.
       const ep = currentEpisodeRef.current;
       if (ep) {
-        const dur = a.duration || 0;
+        const dur = finiteSeconds(a.duration);
         upsertListenRow(ep, dur, dur, true);
       }
     };
@@ -219,6 +268,9 @@ export function PodcastPlayerProvider({ children }) {
     a.addEventListener('loadedmetadata', onMeta);
     a.addEventListener('durationchange', onMeta);
     a.addEventListener('play', onPlay);
+    a.addEventListener('playing', onPlaying);
+    a.addEventListener('waiting', onWaiting);
+    a.addEventListener('stalled', onWaiting);
     a.addEventListener('pause', onPause);
     a.addEventListener('error', onErr);
     a.addEventListener('ended', onEnd);
@@ -233,9 +285,13 @@ export function PodcastPlayerProvider({ children }) {
       a.removeEventListener('loadedmetadata', onMeta);
       a.removeEventListener('durationchange', onMeta);
       a.removeEventListener('play', onPlay);
+      a.removeEventListener('playing', onPlaying);
+      a.removeEventListener('waiting', onWaiting);
+      a.removeEventListener('stalled', onWaiting);
       a.removeEventListener('pause', onPause);
       a.removeEventListener('error', onErr);
       a.removeEventListener('ended', onEnd);
+      cancelResume();
       audioRef.current = null;
     };
     // intentional: mount once, lifetime of provider
@@ -264,13 +320,12 @@ export function PodcastPlayerProvider({ children }) {
           ]
         : [],
     });
-    const a = audioRef.current;
     const handlers = [
-      ['play', () => a?.play().catch(() => {})],
-      ['pause', () => a?.pause()],
-      ['seekbackward', (d) => { if (a) a.currentTime = Math.max(0, a.currentTime - (d?.seekOffset || 15)); }],
-      ['seekforward', (d) => { if (a) a.currentTime = Math.min(a.duration || Infinity, a.currentTime + (d?.seekOffset || 30)); }],
-      ['seekto', (d) => { if (a && d?.seekTime != null) a.currentTime = d.seekTime; }],
+      ['play', () => controlsRef.current?.play(currentEpisodeRef.current)],
+      ['pause', () => controlsRef.current?.pause()],
+      ['seekbackward', (d) => controlsRef.current?.seekBy(-(d?.seekOffset || 15))],
+      ['seekforward', (d) => controlsRef.current?.seekBy(d?.seekOffset || 30)],
+      ['seekto', (d) => { if (d?.seekTime != null) controlsRef.current?.seek(d.seekTime); }],
     ];
     for (const [action, cb] of handlers) {
       try { navigator.mediaSession.setActionHandler(action, cb); }
@@ -294,66 +349,104 @@ export function PodcastPlayerProvider({ children }) {
       return;
     }
     // Same-episode resume vs new-episode load.
-    const switching = !currentEpisode || currentEpisode.id !== episode.id;
+    cancelResume();let intent = _singletonIntent;
+    const retryOwner = episodeOwnerRef.current;
+    const retryAt = currentEpisodeRef.current?.id === episode.id && a.error ? finiteSeconds(a.currentTime) : 0;
+    const switching = !currentEpisodeRef.current || currentEpisodeRef.current.id !== episode.id || a.getAttribute('src') !== audioUrl || !!a.error;
+    const resumeNeeded = switching || !progressReadyRef.current;
+    const isCurrent = () => intent === _singletonIntent && audioRef.current === a && currentEpisodeRef.current?.id === episode.id && a.getAttribute('src') === audioUrl;
     if (switching) {
+      const previous = currentEpisodeRef.current;
+      if (previous) upsertListenRow(previous,finiteSeconds(a.currentTime),finiteSeconds(a.duration),finiteSeconds(a.duration)>0 && a.currentTime/a.duration>=COMPLETED_THRESHOLD);
+      currentEpisodeRef.current = null;episodeOwnerRef.current = null;
+      a.pause();
+      // pause may invalidate previous work; this request now owns the source.
+      intent = _singletonIntent;setProgressReady(false);
       setCurrentEpisode(episode);
       currentEpisodeRef.current = episode;
       _singletonEpisode = episode; // module-level so a remounted provider can re-sync
       _notifySingleton();
       setPosition(0);
-      setDuration(Number(episode.duration_seconds) || 0);
+      setDuration(finiteSeconds(episode.duration_seconds));setProgressError(null);
       a.src = audioUrl;
       a.load();
       // Apply persisted playback rate to the new audio source.
       try { a.playbackRate = playbackRateRef.current || 1.0; } catch { /* noop */ }
-      // Resume from saved position if we have a PodcastListens row for this
-      // user+episode. Non-fatal if the lookup fails.
-      try {
-        const uid = userIdRef.current;
-        if (uid) {
-          const rows = await base44.entities.PodcastListens.filter(
-            { user_id: uid, lifestyle_item_id: episode.id }, undefined, 1,
-          ).catch(() => []);
-          const saved = rows?.[0];
-          const resumeAt = Number(saved?.position_sec) || 0;
-          if (saved && !saved.completed && resumeAt > 5) {
-            // Seek after metadata loads — otherwise currentTime is rejected.
-            const seekOnce = () => {
-              try { a.currentTime = resumeAt; } catch { /* noop */ }
-              a.removeEventListener('loadedmetadata', seekOnce);
-            };
-            a.addEventListener('loadedmetadata', seekOnce);
-          }
-        }
-      } catch { /* noop */ }
     }
+    // Start synchronously within the tap: awaiting SDK calls first loses Safari's gesture.
+    setTransport('loading');
+    let startResult;
+    const failedStart = () => { if (isCurrent()) { setError('Couldn’t start. Tap play to try again.');setTransport('failed'); } };
+    try { startResult = Promise.resolve(a.play()).catch(failedStart); }
+    catch { failedStart();startResult=Promise.resolve(); }
     try {
-      await a.play();
-    } catch (err) {
-      // Most likely: autoplay-policy block on iOS Safari before user gesture.
-      setError(err?.message || 'Could not start playback');
+      const uid = (await base44.auth.me())?.id || null;
+      if (!isCurrent()) return;
+      const ownerChanged = episodeOwnerRef.current !== uid;
+      if (ownerChanged) {
+        setProgressReady(false);
+        // An explicit play under a different account starts from that account's place.
+        if (!switching) { try { a.currentTime=0;setPosition(0); } catch { /* source not ready */ } }
+      }
+      userIdRef.current = uid;episodeOwnerRef.current = uid;_singletonOwner=uid;
+      if ((resumeNeeded || ownerChanged) && uid) {
+        const rows = ownedListens(await base44.entities.PodcastListens.filter({user_id:uid,lifestyle_item_id:episode.id},'-updated_at',10),uid,episode.id);
+        const confirmedOwner = (await base44.auth.me())?.id;
+        if (!isCurrent() || confirmedOwner !== uid || episodeOwnerRef.current !== uid) return;
+        const ownedRetryAt = retryOwner === uid ? retryAt : 0;
+        const saved = rows[0], resumeAt = ownedRetryAt || finiteSeconds(saved?.position_sec);
+        const confirmPlace = () => {
+          setProgressReady(true);
+          setProgressError(previous=>previous === 'Your saved place couldn’t load.' ? null : previous);
+        };
+        if (ownedRetryAt > 0 || (saved && !saved.completed && resumeAt > 5)) {
+          const restore = async () => {
+            try {
+            if (!isCurrent()) return;
+            if ((await base44.auth.me())?.id !== uid || !isCurrent()) return;
+            const actualDuration = finiteSeconds(a.duration);
+            const target = actualDuration ? Math.min(resumeAt,Math.max(0,actualDuration - 0.01)) : resumeAt;
+            a.currentTime = target;setPosition(target);confirmPlace();
+            resumeCleanupRef.current?.();resumeCleanupRef.current=null;
+            } catch { if (isCurrent()) setProgressError('Your saved place couldn’t load.'); }
+          };
+          if (a.readyState >= 1) await restore();
+          else {
+            a.addEventListener('loadedmetadata',restore,{once:true});
+            resumeCleanupRef.current=()=>a.removeEventListener('loadedmetadata',restore);
+          }
+        } else confirmPlace();
+      }
+    } catch {
+      if (isCurrent()) setProgressError('Your saved place couldn’t load.');
     }
-  }, [currentEpisode]);
+    await startResult;
+  }, [cancelResume,setTransport,upsertListenRow,setProgressReady]);
 
   const pause = useCallback(() => {
+    cancelResume();
     const a = audioRef.current;
     if (a) a.pause();
-  }, []);
+  }, [cancelResume]);
 
   const togglePlay = useCallback(() => {
     const a = audioRef.current;
     if (!a) return;
-    if (a.paused) a.play().catch(() => {});
-    else a.pause();
-  }, []);
+    if (a.paused || a.error) play(currentEpisodeRef.current);
+    else pause();
+  }, [play,pause]);
 
   const seek = useCallback((sec) => {
     const a = audioRef.current;
     if (!a) return;
-    const clamped = Math.max(0, Math.min(a.duration || Infinity, sec));
+    if (!Number.isFinite(Number(sec))) return;
+    cancelResume();
+    setProgressReady(true);
+    const dur = finiteSeconds(a.duration);
+    const clamped = Math.max(0,dur ? Math.min(dur,Number(sec)) : Number(sec));
     a.currentTime = clamped;
     setPosition(clamped);
-  }, []);
+  }, [cancelResume,setProgressReady]);
 
   const seekBy = useCallback((delta) => {
     const a = audioRef.current;
@@ -362,20 +455,24 @@ export function PodcastPlayerProvider({ children }) {
   }, [seek]);
 
   const close = useCallback(() => {
+    cancelResume();
     const a = audioRef.current;
     // Persist final position before tearing down.
     const ep = currentEpisodeRef.current;
     if (a && ep) {
-      const dur = a.duration || 0;
-      const pos = a.currentTime || 0;
+      const dur = finiteSeconds(a.duration);
+      const pos = finiteSeconds(a.currentTime);
       upsertListenRow(ep, pos, dur, dur > 0 && pos / dur >= COMPLETED_THRESHOLD);
     }
-    if (a) { try { a.pause(); a.removeAttribute('src'); a.load(); } catch { /* noop */ } }
+    currentEpisodeRef.current = null;
+    episodeOwnerRef.current = null;
+    _singletonOwner=null;setProgressReady(false);
+    if (a) { try { a.pause(); a.volume = 1;a.removeAttribute('src'); a.load(); } catch { /* noop */ } }
     setCurrentEpisode(null);
     currentEpisodeRef.current = null;
     _singletonEpisode = null;
     _notifySingleton();
-    setIsPlaying(false);
+    setTransport('idle');setSleepFading(false);setProgressError(null);
     setPosition(0);
     setDuration(0);
     setIsExpanded(false);
@@ -390,7 +487,7 @@ export function PodcastPlayerProvider({ children }) {
       navigator.mediaSession.metadata = null;
       navigator.mediaSession.playbackState = 'none';
     }
-  }, [upsertListenRow]);
+  }, [upsertListenRow,cancelResume,setTransport,setProgressReady]);
 
   // Speed control — cycles through SPEED_OPTIONS. Persists to localStorage
   // so the user's preferred rate sticks across sessions + new episodes.
@@ -425,6 +522,7 @@ export function PodcastPlayerProvider({ children }) {
       sleepTimerRef.current = null;
     }
     const restoreVolume = () => { const a = audioRef.current; if (a) { try { a.volume = 1; } catch { /* noop */ } } };
+    restoreVolume();
     if (!min || min <= 0) {
       setSleepTimerMinState(null);
       setSleepRemainingSec(0);
@@ -465,6 +563,8 @@ export function PodcastPlayerProvider({ children }) {
       clearInterval(sleepTimerRef.current);
       sleepTimerRef.current = null;
     }
+    // The audio survives this provider. A cancelled fade must not leave it quiet.
+    if (_singletonAudio) { try { _singletonAudio.volume = 1; } catch { /* iOS may own volume */ } }
   }, []);
 
   // Apply playback rate whenever audio element changes (covers initial mount).
@@ -474,6 +574,7 @@ export function PodcastPlayerProvider({ children }) {
     playbackRateRef.current = playbackRate;
   }, [playbackRate]);
 
+  controlsRef.current = {play,pause,seek,seekBy};
   const value = {
     currentEpisode,
     isPlaying,
@@ -481,6 +582,13 @@ export function PodcastPlayerProvider({ children }) {
     duration,
     isExpanded,
     error,
+    playbackStatus,
+    progressError,
+    retryProgress: () => {
+      const ep=currentEpisodeRef.current,uid=episodeOwnerRef.current;
+      const pending=ep && uid && _pendingPositions.get(`${uid}:${ep.id}`);
+      if (pending) return upsertListenRow(ep,pending.posSec,pending.durSec,pending.isCompleted,uid);
+    },
     playbackRate,
     sleepTimerMin,
     sleepRemainingSec,

@@ -1,5 +1,6 @@
 import { Play, Pause, X, ExternalLink } from 'lucide-react';
 import { usePodcastPlayer } from '@/hooks/usePodcastPlayer';
+import { episodeSourceUrl } from './episode';
 
 // Mini-player rendered at the bottom of the viewport, above the mobile
 // bottom nav. Null-renders when no episode is loaded. Tap anywhere except
@@ -14,14 +15,15 @@ const MINI_HEIGHT = 56;
 export default function MiniPlayer() {
   const player = usePodcastPlayer();
   if (!player) return null;
-  const { currentEpisode, isPlaying, togglePlay, close, expand, error } = player;
+  const { currentEpisode, isPlaying, togglePlay, close, expand, error, playbackStatus } = player;
   if (!currentEpisode) return null;
 
   // External fallback target — try the most specific link the episode carries.
   // LifestyleItems rows store `content_url` (the episode/article URL) and may
   // also carry a `source_url` (the show's website). Either is fine for
   // "Open externally" when in-app playback fails.
-  const externalUrl = currentEpisode.content_url || currentEpisode.source_url || null;
+  const externalUrl = episodeSourceUrl(currentEpisode);
+  const active = isPlaying || ['loading','buffering'].includes(playbackStatus);
 
   const handleClick = (e) => {
     // Clicks on the controls (play/pause + close) should not expand.
@@ -88,7 +90,7 @@ export default function MiniPlayer() {
       </div>
 
       {/* Title + source */}
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <button type="button" data-mini-player-control onClick={expand} aria-label="Expand player" style={{ flex: 1, minWidth: 0, minHeight:44,background:'transparent',border:0,color:'inherit',padding:0,textAlign:'left',cursor:'pointer' }}>
         <div
           style={{
             fontSize: 13,
@@ -114,9 +116,9 @@ export default function MiniPlayer() {
         >
           {error
             ? <span style={{ color: '#FFB4B4' }}>{error}</span>
-            : (currentEpisode.source_name || 'Podcast')}
+            : playbackStatus === 'buffering' ? 'Buffering…' : playbackStatus === 'loading' ? 'Starting…' : (currentEpisode.source_name || 'Podcast')}
         </div>
-      </div>
+      </button>
 
       {/* Primary control — Play/pause normally; "Open externally" when
           playback errored and we have a destination to send the user to. */}
@@ -130,7 +132,7 @@ export default function MiniPlayer() {
           aria-label="Open episode externally"
           style={{
             display: 'flex', alignItems: 'center', gap: 5,
-            height: 36, padding: '0 12px',
+            height: 44, padding: '0 12px',
             borderRadius: 9999,
             background: '#BC2E27',
             color: '#F4EFE3',
@@ -149,10 +151,10 @@ export default function MiniPlayer() {
           type="button"
           data-mini-player-control
           onClick={(e) => { e.stopPropagation(); togglePlay(); }}
-          aria-label={isPlaying ? 'Pause' : 'Play'}
+          aria-label={active ? 'Pause' : error ? 'Retry playback' : 'Play'}
           style={{
-            width: 36,
-            height: 36,
+            width: 44,
+            height: 44,
             borderRadius: 9999,
             background: 'rgba(255,255,255,0.12)',
             border: 'none',
@@ -164,7 +166,7 @@ export default function MiniPlayer() {
             flexShrink: 0,
           }}
         >
-          {isPlaying
+          {active
             ? <Pause size={18} fill="currentColor" aria-hidden="true" />
             : <Play size={18} fill="currentColor" aria-hidden="true" style={{ marginLeft: 1 }} />}
         </button>
@@ -177,8 +179,8 @@ export default function MiniPlayer() {
         onClick={(e) => { e.stopPropagation(); close(); }}
         aria-label="Close player"
         style={{
-          width: 32,
-          height: 32,
+          width: 44,
+          height: 44,
           borderRadius: 9999,
           background: 'transparent',
           border: 'none',

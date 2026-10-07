@@ -30,8 +30,9 @@ export function continuePositions(storage) {
           const pos = JSON.parse(storage.getItem(key) || '{}');
           rows.push({ ...pos, bookId: key.slice(14), kind: 'book' });
         } else if (key.startsWith('fw_article_pos_')) {
-          const scrollY = Number(storage.getItem(key));
-          if (scrollY > 40) rows.push({ bookId: key.slice(15), kind: 'article', scrollY, ts: 0 });
+          const saved = JSON.parse(storage.getItem(key) || '0');
+          const scrollY = Number(typeof saved === 'number' ? saved : saved?.scrollY);
+          if (Number.isFinite(scrollY) && scrollY > 40) rows.push({ bookId: key.slice(15), kind: 'article', scrollY, ts: Number(saved?.ts) || 0 });
         }
       } catch { /* one damaged position cannot hide the others */ }
     }
