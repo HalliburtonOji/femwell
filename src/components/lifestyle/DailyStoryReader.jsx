@@ -1633,6 +1633,9 @@ function ReaderStyles({ reducedMotion }) {
 
       /* Control bar — series label inline + volume-style font + fullscreen */
       .ds-reader-controls {
+        /* Wrapped inline controls must receive taps above the page-turn zones. */
+        position: relative;
+        z-index: 20;
         display: flex;
         align-items: center;
         justify-content: space-between;
