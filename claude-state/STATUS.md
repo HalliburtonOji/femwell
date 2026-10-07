@@ -7,6 +7,10 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-07 · RUN0005 TOOLBAR LIVE / KEYBOARD ISOLATION FOLLOW-UP
+> - Toolbar **1e1ce8f** pushed, rebuilt then site deployed, dist/public **index-CpFTKGqP.js**. Independent41 reader/canonical/mountedcontinuation regressions pass. Root native360 eachtoolbarcenter hits intendedcontrol; Reflect opens, blank device QA note confirms/reopens→actualBooksconsumer, fullscreen/settings/exit and Books continue37106 exactsource return pass. No social/age sends.
+> - Creative full-source audit found global reader arrows steal textarea/range keys; root native390 QA note Home→ArrowRight leavescaret0. Same claimed shared-control surface extended to shortcut/modal ownership before further edits; separate Escape ownership examined. New CR0027 interrupts closure, not full reader/craft completion. Rebuild/site required only if new repair; backend cancellation already separately deployed.
+>
 > ### CURRENT STATE — 2026-10-07 · RUN0005 NATIVE AUDIT INTERRUPTS RELEASE CLOSURE
 > - Public HTTP and signed-in native script both **index-fqo4FJps.js**; classic37106 now offered and exact saved page opens, page-next/back reproof. Actual Reflect tap instead turns page; DOM hit-test at its centre is **ds-reader-tap-right**, covering the toolbar. Newly mapped urgent A05 shared control interception interrupts final closure; Mr Fix It claim above precedes edits. Preserve all reader controls/page zones/consumers, no blanket CSS replacement or visual migration claim. No social send/age action.
 >
