@@ -20,3 +20,11 @@ Future entries: date + observed user/job/issue + proof/source + decision + accep
 # 7 October 2026 · staged delivery correction
 
 Halli is at work: no repeated continue prompts or tiny-task convenience stops. Reconcile prior big builds/research/fixes into BUILD_PLAN.md, finish coherent authorised stages and save exact batch/stage/atom for resumption. Outputs briefly state current live/staged position, next big plan and actual decisions, with material blockers only. No new decision means say so; do not re-ask unchanged held choices. Cadence remains four hours and silence remains no approval. This is durable delivery feedback, not a claim new features have shipped. Canon §10.5.21.
+
+## 7 October 2026 — run0002 implementation
+
+- A fulfilled non-array or non-empty unusable owner collection is not confirmed absence. Both client and actual producer must stop generation; a lookup catch-as-empty can bypass a cached record. Existing duplicate metadata proves lack of uniqueness, not which caller caused it; a guarded lookup is not atomic concurrency protection.
+- React batches can leave an event handler's rendered-state ref behind accepted functional setters. Highest accepted subscription must also reconcile its previous owner/day ref before a query snapshot settles. Independent critic reproduced newest30→delayed20 after initial10; the extra regression failed then passed.
+- Separate current Moon facts from dated reading/lesson identity. Shared clock/object refreshes now facts; local authored deck stays deliberate and drafts survive. Pending day must clear on clock reversal and be re-read at acceptance; restored pages need pageshow, not only timers.
+- Exact saved id/version should still lead to an explicit unavailable edition when the source is no longer present. Planner, Journal and global Saved must agree with local Yours; never relabel today's deck as the historical source or rewrite records.
+- Carry old findings only after actual code reconciliation. Source-readiness already shows several previous Read/Listen hypotheses repaired; the remaining player/reader paths get their own S02 proof before editing.

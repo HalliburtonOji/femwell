@@ -4,9 +4,9 @@
   "buildBatch": {
     "id": "B01",
     "title": "Approved Lifestyle polish and existing connections",
-    "status": "queued",
+    "status": "in progress",
     "currentStage": "B01-S01",
-    "nextAtom": "B01-S01-A01",
+    "nextAtom": "B01-S01-release-mobile-proof",
     "stageOrder": ["B01-S01", "B01-S02", "B01-S03", "B01-S04", "B01-S05"],
     "completedStages": [],
     "carryForwardFindings": ["CR-0003"],
@@ -16,7 +16,7 @@
   "requestedAt": "2026-10-07",
   "scheduler": { "kind": "heartbeat", "intervalHours": 4, "status": "ACTIVE", "id": "femwell-critique-director" },
   "baseline": { "commit": "59514c1", "liveBundle": "index-C4ypRGFt.js" },
-  "current": { "section": "Lifestyle / Sky", "atom": "Day-change, read failure and exact-edition recovery", "status": "queued for next four-hour run" },
+  "current": { "section": "Lifestyle / Sky", "atom": "B01-S01-release-mobile-proof", "status": "mapped reliability repairs and 241 tests complete; build/deploy/live pixels pending" },
   "lastCompleted": { "run": 1, "sourceCommit": "5faa13d", "liveBundle": "index--ssQW2DJ.js", "tests": "33 existing lesson tests passed", "proof": "root native 360/390/430; independent source and fresh Sky/Ideas pixels", "limits": "No VoiceOver, physical iPhone, new backend writes, social sends, purchases or live logout claim" },
   "rotation": ["Lifestyle / Sky", "Lifestyle / Read", "Lifestyle / Listen", "Lifestyle / Books", "Lifestyle / Good life", "Lifestyle / Yours", "Lifestyle / Everything and shared shell", "Today", "Planner", "Community and DM", "Journal", "Garden", "Nutrition", "Health", "Movement, rest and programmes", "Jess and notifications", "Account, auth, settings and Saved"],
   "nextRunNumber": 2,
@@ -24,7 +24,10 @@
   "findings": [
     { "id": "CR-0001", "severity": "P2", "title": "Daily lesson carousel semantics", "status": "closed: source review, 33 tests, root 360/390/430 taps and independent fresh pixels", "report": "claude-state/critique/reports/0001-sky-lessons-2026-10-07.md" },
     { "id": "CR-0002", "severity": "P2", "title": "Ideas header Back/calendar collision", "status": "closed: 44px no-overlap measurement, root native controls and independent fresh 360/390/430 pixels", "report": "claude-state/critique/reports/0001-sky-lessons-2026-10-07.md" },
-    { "id": "CR-0003", "severity": "P2", "title": "Historical Ideas descriptions still say approved main is held", "status": "open: root live dashboard observation; bounded catalogue-copy repair next preflight", "report": "claude-state/critique/delivery-workflow-2026-10-07.md" }
+    { "id": "CR-0003", "severity": "P2", "title": "Historical Ideas descriptions still say approved main is held", "status": "repaired in source; live catalogue reproof pending", "report": "claude-state/critique/reports/0002-sky-reliability-2026-10-07.md" },
+    { "id": "CR-0004", "severity": "P1", "title": "Late reading snapshots and batched subscriptions roll back the latest owned reading", "status": "reproduced then repaired; independent source reproof and regression pass; live proof pending", "report": "claude-state/critique/reports/0002-sky-reliability-2026-10-07.md" },
+    { "id": "CR-0005", "severity": "P2", "title": "Current Moon facts freeze in the header while the body refreshes", "status": "shared clock repaired; independent source and controlled day/draft proof pass; live proof pending", "report": "claude-state/critique/reports/0002-sky-reliability-2026-10-07.md" },
+    { "id": "CR-0006", "severity": "P1", "title": "Failed existing-reading lookup is mistaken for absence before generation", "status": "actual producer guard repaired; handler6/6 and independent source pass; function deployment pending", "report": "claude-state/critique/reports/0002-sky-reliability-2026-10-07.md" }
   ],
   "decisions": [],
   "deferredChecks": ["Physical iPhone behaviour", "Community 18+ access without attesting on Halli's behalf", "Social sends, purchases and held reading nudge remain separate decisions"],

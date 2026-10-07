@@ -37,7 +37,7 @@ describe("Saved identity and truthful exact returns",()=>{
     expect(savedReturnRoute({...row(),meta_json:JSON.stringify({kind:"sky-lesson",lessonId:"earthshine",lessonVersion:1,route})})).toBeNull();
   });
   it("does not substitute today's lesson when a saved edition is unavailable",()=>{
-    expect(savedReturnRoute({...row(),meta_json:JSON.stringify({kind:"sky-lesson",lessonId:"earthshine",lessonVersion:9,route:"/SkyWorldsDemo?direction=press"})})).toBeNull();
+    expect(savedReturnRoute({...row(),meta_json:JSON.stringify({kind:"sky-lesson",lessonId:"earthshine",lessonVersion:9,route:"/SkyWorldsDemo?direction=press"})})).toBe('/SkyWorldsDemo?direction=press&section=sky&lesson=earthshine&lessonVersion=9#daily-sky-lesson');
   });
   it("keeps a public catalogue lesson's exact edition when a legacy profile also references it",()=>{
     const lesson={...row("sky-save","sky-lesson:earthshine:v1"),meta_json:JSON.stringify({kind:"sky-lesson",lessonId:"earthshine",lessonVersion:1,route:"/SkyWorldsDemo?direction=petal-press"})};

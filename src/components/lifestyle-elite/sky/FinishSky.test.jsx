@@ -93,8 +93,8 @@ describe("complete lesson keeps and source-linked notes",()=>{
   it("holds an active written draft across midnight until she saves or closes it",async()=>{
     vi.useFakeTimers({toFake:["Date"]});vi.setSystemTime(new Date(2026,9,6,23,59));render(<DailySkyLesson userId="a"/>);
     fireEvent.click(screen.getByRole("button",{name:"A private note"}));fireEvent.change(screen.getByLabelText("What caught your eye?"),{target:{value:"Stay with this lesson."}});
-    const title=screen.getByRole("article",{name:"1 of 5"}).textContent;vi.setSystemTime(new Date(2026,9,7,0,1));fireEvent(document,new Event("visibilitychange"));
-    expect(screen.getByRole("button",{name:"Read today’s new lesson"})).toBeDisabled();expect(screen.getByRole("article",{name:"1 of 5"})).toHaveTextContent(title);
+    const title=screen.getByRole("group",{name:"1 of 5"}).textContent;vi.setSystemTime(new Date(2026,9,7,0,1));fireEvent(document,new Event("visibilitychange"));
+    expect(screen.getByRole("button",{name:"Read today’s new lesson"})).toBeDisabled();expect(screen.getByRole("group",{name:"1 of 5"})).toHaveTextContent(title);
     expect(screen.getByLabelText("What caught your eye?")).toHaveValue("Stay with this lesson.");
   });
   it("keeps an unavailable edition as an honest safe return rather than an arbitrary URL",async()=>{

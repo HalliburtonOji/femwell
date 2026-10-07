@@ -39,6 +39,7 @@ import { FloraAudio } from "@/components/brand/expandCards";
 import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
 import { FocusLayout } from "@/components/lifestyle-elite/FocusLayouts";
 import SkyFocus from "@/components/lifestyle-elite/SkyFocus";
+import useCurrentSkyDay from "@/components/lifestyle-elite/sky/useCurrentSkyDay";
 import { CelestialHeader } from "@/components/lifestyle-elite/sky/CelestialSky";
 import FocusedSectionActions from "@/components/lifestyle-elite/FocusedSectionActions";
 import { C, CLEAN_BG, CLEAN_CSS, CLEAN_PAGE_CSS } from "@/components/brand/cleanTokens";
@@ -1116,7 +1117,8 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   // The moon is REAL and free: getMoonPhase() is a synodic formula (±1% illumination,
   // client-side, no backend). So the card is honest and never blank even when today's
   // generated reading hasn't been written yet — the sky doesn't depend on an LLM.
-  const moonToday = useMemo(() => { try { return getMoonPhase(new Date()); } catch { return null; } }, []);
+  const currentSkyDay = useCurrentSkyDay();
+  const moonToday = useMemo(() => { try { return getMoonPhase(new Date()); } catch { return null; } }, [currentSkyDay]);
   const horoscopeCards = useMemo(() => {
     const moonLine = moonToday ? `${moonToday.name} · ${moonToday.illumination}% lit` : (horoscope?.moon_phase || "The sky");
     const hasReading = !!(horoscope && (horoscope.narrative || horoscope.headline));
@@ -1753,7 +1755,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
         {layout && (() => {
           const sec = focus ? focusSection : null;
           // BESPOKE section surfaces (§19). Each pulls everything for its section, in the new design.
-          if (sec === "sky") return <div className={livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><SkyFocus key={roomRevision} onReadingState={acceptSkyReading} contentRoute={contentRoute} cycleContext={["marginalia","reading-room","sky-worlds"].includes(artDirection) ? {phase:phaseKey,day:cycleDay,len:profile?.cycle_avg_length || 28} : undefined} artDirection={artDirection} dailyLessons={dailySkyLessons} direction={worldDirection} userProfile={profile} celestial={celestialSky} continuous={continuousSky} portalChart={previewActions} actionRequest={previewActions ? skyActionRequest : undefined} onActionState={previewActions ? setSkyActionState : undefined} onActionHandled={previewActions ? setSkyActionRequest : undefined} /></div>;
+          if (sec === "sky") return <div className={livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><SkyFocus key={roomRevision} presentMoon={moonToday} onReadingState={acceptSkyReading} contentRoute={contentRoute} cycleContext={["marginalia","reading-room","sky-worlds"].includes(artDirection) ? {phase:phaseKey,day:cycleDay,len:profile?.cycle_avg_length || 28} : undefined} artDirection={artDirection} dailyLessons={dailySkyLessons} direction={worldDirection} userProfile={profile} celestial={celestialSky} continuous={continuousSky} portalChart={previewActions} actionRequest={previewActions ? skyActionRequest : undefined} onActionState={previewActions ? setSkyActionState : undefined} onActionHandled={previewActions ? setSkyActionRequest : undefined} /></div>;
           if (sec === "story" || sec === "books") return <div className={artDirection === "sky-worlds" ? "fw-living-content fw-reading-room" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><BooksStoryFocus artDirection={artDirection === "sky-worlds" ? "reading-room" : artDirection} chapters={chapters} story={story} pick={storyPick} onRead={(i) => { setReaderStart(i); setReaderOpen(true); }}
             userId={user?.id} onSchedule={scheduleReading} onCorner={(b) => window.location.assign(createPageUrl(`Community?club=${dailyReadClubKey(b.gutenberg_id)}&title=${encodeURIComponent(b.title || "")}`))}
             continueCards={continueCards} shelfBookCards={shelfBookCards} classicCards={classicCards} onChapterDetails={() => setChapterOpen(true)} onBookDetails={setExpanded} onOpenBook={(it) => it?._library ? document.getElementById("book-library")?.scrollIntoView({behavior:"smooth"}) : it?.id === "daily-chapter" ? openTodaysChapter() : openBook(it._continue || it._raw || it)} lifeStage={profile?.life_stage} /></div>;

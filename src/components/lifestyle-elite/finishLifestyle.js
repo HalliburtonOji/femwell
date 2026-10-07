@@ -40,9 +40,17 @@ export function continuePositions(storage) {
 }
 // Both the initial/background shell load and Sky's settled publisher use this
 // owner/date contract, so a late stale fetch cannot undo a newly produced reading.
-export function newestOwnedReading(previous, incoming, ownerId) {
+export function newestOwnedReading(previous, incoming, ownerId, preferCurrent = false) {
   const valid = row => row?.user_id === ownerId && !!ownerId && typeof row.id === "string" && !!row.id.trim() && /^\d{4}-\d{2}-\d{2}$/.test(row.reading_date || "") && !Number.isNaN(Date.parse(`${row.reading_date}T12:00:00Z`)) && new Date(`${row.reading_date}T12:00:00Z`).toISOString().slice(0,10) === row.reading_date;
   const current = valid(previous) ? previous : null;
   if (!valid(incoming)) return current;
-  return current?.reading_date > incoming.reading_date ? current : incoming;
+  if (!current) return incoming;
+  if (current.reading_date !== incoming.reading_date) return current.reading_date > incoming.reading_date ? current : incoming;
+  // Same record: a confirmed update wins. Different records: follow the
+  // producer's newest-created ordering, preserving every older exact ID.
+  const fields = current.id === incoming.id ? ["updated_date", "updated_at", "created_date", "created_at"] : ["created_date", "created_at"];
+  const time = row => fields.map(field => Date.parse(row[field] || "")).find(Number.isFinite);
+  const before = time(current), after = time(incoming);
+  if (Number.isFinite(before) && Number.isFinite(after) && before !== after) return before > after ? current : incoming;
+  return preferCurrent ? current : incoming;
 }

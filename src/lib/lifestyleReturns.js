@@ -15,9 +15,9 @@ export function lifestyleReturnLink(item, route = "/Lifestyle") {
   if (["sky", "sky-lesson", "lifestyle"].includes(source)) {
     const reading = /^sky-reading:([\w-]{1,160})$/.exec(ref);
     if (reading && source !== "sky-lesson") return { href: `/Lifestyle?section=sky&reading=${encodeURIComponent(reading[1])}`, label: "Open this Sky reading" };
-    const key = /^sky-lesson:([\w-]+):v(\d+)$/.exec(ref);
+    const key = /^sky-lesson:([\w-]{1,160}):v(\d{1,6})$/.exec(ref);
     const lesson = key && SKY_LESSONS.find(entry => entry.id === key[1] && entry.version === Number(key[2]));
-    if (lesson) return { href: skyLessonRoute(lesson, "petal-press", route), label: "Open this Sky lesson" };
+    if (key) return { href: skyLessonRoute(lesson || {id:key[1],version:key[2]}, "petal-press", route), label: "Open this Sky lesson" };
   }
   if (source === "lifestyle") {
     const joy = /^joy:([\w-]+)$/.exec(ref);

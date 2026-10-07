@@ -36,16 +36,17 @@ export default function CritiqueDoc() {
       </section>
       <section style={card} aria-labelledby="critique-current">
         <h2 id="critique-current" style={{ ...heading, fontSize: 23 }}>Where we are · Sky</h2>
-        <p style={{ margin: 0 }}>First pass: daily lessons, kept sources and their return paths.</p>
-        <p style={{ fontSize: 14 }}><strong>Two small repairs:</strong> clearer lesson screen-reader structure, and space for the Ideas Back button beside the calendar.</p>
-        <p style={{ fontSize: 14 }}>The existing keep → Journal → exact lesson journey checks out. All content and tools stay.</p>
-        <p style={{ fontSize: 14 }}><strong>Next:</strong> Sky’s day-change and failure states, then Read. Independent review and detailed evidence live in the audit memory.</p>
+        <p style={{ margin: 0 }}>Batch 01 · Sky reliability. The accepted design and every tool stay.</p>
+        <p style={{ fontSize: 14 }}><strong>This pass:</strong> fresh Moon facts, safer day changes, retries that keep your open reading, and protection against late updates. Failed checks stop before another reading is made.</p>
+        <p style={{ fontSize: 14 }}>Saved, Journal and Planner links keep the exact lesson edition—even when it’s unavailable. Earlier previews now show their place in the design history.</p>
+        <p style={{ fontSize: 14 }}>Clock and response races have regression checks and independent source review. Live mobile recheck follows release; physical iPhone and VoiceOver remain unverified.</p>
+        <p style={{ fontSize: 14 }}><strong>Next:</strong> Read’s full text and exit progress, then Listen’s resume and playback recovery.</p>
         <a href="/Lifestyle?section=sky" style={action}>Open the live Sky room</a>
       </section>
       <section style={card} aria-labelledby="critique-batch">
         <h2 id="critique-batch" style={{ ...heading, fontSize: 23 }}>Next big build</h2>
         <p style={{ margin: 0 }}><strong>Batch 01 · Lifestyle polish & connections</strong></p>
-        <p style={{ fontSize: 14 }}>Queued, starting with Sky. Earlier research, shipped fixes and open gaps carry forward.</p>
+        <p style={{ fontSize: 14 }}>Sky is in release checks. Read and Listen follow, carrying earlier research, shipped fixes and open gaps forward.</p>
         <ol style={{ paddingLeft: 23, fontSize: 14 }}>{buildStages.map((stage) => <li key={stage} style={{ padding: "5px 0" }}>{stage}</li>)}</ol>
         <p style={{ fontSize: 14 }}>Then Community & DM, followed by the remaining app. New substantial features stay in Ideas for your go-ahead.</p>
         <a href="/staged-builds/index.html" style={action}>Open the rolling build plan</a>

@@ -13,12 +13,14 @@ describe("routed planner exact returns", () => {
     [{ source: "books", ref: "club:quiet-pages-2" }, "/Community?club=quiet-pages-2"],
     [{ source: "lifestyle", ref: "joy:walk-7fa8" }, "/Lifestyle?direction=petal-press&section=good&joy=walk-7fa8"],
     [{ source: "sky-lesson", ref: "sky-lesson:earthshine:v1" }, "/Lifestyle?direction=petal-press&section=sky&lesson=earthshine&lessonVersion=1#daily-sky-lesson"],
+    [{ source: "sky", ref: "sky-lesson:earthshine:v9" }, "/Lifestyle?direction=petal-press&section=sky&lesson=earthshine&lessonVersion=9#daily-sky-lesson"],
+    [{ source: "sky", ref: "sky-lesson:unknown:v1" }, "/Lifestyle?direction=petal-press&section=sky&lesson=unknown&lessonVersion=1#daily-sky-lesson"],
   ])("retains %j through agenda and schedule adapters", (source, href) => {
     const stored = { ...row, ...source };
     expect(lifestyleReturnLink(plannerItemToBlock(stored))?.href).toBe(href);
     expect(lifestyleReturnLink(plannerItemToPlanRow(stored))?.href).toBe(href);
   });
-  it.each([{ source: "books", ref: "https://evil.example" }, { source: "books", ref: "gutenberg:0" }, { source: "books", ref: "club:x?redirect=evil" }, { source: "lifestyle", ref: "joy:x#evil" }, { source: "sky", ref: "sky-lesson:earthshine:v9" }, { source: "sky", ref: "sky-lesson:unknown:v1" }, { source: "unknown", ref: "gutenberg:1342" }])("does not invent a return for %j", item => expect(lifestyleReturnLink(item)).toBeNull());
+  it.each([{ source: "books", ref: "https://evil.example" }, { source: "books", ref: "gutenberg:0" }, { source: "books", ref: "club:x?redirect=evil" }, { source: "lifestyle", ref: "joy:x#evil" }, { source: "sky", ref: "sky-lesson:../unknown:v1" }, { source: "sky", ref: "sky-lesson:unknown:v9000000" }, { source: "unknown", ref: "gutenberg:1342" }])("does not invent a return for %j", item => expect(lifestyleReturnLink(item)).toBeNull());
   it("preserves minutes, provenance, recurrence and user notes through an edit and reload", () => {
     const block = plannerItemToBlock(row);
     expect(block.duration).toBe(15);

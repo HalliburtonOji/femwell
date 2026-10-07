@@ -41,6 +41,7 @@ import useSkyCompletion from "./sky/useSkyCompletion";
 import { skyReadingKey } from "./sky/skyCompletion";
 import useSelectedSkyChart from "./sky/useSelectedSkyChart";
 import { skyParagraphs } from "./sky/skySourceContracts";
+import useCurrentSkyDay from "./sky/useCurrentSkyDay";
 
 const cap = (s) => (s ? String(s).charAt(0).toUpperCase() + String(s).slice(1) : s);
 const clean = (s) => String(s || "").replace(/<[^>]+>/g, "").replace(/\*(.+?)\*/g, "$1").replace(/\s+/g, " ").trim();
@@ -201,7 +202,7 @@ function LegacySkyFocus(props) {
   const chartState = useBirthChart(props.userProfile);
   return <SkyFocusBody {...props} chartState={chartState}/>;
 }
-function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, onActionHandled, onReadingState, portalChart = false, continuous = false, celestial = false, dailyLessons = false, direction, artDirection, cycleContext, contentRoute }) {
+function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onActionState, onActionHandled, onReadingState, portalChart = false, continuous = false, celestial = false, dailyLessons = false, direction, artDirection, cycleContext, contentRoute }) {
   const world = artDirection === "sky-worlds";
   const complete = world && direction === "petal-press";
   const artful = world || ["marginalia","reading-room"].includes(artDirection);
@@ -215,7 +216,9 @@ function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, o
   const chart = useMemo(() => deriveChart(astro, prof), [astro, prof]);
   const derivedCycle = useMemo(() => derivePhaseInfo(prof), [prof]);
   const cyc = artful && cycleContext ? cycleContext : derivedCycle;
-  const moon = useMemo(() => getMoonPhase(new Date()), [complete ? chartState.checkedDay : null]);
+  const currentSkyDay=useCurrentSkyDay(!presentMoon);
+  const currentMoon=useMemo(()=>getMoonPhase(new Date()),[currentSkyDay]);
+  const moon=presentMoon || currentMoon;
   const profections = useProfections(astro, prof);
   const asteroids = useAsteroids(astro, prof);
   const [sheetOpen, setSheetOpen] = useState(false);

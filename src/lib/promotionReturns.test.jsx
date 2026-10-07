@@ -16,7 +16,7 @@ vi.mock("@/lib/savedItems", () => ({
 const lesson = SKY_LESSONS.find(item => item.id === "earthshine");
 const edition = "sky-lesson:earthshine:v1";
 const href = "/Lifestyle?direction=petal-press&section=sky&lesson=earthshine&lessonVersion=1#daily-sky-lesson";
-const keep = (route = href, version = 1) => ({ id: "keep", user_id: "owner", item_type: "LIFESTYLE", item_id: edition, title: lesson.title,
+const keep = (route = href, version = 1) => ({ id: "keep", user_id: "owner", item_type: "LIFESTYLE", item_id: `sky-lesson:earthshine:v${version}`, title: lesson.title,
   meta_json: JSON.stringify({ kind: "sky-lesson", lessonId: lesson.id, lessonVersion: version, date: "2026-09-15", route }),
 });
 beforeEach(() => {
@@ -44,8 +44,18 @@ describe("canonical source returns with exact identity", () => {
   it.each(["sky", "lifestyle"])("retains an actual dated reading ID for %s without inventing a joy", source => {
     expect(lifestyleReturnLink({ source, ref: "sky-reading:owned_reading-7" })).toEqual({ href: "/Lifestyle?section=sky&reading=owned_reading-7", label: "Open this Sky reading" });
   });
-  it.each(["sky-reading:", "sky-reading:../other", "sky-reading:one?owner=other", `sky-reading:${"a".repeat(161)}`, "sky-lesson:earthshine:v9"])("does not broaden an invalid source %s", ref => {
+  it.each(["sky-reading:", "sky-reading:../other", "sky-reading:one?owner=other", `sky-reading:${"a".repeat(161)}`, "sky-lesson:../earthshine:v9", "sky-lesson:earthshine:v9000000"])("does not broaden an invalid source %s", ref => {
     expect(lifestyleReturnLink({ source: "sky", ref })).toBeNull();
+  });
+  it('preserves an unavailable exact lesson edition from Planner and Journal without substituting today',()=>{
+    const missing='sky-lesson:earthshine:v9';
+    const exact='/Lifestyle?direction=petal-press&section=sky&lesson=earthshine&lessonVersion=9#daily-sky-lesson';
+    expect(lifestyleReturnLink({source:'sky-lesson',ref:missing})?.href).toBe(exact);
+    expect(journalSourceReturn({content_key:missing})?.href).toBe(exact);
+    window.history.replaceState({},'',exact);
+    render(<DailySkyLesson userId="owner" direction="petal-press" previewRoute="/Lifestyle" human />);
+    expect(screen.getByRole('alert')).toHaveTextContent('That saved lesson or edition is unavailable. Today’s lessons are below; your saved record remains.');
+    expect(window.location.search).toContain('lessonVersion=9');
   });
   it("does not reinterpret other source namespaces", () => {
     expect(lifestyleReturnLink({ source: "books", ref: "gutenberg:11" })?.href).toBe("/BookReader?gutenberg_id=11");
@@ -88,7 +98,8 @@ describe("main lesson save, reopen and public sharing", () => {
   });
   it("keeps unavailable exact editions truthful on main and blocks mismatches/external destinations", () => {
     const fallback = skyLessonRoute({ id: "earthshine", version: 9 }, "petal-press", "/Lifestyle");
-    expect(savedReturnRoute(keep(href, 9))).toBeNull();
+    expect(savedReturnRoute(keep(href, 9))).toBe(fallback);
+    expect(savedReturnRoute(keep('https://evil.example/Lifestyle',9))).toBeNull();
     expect(safeSkySavedReturn("/Lifestyle?section=sky&lesson=earthshine&lessonVersion=9&direction=petal-press&private=discard", fallback)).toBe("/Lifestyle?section=sky&lesson=earthshine&lessonVersion=9&direction=petal-press#daily-sky-lesson");
     expect(safeSkySavedReturn(href, fallback)).toBe(fallback);
     expect(safeSkySavedReturn("/Lifestyle?section=read&lesson=earthshine&lessonVersion=9&direction=petal-press", fallback)).toBe("/Lifestyle?section=sky&lesson=earthshine&lessonVersion=9&direction=petal-press#daily-sky-lesson");

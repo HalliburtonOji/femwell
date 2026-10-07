@@ -96,7 +96,7 @@ function LessonDeck({userId,moon,direction,previewRoute,human}) {
     return()=>observer.disconnect();
   },[index,key]);
 
-  useEffect(()=>{const check=()=>{const current=localSkyDay();if(current!==day)setNextDay(current);};document.addEventListener("visibilitychange",check);const timer=setInterval(check,60000);return()=>{document.removeEventListener("visibilitychange",check);clearInterval(timer);};},[day]);
+  useEffect(()=>{const check=()=>{const current=localSkyDay();setNextDay(current!==day ? current : null);};document.addEventListener("visibilitychange",check);window.addEventListener("pageshow",check);const timer=setInterval(check,60000);return()=>{document.removeEventListener("visibilitychange",check);window.removeEventListener("pageshow",check);clearInterval(timer);};},[day]);
   useEffect(()=>{
     let cancelled=false;
     if(!userId){setNotes([]);return;}
@@ -153,7 +153,7 @@ function LessonDeck({userId,moon,direction,previewRoute,human}) {
       {lessonNotes.map((note,i)=><details key={note.id} className="daily-sky-kept-note"><summary>{i===0 ? "Your note on this lesson" : `Earlier note · ${note.session_date || "this lesson"}`}</summary><p>{note.text}</p><a href={`/Journal?entry=${encodeURIComponent(note.id)}&content_key=${encodeURIComponent(key)}`}>Open this journal note</a></details>)}
       {notesError && <p className="daily-sky-status">Your notes couldn’t load. <button onClick={()=>setNotesAttempt(n=>n+1)}>Retry notes</button></p>}
       {status && <p role="status" className="daily-sky-status">{status}</p>}
-      {nextDay && <><button className="daily-sky-link" disabled={busy || (writing && !!draft.trim())} onClick={()=>{setDay(nextDay);setNextDay(null);setExact(null);params.current.delete("lessonVersion");const url=new URL(window.location.href);url.searchParams.delete("lesson");url.searchParams.delete("lessonVersion");window.history.replaceState(window.history.state,"",url);go(0);}}>Read today’s new lesson</button>{writing && !!draft.trim() && <p className="daily-sky-status">Today can wait. Save or close your note first.</p>}</>}
+      {nextDay && <><button className="daily-sky-link" disabled={busy || (writing && !!draft.trim())} onClick={()=>{const current=localSkyDay();setNextDay(null);if(current===day)return;setDay(current);setExact(null);params.current.delete("lessonVersion");const url=new URL(window.location.href);url.searchParams.delete("lesson");url.searchParams.delete("lessonVersion");window.history.replaceState(window.history.state,"",url);go(0);}}>Read today’s new lesson</button>{writing && !!draft.trim() && <p className="daily-sky-status">Today can wait. Save or close your note first.</p>}</>}
     </Card>
     {human && <SkyWorldDetails direction={direction}/>}
     <MoonLesson moon={moon}/>

@@ -1,6 +1,21 @@
 import { describe, it, expect } from 'vitest';
 import { authoredJoyId, timeFit, rankedReads, continuePositions, gutenbergReaderHref, newestOwnedReading } from './finishLifestyle';
 describe('actual Lifestyle source contracts', () => {
+  it('keeps the newest same-day record and newest update to that record through late loads',()=>{
+    const fresh={id:'fresh',user_id:'owner',reading_date:'2026-10-07',created_date:'2026-10-07T10:00:00Z',updated_date:'2026-10-07T11:00:00Z'};
+    const older={...fresh,id:'older',created_date:'2026-10-07T09:00:00Z',updated_date:'2026-10-07T12:00:00Z'};
+    expect(newestOwnedReading(fresh,older,'owner')).toBe(fresh);
+    expect(newestOwnedReading(older,fresh,'owner')).toBe(fresh);
+    expect(newestOwnedReading(fresh,{...fresh,updated_date:'2026-10-07T10:30:00Z'},'owner')).toBe(fresh);
+    const updated={...fresh,updated_date:'2026-10-07T12:30:00Z'};
+    expect(newestOwnedReading(fresh,updated,'owner')).toBe(updated);
+  });
+  it('protects a confirmed live reading when a snapshot has no comparable timestamps',()=>{
+    const live={id:'live',user_id:'owner',reading_date:'2026-10-07'};
+    const snapshot={id:'snapshot',user_id:'owner',reading_date:'2026-10-07'};
+    expect(newestOwnedReading(live,snapshot,'owner',true)).toBe(live);
+    expect(newestOwnedReading(live,snapshot,'owner')).toBe(snapshot);
+  });
   it('keeps a newer confirmed reading through late older/empty loads and isolates owner changes',()=>{
     const current={id:'new',user_id:'owner',reading_date:'2026-10-07'},old={id:'old',user_id:'owner',reading_date:'2026-10-06'};
     expect(newestOwnedReading(current,old,'owner')).toBe(current);

@@ -240,7 +240,13 @@ Deno.serve(async (req) => {
   const today = todayISO();
 
   // Load AstroProfile
-  const aps = await withTimeout(sb.entities.AstroProfile.filter({ user_id: requestedUserId }, undefined, 1), 2500, 'read').catch(() => []);
+  let aps;
+  try {
+    aps = await withTimeout(sb.entities.AstroProfile.filter({ user_id: requestedUserId }, undefined, 1), 2500, 'read');
+    if (!Array.isArray(aps)) throw new Error('Chart lookup not confirmed');
+  } catch {
+    return Response.json({ error: 'Your chart could not be checked. Please try again.', retryable: true }, { status: 503 });
+  }
   const astro = aps[0];
   if (!astro) return Response.json({ error: 'No AstroProfile — user has not onboarded.' }, { status: 422 });
 
@@ -253,11 +259,17 @@ Deno.serve(async (req) => {
   // new triad descriptions. Otherwise the user has to wait until tomorrow.
   let existingToday: any = null;
   if (!force) {
-    const existing = await withTimeout(sb.entities.HoroscopeReading.filter(
-      { user_id: requestedUserId, reading_date: today },
-      '-created_date',
-      1,
-    ), 2500, 'read').catch(() => []);
+    let existing;
+    try {
+      existing = await withTimeout(sb.entities.HoroscopeReading.filter(
+        { user_id: requestedUserId, reading_date: today },
+        '-created_date',
+        1,
+      ), 2500, 'read');
+      if (!Array.isArray(existing)) throw new Error('Existing reading not confirmed');
+    } catch {
+      return Response.json({ error: 'Your existing reading could not be checked. Please try again.', retryable: true }, { status: 503 });
+    }
     existingToday = existing[0] || null;
     if (existingToday) {
       const chartComplete = !astro.birth_time ||

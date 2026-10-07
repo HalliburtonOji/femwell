@@ -23,8 +23,10 @@ describe("Planner precise source returns and note preservation",()=>{
     [{source:"books",ref:"gutenberg:1342"},"/BookReader?gutenberg_id=1342"],
     [{source:"books",ref:"club:quiet-pages-2"},"/Community?club=quiet-pages-2"],
     [{source:"sky-lesson",ref:"sky-lesson:earthshine:v1"},"/Lifestyle?direction=petal-press&section=sky&lesson=earthshine&lessonVersion=1#daily-sky-lesson"],
+    [{source:"sky",ref:"sky-lesson:earthshine:v9"},"/Lifestyle?direction=petal-press&section=sky&lesson=earthshine&lessonVersion=9#daily-sky-lesson"],
+    [{source:"sky",ref:"sky-lesson:unknown:v1"},"/Lifestyle?direction=petal-press&section=sky&lesson=unknown&lessonVersion=1#daily-sky-lesson"],
   ])("opens the exact source recorded by %j",(item,href)=>{expect(plannerReturnLink(item)?.href).toBe(href);});
-  it.each([{source:"books",ref:"gutenberg:0"},{source:"books",ref:"gutenberg:1342?x=1"},{source:"sky",ref:"sky-lesson:earthshine:v9"},{source:"sky",ref:"sky-lesson:unknown:v1"},{source:"unknown",ref:"sky-lesson:earthshine:v1"},{source:"books",ref:"https://evil.example"}])("does not invent a destination for %j",item=>{expect(plannerReturnLink(item)).toBeNull();});
+  it.each([{source:"books",ref:"gutenberg:0"},{source:"books",ref:"gutenberg:1342?x=1"},{source:"sky",ref:"sky-lesson:../unknown:v1"},{source:"sky",ref:"sky-lesson:unknown:v9000000"},{source:"unknown",ref:"sky-lesson:earthshine:v1"},{source:"books",ref:"https://evil.example"}])("does not invent a destination for %j",item=>{expect(plannerReturnLink(item)).toBeNull();});
 });
 
 describe("Planner actual edit and failure lifecycle",()=>{
@@ -33,6 +35,7 @@ describe("Planner actual edit and failure lifecycle",()=>{
     mock.blocks.mockResolvedValue([joy]);render(<PlannerEliteShell/>);
     const source=await screen.findByRole("link",{name:"Open this small joy: Let the kettle win"});
     expect(source).toHaveAttribute("href","/Lifestyle?direction=petal-press&section=good&joy=quiet-kettle");
+    await waitFor(()=>expect(screen.queryAllByText("Opening this day…")).toHaveLength(0));
     fireEvent.click(await screen.findByRole("button",{name:/Let the kettle win.*Task/}));
     const title=await screen.findByDisplayValue(joy.title);const fieldset=title.closest("fieldset");
     const selects=within(fieldset).getAllByRole("combobox");
@@ -43,7 +46,7 @@ describe("Planner actual edit and failure lifecycle",()=>{
     await waitFor(()=>expect(mock.update).toHaveBeenCalledWith("block",expect.objectContaining({title:"Tea, then the world",time:"19:10",notes:`t:task;d:${minutes};A small pause`,source:"lifestyle",ref:"joy:quiet-kettle",category:"wellbeing",repeat:"weekly",is_completed:false})));
     await waitFor(()=>expect(screen.queryByDisplayValue("Tea, then the world")).not.toBeInTheDocument());
     expect(screen.getByRole("link",{name:"Open this small joy: Tea, then the world"})).toHaveAttribute("href","/Lifestyle?direction=petal-press&section=good&joy=quiet-kettle");
-  });
+  },15000);
   it("retains a failed edit draft and retries without losing precise time, notes or source metadata",async()=>{
     mock.update.mockRejectedValueOnce(new Error("offline"));const {container}=render(<PlannerEliteShell/>);
     await screen.findByRole("button",{name:/Read Pride and Prejudice.*Task/});

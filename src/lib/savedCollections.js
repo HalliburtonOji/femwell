@@ -12,8 +12,8 @@ function safeSavedHref(value) {
 export function savedReturnRoute(row, lifestyleItem) {
   const meta = parseSavedMeta(row) || {};
   if (meta.kind === "sky-lesson") {
-    const lesson = SKY_LESSONS.find(entry => entry.id === meta.lessonId && entry.version === Number(meta.lessonVersion));
-    if (!lesson) return null;
+    if (!/^[\w-]{1,160}$/.test(String(meta.lessonId || "")) || !/^\d{1,6}$/.test(String(meta.lessonVersion ?? ""))) return null;
+    const lesson = SKY_LESSONS.find(entry => entry.id === meta.lessonId && entry.version === Number(meta.lessonVersion)) || {id:meta.lessonId,version:meta.lessonVersion};
     try {
       const recorded = new URL(meta.route, "https://femwells.com");
       if (recorded.origin !== "https://femwells.com" || !SKY_ROUTES.has(recorded.pathname)) return null;
