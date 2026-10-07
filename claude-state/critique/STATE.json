@@ -44,7 +44,7 @@
   "current": {
     "section": "Lifestyle / Books and Yours",
     "atom": "B01-S03-A05",
-    "status": "Run0005 coherent repair checkpoint live: sources3b134cf/1e1ce8f/cd51a2d, finalindex-fX_oYqza.js; existingGutenberg separatelydeployed. Full689/51, independent65/4 plus58continuation/club,25note/hunch and6actualhandler pass. Root final360/390/430 namedexactclassics, actualcontrolhits/caret/pagehold and Ideas-preview-cost-plan-Back;390 layeredEscape,360 privateQA note-to-Booksconsumer. Independent final8reader+6Ideas pixels/HTTP accepted. S03 remainsopen; next working clean reader/margin-note opt-in preview, all settings/themes/source/features retained. Social proposal published/asked and unanswered; no dependent implementation. Claims released at this verified release checkpoint."
+    "status": "Functional run0005 checkpoint complete/livecd51a2d/index-fX_oYqza.js, receiptsa810c47 pushed. Continuing same active run into A05 authorised opt-in working reader/margin-note preview; new source claims committed before edits. Existing main remains approved baseline; preserve all controls/settings/source/history. Socialproposal held. Exact fresh native and independent review before demo release."
   },
   "lastCompleted": {
     "run": 5,
@@ -55,7 +55,7 @@
       "1e1ce8f",
       "cd51a2d"
     ],
-    "reportCommit": null,
+    "reportCommit": "a810c47",
     "liveBundle": "index-fX_oYqza.js",
     "backendDeployment": "Existing fetchGutenbergBook separately1/1deployed6.5s; no otherbackend/entity/function-name change",
     "tests": "689 tests/51 suites bundledNode24 pass at2workers/15s; first4worker/5s run had3fixturetimeouts, affected13/3 pass without assertions changed. Independent65/4 reader/canonical/mountedcontinuation,58 exactcontinuation/club,25notes/hunch and6 actualservedhandler pass; scopedlint0errors/buildexit0/diffJSON valid",
@@ -341,7 +341,7 @@
     "batch": "B01",
     "stage": "B01-S03",
     "atom": "B01-S03-A05",
-    "nextStep": "Claim and commit the working opt-in clean classic reader and margin-note preview before edits. Reconcile full shared reader/BookReader/ChapterEndCard/FictionReader/Books/Yours/detail/picker consumers and saved Creative Director blueprint in run0005. Keep current main unchanged until actual Ideas preview reviewed.",
+    "nextStep": "Implement and verify the newly claimed opt-in ReaderMarginDemo integration/cleanPreview styles using existing BookReader/DailyStoryReader/ChapterEndCard, preserve default main and all existing behaviour. Publish working demo in Ideas and independently re-prove all three mobile widths before new layout promotion.",
     "readyWork": "Classic ready→anytime Reflect→acknowledged Keep/failure→Close to identical passage, with all full prose/frontmatter/settings3themes/5preferences/bookmarks/immersive/locks/warnings/hunch/reveal/sourceBack preserved. No invented FictionReader Reflect. Zero new asset/font/query/store/engine/socialdelivery. Source candidate hidden-route portal lifetime gets exact fixture/native proof before closure.",
     "acceptance": "Actual360/390/430 open/interact/close/theme/preferences/exactsource/Back, controlledfailure/owner/keyboard/touch plus independentP0/P1/P2; bespoke clean§2.7/6.7.8 with safe sheets/44px controls, short human copy and peratom costcard§10.5.23. Link working preview/research/checks/gaps in Ideas before main promotion.",
     "heldBranch": "A04 exact reached-checkpoint→selectedwords/destinationpreview→explicitPost proposal is published/asked, unanswered; do notimplement socialdelivery/defaults orreattest/reask unchangedchoices. Continue independentA05 work.",
