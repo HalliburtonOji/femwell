@@ -17,6 +17,7 @@ const buildStages = [
   "Books & Yours · one shelf, notes and source returns",
   "Good life & shared shell · useful actions and truthful state",
   "Connections · Today, Planner, Journal, Garden and Jess",
+  "Legacy surfaces · unfinished builds, popups and every opened state",
 ];
 
 // Sanitised founder summary only. Detailed evidence stays in claude-state/critique/.
@@ -47,6 +48,8 @@ export default function CritiqueDoc() {
         <h2 id="critique-batch" style={{ ...heading, fontSize: 23 }}>Next big build</h2>
         <p style={{ margin: 0 }}><strong>Batch 01 · Lifestyle polish & connections</strong></p>
         <p style={{ fontSize: 14 }}>Books and Yours next: one shelf, club checkpoints, private notes and exact Planner/Journal returns. Then Good life, the shared shell and cross-app proof.</p>
+        <p style={{ fontSize: 14 }}><strong>The whole journey gets the same care.</strong> Popups, overlays and details must belong to their room. Burnt styling goes; unfinished older builds join the catch-up pass. Features and each section’s personality stay.</p>
+        <p style={{ fontSize: 14 }}>This rule is now in the cycle. The actual surface migrations are queued, including earlier rooms whose functional repairs are already complete.</p>
         <ol style={{ paddingLeft: 23, fontSize: 14 }}>{buildStages.map((stage) => <li key={stage} style={{ padding: "5px 0" }}>{stage}</li>)}</ol>
         <p style={{ fontSize: 14 }}>Then Community & DM, followed by the remaining app. New substantial features stay in Ideas for your go-ahead.</p>
         <a href="/staged-builds/index.html" style={action}>Open the rolling build plan</a>
@@ -58,6 +61,7 @@ export default function CritiqueDoc() {
       <details style={card}>
         <summary style={{ cursor: "pointer", minHeight: 44, fontWeight: 600, display: "list-item" }}>What gets a close look</summary>
         <p style={{ fontSize: 14 }}>Whole-page beauty and voice. Real taps and reading effort. Loading, errors and recovery. Owned data, backend wiring and exact returns. Connections across the app. Accessibility and performance.</p>
+        <p style={{ fontSize: 14 }}>We follow each button into its sheet, menu or detail, then back. The same inventory, research, design and independent checks apply there. Shared changes must protect every room that uses them.</p>
         <p style={{ fontSize: 14 }}>Mobile checks use 360, 390 and 430px. Satisfaction needs actual feedback; a test count cannot tell us she loves a page.</p>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 600 }}><Search size={17} aria-hidden="true" /> Research starts with the real feature</div>
         {links.map(([label, href]) => <div key={href}><a href={href} target="_blank" rel="noreferrer" style={{ ...action, fontSize: 14 }}>{label}</a></div>)}
@@ -68,7 +72,7 @@ export default function CritiqueDoc() {
         <ol style={{ paddingLeft: 23, marginBottom: 0, fontSize: 14 }}>{stages.map((stage) => <li key={stage} style={{ padding: "5px 0" }}>{stage}</li>)}</ol>
         <p style={{ fontSize: 14 }}>A section can take several runs. Regressions take priority; new live rooms join the route as they are discovered.</p>
       </details>
-      <p style={{ fontSize: 12, color: "#685434", marginTop: 20 }}>Local runs need the computer on and Codex running. The audit remembers evidence and your feedback; it does not train the model. Brand Bible §§10.5.20–21.</p>
+      <p style={{ fontSize: 12, color: "#685434", marginTop: 20 }}>Local runs need the computer on and Codex running. The audit remembers evidence and your feedback; it does not train the model. Brand Bible §§10.5.20–22.</p>
     </article>
   );
 }
