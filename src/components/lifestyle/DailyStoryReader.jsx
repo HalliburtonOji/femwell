@@ -1834,11 +1834,25 @@ function ReaderStyles({ reducedMotion }) {
       .fw-line-normal  .ds-reader-p { /* default */ }
       .fw-line-relaxed .ds-reader-p { line-height: 1.95 !important; }
 
-      /* v4c — margins override (changes the reading column max-width in
-         immersive mode only — the inline non-immersive reader keeps 880). */
-      .fw-margins-narrow.ds-immersive  .ds-reader-stage { max-width: 480px; }
-      .fw-margins-normal.ds-immersive  .ds-reader-stage { /* default 580px */ }
-      .fw-margins-wide.ds-immersive    .ds-reader-stage { max-width: 680px; }
+      /* Margin labels describe gutters: Narrow gives prose more room; Wide less.
+         Desktop keeps the same three column widths and unchanged Default. */
+      @media (min-width: 768px) {
+        .fw-margins-narrow.ds-immersive  .ds-reader-stage { max-width: 680px; }
+        .fw-margins-normal.ds-immersive  .ds-reader-stage { /* default 580px */ }
+        .fw-margins-wide.ds-immersive    .ds-reader-stage { max-width: 480px; }
+      }
+      /* Phones need real gutters: desktop column caps exceed their viewport.
+         Keep every Default inset; only an explicit margin choice adjusts it. */
+      @media (max-width: 767px) {
+        .ds-reader-root { --reader-mobile-gutter: 32px; }
+        .ds-reader-root.ds-immersive { --reader-mobile-gutter: 24px; }
+        .ds-reader-root.fw-reader-clean { --reader-mobile-gutter: 20px; }
+        .ds-reader-root.fw-margins-narrow .ds-reader-stage { padding-inline: calc(var(--reader-mobile-gutter) - 8px) !important; }
+        .ds-reader-root.fw-margins-wide .ds-reader-stage { padding-inline: calc(var(--reader-mobile-gutter) + 8px) !important; }
+      }
+      @media (max-width: 480px) {
+        .ds-reader-root:not(.ds-immersive):not(.fw-reader-clean) { --reader-mobile-gutter: 20px; }
+      }
       /* Make sure the stage starts below the top bar visually. */
       .ds-reader-root.ds-immersive .ds-reader-stage {
         padding-top: max(72px, 64px);

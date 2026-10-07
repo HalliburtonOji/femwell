@@ -235,7 +235,7 @@ function ChapterEndCardContent({
         {cleanPreview && sourceContext && <p id={`${fieldId}-source`} style={{ fontFamily: UI, fontSize: 13, lineHeight: 1.6, color: MUTED, margin: "0 0 12px" }}>{sourceContext}</p>}
 
         {/* 1 — projective prompt + private reflection */}
-        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 21, lineHeight: 1.42, color: INK, margin: "0 0 14px" }}>
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: cleanPreview ? 20 : 21, lineHeight: 1.42, color: INK, margin: "0 0 14px" }}>
           {prompt.prompt}
         </p>
         {cleanPreview && <label htmlFor={fieldId}>Your note</label>}
@@ -251,7 +251,7 @@ function ChapterEndCardContent({
         />
         {cleanPreview && <p id={`${fieldId}-device`} style={{ fontFamily: UI, fontSize: 12, color: MUTED, margin: "8px 0 0" }}>On this device</p>}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", marginTop: 9 }}>
-          <button type="button" onClick={saveSolo} disabled={!reflection.trim()} style={{ ...ghostBtn, opacity: reflection.trim() ? 1 : 0.5 }}>
+          <button type="button" onClick={saveSolo} disabled={!reflection.trim()} style={{ ...ghostBtn, ...(cleanPreview ? { background: "var(--plum-accent)", borderColor: "var(--plum-accent)", color: CREAM_HI, fontSize: 14, fontWeight: 700 } : {}), opacity: reflection.trim() ? 1 : 0.5 }}>
             {cleanPreview ? "Keep my note" : "Keep this for me"}
           </button>
           {inClub && (
@@ -340,7 +340,7 @@ function ChapterEndCardContent({
             <Link
               to={communityHref}
               onClick={close}
-              style={{ display: "inline-flex", alignItems: "center", gap: 7, fontFamily: UI, fontSize: 13, fontWeight: 700, color: INK, textDecoration: "none", padding: "9px 14px", borderRadius: 9, border: `1px solid ${RULE}` }}
+              style={{ display: "inline-flex", alignItems: "center", gap: 7, fontFamily: UI, fontSize: 13, fontWeight: 700, color: INK, textDecoration: "none", padding: "9px 14px", borderRadius: 9, border: `1px solid ${RULE}`, ...(cleanPreview ? { fontSize: 14, fontWeight: 500, color: MUTED, borderColor: "transparent", textDecoration: "underline", textUnderlineOffset: 3 } : {}) }}
             >
               <Users size={14} /> {inClub ? "Discuss this in the Book Club" : "Discuss this in the readers' corner"}
             </Link>

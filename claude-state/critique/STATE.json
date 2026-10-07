@@ -44,7 +44,7 @@
   "current": {
     "section": "Lifestyle / Books and Yours",
     "atom": "B01-S03-A05",
-    "status": "A05 source b02c08c/liveDxIZbi30 passes712full/96independent. Native main ordinaryfit passes; tall bound works but effectivepagezones block wheel. CR0030 remains open; sameclaim final3CSS hit-layer repair passes67scoped/independent source. Final build/deploy/native default+preview3width proof pending; new design stays Ideas-only."
+    "status": "A05 shared width/tall/date repairs live5491962/BDFv9nX_ with actual default+preview3width fullparagraph fit or native scroll/hits/lastlines. Independent8pixels accepted. Creative2preview craftP2s frozen and mobileMargins CR0032 actualno-op claimed f09d5d4 before fix; final source/build/native chosen-gutter reproof pending. New appearance remains Ideas-only."
   },
   "lastCompleted": {
     "run": 5,
@@ -300,6 +300,13 @@
       "title": "Fresh daily mark advances prematurely at BST midnight",
       "status": "Source/control repaired after claim c215c04. Actual midnight independent92/93 and root708/709 exposed UTC/local mix; local-calendar new starts preserve existing dates; root26 and independent96 pass. Final deployment/native display proof pending.",
       "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
+    },
+    {
+      "id": "CR-0032",
+      "severity": "P2",
+      "title": "Mobile reader margin choices change selected state but not prose spacing",
+      "status": "Actual canonical430 Narrow/Default/Wide all24px gutters andbody382; preview shareddesktop-only maxwidth cause. Claim f09d5d4 before scoped mobile chosen-gutter completion, defaults/desktop widths retained. Final geometry/reflow proof pending.",
+      "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
     }
   ],
   "decisions": [
@@ -369,7 +376,7 @@
     "batch": "B01",
     "stage": "B01-S03",
     "atom": "B01-S03-A05",
-    "nextStep": "Final3CSS CR0030 effective hit-layer repair build/site then native default+preview360/390/430 bodyhits/nativewheel/lastline/pagecontrols/notes/settings/exactsource/IdeasBack, independent finalpixels. Source b02 daily-mark/width and712full plus96independent retained. Finish reviewable layout stage; no main newdesign promotion. Then remaining S03 opened club/details/pickers/state returns.",
+    "nextStep": "Finish CR0032 real mobile margin-choice effects plus two clean note craftP2s in activeMrFix claim; scopedchecks/build/normalpush/site, actual360/390/430 chosen geometry/reflow/note/scroll and independentpixels. Preserve712full/96independent/shared549nativeproof, no mainappearance promotion. Then remaining S03 club/detail/pickers/fullsecondary registry around heldA04.",
     "readyWork": "Classic ready→anytime Reflect→acknowledged Keep/failure→Close to identical passage, with all full prose/frontmatter/settings3themes/5preferences/bookmarks/immersive/locks/warnings/hunch/reveal/sourceBack preserved. No invented FictionReader Reflect. Zero new asset/font/query/store/engine/socialdelivery. Source candidate hidden-route portal lifetime gets exact fixture/native proof before closure.",
     "acceptance": "Actual360/390/430 open/interact/close/theme/preferences/exactsource/Back, controlledfailure/owner/keyboard/touch plus independentP0/P1/P2; bespoke clean§2.7/6.7.8 with safe sheets/44px controls, short human copy and peratom costcard§10.5.23. Link working preview/research/checks/gaps in Ideas before main promotion.",
     "heldBranch": "A04 exact reached-checkpoint→selectedwords/destinationpreview→explicitPost proposal is published/asked, unanswered; do notimplement socialdelivery/defaults orreattest/reask unchangedchoices. Continue independentA05 work.",
