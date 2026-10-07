@@ -25,81 +25,94 @@ import { warningFor, hasSeenWarning } from "@/components/community/chapterWarnin
 // fire the projective reflection — a page is not a chapter.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Detect chapter breaks. Gutenberg books are inconsistent — match the common
-// heading forms: a whole "CHAPTER …" line (number, Roman, OR spelled-out, e.g.
-// "CHAPTER ONE — Playing Pilgrims"), "Chapter 1" mixed-case, standalone Roman
-// numerals, and standalone spelled-out number words. Fall back to a paginated
-// single body only when none match (≥2 needed to count as a real structure).
-const NUMBER_WORD = "(ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE|TEN|ELEVEN|TWELVE|THIRTEEN|FOURTEEN|FIFTEEN|SIXTEEN|SEVENTEEN|EIGHTEEN|NINETEEN|TWENTY|THIRTY|FORTY|FIFTY)([- ](ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE))?";
-const CHAPTER_RES = [
-  /^\s*CHAPTER\b[^\n]*$/im,                            // any "CHAPTER …" heading line (num/roman/spelled)
-  /^\s*Chapter\s+[IVXLCDM\d]+[\.:;\s]/im,              // "Chapter 1" / "Chapter IV" mixed-case
-  new RegExp(`^\\s*${NUMBER_WORD}\\.?\\s*$`, "im"),    // standalone spelled-out number word line
-  /^\s*[IVXLCDM]{1,7}\.\s*$/im,                        // standalone Roman numeral line ("XII.")
-];
+// Gutenberg editions use different numbered headings. Compare complete coherent
+// runs, rather than accepting the first expression with two arbitrary matches.
+const UNITS = ["ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE"];
+const TEENS = ["TEN", "ELEVEN", "TWELVE", "THIRTEEN", "FOURTEEN", "FIFTEEN", "SIXTEEN", "SEVENTEEN", "EIGHTEEN", "NINETEEN"];
+const TENS = ["TWENTY", "THIRTY", "FORTY", "FIFTY", "SIXTY", "SEVENTY", "EIGHTY", "NINETY"];
+const NUMBER_WORD = `(?:${TENS.join("|")})(?:[- ](?:${UNITS.join("|")}))?|${TEENS.join("|")}|${UNITS.join("|")}`;
+const CHAPTER_LINE = new RegExp(`^CHAPTER[ \\t]+(${NUMBER_WORD}|[IVXLCDM]+|[0-9]+)\\b(.*)$`, "i");
+const WORD_LINE = new RegExp(`^(${NUMBER_WORD})\\.?$`, "i");
 
-function splitChapters(text) {
-  if (!text) return { chapters: [], real: false };
-
-  // Find the most common pattern by trying each regex globally.
-  for (const re of CHAPTER_RES) {
-    const globalRe = new RegExp(re.source, "img");
-    const matches = [];
-    let m;
-    while ((m = globalRe.exec(text)) !== null) {
-      matches.push({ index: m.index, label: m[0].trim() });
-      if (matches.length > 120) break; // sanity cap
-    }
-    if (matches.length >= 2) {
-      // Collapse a table of contents: most PG books list every "CHAPTER …" heading in a
-      // contents block AND again at the real chapter. Keep the LAST occurrence of each heading
-      // label (the body follows the listing) so 47 chapters don't read as 94. Harmless when
-      // labels are unique (no TOC) — every match is kept.
-      const seen = new Map();
-      for (const mt of matches) seen.set(mt.label.toUpperCase().replace(/[^A-Z0-9]/g, ""), mt);
-      const uniq = [...seen.values()].sort((a, b) => a.index - b.index);
-      const build = (list) => list.map((mt, i) => {
-        const start = mt.index;
-        const end = i + 1 < list.length ? list[i + 1].index : text.length;
-        const label = mt.label.replace(/[\.:;]+$/, "").trim();
-        // Strip the leading heading line so it isn't duplicated when the reader renders it.
-        const body = text.slice(start, end).trim().replace(re, "").trim();
-        return { label, body };
-      });
-      // Safety net: drop residual tiny slices (a real chapter has substantial body), so any
-      // leftover contents/stray matches can't become empty "chapters".
-      const built = build(uniq);
-      const big = built.filter((c) => c.body.length >= 600);
-      const finalList = big.length >= 2 ? big : built;
-      if (finalList.length >= 2) {
-        const chunks = finalList.map((c, i) => ({
-          id: `ch-${i + 1}`,
-          day_number: i + 1,
-          heading: /^chapter\b/i.test(c.label) ? c.label : `Chapter ${i + 1}`,
-          body: c.body,
-        }));
-        return { chapters: chunks, real: true };
-      }
-    }
-  }
-
-  // Fallback: no real chapter structure found. Chunk into ~500-word pages so the
-  // reader stays usable — but mark real=false so NO chapter-end reflection fires
-  // (a page is not a chapter).
-  const words = text.split(/\s+/);
-  const pageSize = 500;
-  const chunks = [];
-  for (let i = 0; i < words.length; i += pageSize) {
-    chunks.push({
-      id: `page-${Math.floor(i / pageSize) + 1}`,
-      day_number: Math.floor(i / pageSize) + 1,
-      heading: `Page ${Math.floor(i / pageSize) + 1}`,
-      body: words.slice(i, i + pageSize).join(" "),
-    });
-  }
-  return { chapters: chunks, real: false };
+function chapterNumber(label) {
+  const token = label.toUpperCase();
+  if (/^[0-9]+$/.test(token)) return Number(token);
+  const words = token.split(/[- ]/);
+  if (UNITS.includes(token)) return UNITS.indexOf(token) + 1;
+  if (TEENS.includes(token)) return TEENS.indexOf(token) + 10;
+  if (TENS.includes(words[0])) return (TENS.indexOf(words[0]) + 2) * 10 + (words[1] ? UNITS.indexOf(words[1]) + 1 : 0);
+  if (!/^(?=[MDCLXVI]+$)M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/.test(token)) return null;
+  const roman = { I: 1, V: 5, X: 10, L: 50, C: 100, D: 500, M: 1000 };
+  return [...token].reduce((sum, letter, i) => sum + (roman[letter] < (roman[token[i + 1]] || 0) ? -roman[letter] : roman[letter]), 0);
 }
 
+export function splitChapters(text) {
+  if (!text?.trim()) return { chapters: [], real: false };
+  const families = { prefixed: [], roman: [], words: [] };
+  for (const line of text.matchAll(/^.*$/gm)) {
+    const label = line[0].trim();
+    let family, token;
+    const prefixed = label.match(CHAPTER_LINE);
+    if (prefixed) {
+      const tail = prefixed[2].trim();
+      // A heading can have punctuation, a subtitle, or an illustration's closing
+      // bracket. A prose line such as "Chapter Ten of that novel" is not a heading.
+      if (tail && !/^[.:;\]—–-]/.test(tail) && tail !== tail.toUpperCase()) continue;
+      family = "prefixed"; token = prefixed[1];
+    } else if (/^[IVXLCDM]+\.$/i.test(label)) {
+      family = "roman"; token = label.slice(0, -1);
+    } else {
+      const word = label.match(WORD_LINE);
+      if (!word) continue;
+      family = "words"; token = word[1];
+    }
+    const number = chapterNumber(token);
+    if (!Number.isSafeInteger(number) || number < 1) continue;
+    families[family].push({ index: line.index, end: line.index + line[0].length, label, number });
+  }
+
+  const runs = [];
+  for (const matches of Object.values(families)) {
+    let run = [];
+    for (const match of matches) {
+      if (match.number === 1) {
+        if (run.length >= 2) runs.push(run);
+        run = [match];
+      } else if (run.length && match.number === run[run.length - 1].number + 1) {
+        run.push(match);
+      }
+    }
+    if (run.length >= 2) runs.push(run);
+  }
+  // Real body headings span prose; a repeated contents list is much more compact.
+  // Count coherent chapters first, then compare span. Never delete short chapters.
+  const span = run => run[run.length - 1].index - run[0].index;
+  runs.sort((a, b) => b.length - a.length || span(b) - span(a));
+  if (runs.length) {
+    const headings = runs[0];
+    return {
+      real: true,
+      chapters: headings.map((heading, i) => ({
+        id: `ch-${i + 1}`,
+        day_number: i + 1,
+        heading: /^chapter\b/i.test(heading.label) ? heading.label.replace(/[.:;]+$/, "") : `Chapter ${i + 1}`,
+        // Keep all front matter with chapter one, rather than inserting a new index
+        // that would shift authored prompts, warnings and existing chapter bookmarks.
+        body: ((i === 0 ? text.slice(0, heading.index) : "") + text.slice(heading.end, headings[i + 1]?.index ?? text.length)).trim(),
+      })),
+    };
+  }
+
+  // Unrecognised structure remains complete and readable, but these are pages,
+  // not verified chapter boundaries: never trigger chapter-end reflections here.
+  const words = text.trim().split(/\s+/);
+  const chapters = [];
+  for (let i = 0; i < words.length; i += 500) {
+    const page = Math.floor(i / 500) + 1;
+    chapters.push({ id: `page-${page}`, day_number: page, heading: `Page ${page}`, body: words.slice(i, i + 500).join(" ") });
+  }
+  return { chapters, real: false };
+}
 function todayISO() { try { return new Date().toISOString().slice(0, 10); } catch { return ""; } }
 function daysSince(iso) {
   try {

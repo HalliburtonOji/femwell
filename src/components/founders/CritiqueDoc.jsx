@@ -39,8 +39,9 @@ export default function CritiqueDoc() {
         <h2 id="critique-current" style={{ ...heading, fontSize: 23 }}>Where we are · Books & Yours</h2>
         <p style={{ margin: 0 }}>Batch 01 · Books and Yours are in progress. Sky, Read and Listen’s earlier repairs stay live. The accepted design and every tool stay.</p>
         <p style={{ fontSize: 14 }}><strong>This build:</strong> one recommendation request serves both views. Keeps reuse their loaded sources and retain known references when a refresh fails. Physical-only saves get their proper content type and tools.</p>
-        <p style={{ fontSize: 14 }}><strong>Books:</strong> the reader checks the current club edition and offers a separate retry. Your full book stays available.</p>
-        <p style={{ fontSize: 14 }}>Controlled regression and independent source checks pass for these changes. Release checks follow the real mobile journeys; fault branches remain controlled tests. The whole Books/Yours stage is still open.</p>
+        <p style={{ fontSize: 14 }}><strong>Books:</strong> the reader checks the current club edition. One Little Women edition had two enormous “chapters”; it now has its proper 47. Every word stays.</p>
+        <p style={{ fontSize: 14 }}><strong>Your keeps:</strong> failed account reads pause the action for retry. Confirmed changes reach Yours when you return, without another full archive scan.</p>
+        <p style={{ fontSize: 14 }}>Independent source and regression checks pass. Mobile source journeys use 360, 390 and 430px; failed writes and account changes remain controlled tests. The whole Books/Yours stage is still open.</p>
         <p style={{ fontSize: 14 }}>Physical iPhone, VoiceOver and opening an external episode window remain unverified.</p>
         <a href="/Lifestyle?section=books" style={action}>Open Books</a>{" · "}<a href="/Lifestyle?section=yours" style={action}>Open Yours</a>
       </section>
@@ -58,7 +59,7 @@ export default function CritiqueDoc() {
         <h2 id="critique-growth" style={{ ...heading, fontSize: 23 }}>Room to grow. Bills that behave.</h2>
         <p style={{ margin: 0 }}>Cost and capacity now belong in every build, including a review of older work. We keep the features and artwork; cut repeated work.</p>
         <p style={{ fontSize: 14 }}>Database traffic affects speed and limits. AI, media and other services need separate cost checks. Actual bills and supported user numbers still need real usage evidence.</p>
-        <details><summary style={{ cursor: "pointer", minHeight: 44 }}>The checks behind it</summary><p style={{ fontSize: 14 }}>Queries, complete history, owner-safe reuse, bytes, paid calls, retries and scheduled work. Current priorities: shared feeds and keeps, book fetching, audio progress, older bundled documents and reminder fan-out.</p><a href="https://docs.base44.com/Account-and-billing/Credits" target="_blank" rel="noreferrer" style={action}>Base44’s billing rules</a></details>
+        <details><summary style={{ cursor: "pointer", minHeight: 44 }}>The checks behind it</summary><p style={{ fontSize: 14 }}>Queries, complete history, owner-safe reuse, bytes, paid calls, retries and scheduled work. Current priorities: shared feeds and keeps, book fetching, audio progress, older bundled documents and reminder fan-out.</p><p style={{ fontSize: 14 }}>One live app script measured 3.17 MB compressed. The whole app’s transfer and actual invoices still need measuring.</p><a href="https://docs.base44.com/Account-and-billing/Credits" target="_blank" rel="noreferrer" style={action}>Base44’s billing rules</a></details>
       </section>
       <section style={card} aria-labelledby="critique-decisions">
         <h2 id="critique-decisions" style={{ ...heading, fontSize: 23 }}>Your decision desk</h2>

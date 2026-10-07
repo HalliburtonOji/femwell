@@ -61,6 +61,7 @@ import ListenFocus from "@/components/lifestyle-elite/ListenFocus";
 import ReadFocus from "@/components/lifestyle-elite/ReadFocus";
 import GoodLifeFocus from "@/components/lifestyle-elite/GoodLifeFocus";
 import YoursFocus from "@/components/lifestyle-elite/YoursFocus";
+import { useLifestyleKeepAcknowledgements } from "./useLifestyleKeepAcknowledgements";
 // the clipboard's card language (§6.7.7) — consumed, never duplicated
 import { CoverCard, ExpandDetailCard } from "@/components/brand/expandCards";
 import FaceOverlay from "@/components/brand/FaceOverlay";
@@ -573,6 +574,7 @@ function LifestyleShell({ navigate, enableFocus = false, layout = null, clean = 
   const { archiveKeeps, resolvedKeeps, keepsError, removeConfirmed: removeConfirmedKeeps, invalidateSources: invalidateKeptSources } = useLifestyleKeeps({
     ownerId: user?.id, enabled: !!selectedPresentation, profile, savedIds, items, revision: keepsRevision,
   });
+  useLifestyleKeepAcknowledgements({ ownerId: user?.id, setProfile, setSavedIds });
 
   // ── grouped content (per-type rows, like LifestyleForYou) ─────────────────
   const grouped = useMemo(() => {

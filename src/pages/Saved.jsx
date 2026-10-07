@@ -25,12 +25,24 @@ const sLabel = {
   letterSpacing: "0.12em", color: "var(--mauve)", };
 
 function ownerSnapshot(ownerId) {
-  return { ownerId, rows: [], profile: null, resolutions: new Map(), deletedRows: new Set(), removedProfileKeeps: new Map(), profileMutation: 0 };
+  return { ownerId, rows: [], profile: null, resolutions: new Map(), deletedRows: new Set(), pendingRemovalIds: new Map(), removedProfileKeeps: new Map(), profileMutation: 0 };
 }
 function survivingProfile(profile, snapshot) {
   if (!profile) return null;
   const removed = snapshot.removedProfileKeeps.get(profile.id);
   return removed ? { ...profile, saved_item_ids: (profile.saved_item_ids || []).filter(id => !removed.has(id)) } : profile;
+}
+function isOwnedKeepProfile(profile, id, ownerId) {
+  return profile?.id === id && profile.user_id === ownerId
+    && Array.isArray(profile.saved_item_ids)
+    && profile.saved_item_ids.every(value => typeof value === "string" && value.trim());
+}
+function confirmedKeepRemoval(profile, id, ownerId, intendedIds) {
+  if (!isOwnedKeepProfile(profile, id, ownerId)) return null;
+  const actual = [...profile.saved_item_ids].sort(), intended = [...intendedIds].sort();
+  if (actual.length !== intended.length || actual.some((value, index) => value !== intended[index])) return null;
+  // Event consumers need only this narrow, confirmed collection snapshot.
+  return { id, user_id: ownerId, saved_item_ids: [...profile.saved_item_ids] };
 }
 
 export default function Saved() {
@@ -138,6 +150,8 @@ export default function Saved() {
     if (snapshot?.ownerId !== user.id) return;
     const stillOwner = () => confirmed.current === snapshot;
     const removal = {};
+    const removalKey = JSON.stringify([item.item_type, item.item_id || item.id]);
+    let acknowledgedProfile = null;
     removingRef.current = removal; setRemoving(item.id); setRemoveError("");
     try {
       for (const record of item._savedRecords || []) {
@@ -148,21 +162,41 @@ export default function Saved() {
         // Record each acknowledgement, not only the final all-or-nothing UI outcome.
         snapshot.deletedRows.add(record.id);
         snapshot.rows = snapshot.rows.filter(row => row.id !== record.id);
+        // A later retry may have only the profile reference or surviving duplicate.
+        // Keep earlier delete acknowledgements for this logical save until we can
+        // publish the complete removal to other mounted collection consumers.
+        const pendingIds = snapshot.pendingRemovalIds.get(removalKey) || new Set();
+        pendingIds.add(record.id); snapshot.pendingRemovalIds.set(removalKey, pendingIds);
       }
       if (!stillOwner()) return;
       if (item._profileId) {
         const profiles = await base44.entities.UserProfile.filter({ user_id: snapshot.ownerId });
         if (!stillOwner()) return;
         const ownerProfile = Array.isArray(profiles) && profiles.find(row => row?.id === item._profileId && row.user_id === snapshot.ownerId);
-        if (!ownerProfile) throw new Error("Profile unavailable");
-        await base44.entities.UserProfile.update(ownerProfile.id, { saved_item_ids: (ownerProfile.saved_item_ids || []).filter(id => id !== item.item_id) });
+        if (!isOwnedKeepProfile(ownerProfile, item._profileId, snapshot.ownerId)) throw new Error("Profile unavailable");
+        const intendedIds = ownerProfile.saved_item_ids.filter(id => id !== item.item_id);
+        const updated = await base44.entities.UserProfile.update(ownerProfile.id, { saved_item_ids: intendedIds });
+        if (!stillOwner()) return;
+        acknowledgedProfile = confirmedKeepRemoval(updated, ownerProfile.id, snapshot.ownerId, intendedIds);
+        if (!acknowledgedProfile) {
+          const readBack = await base44.entities.UserProfile.filter({ id: ownerProfile.id, user_id: snapshot.ownerId }, undefined, 1);
+          if (!stillOwner()) return;
+          acknowledgedProfile = Array.isArray(readBack) && readBack.length === 1
+            ? confirmedKeepRemoval(readBack[0], ownerProfile.id, snapshot.ownerId, intendedIds) : null;
+        }
+        if (!acknowledgedProfile) throw new Error("Profile removal not confirmed");
         const removed = snapshot.removedProfileKeeps.get(ownerProfile.id) || new Map();
         removed.set(item.item_id, ++snapshot.profileMutation); snapshot.removedProfileKeeps.set(ownerProfile.id, removed);
-        snapshot.profile = survivingProfile(snapshot.profile, snapshot);
+        snapshot.profile = survivingProfile({ ...snapshot.profile, ...acknowledgedProfile }, snapshot);
       }
       if (!stillOwner()) return;
       setItems(current => current.filter(entry => entry.id !== item.id));
-      window.dispatchEvent(new CustomEvent("fw_sky_lesson_saved"));
+      window.dispatchEvent(new CustomEvent("fw_sky_lesson_saved", { detail: {
+        ownerId: snapshot.ownerId, itemId: item.item_id,
+        removedSavedRecordIds: [...(snapshot.pendingRemovalIds.get(removalKey) || [])],
+        ...(acknowledgedProfile ? { profile: acknowledgedProfile } : {}),
+      } }));
+      snapshot.pendingRemovalIds.delete(removalKey);
     } catch {
       if (!stillOwner()) return;
       setRemoveError("That save couldn’t be removed completely. Try again.");

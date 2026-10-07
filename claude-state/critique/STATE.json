@@ -6,7 +6,7 @@
     "title": "Approved Lifestyle polish and existing connections",
     "status": "in progress",
     "currentStage": "B01-S03",
-    "nextAtom": "B01-S03-A03",
+    "nextAtom": "B01-S03-A02",
     "stageOrder": [
       "B01-S01",
       "B01-S02",
@@ -42,8 +42,8 @@
   },
   "current": {
     "section": "Lifestyle / Books and Yours",
-    "atom": "B01-S03-A03",
-    "status": "Canonical BookReader and typed/recoverable owner keeps/full Saved implemented; verify final independent review/full tests/build, normal push and site deployment, then actual360/390/430 opened Books/Yours/Saved/reader/Ideas proof. No whole S03 or cost-capacity closure. Remaining A02 classic continuation/A01 exact historical club returns/A04 honest notes and social proposal/A05 whole opened-state clean migration; growth and legacy ledgers remain active."
+    "atom": "B01-S03-A02",
+    "status": "Routine keeps/feed/Saved/canonical reader live78d61aa/index-CKT0wUxR.js; root actual3width typed details/exact source/archives under verification. Independent native-discovered CR0022 P1 chapter detection repair interrupts release closure; claime3bb4a1, real37106 source47Roman headings misparsed2. Preserve all prose/short chapters/front matter; final tests/build/push/deploy/native/Ideas proof follows. S03 other continuation/returns/notes/legacy/cost atoms remain open. CR0023 actual-handler duplicate-profile/stale-owner deletion also interrupts release; separately claimed6669e94 authority/pending/retry repair in progress."
   },
   "lastCompleted": {
     "run": 3,
@@ -221,6 +221,20 @@
       "severity": "P2",
       "title": "Gutenberg timeout does not cancel underlying fetch",
       "status": "open cancellation atom; separate backend deploy if changed",
+      "report": "claude-state/critique/reports/0004-books-yours-growth-2026-10-07.md"
+    },
+    {
+      "id": "CR-0022",
+      "severity": "P1",
+      "title": "Classic contents and transcriber sentence mistaken for chapter structure",
+      "status": "reproduced native37106 and independent exact-source parser; A02 bounded repair in progress",
+      "report": "claude-state/critique/reports/0004-books-yours-growth-2026-10-07.md"
+    },
+    {
+      "id": "CR-0023",
+      "severity": "P1",
+      "title": "Reader failed profile lookup creates duplicate authority and deletion precedes owner guard",
+      "status": "independent actual-handler matrix reproduced; A03 narrow repair separately claimed6669e94 in progress, no livewrites",
       "report": "claude-state/critique/reports/0004-books-yours-growth-2026-10-07.md"
     }
   ],

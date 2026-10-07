@@ -8,7 +8,7 @@ const mock=vi.hoisted(()=>({me:vi.fn(),saved:vi.fn(),profiles:vi.fn(),lifestyle:
 vi.mock("@/api/base44Client",()=>({base44:{auth:{me:mock.me},entities:{SavedItems:{filter:mock.saved,delete:mock.remove},UserProfile:{filter:mock.profiles,update:mock.update},LifestyleItems:{filter:mock.lifestyle}}}}));
 const row=(id="record",itemId="find")=>({id,user_id:"owner",item_type:"LIFESTYLE",item_id:itemId,title:"An actual keep",meta_json:JSON.stringify({route:`/LifestyleDetail?id=${itemId}`})});
 const profile={id:"profile",user_id:"owner",saved_item_ids:["find"]};
-beforeEach(()=>{vi.resetAllMocks();window.history.replaceState({},"","/Saved?tab=LIFESTYLE");mock.me.mockResolvedValue({id:"owner"});mock.saved.mockResolvedValue([]);mock.profiles.mockResolvedValue([]);mock.lifestyle.mockImplementation(async({id})=>[{id,title:`Find ${id}`,content_type:"ARTICLE"}]);mock.remove.mockResolvedValue();mock.update.mockResolvedValue({});});
+beforeEach(()=>{vi.resetAllMocks();window.history.replaceState({},"","/Saved?tab=LIFESTYLE");mock.me.mockResolvedValue({id:"owner"});mock.saved.mockResolvedValue([]);mock.profiles.mockResolvedValue([]);mock.lifestyle.mockImplementation(async({id})=>[{id,title:`Find ${id}`,content_type:"ARTICLE"}]);mock.remove.mockResolvedValue();mock.update.mockImplementation(async(id,data)=>({id,user_id:"owner",...data}));});
 
 describe("Saved identity and truthful exact returns",()=>{
   it("reconciles both stores once while retaining every physical record for removal",()=>{
@@ -300,10 +300,143 @@ describe("Saved confirmed collection recovery", () => {
     await waitFor(() => expect(mock.update).toHaveBeenCalledTimes(1));
     retry();
     await waitFor(() => expect(mock.profiles).toHaveBeenCalledTimes(3));
-    await act(async () => acknowledgement.resolve({}));
+    await act(async () => acknowledgement.resolve({ ...profile, saved_item_ids: ["unresolved"] }));
     await act(async () => olderRead.resolve([currentProfile]));
     await screen.findByRole("heading", { name: "A kept Lifestyle find" });
     expect(screen.queryByRole("heading", { name: "Removed find" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Open", exact: true })).toBeNull();
+  });
+});
+
+describe("Saved confirmed removal events", () => {
+  async function removalEvent(run) {
+    const listener = vi.fn(); window.addEventListener("fw_sky_lesson_saved", listener);
+    try { await run(listener); } finally { window.removeEventListener("fw_sky_lesson_saved", listener); }
+  }
+  it("publishes only the confirmed owner, profile keep IDs and every deleted physical duplicate", async () => {
+    mock.saved.mockResolvedValue([row("first"), row("second")]);
+    mock.profiles.mockResolvedValue([{ ...profile, saved_item_ids: ["find", "other"] }]);
+    mock.update.mockResolvedValue({ ...profile, saved_item_ids: ["other"], private_notes: "Never broadcast" });
+    await removalEvent(async listener => {
+      render(<Saved />); fireEvent.click(await screen.findByRole("button", { name: "Remove Find find" }));
+      await waitFor(() => expect(listener).toHaveBeenCalledTimes(1));
+      expect(listener.mock.calls[0][0].detail).toEqual({ ownerId: "owner", itemId: "find", profile: { id: "profile", user_id: "owner", saved_item_ids: ["other"] }, removedSavedRecordIds: ["first", "second"] });
+      expect(mock.profiles).toHaveBeenCalledTimes(2);
+    });
+  });
+  it("does not advertise a cached profile as fresh authority after physical-only removal", async () => {
+    mock.saved.mockResolvedValue([row()]); mock.profiles.mockResolvedValue([{ ...profile, saved_item_ids: ["other"] }]);
+    await removalEvent(async listener => {
+      render(<Saved />); fireEvent.click(await screen.findByRole("button", { name: "Remove An actual keep" }));
+      await waitFor(() => expect(listener).toHaveBeenCalledTimes(1));
+      expect(listener.mock.calls[0][0].detail).toEqual({ ownerId: "owner", itemId: "find", removedSavedRecordIds: ["record"] });
+      expect(mock.update).not.toHaveBeenCalled();
+    });
+  });
+  it.each([
+    ["missing", {}], ["foreign", { ...profile, user_id: "other", saved_item_ids: [] }],
+    ["wrong ID", { ...profile, id: "other-profile", saved_item_ids: [] }],
+    ["wrong survivors", { ...profile, saved_item_ids: ["find"] }],
+    ["malformed array", { ...profile, saved_item_ids: null }],
+  ])("confirms a %s update response using an exact owned read-back before publishing", async (_name, response) => {
+    mock.profiles.mockResolvedValueOnce([profile]).mockResolvedValueOnce([profile]).mockResolvedValueOnce([{ ...profile, saved_item_ids: [], private_notes: "Private" }]);
+    mock.update.mockResolvedValue(response);
+    await removalEvent(async listener => {
+      render(<Saved />); fireEvent.click(await screen.findByRole("button", { name: "Remove Find find" }));
+      await waitFor(() => expect(listener).toHaveBeenCalledTimes(1));
+      expect(mock.profiles).toHaveBeenLastCalledWith({ id: "profile", user_id: "owner" }, undefined, 1);
+      expect(listener.mock.calls[0][0].detail).toEqual({ ownerId: "owner", itemId: "find", profile: { id: "profile", user_id: "owner", saved_item_ids: [] }, removedSavedRecordIds: [] });
+    });
+  });
+  it.each([
+    ["missing", []], ["foreign", [{ ...profile, user_id: "other", saved_item_ids: [] }]],
+    ["wrong ID", [{ ...profile, id: "other-profile", saved_item_ids: [] }]],
+    ["wrong survivors", [{ ...profile, saved_item_ids: ["find"] }]],
+    ["malformed array", [{ ...profile, saved_item_ids: [null] }]],
+  ])("rejects %s read-back, preserves retry and acknowledged physical deletion, then allows confirmed retry", async (_name, response) => {
+    mock.saved.mockResolvedValue([row()]);
+    mock.profiles.mockResolvedValueOnce([profile]).mockResolvedValueOnce([profile]).mockResolvedValueOnce(response).mockResolvedValue([profile]);
+    mock.update.mockResolvedValueOnce({});
+    await removalEvent(async listener => {
+      render(<Saved />); fireEvent.click(await screen.findByRole("button", { name: "Remove Find find" }));
+      await screen.findByText("That save couldn’t be removed completely. Try again.");
+      await screen.findByRole("button", { name: "Remove Find find" });
+      expect(listener).not.toHaveBeenCalled();
+      expect(mock.remove).toHaveBeenCalledExactlyOnceWith("record");
+      fireEvent.click(screen.getByRole("button", { name: "Remove Find find" }));
+      await waitFor(() => expect(listener).toHaveBeenCalledTimes(1));
+      expect(mock.remove).toHaveBeenCalledTimes(1);
+      expect(listener.mock.calls[0][0].detail.profile.saved_item_ids).toEqual([]);
+      expect(listener.mock.calls[0][0].detail.removedSavedRecordIds).toEqual(["record"]);
+      expect(screen.queryByRole("heading", { name: "Find find" })).toBeNull();
+    });
+  });
+  it("does not overwrite a malformed current profile array or publish success", async () => {
+    mock.profiles.mockResolvedValueOnce([profile]).mockResolvedValueOnce([{ ...profile, saved_item_ids: null }]).mockResolvedValue([profile]);
+    await removalEvent(async listener => {
+      render(<Saved />); fireEvent.click(await screen.findByRole("button", { name: "Remove Find find" }));
+      await screen.findByText("That save couldn’t be removed completely. Try again.");
+      expect(mock.update).not.toHaveBeenCalled(); expect(listener).not.toHaveBeenCalled();
+      expect(await screen.findByRole("button", { name: "Remove Find find" })).toBeEnabled();
+    });
+  });
+  it("keeps pending delete acknowledgements scoped to each logical save across partial retries", async () => {
+    let currentProfile = { ...profile, saved_item_ids: ["find", "other"] };
+    mock.saved.mockResolvedValue([row("first", "find"), row("second", "other")]);
+    mock.profiles.mockImplementation(async () => [currentProfile]);
+    mock.update.mockRejectedValueOnce(new Error("first profile update unavailable")).mockImplementation(async (id, data) => {
+      currentProfile = { id, user_id: "owner", ...data }; return currentProfile;
+    });
+    await removalEvent(async listener => {
+      render(<Saved />); fireEvent.click(await screen.findByRole("button", { name: "Remove Find find" }));
+      await screen.findByText("That save couldn’t be removed completely. Try again.");
+      fireEvent.click(await screen.findByRole("button", { name: "Remove Find other" }));
+      await waitFor(() => expect(listener).toHaveBeenCalledTimes(1));
+      expect(listener.mock.calls[0][0].detail.removedSavedRecordIds).toEqual(["second"]);
+      expect(listener.mock.calls[0][0].detail.profile.saved_item_ids).toEqual(["find"]);
+      fireEvent.click(screen.getByRole("button", { name: "Remove Find find" }));
+      await waitFor(() => expect(listener).toHaveBeenCalledTimes(2));
+      expect(listener.mock.calls[1][0].detail.removedSavedRecordIds).toEqual(["first"]);
+      expect(listener.mock.calls[1][0].detail.profile.saved_item_ids).toEqual([]);
+      expect(mock.remove.mock.calls).toEqual([["first"], ["second"]]);
+    });
+  });
+  it("publishes all physical duplicates acknowledged across a failed attempt and successful retry", async () => {
+    let records = [row("first"), row("second")], failSecond = true;
+    mock.saved.mockImplementation(async () => records);
+    mock.remove.mockImplementation(async id => {
+      if (id === "second" && failSecond) { failSecond = false; throw new Error("second deletion unavailable"); }
+      records = records.filter(entry => entry.id !== id);
+    });
+    await removalEvent(async listener => {
+      render(<Saved />); fireEvent.click(await screen.findByRole("button", { name: "Remove An actual keep" }));
+      await screen.findByText("That save couldn’t be removed completely. Try again.");
+      expect(listener).not.toHaveBeenCalled();
+      fireEvent.click(await screen.findByRole("button", { name: "Remove An actual keep" }));
+      await waitFor(() => expect(listener).toHaveBeenCalledTimes(1));
+      expect(listener.mock.calls[0][0].detail).toEqual({ ownerId: "owner", itemId: "find", removedSavedRecordIds: ["first", "second"] });
+      expect(mock.remove.mock.calls).toEqual([["first"], ["second"], ["second"]]);
+    });
+  });
+  it("retains the keep and publishes nothing when exact acknowledgement read-back rejects", async () => {
+    mock.profiles.mockResolvedValueOnce([profile]).mockResolvedValueOnce([profile]).mockRejectedValueOnce(new Error("read-back offline")).mockResolvedValue([profile]);
+    mock.update.mockResolvedValue({});
+    await removalEvent(async listener => {
+      render(<Saved />); fireEvent.click(await screen.findByRole("button", { name: "Remove Find find" }));
+      await screen.findByText("That save couldn’t be removed completely. Try again.");
+      expect(await screen.findByRole("button", { name: "Remove Find find" })).toBeEnabled();
+      expect(listener).not.toHaveBeenCalled();
+    });
+  });
+  it("does not broadcast a late profile acknowledgement after unmount", async () => {
+    let acknowledge;
+    mock.profiles.mockResolvedValue([profile]);
+    mock.update.mockReturnValue(new Promise(resolve => { acknowledge = resolve; }));
+    await removalEvent(async listener => {
+      const view = render(<Saved />); fireEvent.click(await screen.findByRole("button", { name: "Remove Find find" }));
+      await waitFor(() => expect(mock.update).toHaveBeenCalledTimes(1)); view.unmount();
+      await act(async () => acknowledge({ ...profile, saved_item_ids: [] }));
+      expect(listener).not.toHaveBeenCalled(); expect(mock.profiles).toHaveBeenCalledTimes(2);
+    });
   });
 });

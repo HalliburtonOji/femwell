@@ -8,7 +8,6 @@ import { getCategoryGradient, attachFallbackOverlay } from "@/utils/imageFallbac
 import ContentActionBar from "@/components/common/ContentActionBar";
 import ShareButton from "@/components/share/ShareButton";
 import ReadingColumn, { readTimeLabel, countWords } from "@/components/brand/ReadingColumn";
-import { removeSavedItem } from "@/lib/savedItems";
 
 // Map a content category to the best-fit whole-life Community room (default: the Lounge).
 const CATEGORY_ROOM = {
@@ -144,6 +143,29 @@ export function renderBodyBlocks(body) {
   return blocks;
 }
 
+// Exact find plus canonical profile: bounded pages, strict owner and shape checks.
+async function readFindAuthority(ownerId,itemId,assertOwner) {
+  await assertOwner();
+  const readPages=async(entity,filter,validate)=>{
+    const rows=[],seen=new Set();
+    for(let skip=0;;skip+=100){
+      const page=await entity.filter(filter,"-created_date",100,skip);
+      if(!Array.isArray(page) || page.some(row=>!row?.id || row.user_id!==ownerId || !validate(row)))throw new Error("Authority unavailable");
+      const fresh=page.filter(row=>!seen.has(row.id));
+      fresh.forEach(row=>{seen.add(row.id);rows.push(row);});
+      if(page.length<100)return rows;
+      if(!fresh.length)throw new Error("Authority pagination stalled");
+      await assertOwner();
+    }
+  };
+  const [profiles,physical]=await Promise.all([
+    readPages(base44.entities.UserProfile,{user_id:ownerId},row=>["saved_item_ids","liked_item_ids"].every(field=>row[field]===undefined || (Array.isArray(row[field]) && row[field].every(id=>typeof id==="string")))),
+    readPages(base44.entities.SavedItems,{user_id:ownerId,item_type:"LIFESTYLE",item_id:itemId},row=>row.item_type==="LIFESTYLE" && row.item_id===itemId),
+  ]);
+  await assertOwner();
+  return {profile:pickProfile(profiles),physical};
+}
+
 export default function LifestyleDetail() {
   const location = useLocation();
   const urlParams = new URLSearchParams(location.search);
@@ -153,14 +175,19 @@ export default function LifestyleDetail() {
   const [loading, setLoading] = useState(true);
   const [fullBody, setFullBody] = useState("");
   const [bodyLoading, setBodyLoading] = useState(false);
-  const [profile, setProfile] = useState(null);
-  const [profileId, setProfileId] = useState(null);
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [viewer,setViewer]=useState(null);
   const [actionPending,setActionPending]=useState(false);
+  const [actionReady,setActionReady]=useState(false);
   const [actionError,setActionError]=useState("");
+  const [actionRetry,setActionRetry]=useState(0);
   const actionLock=useRef(false);
+  const actionIntent=useRef(null);
+  const acknowledgedRemovals=useRef(new Set());
+  const actionScope=useRef({id,owner:null,mounted:true});
+  if(actionScope.current.id!==id || actionScope.current.owner!==viewer?.id) actionScope.current={id,owner:viewer?.id,mounted:true};
+  useEffect(()=>{actionScope.current.mounted=true;return()=>{actionScope.current.mounted=false;};},[]);
   const [related, setRelated] = useState([]);
   const [videoFailed, setVideoFailed] = useState(false);
   const [loadError, setLoadError] = useState("");
@@ -230,22 +257,11 @@ export default function LifestyleDetail() {
         const user = await base44.auth.me();
         if(cancelled)return;
         setViewer(user);
-        const [items, profiles] = await Promise.all([
-          base44.entities.LifestyleItems.filter({ id }),
-          base44.entities.UserProfile.filter({ user_id: user.id }).catch(() => []),
-        ]);
+        const items = await base44.entities.LifestyleItems.filter({ id });
         if (cancelled) return;
         if (!Array.isArray(items)) throw new Error("Article lookup unavailable");
         const fetched = items[0] || null;
-        const nextProfile = pickProfile(profiles);   // not [0] — see utils/userProfile
         setItem(fetched);
-        setProfile(nextProfile);
-        setProfileId(nextProfile?.id || null);
-        setLiked((nextProfile?.liked_item_ids || []).includes(id));
-        setSaved((nextProfile?.saved_item_ids || []).includes(id));
-        base44.entities.SavedItems.filter({user_id:user.id,item_type:"LIFESTYLE",item_id:id},undefined,1).then(rows=>{
-          if(!cancelled && rows.some(row=>row.user_id===user.id))setSaved(true);
-        }).catch(()=>{});
 
         // For FemWell-generated content, the full body lives in `lede` or needs `expandContent`.
         // For external articles, `summary` is the body.
@@ -304,36 +320,74 @@ export default function LifestyleDetail() {
     return () => { cancelled = true; };
   }, [id,retry]);
 
-  const updateProfileField = async (field, value) => {
-    const me=await base44.auth.me();
-    if(!viewer?.id || me?.id!==viewer.id)throw new Error("Sign in again to update this find");
-    const row=profileId ? await base44.entities.UserProfile.update(profileId, { [field]: value })
-      : await base44.entities.UserProfile.create({user_id:viewer.id,user_email:viewer.email,[field]:value});
-    if(!row?.id || (row.user_id && row.user_id!==viewer.id))throw new Error("Couldn’t confirm your change");
-    setProfileId(row.id);setProfile(prev=>({...prev,...row,[field]:value}));
-  };
+  // Independent of content expansion: failed authority reads cannot become empty saves.
+  useEffect(()=>{
+    let cancelled=false;
+    const scope=actionScope.current;
+    const current=()=>!cancelled && actionScope.current===scope && scope.mounted;
+    actionIntent.current=null;actionLock.current=false;acknowledgedRemovals.current=new Set();
+    setActionReady(false);setActionPending(false);setActionError("");setLiked(false);setSaved(false);
+    if(!viewer?.id || !id)return()=>{cancelled=true;};
+    const assertOwner=async()=>{
+      if(!current() || (await base44.auth.me())?.id!==viewer.id || !current())throw new Error("Owner changed");
+    };
+    readFindAuthority(viewer.id,id,assertOwner).then(({profile,physical})=>{
+      if(!current())return;
+      setLiked((profile?.liked_item_ids || []).includes(id));
+      setSaved((profile?.saved_item_ids || []).includes(id) || physical.length>0);
+      setActionReady(true);
+    }).catch(()=>{if(current())setActionError("Your keeps and likes couldn’t load. The reading is still here.");});
+    return()=>{cancelled=true;};
+  },[id,viewer?.id,actionRetry]);
 
-  const toggleLiked = async () => {
-    if(actionLock.current)return;
-    actionLock.current=true;setActionPending(true);setActionError("");
-    const current = profile?.liked_item_ids || [];
-    const next = liked ? current.filter((itemId) => itemId !== id) : [...current, id];
-    try{await updateProfileField("liked_item_ids",next);setLiked(!liked);}
-    catch{setActionError("Couldn’t update this find. Try again.");}
-    finally{actionLock.current=false;setActionPending(false);}
+  const changeFind = async (field, target) => {
+    if(actionLock.current || !actionReady || !viewer?.id)return;
+    const scope=actionScope.current, ownerId=viewer.id, itemId=id;
+    const current=()=>actionScope.current===scope && scope.mounted;
+    const assertOwner=async()=>{
+      if(!current() || (await base44.auth.me())?.id!==ownerId || !current())throw new Error("Owner changed");
+    };
+    actionLock.current=true;actionIntent.current={field,target};setActionPending(true);setActionError("");
+    try {
+      let {profile,physical}=await readFindAuthority(ownerId,itemId,assertOwner);
+      const removedSavedRecordIds=acknowledgedRemovals.current;
+      let confirmedWriteId=null;
+      if(field==="saved_item_ids" && !target){
+        for(const row of physical){await assertOwner();await base44.entities.SavedItems.delete(row.id);removedSavedRecordIds.add(row.id);}
+        // Read back deletion and the latest canonical profile before updating its array.
+        ({profile,physical}=await readFindAuthority(ownerId,itemId,assertOwner));
+        if(physical.length)throw new Error("Keep removal not confirmed");
+      }
+      const before=profile?.[field] || [];
+      const value=target ? (before.includes(itemId) ? before : [...before,itemId]) : before.filter(value=>value!==itemId);
+      await assertOwner();
+      if((!profile && target) || (profile && JSON.stringify(before)!==JSON.stringify(value))){
+        const row=profile
+          ? await base44.entities.UserProfile.update(profile.id,{[field]:value})
+          : await base44.entities.UserProfile.create({user_id:ownerId,user_email:viewer.email,[field]:value});
+        const matches=row=>row?.id && row.user_id===ownerId && (!profile || row.id===profile.id) && Array.isArray(row[field]) && JSON.stringify(row[field])===JSON.stringify(value);
+        if(!matches(row)){
+          if(!row?.id || (profile && row.id!==profile.id) || (row.user_id && row.user_id!==ownerId))throw new Error("Wrong acknowledgement");
+          await assertOwner();
+          const rows=await base44.entities.UserProfile.filter({user_id:ownerId,id:row.id});
+          const accepted=Array.isArray(rows) ? rows.find(entry=>entry.id===row.id && matches(entry)) : null;
+          if(!accepted)throw new Error("Change not confirmed");
+        }
+        confirmedWriteId=row.id;
+      }
+      await assertOwner();
+      setLiked((field==="liked_item_ids" ? value : profile?.liked_item_ids || []).includes(itemId));
+      setSaved((field==="saved_item_ids" ? value : profile?.saved_item_ids || []).includes(itemId) || physical.length>0);
+      if(field==="saved_item_ids")window.dispatchEvent(new CustomEvent("fw_sky_lesson_saved",{detail:{
+        ownerId,itemId,profile:{id:profile?.id || confirmedWriteId || null,user_id:ownerId,saved_item_ids:value},removedSavedRecordIds:[...removedSavedRecordIds],
+      }}));
+      if(field==="saved_item_ids")removedSavedRecordIds.clear();
+      actionIntent.current=null;
+    }catch{if(current())setActionError("Couldn’t confirm this change. Retry the same action.");}
+    finally{if(current()){actionLock.current=false;setActionPending(false);}}
   };
-
-  const toggleSaved = async () => {
-    if(actionLock.current)return;
-    actionLock.current=true;setActionPending(true);setActionError("");
-    const current = profile?.saved_item_ids || [];
-    const next = saved ? current.filter((itemId) => itemId !== id) : [...current, id];
-    try{
-      if(saved)await removeSavedItem("LIFESTYLE",id);
-      await updateProfileField("saved_item_ids",next);setSaved(!saved);
-    }catch{setActionError("Couldn’t update your keeps. Try again.");}
-    finally{actionLock.current=false;setActionPending(false);}
-  };
+  const toggleLiked=()=>changeFind("liked_item_ids",!liked);
+  const toggleSaved=()=>changeFind("saved_item_ids",!saved);
 
   const handleReadFull = () => {
     try {
@@ -557,16 +611,17 @@ export default function LifestyleDetail() {
             <ArrowLeft className="w-4 h-4" style={{ color: "#0B0805" }} />
           </button>
           <div className="flex items-center gap-2">
-            <button onClick={toggleLiked} disabled={actionPending} aria-label={liked ? "Unlike this find" : "Like this find"} className="w-11 h-11 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid #D8CFBC" }}>
+            <button onClick={toggleLiked} disabled={actionPending || !actionReady} aria-label={liked ? "Unlike this find" : "Like this find"} className="w-11 h-11 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid #D8CFBC" }}>
               {liked ? <Heart className="w-4 h-4" style={{ color: "#E8B4B8", fill: "#E8B4B8" }} /> : <HeartOff className="w-4 h-4" style={{ color: "#2E261B" }} />}
             </button>
-            <button onClick={toggleSaved} disabled={actionPending} aria-busy={actionPending} aria-label={saved ? "Remove from keeps" : "Keep this find"} className="w-11 h-11 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid #D8CFBC" }}>
+            <button onClick={toggleSaved} disabled={actionPending || !actionReady} aria-busy={actionPending} aria-label={saved ? "Remove from keeps" : "Keep this find"} className="w-11 h-11 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid #D8CFBC" }}>
               {saved ? <BookmarkCheck className="w-4 h-4" style={{ color: "#A8893F" }} /> : <Bookmark className="w-4 h-4" style={{ color: "#2E261B" }} />}
             </button>
           </div>
         </div>
 
-        {actionError && <p role="alert" style={{color:"#7a1a12",fontSize:15,lineHeight:1.5}}>{actionError}</p>}
+        {actionError && <div role="alert" style={{color:"#7a1a12",fontSize:15,lineHeight:1.5}}><p>{actionError}</p><button type="button" disabled={actionPending} style={{minHeight:44}} onClick={()=>actionIntent.current ? changeFind(actionIntent.current.field,actionIntent.current.target) : setActionRetry(n=>n+1)}>Retry keeps and likes</button></div>}
+        {!actionReady && !actionError && <p role="status">Loading your keeps and likes…</p>}
         <h1 className="fw-display" style={{ margin: "0 0 16px" }}>Lifestyle</h1>
 
         {/* §6.7.8 — ONE padding owner. At 390px the max-width never binds: PADDING *IS* MEASURE.

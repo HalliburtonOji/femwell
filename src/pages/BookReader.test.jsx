@@ -1,4 +1,6 @@
 import React, { StrictMode } from "react";
+import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
@@ -26,7 +28,7 @@ vi.mock("@/components/community/readingActivity", () => ({
 }));
 vi.mock("@/components/community/communityConfig", () => ({ crisisCheck: () => ({ intercept: false }) }));
 
-import BookReader from "./BookReader";
+import BookReader, { splitChapters } from "./BookReader";
 import { promptFor } from "@/components/community/chapterPrompts";
 import { dailyReadClubKey } from "@/components/community/clubsConfig";
 
@@ -60,6 +62,60 @@ beforeEach(() => {
     title: gutenberg_id === 514 ? "Little Women" : "Persuasion", author: "The original author",
     text: fullText, source_url: `https://www.gutenberg.org/ebooks/${gutenberg_id}`,
   } }));
+});
+
+// Public-domain primary sources downloaded 2026-10-07 from
+// https://www.gutenberg.org/cache/epub/{id}/pg{id}.txt. Preserve the complete
+// fixtures; production's existing fetch function strips only PG boilerplate.
+function editionText(id) {
+  return readFileSync(`src/pages/__fixtures__/gutenberg-${id}.txt`, "utf8")
+    .split(/\*\*\* START OF (?:THE|THIS) PROJECT GUTENBERG EBOOK[^\n]*\*\*\*/i)[1]
+    .split(/\*\*\* END OF (?:THE|THIS) PROJECT GUTENBERG EBOOK[^\n]*\*\*\*/i)[0].trim();
+}
+const normalText = text => text.replace(/\s+/g, " ").trim();
+describe("actual Gutenberg chapter structure and complete source preservation", () => {
+  it.each([
+    [37106, 47, /^[ \t]*[IVXLCDM]+\.[ \t]*\r?$/gm],
+    [514, 47, /^CHAPTER [A-Z-]+[ \t]*\r?$/gm],
+    [1342, 61, /^Chapter [IVXLCDM]+\.?\]?[ \t]*\r?$/gim],
+  ])("finds the actual %i edition's %i chapters and retains every other source word in order", (id, count, actualHeadingLines) => {
+    const source = editionText(id), result = splitChapters(source);
+    expect(result.real).toBe(true);
+    expect(result.chapters).toHaveLength(count);
+    expect(result.chapters.map(ch => ch.id)).toEqual(Array.from({ length: count }, (_, i) => `ch-${i + 1}`));
+    // Compare the entire prose without dumping a megabyte-long diff on a failure.
+    const digest = value => createHash("sha256").update(normalText(value)).digest("hex");
+    expect(digest(result.chapters.map(ch => ch.body).join("\n"))).toBe(digest(source.replace(actualHeadingLines, "")));
+    expect(Math.max(...result.chapters.map(ch => ch.body.length))).toBeLessThan(100000);
+  });
+
+  it("retains front matter and a short middle chapter without shifting edition chapter indexes", () => {
+    const source = `An author's preface, to be kept.\n\nCHAPTER I\n${"Long first body. ".repeat(100)}\n\nCHAPTER II\nOne brief but complete chapter.\n\nCHAPTER III\n${"Long third body. ".repeat(100)}`;
+    const result = splitChapters(source);
+    expect(result.real).toBe(true); expect(result.chapters).toHaveLength(3);
+    expect(result.chapters[0].body).toContain("An author's preface, to be kept.");
+    expect(result.chapters[1]).toMatchObject({ id: "ch-2", day_number: 2, body: "One brief but complete chapter." });
+    expect(normalText(result.chapters.map(ch => ch.body).join("\n"))).toBe(normalText(source.replace(/^CHAPTER [IVX]+$/gm, "")));
+  });
+
+  it("does not turn a contents label and a transcriber sentence into chapters", () => {
+    const source = "CHAPTER\nA contents explanation.\n\nChapter Ten of that novel has a note.\nAll the prose remains here.";
+    const result = splitChapters(source);
+    expect(result.real).toBe(false);
+    expect(normalText(result.chapters.map(ch => ch.body).join(" "))).toBe(normalText(source));
+  });
+
+  it("requires coherent numbering instead of any two isolated Roman labels", () => {
+    const result = splitChapters("I.\nA quoted list.\n\nVIII.\nAnother quoted item.");
+    expect(result.real).toBe(false);
+  });
+
+  it("retains titled chapter headings and the complete run beyond the old 120-match cap", () => {
+    const source = Array.from({ length: 140 }, (_, i) => `Chapter ${i + 1} — A room\nBody of chapter ${i + 1}.`).join("\n\n");
+    const result = splitChapters(source);
+    expect(result.real).toBe(true); expect(result.chapters).toHaveLength(140);
+    expect(result.chapters[139]).toMatchObject({ id: "ch-140", heading: "Chapter 140 — A room", body: "Body of chapter 140." });
+  });
 });
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
@@ -176,5 +232,18 @@ describe("BookReader canonical club identity", () => {
   it("does not request club or book data for an invalid book id", async () => {
     open("invalid"); await screen.findByText("We couldn't open this book just now.");
     expect(api.picks).not.toHaveBeenCalled(); expect(api.invoke).not.toHaveBeenCalled();
+  });
+
+  it("feeds all 47 real illustrated-edition chapters into the existing reader without borrowing another edition's prompts", async () => {
+    api.invoke.mockResolvedValueOnce({ data: { text: editionText(37106), title: "Little Women, illustrated", author: "Louisa May Alcott" } });
+    open(37106);
+    const reader = await screen.findByRole("article", { name: "Controlled book reader" });
+    expect(within(reader).getAllByRole("heading")).toHaveLength(47);
+    expect(within(reader).getByRole("heading", { name: "Chapter 47", exact: true })).toBeVisible();
+    expect(reader).toHaveAttribute("data-book-id", "37106");
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Reflect on where you are" })));
+    expect(screen.getByText(/You're in Chapter 1 of Little Women, illustrated/)).toBeVisible();
+    expect(screen.queryByText(promptFor("514", 0).prompt)).toBeNull();
+    expect(api.invoke).toHaveBeenCalledExactlyOnceWith("fetchGutenbergBook", { gutenberg_id: 37106 });
   });
 });

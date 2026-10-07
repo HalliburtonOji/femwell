@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { mergeSavedCollections, readOwnerSavedRows } from "@/lib/savedCollections";
 import { parseSavedMeta } from "@/lib/savedItems";
 import { withTimeout } from "@/utils/safeEntity";
+import { readKeepAcknowledgement } from "./useLifestyleKeepAcknowledgements";
 
 const EMPTY = [];
 const ERROR = "Some keeps couldn’t load. Your saved references are still safe.";
@@ -23,12 +24,6 @@ export function useLifestyleKeeps({ ownerId, enabled, profile, savedIds, items, 
   const mutationRevision = useRef(0);
   const activeOwner = useRef(ownerId);
   activeOwner.current = ownerId;
-  useEffect(() => {
-    if (!enabled || !ownerId) return undefined;
-    const refresh = () => setCollectionRevision(value => value + 1);
-    window.addEventListener("fw_sky_lesson_saved", refresh);
-    return () => window.removeEventListener("fw_sky_lesson_saved", refresh);
-  }, [enabled, ownerId]);
   useEffect(() => {
     let cancelled = false;
     if (!enabled || !ownerId) { setSnapshot(null); setDerived(null); return undefined; }
@@ -97,6 +92,23 @@ export function useLifestyleKeeps({ ownerId, enabled, profile, savedIds, items, 
     setSnapshot(previous => previous?.ownerId === owner ? { ...previous, rows: previous.rows.filter(row => !predicate(row)) } : previous);
     setDerived(previous => previous?.ownerId === owner ? { ...previous, rows: previous.rows.filter(row => !predicate(row)) } : previous);
   }, []);
+  useEffect(() => {
+    if (!enabled || !ownerId) return undefined;
+    const refresh = event => {
+      if (event.detail != null) {
+        const acknowledgement = readKeepAcknowledgement(event.detail, ownerId);
+        if (!acknowledgement) return;
+        const removed = new Set(acknowledgement.removedSavedRecordIds);
+        if (removed.size) removeConfirmed(ownerId, row => removed.has(row.id));
+        // Confirmed profile changes arrive through the shell bridge; confirmed
+        // physical removals already update this snapshot and pending flights.
+        return;
+      }
+      setCollectionRevision(value => value + 1); // original untyped Sky event
+    };
+    window.addEventListener("fw_sky_lesson_saved", refresh);
+    return () => window.removeEventListener("fw_sky_lesson_saved", refresh);
+  }, [enabled, ownerId, removeConfirmed]);
   const invalidateSources = useCallback(() => setContentRevision(value => value + 1), []);
   const current = enabled && ownerId && derived?.ownerId === ownerId ? derived : null;
   return { archiveKeeps: current?.rows || EMPTY, resolvedKeeps: current?.items || EMPTY,

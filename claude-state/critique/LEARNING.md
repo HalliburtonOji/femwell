@@ -1,5 +1,11 @@
 # Critic learning — append dated evidence
 
+## 7 October 2026 — run0004 native audit interrupts release
+
+- Never choose the first chapter regex with two matches: actual37106 contents CHAPTER and transcriber sentence overrode47 Roman headings. Choose a coherent numbered body run, preserve all short chapters/front matter/prose and existing edition indices; real source conservation hashes and actual component delivery matter. Independent fresh source agrees. Historical saved page meaning from an incorrect partition cannot be promised or silently migrated.
+- A failed owner-profile read is uncertainty, not permission to create a profile or derive arrays from[]. Guard fresh owner before physical removal as well as profile mutation; a helper that fetches current auth can act on a different account before the caller checks identity. Native transient keep label alone was insufficient proof; independent actual handler calls confirmed the duplicate/create and ordering defect without touching account data.
+- One compressed public script response measured3,165,969bytes,gzip. Dist compression estimates, this response, total mobile bytes/Web Vitals, usercapacity and invoices are distinct evidence. Keep all artwork/routes/research; on-demand documents/chunks remain a concrete staged architecture candidate, not a silent saving claim.
+
 ## 7 October 2026 — initial context
 
 - Halli approves all six headers and promotion of Petal × Star Press to main. Current main is live; older context saying main is held is superseded by Bible §10.5.19 and STATUS top. Retain all capabilities, full source content and the contextual pair of actions per section.
