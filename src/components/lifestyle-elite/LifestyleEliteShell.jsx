@@ -33,7 +33,7 @@ import {
 import { base44 } from "@/api/base44Client";
 import { mergeSavedCollections, readOwnerSavedRows } from "@/lib/savedCollections";
 import { parseSavedMeta } from "@/lib/savedItems";
-import { authoredJoyId, timeFit, rankedReads, continuePositions, gutenbergReaderHref } from "./finishLifestyle";
+import { authoredJoyId, timeFit, rankedReads, continuePositions, gutenbergReaderHref, newestOwnedReading } from "./finishLifestyle";
 import LifestylePlanSheet from "./LifestylePlanSheet";
 import { FloraAudio } from "@/components/brand/expandCards";
 import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
@@ -577,6 +577,10 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   // THE gate — the same chapter every surface shows today (evergreen unless a fresh one exists)
   const storyPick = useMemo(() => chapterForDay(chapters), [chapters]);
   const story = storyPick?.chapter || null;
+  const acceptSkyReading = useCallback((reading, ownerId) => {
+    if (!user?.id || ownerId !== user.id || reading?.user_id !== user.id || !reading?.id || !/^\d{4}-\d{2}-\d{2}$/.test(reading.reading_date || "")) return;
+    setHoroscope(previous => newestOwnedReading(previous, reading, user.id));
+  }, [user?.id]);
   const openTodaysChapter = useCallback(() => {
     if (selectedPresentation && story) { setReaderStart(storyPick?.index ?? 0); setReaderOpen(true); }
     else setChapterOpen(true);
@@ -650,7 +654,8 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
       .map((i) => ({ ...i, title: cleanTitle(i.title) }));  // strip stray *emphasis*/_marks_ from ingested titles
     setItems(merged);
     setChapters(Array.isArray(chs) ? chs : []);
-    setHoroscope((Array.isArray(ho) ? ho[0] : null) || null);
+    const incomingReading = (Array.isArray(ho) ? ho[0] : null) || null;
+    setHoroscope(previous => selectedPresentation ? newestOwnedReading(previous, incomingReading, ownerId) : incomingReading);
   }, [selectedPresentation]);
 
   // PERSONALISED reads — the existing getLifestyleFeed engine (interests + interaction history +
@@ -1547,7 +1552,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
             : glanceRows;
           // the deep read — only sections we genuinely have signal for, never padded
           const sheetSections = [
-            { label: "What's on", text: continueCards.length ? `You've ${continueCards.length} on the go and ${grouped.article.length} fresh reads waiting. Your place is saved in each, so none of it needs starting over.` : `${grouped.article.length} fresh reads are in, and ${savedItems.length+(livingDemo ? skySavedCount : 0)} saved for later. Nothing here expires.` },
+            { label: "What's on", text: continueCards.length ? `${continueCards.length} on the go, with your place saved. Fancy something new? ${grouped.article.length} fresh reads are here too.` : `${grouped.article.length} fresh reads are in, and ${savedItems.length+(livingDemo ? skySavedCount : 0)} saved for later. Nothing here expires.` },
             story ? { label: "If you've ten minutes", text: `Today's chapter${story.cliffhanger ? ` picks up on "${story.cliffhanger}"` : " is ready"} — a finished story you can also read straight through whenever you fancy it.` } : null,
             moonToday ? { label: "Your sky", text: `The moon is ${moonToday.name.toLowerCase()}, ${moonToday.illumination}% lit tonight${phaseKey ? `, and you're in your ${phaseLabel(phaseKey).toLowerCase()} week` : ""}. Folklore, held lightly.` } : null,
           ].filter(Boolean);
@@ -1655,7 +1660,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
                         accent={slip && slip.type === "quote" ? plum : gold}
                         title={slip && slip.type === "quote" ? "Permission" : "A small joy"}
                         sub="The slip · why it's good · one doable thing">
-                        {slip && <PermissionSlipLens item={slip} done={!!gLDone[slip.id]} onDo={glTick} />}
+                        {slip && <PermissionSlipLens item={slip} done={!!gLDone[slip.id]} onDo={glTick} presentation={selectedPresentation} />}
                       </FaceOverlay>
                     );
                   })()}
@@ -1748,7 +1753,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
         {layout && (() => {
           const sec = focus ? focusSection : null;
           // BESPOKE section surfaces (§19). Each pulls everything for its section, in the new design.
-          if (sec === "sky") return <div className={livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><SkyFocus key={roomRevision} contentRoute={contentRoute} cycleContext={["marginalia","reading-room","sky-worlds"].includes(artDirection) ? {phase:phaseKey,day:cycleDay,len:profile?.cycle_avg_length || 28} : undefined} artDirection={artDirection} dailyLessons={dailySkyLessons} direction={worldDirection} userProfile={profile} celestial={celestialSky} continuous={continuousSky} portalChart={previewActions} actionRequest={previewActions ? skyActionRequest : undefined} onActionState={previewActions ? setSkyActionState : undefined} onActionHandled={previewActions ? setSkyActionRequest : undefined} /></div>;
+          if (sec === "sky") return <div className={livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><SkyFocus key={roomRevision} onReadingState={acceptSkyReading} contentRoute={contentRoute} cycleContext={["marginalia","reading-room","sky-worlds"].includes(artDirection) ? {phase:phaseKey,day:cycleDay,len:profile?.cycle_avg_length || 28} : undefined} artDirection={artDirection} dailyLessons={dailySkyLessons} direction={worldDirection} userProfile={profile} celestial={celestialSky} continuous={continuousSky} portalChart={previewActions} actionRequest={previewActions ? skyActionRequest : undefined} onActionState={previewActions ? setSkyActionState : undefined} onActionHandled={previewActions ? setSkyActionRequest : undefined} /></div>;
           if (sec === "story" || sec === "books") return <div className={artDirection === "sky-worlds" ? "fw-living-content fw-reading-room" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><BooksStoryFocus artDirection={artDirection === "sky-worlds" ? "reading-room" : artDirection} chapters={chapters} story={story} pick={storyPick} onRead={(i) => { setReaderStart(i); setReaderOpen(true); }}
             userId={user?.id} onSchedule={scheduleReading} onCorner={(b) => window.location.assign(createPageUrl(`Community?club=${dailyReadClubKey(b.gutenberg_id)}&title=${encodeURIComponent(b.title || "")}`))}
             continueCards={continueCards} shelfBookCards={shelfBookCards} classicCards={classicCards} onChapterDetails={() => setChapterOpen(true)} onBookDetails={setExpanded} onOpenBook={(it) => it?._library ? document.getElementById("book-library")?.scrollIntoView({behavior:"smooth"}) : it?.id === "daily-chapter" ? openTodaysChapter() : openBook(it._continue || it._raw || it)} lifeStage={profile?.life_stage} /></div>;
@@ -1768,7 +1773,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
               accent={slip && slip.type === "quote" ? plum : gold}
               title={slip && slip.type === "quote" ? "Permission" : "A small joy"}
               sub="The slip · why it's good · one doable thing">
-              {slip && <PermissionSlipLens item={slip} done={!!gLDone[slip.id]} onDo={glTick} />}
+              {slip && <PermissionSlipLens item={slip} done={!!gLDone[slip.id]} onDo={glTick} presentation={selectedPresentation} />}
             </FaceOverlay>
           );
         })()}
@@ -1996,7 +2001,7 @@ function PhasePicksLens({ items, phaseKey, isSaved, onSave, onOpen }) {
 // (a real citation where evidence exists, an honest kindness where it doesn't —
 // the two are visibly different so no slogan is laundered as science) · ONE doable
 // thing that writes to the Planner and ticks + blooms in place, no navigation.
-function PermissionSlipLens({ item, done, onDo }) {
+function PermissionSlipLens({ item, done, onDo, presentation }) {
   const isQuote = item.type === "quote";
   const accent = cwOf(isQuote ? "plum" : (item.cw || "gold")).petal;
   const why = item.why || WHY.plain;
@@ -2006,7 +2011,7 @@ function PermissionSlipLens({ item, done, onDo }) {
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       {/* the slip, big — the whole point */}
       <p style={{ fontFamily: SERIF, fontSize: 25, lineHeight: 1.3, color: OXBLOOD, fontWeight: 600, margin: "2px 0 6px" }}>{item.title}</p>
-      {item.body?.[0] && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 16px" }}>{item.body[0]}</p>}
+      {item.body?.[0] && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 16px" }}>{presentation ? "Try it when you fancy it. Pick a time if you'd like it in your day." : item.body[0]}</p>}
 
       {/* why this is good for you — cited (real evidence) OR an honest kindness */}
       <div style={{ ...subCard(evAccent), background: `${evAccent}0D`, padding: "12px 13px", marginBottom: 16 }}>
@@ -2021,7 +2026,7 @@ function PermissionSlipLens({ item, done, onDo }) {
           style={{ width: "100%", padding: "12px", borderRadius: 13, border: "none", cursor: done ? "default" : "pointer",
             background: done ? `${accent}1A` : accent, color: done ? accent : "#fff", fontFamily: UI, fontSize: 14, fontWeight: 700,
             display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-          {done ? <><Check size={16} /> In your planner</> : <><Star size={15} /> {item.doable.label}</>}
+          {done ? <><Check size={16} /> In your planner</> : <><Star size={15} /> {presentation ? "Plan a time" : item.doable.label}</>}
         </button>
       )}
       {done && <div style={{ display: "grid", placeItems: "center", marginTop: 10 }}><Pollinator kind="butterfly" size={28} color={accent} color2={cwOf("gold").petal} pattern="bands" animate idx={`slipbloom-${item.id}`} /></div>}

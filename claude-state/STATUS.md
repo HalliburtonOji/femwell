@@ -7,6 +7,14 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-07 · NATIVE MAIN AUDIT / SKY GLANCE STATE GAP
+> - Live index-Cv1Z-g5J.js: actual signed-in all-six-room taps/pixels at360/390/430 and independent18-image audit find no header/pill/selector pixel defects. Loaded Sky Ask/Edit confirmed separately from temporary loading. Main fallback actually produced7Oct’s owned reading after the successful absent-day lookup.
+> - Native P1 found: new7Oct Sky body and shell’s old6Oct glance disagree. Parent shell’s initial query was not reconciled with Sky’s settled reading. Root + section lead are repairing an owner/id/date-bound shared callback, accepting only newer/equal readings; no second store or new listener. Exact historical opens must not overwrite a newer glance. Repair/native reproof pending, do not call the audit complete yet.
+>
+> ### CURRENT STATE — 2026-10-07 · APPROVED LIFESTYLE MAIN DEPLOYED / NATIVE AUDIT NEXT
+> - Source **1d46eda pushed**; production build and **35 files /412 tests passed**. Main `/Lifestyle` and its existing alias now render the approved six rooms. Canonical exact source returns, preserved main generation fallback, visible fiction/classics, original chapter tools, Everything reload, all11 doors and media details parity repaired. Bible10.5.19 and its HTML mirror updated; all earlier previews remain reachable in Ideas.
+> - Frontend deployment retry succeeds. First upload was rejected “Missing index.html at root of archive” while build process completion was still pending; the completed build was re-uploaded successfully. Live bundle **index-Cv1Z-g5J.js**, HTTP confirmed. No backend/schema/function delta. Main source is shipped; actual native360/390/430 and independent final review now follow. External social/payment/preference actions are not inferred from automated checks.
+>
 > ### CURRENT STATE — 2026-10-07 · MAIN PROMOTION AUTHORISED / AUDIT STARTED
 - Parity correction: main keeps the pre-existing idempotent missing-day horoscope generation fallback, only after successful owned today lookup. Historical-source and demo paths remain read-only. Root restores actual fiction/free classics in Books, exact sky-reading Planner ref, consistent current chapter with original notes sheet retained, and explicit Everything reload state. No schema/server/function delta. Verification pending; not yet shipped.
 

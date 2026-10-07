@@ -201,7 +201,7 @@ function LegacySkyFocus(props) {
   const chartState = useBirthChart(props.userProfile);
   return <SkyFocusBody {...props} chartState={chartState}/>;
 }
-function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, onActionHandled, portalChart = false, continuous = false, celestial = false, dailyLessons = false, direction, artDirection, cycleContext, contentRoute }) {
+function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, onActionHandled, onReadingState, portalChart = false, continuous = false, celestial = false, dailyLessons = false, direction, artDirection, cycleContext, contentRoute }) {
   const world = artDirection === "sky-worlds";
   const complete = world && direction === "petal-press";
   const artful = world || ["marginalia","reading-room"].includes(artDirection);
@@ -221,6 +221,14 @@ function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, o
   const [sheetOpen, setSheetOpen] = useState(false);
   const [markedRead, setMarkedRead] = useState(false);
   const [readError, setReadError] = useState("");
+  useEffect(()=>{
+    if(!complete || loading || chartState.refreshing || generatingReading || !user?.id || reading?.user_id!==user.id || typeof reading.id!=="string" || !reading.id.trim())return;
+    const date=reading.reading_date;
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(String(date || "")))return;
+    const parsed=new Date(`${date}T12:00:00Z`);
+    if(Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0,10)!==date)return;
+    onReadingState?.(reading,user.id);
+  },[complete,loading,chartState.refreshing,generatingReading,user?.id,reading,onReadingState]);
   useEffect(() => {
     if (!complete) return;
     setMarkedRead(!!readingKey && hasReadLocally(readingKey, 0)); setReadError("");

@@ -895,6 +895,8 @@ This is approval for the reviewed Lifestyle design and its necessary parity/conn
 
 Production parity: keep the existing on-demand daily horoscope fallback on main when its owned chart has no today reading. Existing idempotent generator only; failed reads never imply absence. Explicit previews and exact historical links remain generation-free. No new function or data store.
 
+Live state agreement: a settled owned Sky reading updates the same shell glance. Older historical readings and late older/empty fetches cannot replace a newer owned reading. Validate owner, object identity and calendar date; reset across accounts. The glance and its source must agree after a daily refresh, not only after a page reload.
+
 ## 11. THE PER-PAGE BUILD LIFECYCLE — how EVERY page is built (Lifestyle = reference implementation · ✅ AGREED · Halli 2026-08-01) · v1
 > **This is the PROCESS, not just the product. Every future page goes through the EXACT lifecycle Lifestyle did — it does not merely inherit the visual tokens.** §6.8.2 gives the page *skeleton*; this gives the *order of operations*. It is load-bearing: skipping a step is how thin shells, faked shelves and DOM-only "green" got shipped before. **§11.0 holds the STANDING GATES that make the whole lifecycle self-enforcing — run them on every atom.** Then run all seven steps, in order, per page; the craft each step must meet lives in §12 (content) · §13 (interaction) · §14 (engineering) · §15 (QA).
 

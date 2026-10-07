@@ -82,4 +82,18 @@ describe("promoted Sky exact source and public returns",()=>{
     const seed=new URL(screen.getByRole("link",{name:"Take this lesson to the lounge"}).href).searchParams.get("seed");expect(seed).toContain("https://femwells.com/Lifestyle?");expect(seed).not.toContain("LifestyleElite?");
     await waitFor(()=>expect(data.filter).toHaveBeenCalled());
   });
+  it("updates its shared reading only after generation has settled with an actual owned identity",async()=>{
+    const accept=vi.fn();data.state={...roomState(),generatingReading:true};const {rerender}=render(<SkyFocus {...props} onReadingState={accept}/>);
+    expect(accept).not.toHaveBeenCalled();
+    const produced={...oldReading,id:"produced-reading",reading_date:"2026-10-07",headline:"A grounded day for a new idea."};data.state={...roomState(),reading:produced,generatingReading:false};
+    rerender(<SkyFocus {...props} onReadingState={accept}/>);expect(accept).toHaveBeenCalledExactlyOnceWith(produced,"a");
+    await waitFor(()=>expect(data.filter).toHaveBeenCalled());
+  });
+  it.each([null,{...oldReading,user_id:"b"},{...oldReading,id:""},{...oldReading,reading_date:"2026-02-30"}])("does not publish an unavailable or invalid owned reading to the shared summary: %j",async reading=>{
+    const accept=vi.fn();data.state={...roomState(),reading};render(<SkyFocus {...props} onReadingState={accept}/>);expect(accept).not.toHaveBeenCalled();await waitFor(()=>expect(data.filter).toHaveBeenCalled());
+  });
+  it("keeps the former edition out of the shared callback while a new read is still pending",async()=>{
+    const accept=vi.fn();data.state={...roomState(),refreshing:true};const {rerender}=render(<SkyFocus {...props} onReadingState={accept}/>);expect(accept).not.toHaveBeenCalled();
+    data.state={...roomState(),refreshing:false};rerender(<SkyFocus {...props} onReadingState={accept}/>);expect(accept).toHaveBeenCalledExactlyOnceWith(oldReading,"a");await waitFor(()=>expect(data.filter).toHaveBeenCalled());
+  });
 });

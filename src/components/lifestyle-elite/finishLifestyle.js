@@ -38,3 +38,11 @@ export function continuePositions(storage) {
   } catch { return []; }
   return rows.filter(p => p.bookId).sort((a, b) => (Number(b.ts) || 0) - (Number(a.ts) || 0));
 }
+// Both the initial/background shell load and Sky's settled publisher use this
+// owner/date contract, so a late stale fetch cannot undo a newly produced reading.
+export function newestOwnedReading(previous, incoming, ownerId) {
+  const valid = row => row?.user_id === ownerId && !!ownerId && typeof row.id === "string" && !!row.id.trim() && /^\d{4}-\d{2}-\d{2}$/.test(row.reading_date || "") && !Number.isNaN(Date.parse(`${row.reading_date}T12:00:00Z`)) && new Date(`${row.reading_date}T12:00:00Z`).toISOString().slice(0,10) === row.reading_date;
+  const current = valid(previous) ? previous : null;
+  if (!valid(incoming)) return current;
+  return current?.reading_date > incoming.reading_date ? current : incoming;
+}

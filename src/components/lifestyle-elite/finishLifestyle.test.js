@@ -1,6 +1,16 @@
 import { describe, it, expect } from 'vitest';
-import { authoredJoyId, timeFit, rankedReads, continuePositions, gutenbergReaderHref } from './finishLifestyle';
+import { authoredJoyId, timeFit, rankedReads, continuePositions, gutenbergReaderHref, newestOwnedReading } from './finishLifestyle';
 describe('actual Lifestyle source contracts', () => {
+  it('keeps a newer confirmed reading through late older/empty loads and isolates owner changes',()=>{
+    const current={id:'new',user_id:'owner',reading_date:'2026-10-07'},old={id:'old',user_id:'owner',reading_date:'2026-10-06'};
+    expect(newestOwnedReading(current,old,'owner')).toBe(current);
+    expect(newestOwnedReading(current,null,'owner')).toBe(current);
+    expect(newestOwnedReading(old,current,'owner')).toBe(current);
+    expect(newestOwnedReading(current,null,'next-owner')).toBeNull();
+    expect(newestOwnedReading(null,current,'next-owner')).toBeNull();
+    expect(newestOwnedReading(current,{...current,id:'bad-date',reading_date:'2026-02-30'},'owner')).toBe(current);
+    expect(newestOwnedReading(current,{...current,id:''},'owner')).toBe(current);
+  });
   it.each([{gutenbergId:1342},{_gutenbergId:1342},{_raw:{gutenbergId:1342}},{_raw:{_gutenbergId:1342}}])('opens each supported exact classic-card identity %j',item=>{
     expect(gutenbergReaderHref(item)).toBe('/BookReader?gutenberg_id=1342');
   });
