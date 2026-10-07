@@ -44,7 +44,7 @@
   "current": {
     "section": "Lifestyle / Books and Yours",
     "atom": "B01-S03-A05",
-    "status": "Functional run0005 checkpoint complete/livecd51a2d/index-fX_oYqza.js, receiptsa810c47 pushed. Continuing same active run into A05 authorised opt-in working reader/margin-note preview; new source claims committed before edits. Existing main remains approved baseline; preserve all controls/settings/source/history. Socialproposal held. Exact fresh native and independent review before demo release."
+    "status": "A05 opt-in ReaderMarginDemo source complete and frozen: full704/51, independent88/5 +postCSS62/2, scopedlint0errors/diffvalid. Fullsource/defaultlayout/sharedprefs/sheets retained; actualnote-to-support focusgap repaired. Buildrunning, thennormalpush/site andactual360/390/430 proof required. Currentlive fX_oYqza repaircheckpoint. No mainpromotion/socialapproval."
   },
   "lastCompleted": {
     "run": 5,
@@ -341,7 +341,7 @@
     "batch": "B01",
     "stage": "B01-S03",
     "atom": "B01-S03-A05",
-    "nextStep": "Implement and verify the newly claimed opt-in ReaderMarginDemo integration/cleanPreview styles using existing BookReader/DailyStoryReader/ChapterEndCard, preserve default main and all existing behaviour. Publish working demo in Ideas and independently re-prove all three mobile widths before new layout promotion.",
+    "nextStep": "Finish running preview build, record indexhash, commit andnormalpush claimed source/Ideas/proof, site deploy only(frontend); thenactual360/390/430 title/marks/tools/fullprose/noteKeep-close/keyboard/immersive/settings3themes5prefs/safe-lastcontrol/exactBack andmaindefaultisolation, restorepriorprefs. Independentfreshpixel/HTTP/audit beforeclosure. Socialproposalheld.",
     "readyWork": "Classic ready→anytime Reflect→acknowledged Keep/failure→Close to identical passage, with all full prose/frontmatter/settings3themes/5preferences/bookmarks/immersive/locks/warnings/hunch/reveal/sourceBack preserved. No invented FictionReader Reflect. Zero new asset/font/query/store/engine/socialdelivery. Source candidate hidden-route portal lifetime gets exact fixture/native proof before closure.",
     "acceptance": "Actual360/390/430 open/interact/close/theme/preferences/exactsource/Back, controlledfailure/owner/keyboard/touch plus independentP0/P1/P2; bespoke clean§2.7/6.7.8 with safe sheets/44px controls, short human copy and peratom costcard§10.5.23. Link working preview/research/checks/gaps in Ideas before main promotion.",
     "heldBranch": "A04 exact reached-checkpoint→selectedwords/destinationpreview→explicitPost proposal is published/asked, unanswered; do notimplement socialdelivery/defaults orreattest/reask unchangedchoices. Continue independentA05 work.",

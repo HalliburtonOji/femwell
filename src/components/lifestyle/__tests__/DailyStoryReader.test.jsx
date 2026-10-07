@@ -95,6 +95,66 @@ describe("DailyStoryReader — v4 contract", () => {
   const visibleProse = () => document.querySelector(".ds-reader-body").textContent;
   const footer = () => within(document.querySelector(".ds-reader-nav"));
 
+  it("clean note owns native typing and Escape above the actual immersive reader, then returns to its Reflect tool", async () => {
+    const source = measuredSource();
+    function Host() {
+      const [open, setOpen] = useState(false);
+      return <><DailyStoryReader cleanPreview source={source} defaultImmersive onReflect={() => setOpen(true)} />
+        {open && <ChapterEndCard cleanPreview bookId={37106} chapterIndex={0} anytime overridePrompt="What stays with you?" onClose={() => setOpen(false)} />}</>;
+    }
+    render(<Host />);
+    const reflect = screen.getByRole("button", { name: "Reflect on where you are" }); reflect.focus();fireEvent.click(reflect);
+    const input = screen.getByRole("textbox", { name: "Your note" });expect(input).toHaveFocus();
+    fireEvent.change(input,{target:{value:"My complete words"}});expect(fireEvent.keyDown(input,{key:"ArrowRight"})).toBe(true);
+    expect(visibleProse()).toBe("The first page opens beside the harbour.");
+    fireEvent.keyDown(input,{key:"Escape"});await waitFor(()=>expect(reflect).toHaveFocus());
+    expect(document.querySelector(".ds-reader-root")).toHaveClass("ds-immersive");
+    reflect.blur();fireEvent.keyDown(window,{key:"ArrowRight"});expect(visibleProse()).toBe("The second page follows the path uphill.");
+  });
+
+  it("clean preview preserves measured prose and real bookmark state without changing the legacy opt-out", () => {
+    const source = measuredSource();
+    const mounted = render(<DailyStoryReader source={source} bookId="clean-prose" cleanPreview />);
+    expect(screen.queryByRole("status", { name: "This page is bookmarked" })).toBeNull();
+    expect(visibleProse()).toBe("The first page opens beside the harbour.");
+    fireEvent.click(screen.getByRole("button", { name: "Set your bookmark here" }));
+    expect(screen.getByRole("status", { name: "This page is bookmarked" })).toBeVisible();
+    fireEvent.click(footer().getByRole("button", { name: "Next page" }));
+    expect(visibleProse()).toBe("The second page follows the path uphill.");
+    expect(screen.queryByRole("status", { name: "This page is bookmarked" })).toBeNull();
+    fireEvent.click(footer().getByRole("button", { name: "Next page" }));
+    expect(visibleProse()).toBe("The third page reaches the cottage.");
+    fireEvent.click(footer().getByRole("button", { name: "Previous page" }));
+    fireEvent.click(footer().getByRole("button", { name: "Previous page" }));
+    expect(screen.getByRole("status", { name: "This page is bookmarked" })).toBeVisible();
+    mounted.rerender(<DailyStoryReader source={source} bookId="clean-prose" />);
+    expect(screen.queryByRole("status", { name: "This page is bookmarked" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Remove bookmark" })).toHaveAttribute("aria-pressed", "true");
+    expect(document.querySelector(".fw-reader-clean")).toBeNull();
+  });
+
+  it.each(["cream", "honey", "plum"])("clean preview keeps the stored %s choice and all five preferences shared with the usual reader", async theme => {
+    localStorage.setItem("fw_reader_theme", theme);
+    const mounted = render(<DailyStoryReader cleanPreview source={measuredSource()} defaultImmersive />);
+    expect(document.querySelector(".ds-reader-root")).toHaveClass(`fw-theme-${theme}`);
+    const opener = screen.getByRole("button", { name: "Reader settings" });opener.focus();fireEvent.click(opener);
+    const dialog = screen.getByRole("dialog", { name: "Reader settings" });
+    const settings = within(dialog), range = settings.getByRole("slider", { name: "Text size" });
+    expect(range).toHaveFocus();expect(settings.getByText("Your usual reading settings.")).toBeVisible();
+    for (const name of ["Cream", "Honey", "Plum Night"]) expect(settings.getByRole("button", { name: new RegExp(name) })).toBeVisible();
+    for (let size=0;size<5;size++) {fireEvent.change(range,{target:{value:String(size)}});expect(localStorage.getItem("fw_reader_text_size")).toBe(["xs","s","m","l","xl"][size]);}
+    fireEvent.click(settings.getByRole("button", { name: /Sans/ }));
+    fireEvent.click(settings.getByRole("button", { name: "Relaxed" }));
+    fireEvent.click(settings.getByRole("button", { name: "Wide" }));
+    expect(localStorage.getItem("fw_reader_font")).toBe("inter");expect(localStorage.getItem("fw_reader_line")).toBe("relaxed");expect(localStorage.getItem("fw_reader_margins")).toBe("wide");
+    range.focus();expect(fireEvent.keyDown(range,{key:"ArrowRight"})).toBe(true);
+    fireEvent.keyDown(range,{key:"Escape"});await waitFor(()=>expect(opener).toHaveFocus());
+    expect(document.querySelector(".ds-reader-root")).toHaveClass("ds-immersive",`fw-theme-${theme}`,"fw-font-inter","fw-line-relaxed","fw-margins-wide");
+    mounted.unmount();render(<DailyStoryReader source={bookSource()} />);
+    expect(document.querySelector(".ds-reader-root")).toHaveClass(`fw-theme-${theme}`,"fw-font-inter","fw-line-relaxed","fw-margins-wide","ds-text-xl");
+    expect(document.querySelector(".fw-reader-clean")).toBeNull();
+  });
+
   it("lets the actual reflection textarea own arrows and Escape without paging or exiting its immersive reader", () => {
     const source = measuredSource();
     function ReadingWithReflection() {

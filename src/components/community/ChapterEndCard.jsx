@@ -18,7 +18,7 @@
 // Direct club sharing remains visible but unavailable until exact thread mapping.
 // No emoji anywhere — Fraunces/Inter + Lucide only.
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useId } from "react";
 import { Link } from "react-router-dom";
 import { X, Send, BookOpen, Users } from "lucide-react";
 import { crisisCheck } from "@/components/community/communityConfig";
@@ -28,15 +28,15 @@ import {
   cohortReachedCount, predictionAggregate,
 } from "@/components/community/readingActivity";
 
-const PLUM = "#241a26";
-const CREAM = "#F4EDDB";
-const CREAM_HI = "#FBF7EC";
-const INK = "#3A2C1A";
-const MUTED = "#9B8B7A";
-const RULE = "rgba(58,44,26,0.16)";
-const GOLD = "#A8893F";   // canonical brand gold (BRAND_IDENTITY §2)
+import { useCleanReaderDialog, CleanReaderDialogStyles } from "@/components/lifestyle/DailyStoryReader";
+const LEGACY_CREAM = "#F4EDDB";
+const LEGACY_CREAM_HI = "#FBF7EC";
+const LEGACY_INK = "#3A2C1A";
+const LEGACY_MUTED = "#9B8B7A";
+const LEGACY_RULE = "rgba(58,44,26,0.16)";
+const LEGACY_GOLD = "#A8893F";   // canonical brand gold (BRAND_IDENTITY §2)
 const SERIF = '"Cormorant Garamond","Fraunces",Georgia,serif';
-const UI = '"Inter",system-ui,sans-serif';
+const LEGACY_UI = '"Inter",system-ui,sans-serif';
 
 // device-local solo reflection (optional save) — never an entity, fully private.
 const soloKey = (bookId, chapterIndex) => `fw_read_reflect_${bookId}_${chapterIndex}`;
@@ -67,9 +67,20 @@ function ChapterEndCardContent({
   // mid-read reflection (no "guess the next chapter" / cohort, no "after chapter N" framing).
   overridePrompt = null,
   anytime = false,
+  cleanPreview = false,
+  sourceContext,
   onClose,
   onCrisis,
 }) {
+  const CREAM = cleanPreview ? "#FFFFFF" : LEGACY_CREAM;
+  const CREAM_HI = cleanPreview ? "#FFFFFF" : LEGACY_CREAM_HI;
+  const INK = cleanPreview ? "#191510" : LEGACY_INK;
+  const MUTED = cleanPreview ? "#6E6A61" : LEGACY_MUTED;
+  const RULE = cleanPreview ? "#EAE7E0" : LEGACY_RULE;
+  const GOLD = cleanPreview ? "#527364" : LEGACY_GOLD;
+  const UI = cleanPreview ? "system-ui,sans-serif" : LEGACY_UI;
+  const dialogRef = useRef(null);
+  const fieldId = useId();
   const prompt = overridePrompt ? { prompt: overridePrompt } : promptFor(bookId, chapterIndex);
   const [reflection, setReflection] = useState(() => readSolo(bookId, chapterIndex));
   const [savedNote, setSavedNote] = useState("");
@@ -106,12 +117,15 @@ function ChapterEndCardContent({
     onClose && onClose();
   }, [onClose]);
 
+  useCleanReaderDialog(cleanPreview && !!prompt, dialogRef, close, "textarea");
+
   // Esc closes — frictionless dismiss.
   useEffect(() => {
+    if (cleanPreview) return;
     const onKey = (e) => { if (e.key === "Escape") close(); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [close]);
+  }, [close, cleanPreview]);
 
   // ── solo reflection (private, optional save) — crisis-checked before any save ──
   const saveSolo = () => {
@@ -186,14 +200,19 @@ function ChapterEndCardContent({
   return (
     <div
       role="dialog"
-      aria-modal="false"
-      aria-label="A moment with this chapter"
+      ref={dialogRef}
+      className={cleanPreview ? "fw-reader-clean-dialog" : undefined}
+      data-clean-reader-layer={cleanPreview ? "10050" : undefined}
+      tabIndex={cleanPreview ? -1 : undefined}
+      aria-modal={cleanPreview ? "true" : "false"}
+      aria-label={cleanPreview ? "Your note" : "A moment with this chapter"}
       onClick={(e) => { if (e.target === e.currentTarget) close(); }}
       style={{
         position: "fixed", inset: 0, zIndex: 10050, display: "flex",
-        alignItems: "flex-end", justifyContent: "center", background: "rgba(36,26,38,0.42)",
+        alignItems: "flex-end", justifyContent: "center", background: cleanPreview ? "rgba(25,21,16,0.3)" : "rgba(36,26,38,0.42)",
       }}
     >
+      {cleanPreview && <CleanReaderDialogStyles />}
       <div
         onClick={(e) => e.stopPropagation()}
         className="fw-sheet-safe"
@@ -206,18 +225,23 @@ function ChapterEndCardContent({
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.7, textTransform: "uppercase", color: GOLD }}>
-            <BookOpen size={13} /> {anytime ? "A moment to reflect · Jess" : `After chapter ${chapterHuman} · Jess`}
+            <BookOpen size={13} /> {cleanPreview ? "Your note" : anytime ? "A moment to reflect · Jess" : `After chapter ${chapterHuman} · Jess`}
           </span>
           <button type="button" onClick={close} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: MUTED, padding: 4, display: "inline-flex" }}>
             <X size={18} />
           </button>
         </div>
 
+        {cleanPreview && sourceContext && <p id={`${fieldId}-source`} style={{ fontFamily: UI, fontSize: 13, lineHeight: 1.6, color: MUTED, margin: "0 0 12px" }}>{sourceContext}</p>}
+
         {/* 1 — projective prompt + private reflection */}
         <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 21, lineHeight: 1.42, color: INK, margin: "0 0 14px" }}>
           {prompt.prompt}
         </p>
+        {cleanPreview && <label htmlFor={fieldId}>Your note</label>}
         <textarea
+          id={cleanPreview ? fieldId : undefined}
+          aria-describedby={cleanPreview ? `${fieldId}-device${sourceContext ? ` ${fieldId}-source` : ""}` : undefined}
           value={reflection}
           onChange={(e) => { setReflection(e.target.value); setSavedNote(""); setSaveError(""); }}
           maxLength={600}
@@ -225,9 +249,10 @@ function ChapterEndCardContent({
           placeholder="A line is plenty — for yourself, or leave it blank."
           style={inputStyle}
         />
+        {cleanPreview && <p id={`${fieldId}-device`} style={{ fontFamily: UI, fontSize: 12, color: MUTED, margin: "8px 0 0" }}>On this device</p>}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", marginTop: 9 }}>
           <button type="button" onClick={saveSolo} disabled={!reflection.trim()} style={{ ...ghostBtn, opacity: reflection.trim() ? 1 : 0.5 }}>
-            Keep this for me
+            {cleanPreview ? "Keep my note" : "Keep this for me"}
           </button>
           {inClub && (
             <button type="button" onClick={shareToRoom} disabled={!reflection.trim()} style={{ ...primaryBtn, opacity: reflection.trim() ? 1 : 0.5 }}>
@@ -250,7 +275,9 @@ function ChapterEndCardContent({
               (you can still add your hunch to the warm whole). */}
           {!guessed && (
             <>
+              {cleanPreview && <label htmlFor={`${fieldId}-hunch`}>Your hunch</label>}
               <textarea
+                id={cleanPreview ? `${fieldId}-hunch` : undefined}
                 value={guess}
                 onChange={(e) => { setGuess(e.target.value); setGuessError(""); }}
                 disabled={guessBusy}

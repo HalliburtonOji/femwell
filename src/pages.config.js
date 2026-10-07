@@ -107,6 +107,7 @@ import Outside from './pages/Outside';
 import Make from './pages/Make';
 import Money from './pages/Money';
 import BookReader from './pages/BookReader';
+import ReaderMarginDemo from './pages/ReaderMarginDemo';
 import FictionReader from './pages/FictionReader';
 import Track from './pages/Track';
 import Community from './pages/Community';
@@ -389,6 +390,7 @@ export const PAGES = {
     "Make": Make,
     "Money": Money,
     "BookReader": BookReader,
+    "ReaderMarginDemo": ReaderMarginDemo,
     "FictionReader": FictionReader,
     "Track": Track,
     "Community": Community,

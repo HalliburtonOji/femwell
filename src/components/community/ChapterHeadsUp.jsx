@@ -16,17 +16,28 @@ import { useEffect, useRef, useCallback } from "react";
 import { Leaf } from "lucide-react";
 import { warningFor, markWarningSeen } from "@/components/community/chapterWarnings";
 
-const CREAM = "#F4EDDB";
-const CREAM_HI = "#FBF7EC";
-const INK = "#3A2C1A";
-const INK_SOFT = "#5A4A38";
-const MUTED = "#9B8B7A";
-const RULE = "rgba(58,44,26,0.16)";
-const GOLD = "#D4AF37";
-const SERIF = '"Cormorant Garamond","Fraunces",Georgia,serif';
-const UI = '"Inter",system-ui,sans-serif';
+import { useCleanReaderDialog, CleanReaderDialogStyles } from "@/components/lifestyle/DailyStoryReader";
 
-export default function ChapterHeadsUp({ bookId, chapterIndex, onContinue, onDefer }) {
+const LEGACY_CREAM = "#F4EDDB";
+const LEGACY_CREAM_HI = "#FBF7EC";
+const LEGACY_INK = "#3A2C1A";
+const LEGACY_INK_SOFT = "#5A4A38";
+const LEGACY_MUTED = "#9B8B7A";
+const LEGACY_RULE = "rgba(58,44,26,0.16)";
+const LEGACY_GOLD = "#D4AF37";
+const SERIF = '"Cormorant Garamond","Fraunces",Georgia,serif';
+const LEGACY_UI = '"Inter",system-ui,sans-serif';
+
+export default function ChapterHeadsUp({ bookId, chapterIndex, onContinue, onDefer, cleanPreview = false }) {
+  const CREAM = cleanPreview ? "#FFFFFF" : LEGACY_CREAM;
+  const CREAM_HI = cleanPreview ? "#FFFFFF" : LEGACY_CREAM_HI;
+  const INK = cleanPreview ? "#191510" : LEGACY_INK;
+  const INK_SOFT = cleanPreview ? "#191510" : LEGACY_INK_SOFT;
+  const MUTED = cleanPreview ? "#6E6A61" : LEGACY_MUTED;
+  const RULE = cleanPreview ? "#EAE7E0" : LEGACY_RULE;
+  const GOLD = cleanPreview ? "#527364" : LEGACY_GOLD;
+  const UI = cleanPreview ? "system-ui,sans-serif" : LEGACY_UI;
+  const dialogRef = useRef(null);
   const note = warningFor(bookId, chapterIndex);
   const closedRef = useRef(false);
 
@@ -39,26 +50,34 @@ export default function ChapterHeadsUp({ bookId, chapterIndex, onContinue, onDef
     if (deferred) { onDefer && onDefer(); } else { onContinue && onContinue(); }
   }, [bookId, chapterIndex, onContinue, onDefer]);
 
+  useCleanReaderDialog(cleanPreview && !!note, dialogRef, () => finish(false));
+
   // Esc closes as "continue" — frictionless, never trapping the reader.
   useEffect(() => {
+    if (cleanPreview) return;
     const onKey = (e) => { if (e.key === "Escape") finish(false); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [finish]);
+  }, [finish, cleanPreview]);
 
   if (!note) return null;
 
   return (
     <div
       role="dialog"
-      aria-modal="false"
+      ref={dialogRef}
+      className={cleanPreview ? "fw-reader-clean-dialog" : undefined}
+      data-clean-reader-layer={cleanPreview ? "10040" : undefined}
+      tabIndex={cleanPreview ? -1 : undefined}
+      aria-modal={cleanPreview ? "true" : "false"}
       aria-label="A gentle heads-up about this chapter"
       onClick={(e) => { if (e.target === e.currentTarget) finish(false); }}
       style={{
         position: "fixed", inset: 0, zIndex: 10040, display: "flex",
-        alignItems: "flex-end", justifyContent: "center", background: "rgba(36,26,38,0.42)",
+        alignItems: "flex-end", justifyContent: "center", background: cleanPreview ? "rgba(25,21,16,0.3)" : "rgba(36,26,38,0.42)",
       }}
     >
+      {cleanPreview && <CleanReaderDialogStyles />}
       <div
         onClick={(e) => e.stopPropagation()}
         className="fw-sheet-safe"

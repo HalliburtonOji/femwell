@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { beforeEach, afterEach, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
@@ -10,7 +10,12 @@ vi.mock("@/components/community/bookshelf",()=>({loadShelf:mocked.shelf,readLoca
 vi.mock("@/components/community/bookClubConfig",()=>({loadBookClubPick:mocked.club,clubReached:()=>-1}));
 vi.mock("@/components/lifestyle/dailyStory",()=>({readingPosition:()=>null,isChapterRead:()=>false}));
 vi.mock("../lifestyle-elite/ReadingRoomHeader",()=>({RestingBook:()=>null}));
+vi.mock("@/api/base44Client",()=>({base44:{entities:{},auth:{}}}));
 import ChapterEndCard from "./ChapterEndCard";
+import ChapterHeadsUp from "./ChapterHeadsUp";
+import CrisisSheetLite from "./CrisisSheetLite";
+import { UK_RESOURCES } from "@/pages/communityShared";
+import { warningFor } from "./chapterWarnings";
 import BooksStoryFocus from "../lifestyle-elite/BooksStoryFocus";
 const key="fw_read_reflect_514_2";
 const note=()=>screen.getByPlaceholderText("A line is plenty — for yourself, or leave it blank.");
@@ -22,6 +27,45 @@ beforeEach(()=>{
   mocked.prediction.mockResolvedValue({ok:true});
 });
 afterEach(()=>vi.restoreAllMocks());
+it("clean note preserves its exact source and authored prompt, traps focus, acknowledges failure/retry and returns to its opener",async()=>{
+  function Host(){const [open,setOpen]=useState(false);return <><button onClick={()=>setOpen(true)}>Reflect</button>{open&&<ChapterEndCard cleanPreview bookId="514" chapterIndex={2} anytime sourceContext="Little Women · III. THE LAURENCE BOY" onClose={()=>setOpen(false)}/>}</>;}
+  render(<Host/>); const opener=screen.getByRole("button",{name:"Reflect"}); opener.focus();fireEvent.click(opener);
+  const input=screen.getByRole("textbox",{name:"Your note"});expect(input).toHaveFocus();
+  expect(screen.getByText("Little Women · III. THE LAURENCE BOY")).toBeVisible();expect(screen.getByText("What stayed with you?")).toBeVisible();
+  expect(input).toHaveAccessibleDescription("On this device Little Women · III. THE LAURENCE BOY");
+  fireEvent.change(input,{target:{value:"My exact note"}});
+  vi.spyOn(Storage.prototype,"setItem").mockImplementationOnce(()=>{throw new Error("Full");});
+  const save=screen.getByRole("button",{name:"Keep my note"});fireEvent.click(save);expect(screen.getByRole("alert")).toBeVisible();expect(input).toHaveValue("My exact note");
+  fireEvent.click(save);expect(screen.getByRole("status")).toHaveTextContent("Kept on this device.");expect(localStorage.getItem(key)).toBe("My exact note");
+  save.focus();fireEvent.keyDown(save,{key:"Tab"});expect(screen.getByRole("button",{name:"Close"})).toHaveFocus();
+  fireEvent.keyDown(document.activeElement,{key:"Tab",shiftKey:true});expect(save).toHaveFocus();
+  opener.focus();expect(input).toHaveFocus();
+  fireEvent.keyDown(input,{key:"Escape"});await waitFor(()=>expect(opener).toHaveFocus());expect(screen.queryByRole("dialog")).toBeNull();
+});
+it("clean note replacement keeps focus in actual support and returns to the original Reflect control after closing",async()=>{
+  mocked.crisis.mockReturnValue({intercept:true});
+  function Host(){const [sheet,setSheet]=useState(null);return <><button onClick={()=>setSheet("note")}>Reflect</button>{sheet==="note"&&<ChapterEndCard cleanPreview bookId="514" chapterIndex={2} anytime onClose={()=>setSheet(null)} onCrisis={()=>setSheet("support")}/>}{sheet==="support"&&<CrisisSheetLite cleanPreview onClose={()=>setSheet(null)}/>}</>;}
+  render(<Host/>);const opener=screen.getByRole("button",{name:"Reflect"});opener.focus();fireEvent.click(opener);
+  fireEvent.change(screen.getByRole("textbox",{name:"Your note"}),{target:{value:"Intercepted words"}});fireEvent.click(screen.getByRole("button",{name:"Keep my note"}));
+  await act(async()=>{});expect(screen.getByRole("button",{name:"Close"})).toHaveFocus();
+  for(const resource of UK_RESOURCES){expect(screen.getByText(resource.name)).toBeVisible();expect(screen.getByText(resource.detail)).toBeVisible();}
+  expect(localStorage.getItem(key)).toBeNull();fireEvent.keyDown(document.activeElement,{key:"Escape"});await waitFor(()=>expect(opener).toHaveFocus());
+});
+it.each(["continue","defer","escape"])("clean warning preserves complete authored content and its %s exit",async(exit)=>{
+  const continuation=vi.fn(),defer=vi.fn();
+  render(<ChapterHeadsUp cleanPreview bookId="514" chapterIndex={14} onContinue={continuation} onDefer={defer}/>);
+  expect(screen.getByText(warningFor("514",14).note)).toBeVisible();const ready=screen.getByRole("button",{name:"I’m ready — continue"});expect(ready).toHaveFocus();
+  if(exit==="escape")fireEvent.keyDown(ready,{key:"Escape"});else fireEvent.click(exit==="continue"?ready:screen.getByRole("button",{name:"Not right now"}));
+  expect(localStorage.getItem("fw_read_warn_514_14")).toBe("1");expect(exit==="defer"?defer:continuation).toHaveBeenCalledOnce();
+});
+it("clean chapter-end keeps the hunch, full reveal, cohort and exact discussion route",async()=>{
+  mocked.cohort.mockResolvedValue(12);mocked.aggregate.mockResolvedValue(["A journey home.","She writes the letter."]);
+  render(<MemoryRouter><ChapterEndCard cleanPreview bookId="514" chapterIndex={2} userId="owner" communityHref="/Community?view=bookclub&pick=exact" inClub/></MemoryRouter>);
+  expect(await screen.findByText("A journey home.")).toBeVisible();expect(screen.getByText("She writes the letter.")).toBeVisible();expect(screen.getByText(/12 of you have reached chapter 3/)).toBeVisible();
+  fireEvent.change(screen.getByRole("textbox",{name:"Your hunch"}),{target:{value:"They meet again."}});fireEvent.click(screen.getByRole("button",{name:"Add my hunch"}));
+  await waitFor(()=>expect(mocked.prediction).toHaveBeenCalledWith("514",2,"They meet again.","owner"));
+  expect(screen.getByRole("link",{name:"Discuss this in the Book Club"})).toHaveAttribute("href","/Community?view=bookclub&pick=exact");expect(screen.getByRole("button",{name:"Add to the room"})).toBeVisible();
+});
 it("confirmed private save uses the exact legacy key, reopens full text and tells mounted Books without sending note text",async()=>{
   localStorage.setItem(key,"Older note");
   const event=vi.fn(); window.addEventListener("fw_read_reflection_saved",event);

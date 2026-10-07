@@ -12,8 +12,8 @@ vi.mock("@/api/base44Client", () => ({ base44: {
 } }));
 // Exercise the actual route and actual reflection card. This reader boundary lets tests
 // drive chapter/marks events without relying on jsdom's nonexistent pagination layout.
-vi.mock("@/components/lifestyle/DailyStoryReader", () => ({ default: (props) => (
-  <article aria-label="Controlled book reader" data-book-id={props.bookId}>
+vi.mock("@/components/lifestyle/DailyStoryReader", async (importOriginal) => ({ ...(await importOriginal()), default: (props) => (
+  <article aria-label="Controlled book reader" data-book-id={props.bookId} data-clean-preview={props.cleanPreview ? "true" : "false"}>
     {props.source.items.map(item => <section key={item.id}><h3>{item.heading}</h3><p>{item.body}</p><small>{item.attribution}</small></section>)}
     <button onClick={() => props.onChapterReached(0)}>Reach first chapter</button>
     <button onClick={() => props.onChapterReached(1)}>Reach second chapter</button>
@@ -39,9 +39,9 @@ function deferred() {
   const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
   return { promise, resolve, reject };
 }
-function open(id = 105, strict = false) {
+function open(id = 105, strict = false, cleanPreview = false) {
   window.history.replaceState({}, "", `/BookReader?gutenberg_id=${id}`);
-  const element = <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><BookReader /></MemoryRouter>;
+  const element = <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><BookReader cleanPreview={cleanPreview} /></MemoryRouter>;
   return render(strict ? <StrictMode>{element}</StrictMode> : element);
 }
 const clubLink = () => screen.queryByRole("link", { name: "Discuss this book in the Book Club" });
@@ -62,6 +62,77 @@ beforeEach(() => {
     title: gutenberg_id === 514 ? "Little Women" : "Persuasion", author: "The original author",
     text: fullText, source_url: `https://www.gutenberg.org/ebooks/${gutenberg_id}`,
   } }));
+});
+
+describe("Ideas-only reader margin preview", () => {
+  it("keeps the exact long-title book, chapter context and full prose through note save and close without another download", async () => {
+    const title = "Little Women; Or, Meg, Jo, Beth, and Amy";
+    api.invoke.mockResolvedValueOnce({ data: { title, author: "Louisa May Alcott", text: fullText, source_url: "https://www.gutenberg.org/ebooks/37106" } });
+    open(37106, false, true);
+    const reader = await screen.findByRole("article", { name: "Controlled book reader" });
+    expect(reader).toHaveAttribute("data-book-id", "37106");
+    expect(reader).toHaveAttribute("data-clean-preview", "true");
+    expect(screen.getByRole("heading", { name: title, exact: true })).toBeVisible();
+    expect(within(reader).getByText("First chapter, preserved in full.")).toBeVisible();
+    expect(within(reader).getByText("Second chapter, also preserved in full.")).toBeVisible();
+    await waitFor(() => expect(screen.getByRole("link", { name: "Reader’s corner · spoiler-safe" })).toHaveAttribute("href", `/Community?club=${dailyReadClubKey(37106)}&title=${encodeURIComponent(title)}`));
+    expect(screen.getByRole("link", { name: "Project Gutenberg", exact: true })).toHaveAttribute("href", "https://www.gutenberg.org/ebooks/37106");
+    expect(screen.getByText("Finding your place…")).toBeVisible();
+    expect(screen.getByText("Finding your bookmark…")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Mark second chapter" }));
+    expect(screen.getByText("Your place: chapter 2 · 1 chapter beyond the daily mark.")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Open marked chapter" }));
+    expect(screen.getByLabelText("Requested chapter")).toHaveTextContent("0");
+    const opener = screen.getByRole("button", { name: "Reflect on where you are" });
+    opener.focus(); fireEvent.click(opener);
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText(`${title} · CHAPTER II`)).toBeVisible();
+    expect(within(dialog).getByText("A line, a character, a feeling — what’s stayed with you?")).toBeVisible();
+    fireEvent.change(within(dialog).getByRole("textbox", { name: "Your note" }), { target: { value: "A kept line, from this exact edition." } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Keep my note" }));
+    expect(localStorage.getItem("fw_read_reflect_37106_1")).toBe("A kept line, from this exact edition.");
+    expect(within(dialog).getByRole("status")).toHaveTextContent("Kept on this device.");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Close", exact: true }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+    await waitFor(() => expect(opener).toHaveFocus());
+    expect(screen.getByRole("article", { name: "Controlled book reader" })).toBe(reader);
+    expect(api.invoke).toHaveBeenCalledExactlyOnceWith("fetchGutenbergBook", { gutenberg_id: 37106 });
+  });
+
+  it("preserves the original frame and note wording on the canonical main reader", async () => {
+    open(37106);
+    const reader = await screen.findByRole("article", { name: "Controlled book reader" });
+    expect(reader).toHaveAttribute("data-clean-preview", "false");
+    expect(reader.closest(".fw-book-preview")).toBeNull();
+    expect(screen.queryByText("Ideas · reader preview")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Reflect on where you are" }));
+    expect(screen.getByRole("button", { name: "Keep this for me" })).toBeVisible();
+    expect(screen.getByText(/You're in Chapter 1 of Persuasion/)).toBeVisible();
+  });
+
+  it("retains the clean frame through actual loading, structured error and explicit retry", async () => {
+    const pending = deferred(); api.invoke.mockReturnValueOnce(pending.promise);
+    const view = open(37106, false, true);
+    expect(screen.getByText("Loading the book…").closest(".fw-book-preview")).not.toBeNull();
+    await act(async () => pending.resolve({ data: { error: "Source unavailable" } }));
+    expect(screen.getByText("We couldn’t open this book.").closest(".fw-book-preview")).not.toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Tap to try again" }));
+    expect(await screen.findByRole("article", { name: "Controlled book reader" })).toHaveAttribute("data-clean-preview", "true");
+    expect(api.invoke).toHaveBeenCalledTimes(2);
+    view.unmount();
+  });
+
+  it("preserves honest empty text and all authored reflection context for the correct edition", async () => {
+    api.invoke.mockResolvedValueOnce({ data: { title: "Empty source", text: "" } });
+    const empty = open(37106, false, true);
+    expect((await screen.findByText("This book has no readable text.")).closest(".fw-book-preview")).not.toBeNull();
+    empty.unmount();
+    open(514, false, true);
+    await screen.findByRole("article", { name: "Controlled book reader" });
+    fireEvent.click(screen.getByRole("button", { name: "Reflect on where you are" }));
+    expect(screen.getByText(promptFor("514", 0).prompt)).toBeVisible();
+    expect(screen.queryByText("A line, a character, a feeling — what’s stayed with you?")).toBeNull();
+  });
 });
 
 // Public-domain primary sources downloaded 2026-10-07 from

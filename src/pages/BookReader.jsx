@@ -12,6 +12,7 @@ import CrisisSheetLite from "@/components/community/CrisisSheetLite";
 import { recordProgress } from "@/components/community/readingActivity";
 import { promptFor } from "@/components/community/chapterPrompts";
 import { warningFor, hasSeenWarning } from "@/components/community/chapterWarnings";
+import "./ReaderMarginDemo.css";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BookReader — renders a Project Gutenberg book in the FemWell Kindle UI.
@@ -142,16 +143,17 @@ function isTransient(err) {
 
 // A context-aware reflection prompt for the reader's anytime Reflect icon. Prefers the authored
 // chapter prompt (already contextual); otherwise builds a line from where she actually is.
-function smartReflectPrompt(bookId, chapterIndex, heading, title) {
+function smartReflectPrompt(bookId, chapterIndex, heading, title, cleanPreview = false) {
   const authored = promptFor(bookId, chapterIndex);
   if (authored) return authored.prompt;
+  if (cleanPreview) return "A line, a character, a feeling — what’s stayed with you?";
   const ch = (chapterIndex || 0) + 1;
   const isGeneric = !heading || /^chapter\b/i.test(heading) || /^page\b/i.test(heading);
   const where = isGeneric ? `Chapter ${ch}` : `“${heading}”`;
   return `You're in ${where}${title ? ` of ${title}` : ""}. What's staying with you from these pages — a line, a feeling, a face you recognise?`;
 }
 
-export default function BookReader() {
+export default function BookReader({ cleanPreview = false } = {}) {
   const navigate = useNavigate();
   const [book, setBook] = useState(null);
   const [chapters, setChapters] = useState([]);
@@ -172,6 +174,7 @@ export default function BookReader() {
   const [catchingUp, setCatchingUp] = useState(false);
   // two marks — live current chapter + bookmarks, reported up from the reader.
   const [liveCurrent, setLiveCurrent] = useState(0);
+  const [marksReady, setMarksReady] = useState(false);
   const [liveBookmarks, setLiveBookmarks] = useState([]);
   const [jump, setJump] = useState(null);   // { index, nonce } → reader jumps
   const jumpNonceRef = useRef(0);
@@ -332,14 +335,14 @@ export default function BookReader() {
   }, [gutenbergId, retryTick]);
 
   const onMarks = useCallback(({ currentIndex, bookmarks }) => {
-    if (typeof currentIndex === "number") setLiveCurrent(currentIndex);
+    if (typeof currentIndex === "number") { setLiveCurrent(currentIndex); setMarksReady(true); }
     if (Array.isArray(bookmarks)) setLiveBookmarks(bookmarks);
   }, []);
   // Reflect icon → open a context-aware reflection for wherever she currently is.
   const onReflectNow = useCallback(() => {
     const idx = liveCurrent || 0;
-    setReflectNow({ chapterIndex: idx, prompt: smartReflectPrompt(bookId, idx, chapters[idx]?.heading, book?.title) });
-  }, [liveCurrent, chapters, book?.title, bookId]);
+    setReflectNow({ chapterIndex: idx, prompt: smartReflectPrompt(bookId, idx, chapters[idx]?.heading, book?.title, cleanPreview) });
+  }, [liveCurrent, chapters, book?.title, bookId, cleanPreview]);
   const jumpTo = useCallback((index) => {
     jumpNonceRef.current += 1;
     setJump({ index, nonce: jumpNonceRef.current });
@@ -347,8 +350,8 @@ export default function BookReader() {
 
   if (loading) {
     return (
-      <Frame onBack={() => navigate(-1)}>
-        <div style={emptyStyle}>
+      <Frame onBack={() => navigate(-1)} cleanPreview={cleanPreview}>
+        <div className={cleanPreview ? "fw-book-empty" : undefined} style={emptyStyle}>
           <p style={{ marginBottom: 10 }}>{loadingMsg}</p>
         </div>
       </Frame>
@@ -356,10 +359,10 @@ export default function BookReader() {
   }
   if (error) {
     return (
-      <Frame onBack={() => navigate(-1)}>
-        <div style={emptyStyle}>
-          <p style={{ fontWeight: 600, marginBottom: 10 }}>We couldn't open this book just now.</p>
-          <p style={{ marginBottom: 16 }}>Sometimes the library's slow to wake. Give it another moment.</p>
+      <Frame onBack={() => navigate(-1)} cleanPreview={cleanPreview}>
+        <div className={cleanPreview ? "fw-book-empty" : undefined} style={emptyStyle}>
+          <p style={{ fontWeight: 600, marginBottom: 10 }}>{cleanPreview ? "We couldn’t open this book." : "We couldn't open this book just now."}</p>
+          <p style={{ marginBottom: 16 }}>{cleanPreview ? "Give it another go." : "Sometimes the library's slow to wake. Give it another moment."}</p>
           <button
             type="button"
             onClick={() => { setError(""); setLoading(true); setLoadingMsg("Loading the book…"); setRetryTick((t) => t + 1); }}
@@ -373,8 +376,8 @@ export default function BookReader() {
   }
   if (!chapters.length) {
     return (
-      <Frame onBack={() => navigate(-1)}>
-        <div style={emptyStyle}>
+      <Frame onBack={() => navigate(-1)} cleanPreview={cleanPreview}>
+        <div className={cleanPreview ? "fw-book-empty" : undefined} style={emptyStyle}>
           <p>This book has no readable text.</p>
         </div>
       </Frame>
@@ -383,12 +386,13 @@ export default function BookReader() {
 
   return (
     <Frame
+      cleanPreview={cleanPreview}
       onBack={() => navigate(-1)}
       title={book?.title}
       author={book?.author}
       sourceUrl={book?.source_url}
       cornerHref={communityHref}
-      cornerLabel={inClub
+      cornerLabel={cleanPreview ? (inClub ? "Book club · spoiler-safe" : "Reader’s corner · spoiler-safe") : inClub
         ? "Discuss this book in the Book Club"
         : "Others reading this — join the readers' corner (spoiler-safe)"}
       clubStatus={club.status}
@@ -400,6 +404,8 @@ export default function BookReader() {
       {/* Two marks — your physical bookmark + the smart (daily-read schedule) mark. */}
       {chaptersReal && (
         <MarksBar
+          cleanPreview={cleanPreview}
+          marksReady={marksReady}
           current={liveCurrent}
           expected={expectedChapter}
           physical={physicalMark}
@@ -409,6 +415,7 @@ export default function BookReader() {
       )}
 
       <DailyStoryReader
+        cleanPreview={cleanPreview}
         source={{
           kind: "book",
           items: chapters,
@@ -425,13 +432,14 @@ export default function BookReader() {
 
       {/* Catch-up note — reflections are held until she's current (no wall of prompts). */}
       {catchingUp && chaptersReal && (
-        <div style={catchupNote} role="status">
-          You're catching up — I'll hold the chapter reflections until you're current. No rush.
+        <div className={cleanPreview ? "fw-book-catchup" : undefined} style={cleanPreview ? undefined : catchupNote} role="status">
+          {cleanPreview ? "Chapter reflections are paused while you catch up. Reflect is still here whenever you want it." : "You're catching up — I'll hold the chapter reflections until you're current. No rush."}
         </div>
       )}
 
       {headsUpChapter !== null && bookId != null && (
         <ChapterHeadsUp
+          cleanPreview={cleanPreview}
           bookId={bookId}
           chapterIndex={headsUpChapter}
           onContinue={() => setHeadsUpChapter(null)}
@@ -440,6 +448,8 @@ export default function BookReader() {
       )}
       {cardChapter !== null && bookId != null && (
         <ChapterEndCard
+          cleanPreview={cleanPreview}
+          sourceContext={cleanPreview ? `${book?.title || "Your book"} · ${chapters[cardChapter]?.heading || `Chapter ${cardChapter + 1}`}` : undefined}
           bookId={bookId}
           chapterIndex={cardChapter}
           userId={me?.id}
@@ -451,6 +461,8 @@ export default function BookReader() {
       )}
       {reflectNow !== null && bookId != null && (
         <ChapterEndCard
+          cleanPreview={cleanPreview}
+          sourceContext={cleanPreview ? `${book?.title || "Your book"} · ${chapters[reflectNow.chapterIndex]?.heading || `Chapter ${reflectNow.chapterIndex + 1}`}` : undefined}
           bookId={bookId}
           chapterIndex={reflectNow.chapterIndex}
           userId={me?.id}
@@ -462,7 +474,7 @@ export default function BookReader() {
           onCrisis={() => { setReflectNow(null); setCrisisOpen(true); }}
         />
       )}
-      {crisisOpen && <CrisisSheetLite onClose={() => setCrisisOpen(false)} />}
+      {crisisOpen && <CrisisSheetLite cleanPreview={cleanPreview} onClose={() => setCrisisOpen(false)} />}
     </Frame>
   );
 }
@@ -488,12 +500,14 @@ const catchupNote = {
 };
 
 // ── Two marks bar — physical bookmark + smart (daily-read schedule) mark ───────
-function MarksBar({ current, expected, physical, total, onJump }) {
+function MarksBar({ current, expected, physical, total, onJump, cleanPreview = false, marksReady = true }) {
   const UI = 'ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif';
   const GOLD = "#A8893F", PLUM = "#0B0805", MUTED = "#2E261B", SAGE = "#8FAF8F";
   const bmIndex = physical ? physical.chapterIndex : null;
   const behind = current < expected;
-  const status = behind
+  const status = cleanPreview && !marksReady ? "Finding your place…" : cleanPreview
+    ? `Your place: chapter ${current + 1}${current === expected ? " · today’s daily read." : ` · ${Math.abs(current - expected)} ${Math.abs(current - expected) === 1 ? "chapter" : "chapters"} ${behind ? "before" : "beyond"} the daily mark.`}`
+    : behind
     ? `${expected - current} ${expected - current === 1 ? "chapter" : "chapters"} behind today's daily read — no rush.`
     : current > expected
       ? "You're ahead of the daily read — lovely."
@@ -505,71 +519,77 @@ function MarksBar({ current, expected, physical, total, onJump }) {
     border: "none", borderRadius: 999, padding: "5px 12px", cursor: "pointer", flexShrink: 0,
   };
   return (
-    <div style={{
+    <div className={cleanPreview ? "fw-book-marks" : undefined} style={{
       maxWidth: 880, margin: "0 auto 18px", padding: "12px 16px", borderRadius: 14,
       border: "1px solid #D8CFBC", background: "#F4EFE3",
+      ...(cleanPreview ? { background: "transparent", border: "none", borderRadius: 0, padding: 0, marginBottom: 20 } : {}),
     }}>
       <p style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: GOLD, margin: "0 0 4px" }}>Your two marks</p>
       <div style={{ ...row, borderBottom: "1px solid rgba(43,30,22,0.12)" }}>
         <CalendarDays size={16} style={{ color: SAGE, flexShrink: 0 }} />
         <span style={label}>
-          <span style={{ color: PLUM, fontWeight: 700 }}>Today's daily read · Chapter {expected + 1}</span>
+          <span style={{ color: PLUM, fontWeight: 700 }}>{cleanPreview ? "Daily read" : "Today's daily read"} · Chapter {expected + 1}</span>
           <span style={{ display: "block", fontWeight: 500 }}>{status}</span>
         </span>
-        {current !== expected && (
-          <button type="button" style={jumpBtn} onClick={() => onJump(expected)}>Go to chapter {expected + 1}</button>
+        {current !== expected && (!cleanPreview || marksReady) && (
+          <button type="button" style={jumpBtn} onClick={() => onJump(expected)}>{cleanPreview ? "Open chapter" : "Go to chapter"} {expected + 1}</button>
         )}
       </div>
       <div style={row}>
         <Bookmark size={16} style={{ color: "#BC2E27", flexShrink: 0 }} fill={bmIndex != null ? "#BC2E27" : "none"} />
         <span style={label}>
-          {bmIndex != null
+          {cleanPreview && !marksReady ? <span>Finding your bookmark…</span> : bmIndex != null
             ? <span style={{ color: PLUM, fontWeight: 700 }}>Your bookmark · Chapter {bmIndex + 1}</span>
-            : <span>No bookmark yet — tap the ribbon in the reader to mark your place.</span>}
+            : <span>{cleanPreview ? "No bookmark yet — use the ribbon below." : "No bookmark yet — tap the ribbon in the reader to mark your place."}</span>}
         </span>
         {bmIndex != null && current !== bmIndex && (
-          <button type="button" style={jumpBtn} onClick={() => onJump(bmIndex)}>Go to your mark</button>
+          <button type="button" style={jumpBtn} onClick={() => onJump(bmIndex)}>{cleanPreview ? "Open marked chapter" : "Go to your mark"}</button>
         )}
       </div>
     </div>
   );
 }
 
-function Frame({ children, onBack, title, author, sourceUrl, cornerHref, cornerLabel, clubStatus, onClubRetry }) {
+function Frame({ children, onBack, title, author, sourceUrl, cornerHref, cornerLabel, clubStatus, onClubRetry, cleanPreview = false }) {
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#ECE7DA" }}>
-      <div className="max-w-2xl mx-auto px-4 pt-8 pb-8">
+    <div className={cleanPreview ? "fw-book-preview" : undefined} style={{ minHeight: "100vh", backgroundColor: cleanPreview ? "#F5F4F1" : "#ECE7DA" }}>
+      <div className={cleanPreview ? "fw-book-folio" : "max-w-2xl mx-auto px-4 pt-8 pb-8"}>
+        {cleanPreview && <div className="fw-book-preview-label">Ideas · reader preview</div>}
         <button
+          type="button"
+          aria-label="Back"
           onClick={onBack}
-          className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm mb-6"
+          className={cleanPreview ? "fw-book-back" : "w-10 h-10 rounded-xl flex items-center justify-center shadow-sm mb-6"}
           style={{ backgroundColor: "rgba(255,255,255,0.85)" }}
         >
           <ArrowLeft className="w-4 h-4" style={{ color: "#7A1A12" }} />
         </button>
-        <h1 className="fw-display" style={{ margin: "0 0 10px 0" }}>Library</h1>
+        <h1 className={cleanPreview ? "fw-book-eyebrow" : "fw-display"} style={{ margin: "0 0 10px 0" }}>Library</h1>
         {title && (
-          <h2 className="fw-heading" style={{ color: "#7A1A12", margin: "0 0 8px 0" }}>
+          <h2 className={cleanPreview ? "fw-book-title" : "fw-heading"} style={{ color: cleanPreview ? "#191510" : "#7A1A12", margin: "0 0 8px 0" }}>
             {title}
           </h2>
         )}
         {author && (
-          <p style={{ fontSize: 14, color: "#2E261B", marginBottom: 20 }}>
+          <p style={{ fontSize: 14, color: cleanPreview ? "#6E6A61" : "#2E261B", marginBottom: cleanPreview ? 12 : 20 }}>
             {author} · Public domain
           </p>
         )}
         {sourceUrl && (
           <a
+            className={cleanPreview ? "fw-book-source" : undefined}
             href={sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
             style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "#BC2E27", textDecoration: "none", marginBottom: 20 }}
           >
             <ExternalLink className="w-3 h-3" />
-            Read at gutenberg.org
+            {cleanPreview ? "Project Gutenberg" : "Read at gutenberg.org"}
           </a>
         )}
         {cornerHref && (
           <Link
+            className={cleanPreview ? "fw-book-discussion" : undefined}
             to={cornerHref}
             style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, color: "#7A1A12", textDecoration: "none", marginBottom: 20, padding: "9px 13px", borderRadius: 12, border: "1px solid #D8CFBC", backgroundColor: "#F4EFE3" }}
           >
@@ -596,7 +616,7 @@ function Frame({ children, onBack, title, author, sourceUrl, cornerHref, cornerL
           </div>
         )}
       </div>
-      <div className="max-w-2xl mx-auto px-4">
+      <div className={cleanPreview ? "fw-book-preview-body" : "max-w-2xl mx-auto px-4"}>
         {children}
       </div>
     </div>

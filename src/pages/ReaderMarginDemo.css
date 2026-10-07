@@ -1,0 +1,87 @@
+.fw-book-preview {
+  padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+  color: #191510;
+}
+.fw-book-preview .fw-book-folio,
+.fw-book-preview .fw-book-preview-body {
+  max-width: 700px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+.fw-book-preview .fw-book-folio {
+  padding: 24px 20px 0;
+  position: relative;
+}
+.fw-book-preview .fw-book-preview-label {
+  float: right;
+  font: 11px/44px system-ui, sans-serif;
+  color: #6e6a61;
+}
+.fw-book-preview .fw-book-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #dedbd5;
+  border-radius: 50%;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+.fw-book-preview .fw-book-back svg { color: #191510 !important; }
+.fw-book-preview .fw-book-eyebrow {
+  font: 600 11px/1.4 system-ui, sans-serif;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #6e6a61;
+}
+.fw-book-preview .fw-book-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(32px, 6vw, 44px);
+  font-weight: 500;
+  line-height: 1.08;
+  overflow-wrap: anywhere;
+}
+.fw-book-preview .fw-book-source,
+.fw-book-preview .fw-book-discussion {
+  min-height: 44px;
+  padding: 10px 0 !important;
+  box-sizing: border-box;
+  margin-bottom: 0 !important;
+  color: #4f4655 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+.fw-book-preview .fw-book-source { text-decoration: underline !important; text-underline-offset: 4px; }
+.fw-book-preview .fw-book-discussion {
+  border-bottom: 1px solid #dedbd5 !important;
+  margin-bottom: 16px !important;
+  align-items: flex-start !important;
+  line-height: 1.55;
+}
+.fw-book-preview .fw-book-discussion svg { color: #6e796b !important; margin-top: 3px; flex-shrink: 0; }
+.fw-book-preview .fw-book-marks { margin: 0 20px 20px !important; }
+.fw-book-preview .fw-book-empty {
+  margin: 16px 20px;
+  padding: 32px 20px !important;
+  background: #fff;
+  color: #191510 !important;
+  border-radius: 16px;
+}
+.fw-book-preview .fw-book-marks button { min-height: 44px; color: #191510 !important; background: #fff !important; border: 1px solid #dedbd5 !important; }
+.fw-book-preview .fw-book-catchup {
+  margin: 16px 20px 0;
+  padding: 12px 0;
+  border-top: 1px solid #dedbd5;
+  font: 14px/1.6 system-ui, sans-serif;
+  color: #6e6a61;
+}
+.fw-book-preview button:focus-visible,
+.fw-book-preview a:focus-visible {
+  outline: 2px solid #75677d;
+  outline-offset: 4px;
+}
+@media (min-width: 700px) {
+  .fw-book-preview .fw-book-folio { padding-top: 32px; }
+}

@@ -114,10 +114,66 @@ function ownsModifiedKey(event) {
   return event.defaultPrevented || event.isComposing || event.ctrlKey || event.altKey || event.metaKey || event.shiftKey;
 }
 
+// Opt-in sheets share focus ownership without changing legacy reader consumers.
+let pendingCleanDialogReturn = null;
+export function useCleanReaderDialog(enabled, dialogRef, onClose, initialSelector = "button") {
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!enabled || !dialog) return;
+    const active = document.activeElement;
+    const previous = (active === document.body || !active?.isConnected) && pendingCleanDialogReturn?.isConnected
+      ? pendingCleanDialogReturn : active;
+    const top = () => [...document.querySelectorAll("[data-clean-reader-layer]")]
+      .filter(isVisibleKeySurface).sort((a, b) => Number(b.dataset.cleanReaderLayer) - Number(a.dataset.cleanReaderLayer))[0];
+    const controls = () => [...dialog.querySelectorAll('button,a[href],input,textarea,select,[tabindex]')]
+      .filter(node => !node.disabled && node.tabIndex >= 0 && isVisibleKeySurface(node));
+    const focusFirst = () => (dialog.querySelector(initialSelector) || controls()[0] || dialog).focus({ preventScroll: true });
+    if (top() === dialog) focusFirst();
+    const onKey = event => {
+      if (top() !== dialog || event.defaultPrevented || event.isComposing) return;
+      if (event.key === "Escape") {
+        event.preventDefault(); event.stopPropagation(); closeRef.current?.();
+      } else if (event.key === "Tab") {
+        const items = controls(), first = items[0] || dialog, last = items[items.length - 1] || dialog;
+        if (!dialog.contains(document.activeElement) || (event.shiftKey ? document.activeElement === first : document.activeElement === last)) {
+          event.preventDefault(); (event.shiftKey ? last : first).focus({ preventScroll: true });
+        }
+      }
+    };
+    const onFocus = event => { if (top() === dialog && !dialog.contains(event.target)) focusFirst(); };
+    document.addEventListener("keydown", onKey, true);
+    document.addEventListener("focusin", onFocus);
+    return () => {
+      document.removeEventListener("keydown", onKey, true);
+      document.removeEventListener("focusin", onFocus);
+      // A crisis sheet may replace the note in the same commit. Never steal its focus.
+      pendingCleanDialogReturn = previous;
+      queueMicrotask(() => {
+        const next = top();
+        if (previous?.isConnected && (!next || next.contains(previous))) previous.focus?.({ preventScroll: true });
+        if (pendingCleanDialogReturn === previous) pendingCleanDialogReturn = null;
+      });
+    };
+  }, [enabled, dialogRef, initialSelector]);
+}
+
+export function CleanReaderDialogStyles() {
+  return <style>{`
+    .fw-reader-clean-dialog { color: #191510; text-shadow: none; }
+    .fw-reader-clean-dialog .fw-sheet-safe { padding: 20px 20px max(var(--fw-sheet-safe), env(safe-area-inset-bottom)) !important; max-height: calc(100dvh - 24px) !important; scroll-padding-block: 20px max(var(--fw-sheet-safe), env(safe-area-inset-bottom)); }
+    .fw-reader-clean-dialog button, .fw-reader-clean-dialog a { min-height: 44px; min-width: 44px; box-sizing: border-box; }
+    .fw-reader-clean-dialog textarea { font-size: 18px !important; line-height: 1.6 !important; }
+    .fw-reader-clean-dialog :is(button,a,input,textarea,select):focus-visible { outline: 2px solid #527364 !important; outline-offset: 3px; }
+    .fw-reader-clean-dialog label { display: block; font: 600 13px/1.5 ui-sans-serif,system-ui,sans-serif; color: #191510; margin: 0 0 8px; }
+  `}</style>;
+}
+
 // ─── Font-size slider control ─────────────────────────────────────────────────
 // A real range slider — small "A" on the left, large "A" on the right, the
 // thumb drags between five discrete positions (xs · s · m · l · xl).
-function FontSliderControl({ textSize, setSize, variant }) {
+function FontSliderControl({ textSize, setSize, variant, cleanPreview = false }) {
   const i = TEXT_SIZE_INDEX(textSize);
   const isImm = variant === "immersive";
   const onChange = (e) => {
@@ -135,6 +191,7 @@ function FontSliderControl({ textSize, setSize, variant }) {
       <span className="ds-reader-slider-mark ds-reader-slider-mark-min" aria-hidden="true">A</span>
       <input
         type="range"
+        aria-label={cleanPreview ? "Text size" : undefined}
         min="0"
         max={TEXT_SIZES.length - 1}
         step="1"
@@ -162,9 +219,12 @@ function SettingsDrawer({
   line, setLine,
   margins, setMargins,
   onClose,
+  cleanPreview = false,
 }) {
   const sheetRef = useRef(null);
+  useCleanReaderDialog(cleanPreview, sheetRef, onClose, 'input[type="range"]');
   useEffect(() => {
+    if (cleanPreview) return;
     const onKey = (e) => {
       if (e.key !== "Escape" || ownsModifiedKey(e)) return;
       if (!isVisibleKeySurface(sheetRef.current)) return;
@@ -175,7 +235,7 @@ function SettingsDrawer({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [onClose, cleanPreview]);
 
   const themeLabel = { cream: "Cream", honey: "Honey", plum: "Plum Night" };
   const lineLabel = { tight: "Tight", normal: "Default", relaxed: "Relaxed" };
@@ -190,7 +250,9 @@ function SettingsDrawer({
       />
       <div
         ref={sheetRef}
-        className="ds-reader-sheet"
+        className={`ds-reader-sheet${cleanPreview ? " fw-reader-clean-dialog" : ""}`}
+        data-clean-reader-layer={cleanPreview ? "10001" : undefined}
+        tabIndex={cleanPreview ? -1 : undefined}
         role="dialog"
         aria-modal="true"
         aria-label="Reader settings"
@@ -200,12 +262,13 @@ function SettingsDrawer({
           className="ds-reader-sheet-handle"
           onClick={onClose}
           aria-label="Close settings"
-        />
-        <div className="ds-reader-sheet-content">
+        >{cleanPreview ? "Close settings" : null}</button>
+        <div className={`ds-reader-sheet-content${cleanPreview ? " fw-sheet-safe" : ""}`}>
+          {cleanPreview && <p className="ds-reader-sheet-label">Your usual reading settings.</p>}
           {/* Section 1 — Text size */}
           <div className="ds-reader-sheet-section">
             <p className="ds-reader-sheet-label">Text size</p>
-            <FontSliderControl textSize={textSize} setSize={setSize} variant="sheet" />
+            <FontSliderControl textSize={textSize} setSize={setSize} variant="sheet" cleanPreview={cleanPreview} />
           </div>
 
           {/* Section 2 — Theme */}
@@ -557,6 +620,7 @@ export default function DailyStoryReader({
   // Anytime-reflect: when provided, a Reflect icon appears in the controls. Tapping it asks the
   // host to open a context-aware reflection for wherever she is (not only at chapter end).
   onReflect,
+  cleanPreview = false,
 }) {
   const readerRootRef = useRef(null);
   const [chapters, setChapters] = useState(providedSource?.items || []);
@@ -1074,6 +1138,7 @@ export default function DailyStoryReader({
       ref={readerRootRef}
       className={[
         "ds-reader-root",
+        cleanPreview ? "fw-reader-clean" : "",
         `ds-text-${textSize}`,
         immersive ? "ds-immersive" : "",
         immersive && !chromeVisible ? "ds-chrome-hidden" : "ds-chrome-visible",
@@ -1086,6 +1151,7 @@ export default function DailyStoryReader({
       onTouchEnd={onTouchEnd}
     >
       <ReaderStyles reducedMotion={reducedMotion} />
+      {cleanPreview && <><CleanReaderStyles /><CleanReaderDialogStyles /></>}
 
       {/* Reader controls — non-immersive: series label + volume-style font + ⤢
           Immersive: a slim top bar with ← (exit immersive) + Aa volume +
@@ -1157,6 +1223,7 @@ export default function DailyStoryReader({
             <FontSliderControl
               textSize={textSize}
               setSize={setSize}
+              cleanPreview={cleanPreview}
             />
             {onReflect && (
               <button
@@ -1226,6 +1293,7 @@ export default function DailyStoryReader({
 
       {/* 3D stage */}
       <div className="ds-reader-stage">
+        {cleanPreview && isCurrentBookmarked && !showLocked && <span className="ds-clean-bookmark-ribbon" role="status" aria-label="This page is bookmarked"><Bookmark size={14} aria-hidden="true" /></span>}
         {showLocked ? (
           <LockedCliffhanger cliffhanger={cliffhanger} animClass={animClass} />
         ) : (
@@ -1239,7 +1307,7 @@ export default function DailyStoryReader({
             pageInChapter={pageInChapter}
             onPageCount={reportPageCount}
             immersive={immersive}
-            layoutKey={`${font}|${line}|${margins}`}
+            layoutKey={`${font}|${line}|${margins}|${cleanPreview}`}
           />
         )}
       </div>
@@ -1261,6 +1329,7 @@ export default function DailyStoryReader({
           margins={margins}
           setMargins={setMargins}
           onClose={() => setShowSettings(false)}
+          cleanPreview={cleanPreview}
         />
       )}
 
@@ -1326,6 +1395,49 @@ export default function DailyStoryReader({
 // ─────────────────────────────────────────────────────────────────────────────
 // Scoped styles — respects prefers-reduced-motion
 // ─────────────────────────────────────────────────────────────────────────────
+function CleanReaderStyles() {
+  return <style>{`
+    .ds-reader-root.fw-reader-clean {
+      --paper: #FFFFFF; --ink: #191510; --ink-mute: #6E6A61; --accent: #527364; --rule: #EAE7E0; --border: #EAE7E0; --reader-control: #FFFFFF;
+      background: transparent; color: var(--ink); text-shadow: none;
+    }
+    .ds-reader-root.fw-reader-clean.fw-theme-honey { --paper: #FFFCF5; --reader-control: #FFFFFF; --ink: #191510; --ink-mute: #6E6A61; --accent: #65734F; --rule: #E7E3D9; }
+    .ds-reader-root.fw-reader-clean.fw-theme-plum { --paper: #22262B; --reader-control: #30363B; --ink: #F3F4F1; --ink-mute: #BCC4C5; --accent: #B3CCBD; --rule: #4B545B; --border: #4B545B; }
+    .ds-reader-root.fw-reader-clean.ds-immersive { background: var(--paper); }
+    .fw-reader-clean .ds-reader-stage { background: var(--paper); color: var(--ink); border: 0; border-radius: 0; box-shadow: none; padding: 28px 20px 24px; }
+    .ds-reader-root.fw-reader-clean.ds-immersive .ds-reader-stage { padding: 84px 20px 64px; }
+    .fw-reader-clean .ds-reader-controls { margin: 0; padding: 12px 20px; gap: 8px; border-block: 1px solid var(--rule); background: var(--paper); }
+    .fw-reader-clean .ds-reader-series-label { color: var(--ink-mute); font-family: ui-sans-serif,system-ui,sans-serif; font-size: 11px; line-height: 1.5; }
+    .fw-reader-clean .ds-reader-controls-right { width: 100%; gap: 8px; flex-wrap: wrap; }
+    .fw-reader-clean .ds-reader-slider { flex: 1 1 164px; min-width: 140px; box-sizing: border-box; min-height: 44px; padding: 4px 10px; gap: 8px; background: var(--reader-control); border-color: var(--rule); }
+    .fw-reader-clean .ds-reader-slider-input { min-width: 0; height: 36px; }
+    .fw-reader-clean .ds-reader-slider-mark { color: var(--ink); font-family: ui-sans-serif,system-ui,sans-serif; }
+    .fw-reader-clean .ds-reader-ctrl-btn, .fw-reader-clean .ds-reader-nav-btn { flex-shrink: 0; min-width: 44px; width: 44px; height: 44px; padding: 0; color: var(--ink); background: var(--reader-control); border-color: var(--rule); }
+    .fw-reader-clean .ds-reader-imm-btn { background: var(--reader-control); color: var(--ink); border: 1px solid var(--rule); box-shadow: none; }
+    .fw-reader-clean .ds-reader-imm-btn:hover { background: var(--reader-control); color: var(--accent); border-color: var(--accent); box-shadow: none; }
+    .fw-reader-clean .ds-reader-ctrl-btn[aria-pressed="true"], .fw-reader-clean .ds-reader-bookmark-btn.is-bookmarked { color: var(--accent); border-color: var(--accent); }
+    .fw-reader-clean .ds-reader-chapter-strip, .fw-reader-clean .ds-reader-chapter-label, .fw-reader-clean .ds-reader-bottom-text { font-family: ui-sans-serif,system-ui,sans-serif; color: var(--ink-mute); text-shadow: none; }
+    .fw-reader-clean .ds-reader-h1 { font-family: ${READING.fontStack}; color: var(--ink); text-shadow: none; overflow-wrap: anywhere; }
+    .fw-reader-clean .ds-reader-nav { margin-top: 0; padding: 12px 20px; border-top: 1px solid var(--rule); background: var(--paper); }
+    .fw-reader-clean .ds-reader-dnd-tip { background: var(--reader-control); color: var(--ink); border: 1px solid var(--rule); }
+    .fw-reader-clean .ds-reader-dnd-dismiss { min-width: 44px; min-height: 44px; background: var(--reader-control); color: var(--accent); font-family: ui-sans-serif,system-ui,sans-serif; }
+    .fw-reader-clean .ds-reader-lock { border-radius: 0; background: var(--paper); border-block: 1px solid var(--rule); }
+    .fw-reader-clean .ds-reader-lock-eyebrow, .fw-reader-clean .ds-reader-lock-teaser, .fw-reader-clean .ds-reader-lock-countdown, .fw-reader-clean .ds-reader-lock-sub { color: var(--ink); text-shadow: none; }
+    .fw-reader-clean .ds-reader-lock-curl { color: var(--ink-mute); }
+    .fw-reader-clean .ds-reader-sheet { background: #FFFFFF; color: #191510; --paper: #FFFFFF; --ink: #191510; --ink-mute: #6E6A61; --accent: #527364; --rule: #EAE7E0; height: min(70dvh, 620px); max-height: calc(100dvh - 24px); padding-bottom: env(safe-area-inset-bottom); box-sizing: border-box; }
+    .fw-reader-clean .ds-reader-sheet-content { padding: 12px 20px 28px; scroll-padding-bottom: 28px; }
+    .fw-reader-clean .ds-reader-sheet-label { font-family: ui-sans-serif,system-ui,sans-serif; color: #6E6A61; }
+    .fw-reader-clean .ds-reader-sheet-handle { width: auto; height: auto; min-height: 44px; padding: 0 16px; margin: 10px 20px 0 auto; border: 1px solid #EAE7E0; background: #FFFFFF; color: #191510; font: 600 13px/1.4 ui-sans-serif,system-ui,sans-serif; }
+    .fw-reader-clean .ds-reader-pill, .fw-reader-clean .ds-reader-tile { font-family: ui-sans-serif,system-ui,sans-serif; min-height: 44px; }
+    .fw-reader-clean .ds-reader-tile-theme.fw-theme-cream { background: #FFFFFF; }
+    .fw-reader-clean .ds-reader-tile-theme.fw-theme-honey { background: #FFFCF5; }
+    .fw-reader-clean .ds-reader-tile-theme.fw-theme-plum { background: #22262B; color: #F3F4F1; }
+    .fw-reader-clean .ds-reader-tile-theme.fw-theme-plum .ds-reader-tile-label { color: #F3F4F1; }
+    .fw-reader-clean :is(button,input,a):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .ds-clean-bookmark-ribbon { position: absolute; right: 20px; top: 0; width: 24px; height: 36px; display: flex; justify-content: center; padding-top: 6px; background: var(--accent); color: var(--paper); clip-path: polygon(0 0,100% 0,100% 100%,50% 78%,0 100%); pointer-events: none; }
+  `}</style>;
+}
+
 function ReaderStyles({ reducedMotion }) {
   const flipAnim = reducedMotion
     ? `
