@@ -44,7 +44,7 @@
   "current": {
     "section": "Lifestyle / Books and Yours",
     "atom": "B01-S03-A05",
-    "status": "A05 opt-in ReaderMarginDemo source complete and frozen: full704/51, independent88/5 +postCSS62/2, scopedlint0errors/diffvalid. Fullsource/defaultlayout/sharedprefs/sheets retained; actualnote-to-support focusgap repaired. Buildrunning, thennormalpush/site andactual360/390/430 proof required. Currentlive fX_oYqza repaircheckpoint. No mainpromotion/socialapproval."
+    "status": "A05 actualpreview360 audit findsCR0028P2 cleantoolbarwrap/pinkrangeleak/headerlabelcollision. Sameclaimsactive, boundedscopedrepair before finalpreviewclosure; exactfullbook/currentplaceverifiedbutmobilethemereturnproofunfinished. Site5foGl7Tp, no mainpromotion/socialapproval."
   },
   "lastCompleted": {
     "run": 5,
@@ -272,6 +272,13 @@
       "title": "Reader keyboard and touch navigation steals note, settings and dialog interactions",
       "status": "closed bounded keyboard/control/touchownershipcd51a2d: nativecaret0→0/pageflip reproduced; actual43reader/65independent controlledkeyboard/range/modal tests pass, full689/51. Rootfinal360/390/430 caret0→1/pageheld,390 one-layerReflect/settingsEscape andownreaderexit, native360/430font2→3→2. Independentfinal8pixels/HTTP accepts. Physicaltouch andhiddenoriginportal lifetime stillunproved, not a universalmodalstack certificate.",
       "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
+    },
+    {
+      "id": "CR-0028",
+      "severity": "P2",
+      "title": "Opt-in reader toolbar reflows awkwardly, range leaks old colour and preview label collides with fixed chrome",
+      "status": "Actualnative360 reproducedonindex-5foGl7Tp.js, client345/toolbar305 vs320 basis; source scopedrepair underway under87184b7. Need rebuilt3width reproof.",
+      "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
     }
   ],
   "decisions": [
@@ -341,7 +348,7 @@
     "batch": "B01",
     "stage": "B01-S03",
     "atom": "B01-S03-A05",
-    "nextStep": "Finish running preview build, record indexhash, commit andnormalpush claimed source/Ideas/proof, site deploy only(frontend); thenactual360/390/430 title/marks/tools/fullprose/noteKeep-close/keyboard/immersive/settings3themes5prefs/safe-lastcontrol/exactBack andmaindefaultisolation, restorepriorprefs. Independentfreshpixel/HTTP/audit beforeclosure. Socialproposalheld.",
+    "nextStep": "FinishCR0028 scopedclean toolbarflex/pinkrange androotpreviewlabel repairs; meaningfulreader/BookReader checks, buildnormalpush/site, then completeactual360/390/430 note/control/settings/themes/preferences/identicalplace/Back +canonicaldefaultproof/independentfinalpixels.",
     "readyWork": "Classic ready→anytime Reflect→acknowledged Keep/failure→Close to identical passage, with all full prose/frontmatter/settings3themes/5preferences/bookmarks/immersive/locks/warnings/hunch/reveal/sourceBack preserved. No invented FictionReader Reflect. Zero new asset/font/query/store/engine/socialdelivery. Source candidate hidden-route portal lifetime gets exact fixture/native proof before closure.",
     "acceptance": "Actual360/390/430 open/interact/close/theme/preferences/exactsource/Back, controlledfailure/owner/keyboard/touch plus independentP0/P1/P2; bespoke clean§2.7/6.7.8 with safe sheets/44px controls, short human copy and peratom costcard§10.5.23. Link working preview/research/checks/gaps in Ideas before main promotion.",
     "heldBranch": "A04 exact reached-checkpoint→selectedwords/destinationpreview→explicitPost proposal is published/asked, unanswered; do notimplement socialdelivery/defaults orreattest/reask unchangedchoices. Continue independentA05 work.",

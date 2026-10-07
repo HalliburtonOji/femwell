@@ -506,7 +506,9 @@ function MarksBar({ current, expected, physical, total, onJump, cleanPreview = f
   const bmIndex = physical ? physical.chapterIndex : null;
   const behind = current < expected;
   const status = cleanPreview && !marksReady ? "Finding your place…" : cleanPreview
-    ? `Your place: chapter ${current + 1}${current === expected ? " · today’s daily read." : ` · ${Math.abs(current - expected)} ${Math.abs(current - expected) === 1 ? "chapter" : "chapters"} ${behind ? "before" : "beyond"} the daily mark.`}`
+    ? current === expected
+      ? "You’re at today’s chapter."
+      : `Your place: chapter ${current + 1} · ${Math.abs(current - expected)} ${Math.abs(current - expected) === 1 ? "chapter" : "chapters"} ${behind ? "before" : "beyond"} the daily mark.`
     : behind
     ? `${expected - current} ${expected - current === 1 ? "chapter" : "chapters"} behind today's daily read — no rush.`
     : current > expected
@@ -554,7 +556,6 @@ function Frame({ children, onBack, title, author, sourceUrl, cornerHref, cornerL
   return (
     <div className={cleanPreview ? "fw-book-preview" : undefined} style={{ minHeight: "100vh", backgroundColor: cleanPreview ? "#F5F4F1" : "#ECE7DA" }}>
       <div className={cleanPreview ? "fw-book-folio" : "max-w-2xl mx-auto px-4 pt-8 pb-8"}>
-        {cleanPreview && <div className="fw-book-preview-label">Ideas · reader preview</div>}
         <button
           type="button"
           aria-label="Back"
@@ -564,9 +565,10 @@ function Frame({ children, onBack, title, author, sourceUrl, cornerHref, cornerL
         >
           <ArrowLeft className="w-4 h-4" style={{ color: "#7A1A12" }} />
         </button>
+        {cleanPreview && <div className="fw-book-preview-label">Ideas · reader preview</div>}
         <h1 className={cleanPreview ? "fw-book-eyebrow" : "fw-display"} style={{ margin: "0 0 10px 0" }}>Library</h1>
         {title && (
-          <h2 className={cleanPreview ? "fw-book-title" : "fw-heading"} style={{ color: cleanPreview ? "#191510" : "#7A1A12", margin: "0 0 8px 0" }}>
+          <h2 className={cleanPreview ? "fw-book-title" : "fw-heading"} style={{ color: "#7A1A12", margin: "0 0 8px 0" }}>
             {title}
           </h2>
         )}

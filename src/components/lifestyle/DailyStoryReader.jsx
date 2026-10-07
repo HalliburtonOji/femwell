@@ -1406,11 +1406,15 @@ function CleanReaderStyles() {
     .ds-reader-root.fw-reader-clean.ds-immersive { background: var(--paper); }
     .fw-reader-clean .ds-reader-stage { background: var(--paper); color: var(--ink); border: 0; border-radius: 0; box-shadow: none; padding: 28px 20px 24px; }
     .ds-reader-root.fw-reader-clean.ds-immersive .ds-reader-stage { padding: 84px 20px 64px; }
-    .fw-reader-clean .ds-reader-controls { margin: 0; padding: 12px 20px; gap: 8px; border-block: 1px solid var(--rule); background: var(--paper); }
-    .fw-reader-clean .ds-reader-series-label { color: var(--ink-mute); font-family: ui-sans-serif,system-ui,sans-serif; font-size: 11px; line-height: 1.5; }
+    .fw-reader-clean .ds-reader-controls { margin: 0; padding: 12px 20px; gap: 8px; border-block: 0; border-bottom: 1px solid var(--rule); background: var(--paper); }
+    .fw-reader-clean .ds-reader-series-label { color: var(--ink-mute); font-family: ui-sans-serif,system-ui,sans-serif; font-size: 13px; line-height: 1.5; font-weight: 400; text-transform: none; letter-spacing: normal; white-space: normal; overflow-wrap: anywhere; }
     .fw-reader-clean .ds-reader-controls-right { width: 100%; gap: 8px; flex-wrap: wrap; }
-    .fw-reader-clean .ds-reader-slider { flex: 1 1 164px; min-width: 140px; box-sizing: border-box; min-height: 44px; padding: 4px 10px; gap: 8px; background: var(--reader-control); border-color: var(--rule); }
-    .fw-reader-clean .ds-reader-slider-input { min-width: 0; height: 36px; }
+    .fw-reader-clean .ds-reader-slider { flex: 1 1 0; min-width: 140px; box-sizing: border-box; min-height: 44px; padding: 4px 10px; gap: 8px; background: var(--reader-control); border-color: var(--rule); }
+    .fw-reader-clean .ds-reader-slider-input { min-width: 0; height: 44px; background: transparent !important; accent-color: var(--accent); }
+    .fw-reader-clean .ds-reader-slider-input::-webkit-slider-runnable-track { background: var(--rule) !important; }
+    .fw-reader-clean .ds-reader-slider-input::-moz-range-track { background: var(--rule) !important; }
+    .fw-reader-clean .ds-reader-slider-input::-webkit-slider-thumb { background: var(--accent) !important; border-color: var(--reader-control); box-shadow: none; }
+    .fw-reader-clean .ds-reader-slider-input::-moz-range-thumb { background: var(--accent) !important; border-color: var(--reader-control); box-shadow: none; }
     .fw-reader-clean .ds-reader-slider-mark { color: var(--ink); font-family: ui-sans-serif,system-ui,sans-serif; }
     .fw-reader-clean .ds-reader-ctrl-btn, .fw-reader-clean .ds-reader-nav-btn { flex-shrink: 0; min-width: 44px; width: 44px; height: 44px; padding: 0; color: var(--ink); background: var(--reader-control); border-color: var(--rule); }
     .fw-reader-clean .ds-reader-imm-btn { background: var(--reader-control); color: var(--ink); border: 1px solid var(--rule); box-shadow: none; }
