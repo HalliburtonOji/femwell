@@ -44,7 +44,7 @@
   "current": {
     "section": "Lifestyle / Books and Yours",
     "atom": "B01-S03-A05",
-    "status": "A05 shared CR0029/30 and local-midnight CR0031 source/control fixes frozen, independent96/96 pass. Full tests and final build/site/native360/390/430 ordinary/tall default+preview proof pending. New design stays Ideas-only."
+    "status": "A05 source b02c08c/liveDxIZbi30 passes712full/96independent. Native main ordinaryfit passes; tall bound works but effectivepagezones block wheel. CR0030 remains open; sameclaim final3CSS hit-layer repair passes67scoped/independent source. Final build/deploy/native default+preview3width proof pending; new design stays Ideas-only."
   },
   "lastCompleted": {
     "run": 5,
@@ -291,7 +291,7 @@
       "id": "CR-0030",
       "severity": "P1",
       "title": "Oversized reader paragraph has no height bound and cannot scroll to its last lines",
-      "status": "Open: actual37106 preface paragraph678chars/XL/Wide/page5/113. ds-body-scroll client891==scroll891, actualscroll0, lastparagraph982.9 >content780. Clean-only measured-bound repair in active claim; canonical samecause still candidate.",
+      "status": "Open native pointer reproof: main realprefacepage4/108 client711scroll1016 but wheel0; effectiveelementFromPoint selects siblingleft/rightz10 andcentre z1. Final sameclaim3CSS tallstage11/pointertransparentpadding/bodyauto/progress12 source/control accepted. Nativepostdeployscroll/hit/lastline pending.",
       "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
     },
     {
@@ -369,7 +369,7 @@
     "batch": "B01",
     "stage": "B01-S03",
     "atom": "B01-S03-A05",
-    "nextStep": "Frozen shared CR0029/30 plus CR0031 local-midnight source/control repairs: independent96/96 pass. Finish fulltests, build/normalpush/site, native360/390/430 default+clean fit/tallscroll/hits/notes/settings/theme/exactsource/IdeasBack and independent finalpixels. Keep new appearance staged. Then remaining S03 opened club/details/pickers/state returns.",
+    "nextStep": "Final3CSS CR0030 effective hit-layer repair build/site then native default+preview360/390/430 bodyhits/nativewheel/lastline/pagecontrols/notes/settings/exactsource/IdeasBack, independent finalpixels. Source b02 daily-mark/width and712full plus96independent retained. Finish reviewable layout stage; no main newdesign promotion. Then remaining S03 opened club/details/pickers/state returns.",
     "readyWork": "Classic ready→anytime Reflect→acknowledged Keep/failure→Close to identical passage, with all full prose/frontmatter/settings3themes/5preferences/bookmarks/immersive/locks/warnings/hunch/reveal/sourceBack preserved. No invented FictionReader Reflect. Zero new asset/font/query/store/engine/socialdelivery. Source candidate hidden-route portal lifetime gets exact fixture/native proof before closure.",
     "acceptance": "Actual360/390/430 open/interact/close/theme/preferences/exactsource/Back, controlledfailure/owner/keyboard/touch plus independentP0/P1/P2; bespoke clean§2.7/6.7.8 with safe sheets/44px controls, short human copy and peratom costcard§10.5.23. Link working preview/research/checks/gaps in Ideas before main promotion.",
     "heldBranch": "A04 exact reached-checkpoint→selectedwords/destinationpreview→explicitPost proposal is published/asked, unanswered; do notimplement socialdelivery/defaults orreattest/reask unchangedchoices. Continue independentA05 work.",

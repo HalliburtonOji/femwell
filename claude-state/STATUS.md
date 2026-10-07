@@ -7,6 +7,12 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-08 LOCAL · A05 NATIVE SCROLL REPROOF INTERRUPTS CLOSURE
+> - Actual deployed **index-DxIZbi30.js** canonical360 XL ordinary page now has body312=measure312 and settled lastline766.3 belowcontent804. Real preface page4/108 becomes bounded client711/scroll1016, but native wheel remains0: hit tests select invisible left/right z10 and centre z1 zones above the stage. Keyboard End starts actual passage scroll, proving the height bound while exposing pointer-layer ownership. **CR0030 remains open**, not falsely closed from tests/z11 source. Same active fceb25a/MrFix claim continues a scoped tall-page stacking repair; full source/selection/page taps/swipes/toolbar/default appearance remain gates. No additional paid/remote work.
+>
+> ### CURRENT STATE — 2026-10-08 LOCAL · A05 FUNCTIONAL REPAIRS DEPLOYED
+> - **b02c08c** pushed normally after completed build exit0; Base44 site deployment succeeded, dist/public **index-DxIZbi30.js**. Full **712/51**, independent **96/5**, scopedlint zero errors/four old warnings pass. CR0029/30 shared width/tall-paragraph recovery and CR0031 local daily-mark fix retain all source and controls. No backend/entity changes or new paid work. Native final default/preview three-width fit/scroll/notes/settings/source/Ideas reproof underway. New clean reader layout stays Ideas-only; no main visual promotion.
+>
 > ### CURRENT STATE — 2026-10-08 LOCAL · A05 FROZEN CHECKS PASS
 > - Final shared reader/preview/local-calendar source passes **712 tests / 51 suites** at bundled Node24, two workers and 15s. Independent five-suite **96/96**, scoped lint zero errors/four existing warnings, diff/STATE checks pass. First full **708/709** identified the real midnight regression; it was repaired with three explicit BST cases and no weakened assertions. Build running before source push/site deploy. Live still **index-xn3JIQDb.js**, final native shared fit/scroll proof pending; no main visual approval.
 >

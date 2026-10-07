@@ -2126,7 +2126,11 @@ function ReaderStyles({ reducedMotion }) {
         position: relative;
         height: 100%;
       }
-      [data-reader-scroll-region="true"] { position: relative; z-index: 11; overscroll-behavior: contain; touch-action: pan-y; }
+      /* A 3D stage is one stacking unit: lift that unit only for oversized prose.
+         Its padding stays transparent to the usual page zones; the passage owns scroll. */
+      .ds-reader-stage:has([data-reader-scroll-region="true"]) { z-index: 11; pointer-events: none; }
+      .ds-reader-root:has([data-reader-scroll-region="true"]) .ds-reader-bottom-bar { z-index: 12; }
+      [data-reader-scroll-region="true"] { position: relative; z-index: 11; pointer-events: auto; overscroll-behavior: contain; touch-action: pan-y; }
       [data-reader-scroll-region="true"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
       .ds-reader-h1 {
