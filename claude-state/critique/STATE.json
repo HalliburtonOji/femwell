@@ -21,7 +21,7 @@
     ],
     "carryForwardFindings": [
       "Legacy secondary-surface visual conformance and unfinished active builds; actual routed inventory/proof pending in critique/LEGACY_SURFACES.md",
-      "Affordable-growth retrospective: actual usage/cost unknown; broad initial history, subscription fan-out, Sky overlapping scans, audio snapshot queue, Gutenberg cancellation, Founders payload and scheduled jobs; CAPACITY_COST.md"
+      "Affordable-growth retrospective: actual usage/cost unknown; broad initial history, subscription fan-out, Sky overlapping scans, audio snapshot queue, shared book text/frontend retry work, Founders payload and scheduled jobs. Gutenberg per-variant cancellation repaired/live; CAPACITY_COST.md"
     ],
     "heldDecisions": [
       "Reading notification nudge",
@@ -38,27 +38,29 @@
     "id": "femwell-critique-director"
   },
   "baseline": {
-    "commit": "11f7b34",
-    "liveBundle": "index-4ISGcDjK.js"
+    "commit": "cd51a2d",
+    "liveBundle": "index-fX_oYqza.js"
   },
   "current": {
     "section": "Lifestyle / Books and Yours",
     "atom": "B01-S03-A05",
-    "status": "Run0005 repairs3b134cf and toolbar1e1ce8f pushed/siteindex-CpFTKGqP.js, Gutenberg separatelydeployed.666/51 plus independent41toolbar pass. Root360 actualcontinuation/note→Books/settings/return verified. CR0027 native390 stolen caret and source/controlled touch/modal ownership interrupts final closure; same claimextended before repair. Resume exact CR27 verification/build/mobile then A05 clean opened-state preview. Social proposal published/asked, no approval."
+    "status": "Run0005 coherent repair checkpoint live: sources3b134cf/1e1ce8f/cd51a2d, finalindex-fX_oYqza.js; existingGutenberg separatelydeployed. Full689/51, independent65/4 plus58continuation/club,25note/hunch and6actualhandler pass. Root final360/390/430 namedexactclassics, actualcontrolhits/caret/pagehold and Ideas-preview-cost-plan-Back;390 layeredEscape,360 privateQA note-to-Booksconsumer. Independent final8reader+6Ideas pixels/HTTP accepted. S03 remainsopen; next working clean reader/margin-note opt-in preview, all settings/themes/source/features retained. Social proposal published/asked and unanswered; no dependent implementation. Claims released at this verified release checkpoint."
   },
   "lastCompleted": {
-    "run": 4,
-    "sourceCommit": "11f7b34",
+    "run": 5,
+    "completedAt": "2026-10-07T22:14:32Z",
+    "sourceCommit": "cd51a2d",
     "sourceCommits": [
-      "78d61aa",
-      "bc13321",
-      "11f7b34"
+      "3b134cf",
+      "1e1ce8f",
+      "cd51a2d"
     ],
-    "reportCommit": "073e7a7",
-    "liveBundle": "index-4ISGcDjK.js",
-    "tests": "613 tests /45 suites bundledNode24.19 pass; independent135/6 owner-parser-producer-consumer and20 sharedreader; scopedlint0errors, buildexit0, JSON/diff valid",
-    "proof": "Root actual360/390/430 typed Yours/details/exact source and full Saved/source/Back, canonical retry/edition and47-chapter37106; final page-back/430 truefirstpage,390 exactprose equality and report-cost-plan-Ideas loops all3widths. Independent final9pixels/HTTP and source reproof accepted.",
-    "limits": "No physicaliPhone/VoiceOver, native full119page chapterboundary, live injected keep/write faults, atomicmulti-device/RLS or cost/usercapacity certification. Historical marks created against broken37106 partition untouched. Normal existing BookReader chapterreach progress can write automatically; outcomes not separately certified. No deliberate social/age/paid/keep-delete/others-data actions."
+    "reportCommit": null,
+    "liveBundle": "index-fX_oYqza.js",
+    "backendDeployment": "Existing fetchGutenbergBook separately1/1deployed6.5s; no otherbackend/entity/function-name change",
+    "tests": "689 tests/51 suites bundledNode24 pass at2workers/15s; first4worker/5s run had3fixturetimeouts, affected13/3 pass without assertions changed. Independent65/4 reader/canonical/mountedcontinuation,58 exactcontinuation/club,25notes/hunch and6 actualservedhandler pass; scopedlint0errors/buildexit0/diffJSON valid",
+    "proof": "Root final360/390/430 actualnamedclassics→exact37106 fullsource/savedplace→YoursBack; toolbarhit-tests,textareaHome→Rightcaret0→1/pageheld, allnoteEscape;360bookmarkrestore/font2→3→2,430fontrestore,390 immersiveone-layernote/settingsEscape thenreaderexit. Earlier360newdeviceQA notewrite/readback/reopen→mountedBooksconsumer andexactrereadtile. FinalIdeasreport-preview/cost/decision→rollingplan-expandedcost→Ideas returns3widths. Independent final8reader+6Ideas pixels/HTTP accept; no new scopedP0/P1/P2.",
+    "limits": "Native operations performed by root, critic separately reviews source/tests/images/HTTP. No physicaliPhone/VoiceOver/touchscreen, liveinjectedabort/write/ownerfault, full119pageboundary, nativeinnerCommunity behind18+, portal-origin lifetime, atomicmulti-device/RLS/cloud-accountprivacy or bills/usercapacity certificate. Original automaticchapterreach outcomes not separatelycertified. One new nonpersonal deviceQA note retained; noexistingnote overwritten/deleted, social/hunchsend,attestation,purchase,Plannerrowcreation orothers-data modification."
   },
   "rotation": [
     "Lifestyle / Sky",
@@ -79,7 +81,7 @@
     "Jess and notifications",
     "Account, auth, settings and Saved"
   ],
-  "nextRunNumber": 5,
+  "nextRunNumber": 6,
   "latestReport": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md",
   "findings": [
     {
@@ -219,7 +221,7 @@
       "id": "CR-0020",
       "severity": "P2",
       "title": "Classic numeric book continuation absent from Books/Yours",
-      "status": "implemented3b134cf exact numericadapter/currentroute returns, independent actualmountedreader writer→Books/Yours proof; native360/390 exact37106 picker/tile→actualsavedplace. Finalrelease3width proof pending; honestid fallback metadata presentation remainsA05",
+      "status": "closed bounded exactnumericadapter/currentroute continuation: source3b134cf, independentactualmountedreader writer→Books/Yours proof; rootfinal360/390/430 actual37106/514/1342 cataloguetitles and37106picker/tile→actualsavedplace→exactBack. Missingmetadata retains truthfulid fallback, no new fetch or historicalmark migration.",
       "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
     },
     {
@@ -254,21 +256,21 @@
       "id": "CR-0025",
       "severity": "P1",
       "title": "Older continuation lookup overwrites current marks and keepalive Back stays stale",
-      "status": "generation/unmount/currentmarks intersect and routedreturn snapshot repaired3b134cf; independent actualmountedmain→reader→Back→Yours proof. Finalnative3width reproof pending",
+      "status": "closed bounded generation/unmount/currentmarks intersect and routedreturn snapshot: source3b134cf; independentactualmountedmain→reader→Back→Yours and rootfinalnamedclassic-source-return3widths. General portal-origin lifetime remainsseparateA05/S06candidate.",
       "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
     },
     {
       "id": "CR-0026",
       "severity": "P1",
       "title": "Invisible page-turn zones cover the inline reader toolbar",
-      "status": "reproducednative390 Reflectcentre→rightzone/pageturn; repaired1e1ce8f andsource41regressions independent. Root360alltoolbarcentres+Reflect/fullscreen/settings pass; final390/430 reproof pending",
+      "status": "closed bounded positionedtoolbar1e1ce8f: initialnative390Reflect hitrightzone; independent41reader/canonical/shell tests and rootfinalalltoolbarcentres/Reflect/font/bookmark/fullscreen at360/390/430. Final8pixels independentlyaccepted, no fullvisualmigrationclaim.",
       "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
     },
     {
       "id": "CR-0027",
       "severity": "P1",
       "title": "Reader keyboard and touch navigation steals note, settings and dialog interactions",
-      "status": "native390 caret0→0/underlyingpage3→4; controlledrangegesture and15keyboard red→green, final43reader/65independent pass. Finalfull689/51 pass; build/push/site thenactual3width caret/range/modalreproof pending. Hidden originating portal route remainsunprovedS06candidate",
+      "status": "closed bounded keyboard/control/touchownershipcd51a2d: nativecaret0→0/pageflip reproduced; actual43reader/65independent controlledkeyboard/range/modal tests pass, full689/51. Rootfinal360/390/430 caret0→1/pageheld,390 one-layerReflect/settingsEscape andownreaderexit, native360/430font2→3→2. Independentfinal8pixels/HTTP accepts. Physicaltouch andhiddenoriginportal lifetime stillunproved, not a universalmodalstack certificate.",
       "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
     }
   ],
@@ -299,7 +301,11 @@
     "Books/Yours live failed-write/account-change/partial retry/confirmed mutation proof is controlled component/handler integration; no live injected or destructive test",
     "Actual monthly billing, user capacity, fullapp mobile transfer/WebVitals and concurrency unknown; no paid upgrade/load storm",
     "Original BookReader initialchapterreach may emit anonymous authoredprogress; automatic remote outcomes not separately certified",
-    "Final reader previouschapter-boundary/locked/motion/mark cases independently controlled; no native full119page traversal"
+    "Final reader previouschapter-boundary/locked/motion/mark cases independently controlled; no native full119page traversal",
+    "Actual physical touchscreen gestures; controlled touch-start/move proof is not an iPhone gesture certificate",
+    "Body-portalled embedded reader originating keepalive-hidden Lifestyle route lifetime; source candidate needs exact route fixture/native Back reproof in A05/S06",
+    "Ownerless raw device notes and historical optimistic hunch flags retained; no account-isolated cloud note migration or retrospective social acknowledgement",
+    "CR0015 direct reflection sharing awaits exact reached-checkpoint/preview/Post proposal decision; existing ClubNote thread route remains, no orphan delivery or new social send"
   ],
   "learningFile": "claude-state/critique/LEARNING.md",
   "deliveryWorkflow": {
@@ -327,8 +333,18 @@
     "ledger": "claude-state/critique/CAPACITY_COST.md",
     "addedAt": "2026-10-07",
     "status": "Standing gate/canon-mirror/critic/cycle/heartbeat and Ideas published; bounded shared feed/owned keeps/confirmed bridge repairs live and proved; earlier/current cost retrospective remains mapped",
-    "evidence": "Actual installed SDK/authcache and sourceworkunits; local compression distinct from one public HTTP200 gzip script3,165,969 bodybytes index-CKT0wUxR.js. Finalsource11f7b34/live4ISGcDjK verified. No actual invoices/trafficdashboard/allapptransfer/usercapacity/paidupgrade proof.",
+    "evidence": "InstalledSDK/authcache and sourceworkunits; earlieroneHTTP200 gzip script3,165,969bodybytes index-CKT0wUxR.js. Finalsourcecd51a2d/livefX_oYqza verified. Nativecontrols/metadata/notes corroborated; no actual invoices/trafficdashboard/allapptransfer/usercapacity/paidupgrade proof.",
     "budget": "Optional monthly ceiling question pending; no spending or upgrade authorised",
     "scope": "Every current/prior build, frontend/backend/secondary state, AI/media/storage/jobs. Keep complete features/history/design; paid versus included/frequency/fan-out/owner/source/freshness/retries/ack/bytes/unknowns on every atom."
+  },
+  "resume": {
+    "batch": "B01",
+    "stage": "B01-S03",
+    "atom": "B01-S03-A05",
+    "nextStep": "Claim and commit the working opt-in clean classic reader and margin-note preview before edits. Reconcile full shared reader/BookReader/ChapterEndCard/FictionReader/Books/Yours/detail/picker consumers and saved Creative Director blueprint in run0005. Keep current main unchanged until actual Ideas preview reviewed.",
+    "readyWork": "Classic ready→anytime Reflect→acknowledged Keep/failure→Close to identical passage, with all full prose/frontmatter/settings3themes/5preferences/bookmarks/immersive/locks/warnings/hunch/reveal/sourceBack preserved. No invented FictionReader Reflect. Zero new asset/font/query/store/engine/socialdelivery. Source candidate hidden-route portal lifetime gets exact fixture/native proof before closure.",
+    "acceptance": "Actual360/390/430 open/interact/close/theme/preferences/exactsource/Back, controlledfailure/owner/keyboard/touch plus independentP0/P1/P2; bespoke clean§2.7/6.7.8 with safe sheets/44px controls, short human copy and peratom costcard§10.5.23. Link working preview/research/checks/gaps in Ideas before main promotion.",
+    "heldBranch": "A04 exact reached-checkpoint→selectedwords/destinationpreview→explicitPost proposal is published/asked, unanswered; do notimplement socialdelivery/defaults orreattest/reask unchangedchoices. Continue independentA05 work.",
+    "carryForward": "Remaining opened club/details/pickers and state registry; S04→S05→S06 thenB02/B03; broad eager/subscriptionhistory, Sky/audio/Founders/scheduledjobs cost retrospective; full historical preview registry retained."
   }
 }
