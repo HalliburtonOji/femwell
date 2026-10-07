@@ -16,7 +16,7 @@ import { FlowerGlyph } from "@/components/brand/flora";
 // CONTRACT: the nearest positioned ancestor MUST be position:relative — the overlay
 // covers that box (inset:0). Place <FaceOverlay/> as a sibling of the board content
 // inside that relative wrapper. Slides up translateY(101%)→0; scrim rises behind it.
-export default function FaceOverlay({ open, onClose, title, sub, accent = T.gold, children }) {
+export default function FaceOverlay({ open, onClose, title, sub, accent = T.gold, children, topInset = 0 }) {
   const backRef = useRef(null);
   const rootRef = useRef(null);
   const close = useCallback(() => { onClose && onClose(); }, [onClose]);
@@ -43,7 +43,7 @@ export default function FaceOverlay({ open, onClose, title, sub, accent = T.gold
 
   return (
     <div ref={rootRef} role="dialog" aria-modal="true" aria-label={title || "Choices"}
-      style={{ position: "absolute", inset: 0, zIndex: 40 }}>
+      style={{ position: "absolute", inset: 0, top: topInset, zIndex: 40 }}>
       <style>{`@keyframes fwFaceUp{from{transform:translateY(101%)}to{transform:translateY(0)}}@keyframes fwFaceScrim{from{opacity:0}to{opacity:1}}`}</style>
       {/* scrim over the card behind — visible as the panel rises, and a tap-target to go back */}
       <div aria-hidden onClick={close}
@@ -57,7 +57,7 @@ export default function FaceOverlay({ open, onClose, title, sub, accent = T.gold
         <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px 10px",
           borderBottom: `1px solid ${accent}22`, flexShrink: 0 }}>
           <button ref={backRef} onClick={close} aria-label="Back"
-            style={{ width: 34, height: 34, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paper,
+            style={{ width: topInset ? 44 : 34, height: topInset ? 44 : 34, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paper,
               color: OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer", flexShrink: 0 }}>
             <ArrowLeft size={17} />
           </button>

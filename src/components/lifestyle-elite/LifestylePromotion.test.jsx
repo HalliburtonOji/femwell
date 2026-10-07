@@ -13,6 +13,8 @@ describe('approved main Lifestyle parity',()=>{
     window.history.replaceState({},'', '/Lifestyle?section=good&joy=try-11gq3zo');render(<Lifestyle/>);
     const joy=await screen.findByRole('dialog',{name:'A small joy'});
     expect(joy).toHaveTextContent('Read one poem, out loud, to no one');
+    expect(joy.style.top).toBe('64px');
+    expect(within(joy).getByRole('button',{name:'Back',exact:true}).style.width).toBe('44px');
     fireEvent.click(within(joy).getByRole('button',{name:'Plan a time',exact:true}));
     expect(await screen.findByRole('dialog',{name:'Plan a time',exact:true})).toHaveTextContent('Read one poem, out loud, to no one');
   });

@@ -1769,7 +1769,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
         {layout && (() => {
           const slip = gLFace && typeof gLFace === "object" ? gLFace.slip : null;
           return (
-            <FaceOverlay open={!!slip} onClose={() => setGLFace(null)}
+            <FaceOverlay open={!!slip} onClose={() => setGLFace(null)} topInset={selectedPresentation ? 64 : 0}
               accent={slip && slip.type === "quote" ? plum : gold}
               title={slip && slip.type === "quote" ? "Permission" : "A small joy"}
               sub="The slip · why it's good · one doable thing">

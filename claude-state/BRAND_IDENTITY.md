@@ -897,6 +897,8 @@ Production parity: keep the existing on-demand daily horoscope fallback on main 
 
 Live state agreement: a settled owned Sky reading updates the same shell glance. Older historical readings and late older/empty fetches cannot replace a newer owned reading. Validate owner, object identity and calendar date; reset across accounts. The glance and its source must agree after a daily refresh, not only after a page reload.
 
+Main activity overlays reserve top-control clearance even when the page cannot scroll upwards. Back/title must be visually free of Jump/Ideas/calendar, with44px Back on selected surfaces. Keep their in-place source, planning, full evidence/tools and original legacy dimensions. Measure the actual selected tab and full capture bounds; an emulated width with a cropped image is not complete mobile evidence.
+
 ## 11. THE PER-PAGE BUILD LIFECYCLE — how EVERY page is built (Lifestyle = reference implementation · ✅ AGREED · Halli 2026-08-01) · v1
 > **This is the PROCESS, not just the product. Every future page goes through the EXACT lifecycle Lifestyle did — it does not merely inherit the visual tokens.** §6.8.2 gives the page *skeleton*; this gives the *order of operations*. It is load-bearing: skipping a step is how thin shells, faked shelves and DOM-only "green" got shipped before. **§11.0 holds the STANDING GATES that make the whole lifecycle self-enforcing — run them on every atom.** Then run all seven steps, in order, per page; the craft each step must meet lives in §12 (content) · §13 (interaction) · §14 (engineering) · §15 (QA).
 
