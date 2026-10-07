@@ -19,6 +19,8 @@ At each batch start record: approved baseline; complete preserved inventory; pre
 
 ## B01 — strengthen approved Lifestyle and existing journeys
 
+Carry-over **CR-0003 P2:** actual Ideas historical descriptions still say approved main is held. Next preflight claims the catalogue, corrects labels against real promotion and re-proves them; no feature/design change. See [delivery proof](critique/delivery-workflow-2026-10-07.md). Staged delivery/report deployed **index-BHA53SUl.js**; S01 implementation remains queued.
+
 **Queued. Current stage B01-S01.** Close concrete gaps and improve the approved complete experience, with research and whole-page craft per atom. Existing features are baseline, not automatic replacement projects.
 
 | Stage | Useful outcome / inspection scope | Atom and proof boundary | State |
