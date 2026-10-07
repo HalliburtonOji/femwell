@@ -7,6 +7,14 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-07 · LIVE MOBILE REPROOF FOUND EARLY RESUME CLIPPING
+> - Live **6656d33/index-B5N0iieO.js**390actualplayback works: Listen→Read→article→Back keeps audio playing147→161→191→201s, source8paragraphs vs baseline1. ExpandedPause, exact+30skip, rate1.25,5min sleepactivate/cancel and realexternalepisode link verified. No source/social/paid writes. Owned progress read-back next.
+> - CR-0008 native repro: saved833px returned200px because fullBody arrives while related lookup still leaves loader-only short page. Actual component delayed-related regression1red/7green proves early scroll; repair waits for loading/bodyLoading false. Relevant3suites **26/26green**, scopedlint0errors, independent source diagnosis confirmed. No layout/tool removal; build/redeploy and exactmobile reproof required before closure.502fullgate remains for priorrelease; new timingtest additional. STATE S02-A05 remains.
+>
+> ### CURRENT STATE — 2026-10-07 · READ/LISTEN REPAIRS LIVE / MOBILE PROOF UNDERWAY
+> - **6656d33 pushed** without force; finished dist **index-B5N0iieO.js**, site deploy successful, HTTP femwells.com confirms same hash. No backend/entity change.502/41 fullsuite + independent41provider/source reproof/scoped lint pass. Ideas says built/mobile proof underway truthfully; previous Sky approval/features preserved.
+> - Root native360/390/430 reader, audio/source/controls and owned read-back next. B01-S02-A05 not yet complete; final report/claim release follows evidence. No new decision or expanded authority.
+>
 > ### CURRENT STATE — 2026-10-07 · READ/LISTEN BUILT / FULL GATE PASSES
 > - Root fullsuite **502tests/41files pass**,138.57s; independent actual-provider41/41 and final source reproof, scoped lint0errors, diffcheck pass. Finished Vite build exit0, **dist index-B5N0iieO.js**. Existing unrelated planner duplicate-key/Browserslist/jsdom limitations retained, no dependency churn. All mapped CR7–13 repaired within controlled scope; no physical/live-persistence claim yet.
 > - Source push and site deploy next, then actual360/390/430 Read/Listen/reader-continuity and owned read-back. No backend/entity surfaces changed, so site-only deployment is complete for this stage. Previous live index-DCn8Sg-I.js until HTTP replacement proved. STATE B01-S02-A05, no substantial choice needed; held decisions stay held.

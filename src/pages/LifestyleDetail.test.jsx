@@ -54,6 +54,18 @@ describe('complete article and last-place recovery',()=>{
     expect(saved.scrollY).toBe(690);expect(saved.ts).toBeGreaterThan(0);
     expect(continuePositions(localStorage)[0]).toMatchObject({bookId:'article',kind:'article',scrollY:690});
   });
+  it('restores only after the full article replaces the short loading view',async()=>{
+    let finishRelated;
+    const related=new Promise(resolve=>{finishRelated=resolve;});
+    api.items.mockImplementation(async q=>q.id ? [article] : related);
+    localStorage.setItem('fw_article_pos_article',JSON.stringify({scrollY:833,ts:10}));
+    open();await act(async()=>{});await act(async()=>new Promise(window.requestAnimationFrame));
+    expect(screen.queryByRole('heading',{name:article.title})).not.toBeInTheDocument();
+    expect(window.scrollTo).not.toHaveBeenCalled();
+    await act(async()=>finishRelated([]));await screen.findByRole('heading',{name:article.title});
+    await act(async()=>new Promise(window.requestAnimationFrame));
+    expect(window.scrollTo).toHaveBeenCalledWith(0,833);
+  });
   it('preserves legacy numeric places and sorts new article places by actual recency',()=>{
     localStorage.setItem('fw_article_pos_legacy','120');
     localStorage.setItem('fw_reader_pos_book',JSON.stringify({ts:1000,page:2}));

@@ -190,7 +190,7 @@ export default function LifestyleDetail() {
   // "continue reading?" prompt. (Precedent: Pocket/Instapaper restore position; there's no
   // measured benefit in the literature, so we ship it quietly and claim nothing.)
   useEffect(() => {
-    if (!id || !fullBody) return;
+    if (!id || !fullBody || loading || bodyLoading) return;
     const key = `fw_article_pos_${id}`;
     let ready = false, dirty = false, snapshot = null;
     let y = 0;
@@ -215,7 +215,7 @@ export default function LifestyleDetail() {
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("pagehide",flush);document.addEventListener("visibilitychange",onHidden);
     return () => { flush(); window.cancelAnimationFrame(frame); window.removeEventListener("scroll",onScroll);window.removeEventListener("pagehide",flush);document.removeEventListener("visibilitychange",onHidden); };
-  }, [id, fullBody]);
+  }, [id, fullBody, loading, bodyLoading]);
 
   useEffect(() => {
     let cancelled = false;
