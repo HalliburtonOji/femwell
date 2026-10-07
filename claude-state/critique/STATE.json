@@ -6,7 +6,7 @@
     "title": "Approved Lifestyle polish and existing connections",
     "status": "in progress",
     "currentStage": "B01-S03",
-    "nextAtom": "B01-S03-A05",
+    "nextAtom": "B01-S03-A02",
     "stageOrder": [
       "B01-S01",
       "B01-S02",
@@ -37,22 +37,27 @@
     "id": "femwell-critique-director"
   },
   "baseline": {
-    "commit": "31bbb34",
-    "liveBundle": "index-D-3r8LdK.js"
+    "commit": "11f7b34",
+    "liveBundle": "index-4ISGcDjK.js"
   },
   "current": {
     "section": "Lifestyle / Books and Yours",
-    "atom": "B01-S03-A05",
-    "status": "bc13321/index-BphZRxKi.js public/native confirmed; chapter parser and exact owner save authority live, 607 tests pass. Final 3-width audit interrupts A02 closure for CR0024 pre-existing chapter-one page Previous disabled; claim16379e4, narrow shared reader controls delegated before edits. Complete bounded page/lock regression and final build/push/deploy/mobile/Ideas reproof, then resume A02 classic continuation. Broader S03 and visual/capacity work remains open."
+    "atom": "B01-S03-A02",
+    "status": "Run0004 coherent repair checkpoint live11f7b34/index-4ISGcDjK.js, not full S03 completion. Root final3width page-back/firstpage and Ideas-plan returns plus independent20 source/ninepixels/HTTP accepted. Resume A02 CR0020 exact numeric classic continuation; then A01 CR0016 exact clubPlanner returns, A04 CR0015 honest private notes/staged social mapping, CR0021 fetch cancellation and A05 clean opened-state craft. Retain all prior fixes, historical mark limits and cost/legacy retrospective."
   },
   "lastCompleted": {
-    "run": 3,
-    "sourceCommit": "6656d33/b600d01",
-    "reportCommit": "19772cb",
-    "liveBundle": "index-vgy9xevr.js",
-    "tests": "502 tests in41 suites pass; final delayed-render timing fix26/26 reader/helper/router; independent41 provider and scopedlint0errors",
-    "proof": "root actual360/390/430 full8paragraphs/exactrounded resume/audio-through-reader/controls and finalIdeas-report-plan-return; independent source/HTTP/9fresh functional regions and owned354/2700 existingrow read-back",
-    "limits": "Critic native browser unavailable; externaldestinationwindow, physicaliPhone/VoiceOver, backgroundOSMediaSession/Safari fade, live injectedfaults, atomicmulti-device uniqueness and deployedRLS remain unverified. Historicduplicates retained; no social/paid/age/othersdata actions."
+    "run": 4,
+    "sourceCommit": "11f7b34",
+    "sourceCommits": [
+      "78d61aa",
+      "bc13321",
+      "11f7b34"
+    ],
+    "reportCommit": "pending run0004 final receipt commit",
+    "liveBundle": "index-4ISGcDjK.js",
+    "tests": "613 tests /45 suites bundledNode24.19 pass; independent135/6 owner-parser-producer-consumer and20 sharedreader; scopedlint0errors, buildexit0, JSON/diff valid",
+    "proof": "Root actual360/390/430 typed Yours/details/exact source and full Saved/source/Back, canonical retry/edition and47-chapter37106; final page-back/430 truefirstpage,390 exactprose equality and report-cost-plan-Ideas loops all3widths. Independent final9pixels/HTTP and source reproof accepted.",
+    "limits": "No physicaliPhone/VoiceOver, native full119page chapterboundary, live injected keep/write faults, atomicmulti-device/RLS or cost/usercapacity certification. Historical marks created against broken37106 partition untouched. Normal existing BookReader chapterreach progress can write automatically; outcomes not separately certified. No deliberate social/age/paid/keep-delete/others-data actions."
   },
   "rotation": [
     "Lifestyle / Sky",
@@ -73,7 +78,7 @@
     "Jess and notifications",
     "Account, auth, settings and Saved"
   ],
-  "nextRunNumber": 4,
+  "nextRunNumber": 5,
   "latestReport": "claude-state/critique/reports/0004-books-yours-growth-2026-10-07.md",
   "findings": [
     {
@@ -171,7 +176,7 @@
       "id": "CR-0014",
       "severity": "P1",
       "title": "BookReader current club uses seed rather than canonical edition",
-      "status": "repaired controlled/source; final native proof pending",
+      "status": "closed within canonical loader/component and root exact-edition/retry proof; current/historical clubPlanner consumer staysCR0016, Community age/delivery not attested",
       "report": "claude-state/critique/reports/0004-books-yours-growth-2026-10-07.md"
     },
     {
@@ -192,21 +197,21 @@
       "id": "CR-0017",
       "severity": "P1",
       "title": "Failed/partial refresh loses confirmed owner keeps",
-      "status": "repaired scoped Yours/full Saved controlled/source; final native proof pending",
+      "status": "closed bounded same-owner partial/failed/ack/re-add retention and exact owner race regressions; root real archives/source journeys, no live injected-fault certification",
       "report": "claude-state/critique/reports/0004-books-yours-growth-2026-10-07.md"
     },
     {
       "id": "CR-0018",
       "severity": "P2",
       "title": "Physical-only keep drops resolved type and tools",
-      "status": "repaired controlled/source; final native proof pending",
+      "status": "closed exact resolved type/tools helper and consumer regressions plus root typed Stories/details/exact source at3widths; all physical duplicates retained",
       "report": "claude-state/critique/reports/0004-books-yours-growth-2026-10-07.md"
     },
     {
       "id": "CR-0019",
       "severity": "P2",
       "title": "Repeated archive/exact-source reads and duplicate personalised ranking",
-      "status": "bounded mounted-owner/profile/pool/inflight subcases repaired; initial history/broad invalidation capacity work open",
+      "status": "bounded mounted-owner/profile/pool/inflight and confirmed bridge/shared ranking repetition repaired/live; eager fullhistory, broad invalidation, overlapping Sky scans and crossdevice freshness remain cost atoms",
       "report": "claude-state/critique/reports/0004-books-yours-growth-2026-10-07.md"
     },
     {
@@ -227,21 +232,21 @@
       "id": "CR-0022",
       "severity": "P1",
       "title": "Classic contents and transcriber sentence mistaken for chapter structure",
-      "status": "reproduced native37106 and independent exact-source parser; A02 bounded repair in progress",
+      "status": "closed within complete real-source47/47/61 conservation/parser regressions and root native37106 47chapters/3width page turns; historical broken-partition marks not migrated",
       "report": "claude-state/critique/reports/0004-books-yours-growth-2026-10-07.md"
     },
     {
       "id": "CR-0023",
       "severity": "P1",
       "title": "Reader failed profile lookup creates duplicate authority and deletion precedes owner guard",
-      "status": "independent actual-handler matrix reproduced; A03 narrow repair separately claimed6669e94 in progress, no livewrites",
+      "status": "closed strict exact-owner complete authority/ack/retry and cumulative producer-to-kept-open consumer actual component/handler tests; root settled real story controls3widths, no live mutation/fault injection",
       "report": "claude-state/critique/reports/0004-books-yours-growth-2026-10-07.md"
     },
     {
       "id": "CR-0024",
       "severity": "P1",
       "title": "First chapter page-back button disabled and page turns mislabelled",
-      "status": "Root actual pages2/3/4 at360/390/430 and independent baseline reproduce; narrow A05 shared-reader repair claimed16379e4",
+      "status": "closed20 independent measured-page/lock/both-motion/boundary/anchor/bookmark tests and root final360/390/430 page-back/430truefirstpage,390exactprose equality. Boundary itself controlled, not native fullbook traversal",
       "report": "claude-state/critique/reports/0004-books-yours-growth-2026-10-07.md"
     }
   ],
@@ -267,7 +272,12 @@
     "Natural-midnight/restored Safari and live failed-read branches are controlled-test proof only",
     "External episode destination window: actual IAB tap/exact playing MP3 verified but new destination window not observable",
     "Background/OS MediaSession, physical Safari sleep fade and native production faults not injected",
-    "Historic podcast duplicates retained; serial local writes do not prove atomic multi-device uniqueness or deployed RLS"
+    "Historic podcast duplicates retained; serial local writes do not prove atomic multi-device uniqueness or deployed RLS",
+    "Historical37106 saved positions/bookmarks created against broken two-chapter parser partition remain untouched and semantically uncertified",
+    "Books/Yours live failed-write/account-change/partial retry/confirmed mutation proof is controlled component/handler integration; no live injected or destructive test",
+    "Actual monthly billing, user capacity, fullapp mobile transfer/WebVitals and concurrency unknown; no paid upgrade/load storm",
+    "Original BookReader initialchapterreach may emit anonymous authoredprogress; automatic remote outcomes not separately certified",
+    "Final reader previouschapter-boundary/locked/motion/mark cases independently controlled; no native full119page traversal"
   ],
   "learningFile": "claude-state/critique/LEARNING.md",
   "deliveryWorkflow": {
@@ -294,8 +304,8 @@
     "canon": "BRAND_IDENTITY.md §10.5.23 / §11.0",
     "ledger": "claude-state/critique/CAPACITY_COST.md",
     "addedAt": "2026-10-07",
-    "status": "Current primary/source review and retrospective queue; scoped repairs implemented, release proof pending",
-    "evidence": "Source work units and installed SDK/auth cache; local bundle compression only. No traffic/billing dashboard/load capacity/purchased upgrade.",
+    "status": "Standing gate/canon-mirror/critic/cycle/heartbeat and Ideas published; bounded shared feed/owned keeps/confirmed bridge repairs live and proved; earlier/current cost retrospective remains mapped",
+    "evidence": "Actual installed SDK/authcache and sourceworkunits; local compression distinct from one public HTTP200 gzip script3,165,969 bodybytes index-CKT0wUxR.js. Finalsource11f7b34/live4ISGcDjK verified. No actual invoices/trafficdashboard/allapptransfer/usercapacity/paidupgrade proof.",
     "budget": "Optional monthly ceiling question pending; no spending or upgrade authorised",
     "scope": "Every current/prior build, frontend/backend/secondary state, AI/media/storage/jobs. Keep complete features/history/design; paid versus included/frequency/fan-out/owner/source/freshness/retries/ack/bytes/unknowns on every atom."
   }

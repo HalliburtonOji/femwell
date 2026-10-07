@@ -37,3 +37,14 @@ Done: direction/cycle/canon/mirror/critic/saved cursor and existing four-hour he
 ## 7 October — S03 affordable-growth intersection
 
 Every registry row also requires §10.5.23/CAPACITY_COST acceptance. Books/Yours source inventory and actual BookReader/full Saved recovery mapped in run0004; whole-reader/dialog visual migration remains A05, not implied by function repair. Founder critique report and rolling-plan backgrounds changed to approved clean foundations within their existing layouts; live mobile/return proof pending. Bible’s historical example presentation and enclosing founder shell remain separate visual candidates.
+
+## Run0004 actual secondary surfaces — 7 October, final index-4ISGcDjK.js
+
+| Actual trigger and routed consumer | Confirmed scope | Visual/cost remainder |
+|---|---|---|
+| Lifestyle Books Free classics → Little Women37106 → BookReader | Exact edition,47real chapters, full prose/front matter; final native page-next/back360/390/430 and true-firstpage disabled. Boundary/locks/marks/motion controlled20 independent tests. | Brown paper/grain is visibly still present: A05 clean reader craft/front-matter presentation pending. Historical broken-partition marks retained/uncertified. CR0021 fetch cancellation and text reuse remain cost atoms; control fix adds zero requests. |
+| Yours Stories → Details/tools → exact Tuesday LifestyleDetail | Typed story/source/tools/full prose preserved; settled action authority at3widths. Controlled owner/failed/ack/retry producer↔consumer tests; no deliberate live removal. | Brown article/card foundation remains A05. Complete owner safety reads documented in CAPACITY_COST; no generic mass CSS replacement. |
+| All your Lifestyle saves → full Saved → exact story or historical Sky edition → Back | All original tabs/history/duplicates and exact source links retained; root3width archived/source journeys before final unchanged controls. Strict confirmed retry acknowledgement covered by component/integration suites. | Complete visual state inventory and rare loading/error/partial/draft branches remain; eager archive/overlapping Sky scans still cost candidates. |
+| Ideas pill → Critique report → cost disclosure → rolling plan → Ideas | Approved clean report/plan foundations and final actual3width taps/no horizontal overflow; independent final pixels. Every older preview/history remains reachable. | Enclosing founder chrome/Bible historical examples still legacy presentation. On-demand older bundled documents is a staged architecture candidate, not implemented. |
+
+These are bounded live/control results, not whole-app migration or complete route/state coverage. S03 A05 and S06 catch-up still own visual completion. Every remaining row keeps its section personality/full features and the same cost, primary research, organised Ideas and real-tap gates.
