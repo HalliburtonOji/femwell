@@ -1,5 +1,18 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "buildPlan": "claude-state/BUILD_PLAN.md",
+  "buildBatch": {
+    "id": "B01",
+    "title": "Approved Lifestyle polish and existing connections",
+    "status": "queued",
+    "currentStage": "B01-S01",
+    "nextAtom": "B01-S01-A01",
+    "stageOrder": ["B01-S01", "B01-S02", "B01-S03", "B01-S04", "B01-S05"],
+    "completedStages": [],
+    "carryForwardFindings": [],
+    "heldDecisions": ["Reading notification nudge", "Backlog count versus silence"],
+    "resumeRule": "Active batch/stage/nextAtom outranks seed rotation; update current section/atom together. Continue ready authorised atoms without a continue prompt; save exact cursor on interruption; substantial decisions remain staged."
+  },
   "requestedAt": "2026-10-07",
   "scheduler": { "kind": "heartbeat", "intervalHours": 4, "status": "ACTIVE", "id": "femwell-critique-director" },
   "baseline": { "commit": "59514c1", "liveBundle": "index-C4ypRGFt.js" },

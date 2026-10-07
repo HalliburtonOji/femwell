@@ -11,6 +11,13 @@ const links = [
   ["Performance · Web Vitals", "https://web.dev/articles/vitals"],
   ["Backend · OWASP ASVS", "https://owasp.org/projects/asvs"],
 ];
+const buildStages = [
+  "Sky · daily refresh, recovery and saved editions",
+  "Read & Listen · exact resume, progress and real playback",
+  "Books & Yours · one shelf, notes and source returns",
+  "Good life & shared shell · useful actions and truthful state",
+  "Connections · Today, Planner, Journal, Garden and Jess",
+];
 
 // Sanitised founder summary only. Detailed evidence stays in claude-state/critique/.
 // Do not import the ledger: bundled frontend content is publicly downloadable.
@@ -25,15 +32,23 @@ export default function CritiqueDoc() {
       <p style={{ margin: 0 }}>One section, properly looked at. Then the next.</p>
       <section style={card} aria-label="Schedule">
         <div style={{ display: "flex", gap: 9, alignItems: "center", fontWeight: 600 }}><Clock3 size={19} aria-hidden="true" /> Every four hours · active</div>
-        <p style={{ fontSize: 14, margin: "9px 0 0" }}>The critic reports to Codex. Routine repairs get fixed and checked; substantial choices come to you.</p>
+        <p style={{ fontSize: 14, margin: "9px 0 0" }}>Work resumes its saved stage each run. No need to keep typing “continue”. Routine fixes proceed; substantial choices come to you.</p>
       </section>
       <section style={card} aria-labelledby="critique-current">
-        <h2 id="critique-current" style={{ ...heading, fontSize: 23 }}>On the desk: Sky</h2>
+        <h2 id="critique-current" style={{ ...heading, fontSize: 23 }}>Where we are · Sky</h2>
         <p style={{ margin: 0 }}>First pass: daily lessons, kept sources and their return paths.</p>
         <p style={{ fontSize: 14 }}><strong>Two small repairs:</strong> clearer lesson screen-reader structure, and space for the Ideas Back button beside the calendar.</p>
         <p style={{ fontSize: 14 }}>The existing keep → Journal → exact lesson journey checks out. All content and tools stay.</p>
         <p style={{ fontSize: 14 }}><strong>Next:</strong> Sky’s day-change and failure states, then Read. Independent review and detailed evidence live in the audit memory.</p>
         <a href="/Lifestyle?section=sky" style={action}>Open the live Sky room</a>
+      </section>
+      <section style={card} aria-labelledby="critique-batch">
+        <h2 id="critique-batch" style={{ ...heading, fontSize: 23 }}>Next big build</h2>
+        <p style={{ margin: 0 }}><strong>Batch 01 · Lifestyle polish & connections</strong></p>
+        <p style={{ fontSize: 14 }}>Queued, starting with Sky. Earlier research, shipped fixes and open gaps carry forward.</p>
+        <ol style={{ paddingLeft: 23, fontSize: 14 }}>{buildStages.map((stage) => <li key={stage} style={{ padding: "5px 0" }}>{stage}</li>)}</ol>
+        <p style={{ fontSize: 14 }}>Then Community & DM, followed by the remaining app. New substantial features stay in Ideas for your go-ahead.</p>
+        <a href="/staged-builds/index.html" style={action}>Open the rolling build plan</a>
       </section>
       <section style={card} aria-labelledby="critique-decisions">
         <h2 id="critique-decisions" style={{ ...heading, fontSize: 23 }}>Your decision desk</h2>
@@ -52,7 +67,7 @@ export default function CritiqueDoc() {
         <ol style={{ paddingLeft: 23, marginBottom: 0, fontSize: 14 }}>{stages.map((stage) => <li key={stage} style={{ padding: "5px 0" }}>{stage}</li>)}</ol>
         <p style={{ fontSize: 14 }}>A section can take several runs. Regressions take priority; new live rooms join the route as they are discovered.</p>
       </details>
-      <p style={{ fontSize: 12, color: "#685434", marginTop: 20 }}>Local runs need the computer on and Codex running. The audit remembers evidence and your feedback; it does not train the model. Brand Bible §10.5.20.</p>
+      <p style={{ fontSize: 12, color: "#685434", marginTop: 20 }}>Local runs need the computer on and Codex running. The audit remembers evidence and your feedback; it does not train the model. Brand Bible §§10.5.20–21.</p>
     </article>
   );
 }

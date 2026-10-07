@@ -4,6 +4,8 @@ Owner: Codex. Independent reviewer: `.claude/agents/critique-director.md`. Reque
 
 ## Run protocol
 
+Read `../BUILD_PLAN.md` and STATE's buildBatch cursor as part of preflight. Halli's §10.5.21 requires coherent staged batches without repeated “continue”. Reconcile previous big-build research and repaired/open findings before adding work. Within an active run, proceed through ready authorised atoms and stages, saving exact nextAtom on interruption or a genuine dependency/review boundary. The next four-hour wake resumes that cursor; it does not restart the plan. Atom-sized research/review stays mandatory; a small completed atom alone is not a stopping reason. A stage may take multiple runs when evidence/dependencies require it. Do not manufacture features or completion to fill a batch.
+
 1. Read the baton, this runbook, STATE.json, LEARNING.md and latest report. Check clean Git / active claims / live hash. Respect concurrent ownership; do not stash, reset or overwrite another agent's work.
 2. Spawn/reuse an independent Critique Director with its full saved brief and the next atom. If there is a current reviewer, consume its report before starting another. Root remains the builder; the critic is read-only. If review cannot run, record the limitation rather than claiming an independent pass.
 3. Quick health/changed-route scan, then one deep section and one to three coherent atoms. Inventory the whole section. Inspect UI and backend source/available logs/owned test data, actual live taps and exact returns. Research the real atom before an improvement; not a whole-app superficial checklist.
@@ -13,6 +15,8 @@ Owner: Codex. Independent reviewer: `.claude/agents/critique-director.md`. Reque
 7. Release claims after work lands. Continue a partial section next run; advance when all its atoms have evidence or a documented deferred branch. Outstanding auth-dependent proof goes into deferredChecks and is revisited once available; do not hold the whole rotation hostage. Recheck closed high-impact findings on a changed build. Preserve user decisions and stable IDs, avoiding duplicate proposals and pointless redeploys of unchanged content.
 
 ## Rotation and completeness
+
+An active STATE.buildBatch/currentStage/nextAtom and its BUILD_PLAN stage order take precedence over the seed rotation below. The rotation is coverage fallback after the active batch, not a competing queue. Update STATE.current to the actual stage's section/atom as it advances; save both together so resumption cannot choose conflicting orders.
 
 Start Lifestyle Sky → Read → Listen → Books → Good life → Yours → Everything/shared shell. Then Today → Planner → Community and DM → Journal → Garden/progress → Nutrition → Health → movement/rest/programmes → Jess/notifications → account/auth/settings/Saved. Discover the actual full route map and add missing live surfaces; this seed is not a promise every room has already been audited. Inspect account/logout early in the health scan because Halli previously reported trouble signing out. New regressions/P0/P1 can interrupt rotation. Cycle back after coverage. No universal 3-click rule: measure real intent-to-result taps and remove unnecessary detours while keeping useful depth.
 
@@ -41,4 +45,4 @@ Add per-atom primary research with URL, retrieval date, actual applicable claim,
 
 ## Report shape
 
-Run ID/time · Git/live identity · section/atoms · preserved inventory · two-way wiring · evidence and verification limits · stable P0/P1/P2 findings · routine fixes/reproof · major decision options · research applied · learning · next cursor. Short founder summary: fixed / needs your decision / next / blocked branch. Never replace the detailed report with a long founder write-up.
+Run ID/time · Git/live identity · batch/stage/nextAtom · section/atoms · preserved inventory · two-way wiring · evidence and limits · stable P0/P1/P2 findings · routine fixes/reproof · major decision options · applied research · learning · carry-over into the rolling plan. Short founder output always: **Where we are / Next big build / Your decisions** (“None needed now” when applicable), plus material blockers when present. Distinguish planned, staged and live; do not re-ask unchanged held choices. Never replace the detailed report with a long founder write-up.
