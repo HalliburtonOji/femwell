@@ -23,7 +23,7 @@ describe("actual /Journal hub exact note return", () => {
     expect(dialog).toHaveTextContent(note.text);
     expect(dialog).not.toHaveTextContent("The recent entry.");
     expect(mock.entries).toHaveBeenCalledWith({ user_id: "owner", id: "old-note", content_key: note.content_key }, "-created_date", 1);
-    expect(screen.getByRole("link", { name: "Open this Sky lesson" })).toHaveAttribute("href", "/SkyWorldsDemo?direction=petal-press&section=sky&lesson=earthshine&lessonVersion=1#daily-sky-lesson");
+    expect(screen.getByRole("link", { name: "Open this Sky lesson" })).toHaveAttribute("href", "/Lifestyle?direction=petal-press&section=sky&lesson=earthshine&lessonVersion=1#daily-sky-lesson");
     expect(screen.getByRole("button", { name: "Pin", exact: true })).toBeVisible();
     expect(screen.getByRole("button", { name: "Edit", exact: true })).toBeVisible();
     expect(screen.getByRole("button", { name: "Delete", exact: true })).toBeVisible();

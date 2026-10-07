@@ -7,6 +7,12 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-07 · MAIN PROMOTION AUTHORISED / AUDIT STARTED
+- Parity correction: main keeps the pre-existing idempotent missing-day horoscope generation fallback, only after successful owned today lookup. Historical-source and demo paths remain read-only. Root restores actual fiction/free classics in Books, exact sky-reading Planner ref, consistent current chapter with original notes sheet retained, and explicit Everything reload state. No schema/server/function delta. Verification pending; not yet shipped.
+
+> - Halli explicitly requests promotion to main, every existing connection checked, no dropped features and overall design/features improved. Claim3775afe precedes source edits. Baseline901c674/live index-Ct5Eb3OV.js confirmed; pull/rebase clean. Main promotion is now authorised; unrelated held notification/backlog decisions remain separate.
+> - Preserve six approved headers/full body plus original Everything/hub, glance/Jess, focused pairs, all11 whole-life doors, readers/history/settings/share/keep/Planner tools. Concrete route audit: copying flags alone would save/share /SkyWorldsDemo; version/source-safe production returns are being changed to /Lifestyle while explicit demos stay reachable. No new Base44 function/schema planned.
+>
 > ### CURRENT STATE — 2026-10-07 · FINAL RECORD SHIPPED
 > - Verification/claim release93c450c pushed; frontend redeploy succeeds with unchanged index-Ct5Eb3OV.js. HTTP verifies hash and357-check public board; native Ideas checks expanded/overview restored, selected Sky loaded and both deliverables left open. Release test32files/357checks green. Final proof: C:/Users/Halli/femwell-handoff/finish-ideas-review-final.png. No pending source work in this selected-body pass; held wider social/live-write/iPhone/main-approval scope is explicit below and on board.
 >

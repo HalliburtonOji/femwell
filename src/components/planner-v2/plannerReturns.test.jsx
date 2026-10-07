@@ -11,8 +11,8 @@ describe("routed planner exact returns", () => {
   it.each([
     [{ source: "books", ref: "gutenberg:1342" }, "/BookReader?gutenberg_id=1342"],
     [{ source: "books", ref: "club:quiet-pages-2" }, "/Community?club=quiet-pages-2"],
-    [{ source: "lifestyle", ref: "joy:walk-7fa8" }, "/SkyWorldsDemo?direction=petal-press&section=good&joy=walk-7fa8"],
-    [{ source: "sky-lesson", ref: "sky-lesson:earthshine:v1" }, "/SkyWorldsDemo?direction=petal-press&section=sky&lesson=earthshine&lessonVersion=1#daily-sky-lesson"],
+    [{ source: "lifestyle", ref: "joy:walk-7fa8" }, "/Lifestyle?direction=petal-press&section=good&joy=walk-7fa8"],
+    [{ source: "sky-lesson", ref: "sky-lesson:earthshine:v1" }, "/Lifestyle?direction=petal-press&section=sky&lesson=earthshine&lessonVersion=1#daily-sky-lesson"],
   ])("retains %j through agenda and schedule adapters", (source, href) => {
     const stored = { ...row, ...source };
     expect(lifestyleReturnLink(plannerItemToBlock(stored))?.href).toBe(href);

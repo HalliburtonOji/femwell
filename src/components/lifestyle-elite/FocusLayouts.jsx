@@ -160,7 +160,9 @@ function FocusMood({ groups }) {
   );
 }
 
-export function FocusLayout({ layout, groups, clean = false }) {
+export function FocusLayout({ layout, groups, clean = false, presentation, onConsume }) {
+  if (presentation === "folio") return <section className="fw-selected-overview" aria-label="For you today"><GroupHead label="For you today" clean/><div className="fw-selected-overview__entries">{groups.flatMap(group => (group.items || []).map(item => <div key={item.id}>{item.forYouSection && <Eyebrow>{item.forYouSection}</Eyebrow>}<CoverCard item={item} compact presentation={presentation} onConsume={onConsume ? () => onConsume(item) : undefined} onOpen={() => group.open(item)}/></div>))}</div></section>;
+
   switch (layout) {
     case "column": return <FocusColumn groups={groups} />;
     case "bento":  return <FocusBento groups={groups} />;

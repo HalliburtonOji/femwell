@@ -47,4 +47,4 @@ export function dailyLessonDeck(day, exactId) {
   return exact ? [exact,...daily.filter(lesson=>lesson.id!==exact.id)].slice(0,5) : daily;
 }
 export const skyLessonKey = lesson => `sky-lesson:${lesson.id}:v${lesson.version}`;
-export const skyLessonRoute = (lesson,direction="letter",previewRoute="/LivingLifestyleDemo") => `${["/LivingAtelierDemo","/LivingReadingRoomDemo","/SkyWorldsDemo"].includes(previewRoute) ? previewRoute : "/LivingLifestyleDemo"}?direction=${encodeURIComponent(direction)}&section=sky&lesson=${encodeURIComponent(lesson.id)}&lessonVersion=${lesson.version}#daily-sky-lesson`;
+export const skyLessonRoute = (lesson,direction="letter",previewRoute="/LivingLifestyleDemo") => `${["/Lifestyle","/LivingAtelierDemo","/LivingReadingRoomDemo","/SkyWorldsDemo"].includes(previewRoute) ? previewRoute : "/LivingLifestyleDemo"}?direction=${encodeURIComponent(direction)}&section=sky&lesson=${encodeURIComponent(lesson.id)}&lessonVersion=${lesson.version}#daily-sky-lesson`;

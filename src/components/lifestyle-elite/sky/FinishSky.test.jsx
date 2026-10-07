@@ -39,7 +39,7 @@ describe("Sky source and public-return adapters",()=>{
     const fallback="/SkyWorldsDemo?direction=petal-press&section=sky&lesson=earthshine&lessonVersion=9#daily-sky-lesson";
     expect(safeSkySavedReturn("https://evil.example/read",fallback)).toBe(fallback);
     expect(safeSkySavedReturn("/LivingAtelierDemo?lesson=earthshine&lessonVersion=1",fallback)).toBe(fallback);
-    expect(safeSkySavedReturn("/LivingAtelierDemo?lesson=earthshine&lessonVersion=9&secret=discard",fallback)).toBe("/LivingAtelierDemo?lesson=earthshine&lessonVersion=9#daily-sky-lesson");
+    expect(safeSkySavedReturn("/LivingAtelierDemo?lesson=earthshine&lessonVersion=9&secret=discard",fallback)).toBe("/LivingAtelierDemo?lesson=earthshine&lessonVersion=9&section=sky#daily-sky-lesson");
   });
 });
 

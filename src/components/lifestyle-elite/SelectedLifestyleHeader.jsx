@@ -55,13 +55,13 @@ export default function SelectedLifestyleHeader({ active, moon }) {
 
   return <header className="fw-selected-header" data-header-world={section === "sky" ? "petal-press" : undefined} data-selected-section={section} data-moving={moving && !reduced}>
     <style>{ALMANAC_TYPE}</style>
-    <div className="fw-selected-folio"><span>Lifestyle / {names[section]}</span><time dateTime={dateTime}>{now.toLocaleDateString("en-GB", { day: "numeric", month: "long" })}</time></div>
+    <div className="fw-selected-folio"><span>Lifestyle / {active?.overview ? "Everything" : names[section]}</span><time dateTime={dateTime}>{now.toLocaleDateString("en-GB", { day: "numeric", month: "long" })}</time></div>
     <div className="fw-selected-scene"><div className="fw-selected-art-plane">
       {section === "sky" && moon && <div className="fw-selected-moon"><MoonDisc textured position={moon.position} size={100} label={`${moon.name}, approximately ${moon.illumination}% illuminated`}/></div>}
       {failed ? <div className="fw-selected-bloom-fallback" aria-hidden="true"><SpeciesBloom name={plant.species} size={105}/></div> : <img key={`${section}-${arrival}-${attempt}`} className="fw-selected-art" src={`${asset}${attempt ? `?retry=${attempt}` : ""}`} width="1536" height="1024" alt="" fetchPriority="high" onError={() => setFailed(true)}/>}
     </div></div>
     <div className="fw-selected-clearing"><h1>{words.join(" ")}{words.length > 0 && " "}<span className="fw-selected-last">{last}<Heart size={14}/></span></h1><p className="fw-selected-flower"><strong>{plant.flower.name}</strong><span>{plant.flower.note}</span></p></div>
-    <div className="fw-selected-caption"><SkyMeaning label={section === "sky" ? "this Moon" : plant.flower.name} explanation={meanings[section]}><span>{section === "sky" ? (moon ? `${moon.illumination}% lit · a little borrowed light.` : "Moon details aren’t here yet.") : captions[section]}</span></SkyMeaning>{!reduced && <button type="button" className="fw-selected-motion" aria-label={section === "sky" ? (moving ? "Still the garden" : "Replay garden movement") : (moving ? "Still scene light" : "Replay scene light")} onClick={() => { setMoving(value => !value); setArrival(value => value + 1); }}>{moving ? "Still" : "Replay"}</button>}</div>
+    <div className="fw-selected-caption"><SkyMeaning label={section === "sky" ? "this Moon" : plant.flower.name} explanation={meanings[section]}><span>{section === "sky" ? (moon ? `${moon.illumination}% lit · a little borrowed light.` : "Moon details aren’t here yet.") : active?.overview ? "A few good things. Choose your own order." : captions[section]}</span></SkyMeaning>{!reduced && <button type="button" className="fw-selected-motion" aria-label={section === "sky" ? (moving ? "Still the garden" : "Replay garden movement") : (moving ? "Still scene light" : "Replay scene light")} onClick={() => { setMoving(value => !value); setArrival(value => value + 1); }}>{moving ? "Still" : "Replay"}</button>}</div>
     {failed && <button type="button" className="fw-selected-retry" onClick={() => { setAttempt(value => value + 1); setFailed(false); }}>Reload garden artwork</button>}
   </header>;
 }

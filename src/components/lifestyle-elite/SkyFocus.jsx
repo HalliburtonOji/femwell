@@ -193,20 +193,21 @@ export default function SkyFocus(props) {
   return props.artDirection === "sky-worlds" && props.direction === "petal-press" ? <SelectedSkyFocus {...props}/> : <LegacySkyFocus {...props}/>;
 }
 function SelectedSkyFocus(props) {
-  const chartState = useSelectedSkyChart(props.userProfile);
+  const params = new URLSearchParams(window.location.search);
+  const chartState = useSelectedSkyChart(props.userProfile, params.has("reading") ? params.get("reading") : null, props.contentRoute === "/Lifestyle" && ["/Lifestyle","/LifestyleElite"].includes(window.location.pathname));
   return <SkyFocusBody {...props} chartState={chartState}/>;
 }
 function LegacySkyFocus(props) {
   const chartState = useBirthChart(props.userProfile);
   return <SkyFocusBody {...props} chartState={chartState}/>;
 }
-function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, onActionHandled, portalChart = false, continuous = false, celestial = false, dailyLessons = false, direction, artDirection, cycleContext }) {
+function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, onActionHandled, portalChart = false, continuous = false, celestial = false, dailyLessons = false, direction, artDirection, cycleContext, contentRoute }) {
   const world = artDirection === "sky-worlds";
   const complete = world && direction === "petal-press";
   const artful = world || ["marginalia","reading-room"].includes(artDirection);
   const lessonFirst = world && ["workbench","light"].includes(direction);
   const movementClass = name => world ? `fw-world-${name}` : artful ? `fw-atelier-${name}` : undefined;
-  const lessonRoute = world ? "/SkyWorldsDemo" : artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artful ? "/LivingAtelierDemo" : undefined;
+  const lessonRoute = ["/Lifestyle","/SkyWorldsDemo","/LivingLifestyleDemo","/LivingReadingRoomDemo","/LivingAtelierDemo"].includes(contentRoute) ? contentRoute : world ? "/SkyWorldsDemo" : artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artful ? "/LivingAtelierDemo" : undefined;
   const { user, astro, reading, userProfile: up, loading, generatingReading, setAstro, error:chartError, refresh } = chartState;
   const completion = useSkyCompletion(user, complete);
   const readingKey = skyReadingKey(user?.id, reading?.user_id === user?.id ? reading : null);
@@ -241,7 +242,11 @@ function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, o
     if (loading || !actionRequest || consumedAction.current === actionRequest) return;
     consumedAction.current = actionRequest;
     onActionHandled?.(null);
-    if (actionRequest.type === "chart" || !astro) setSheetOpen(true);
+    if(actionRequest.type === "diary") {
+      const target=refs.current.diary || refs.current.year;
+      target?.focus({preventScroll:true});
+      target?.scrollIntoView({block:"start",behavior:"auto"});
+    } else if (actionRequest.type === "chart" || (!astro && !(actionRequest.type === "reading" && reading))) setSheetOpen(true);
     else if (actionRequest.type === "reading") {
       refs.current.today?.focus({ preventScroll: true });
       refs.current.today?.scrollIntoView({ block: "start", behavior: "auto" });
@@ -249,7 +254,7 @@ function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, o
       questionRef.current?.focus({ preventScroll: true });
       questionRef.current?.scrollIntoView({ block: "center", behavior: "auto" });
     }
-  }, [actionRequest, loading, astro, onActionHandled]);
+  }, [actionRequest, loading, astro, reading, onActionHandled]);
   // The shell's animated ancestor creates a containing block for fixed children.
   // In the review build the chart sheet must belong to the viewport, not the long page.
   const birthSheet = (initial) => {
@@ -275,14 +280,21 @@ function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, o
 
   if (loading) return <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, color: C.slate, textAlign: "center", padding: "28px 0" }}>Reading the sky…</div>;
   const chartFailure = complete && chartError ? <div role="alert" style={{fontFamily:UI,fontSize:13,color:C.crimson}}><p>{chartError}</p><Quiet onClick={refresh}>Try again</Quiet></div> : null;
+  const exactUnavailable = complete && chartState.exactReading && !reading;
+  const readingDate=reading?.reading_date ? new Date(`${reading.reading_date}T12:00:00`).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:chartState.exactReading ? "numeric" : undefined}) : null;
+  const currentSkyUrl = new URL(window.location.href);
+  if(contentRoute && lessonRoute===contentRoute)currentSkyUrl.pathname=contentRoute;
+  currentSkyUrl.searchParams.delete("reading");currentSkyUrl.searchParams.delete("tab");currentSkyUrl.searchParams.set("section","sky");currentSkyUrl.hash="";
+  const exactReadingNote = complete && chartState.exactReading ? <p className="sky-note">{readingDate ? `Saved reading · ${readingDate}. Moon facts, lessons and your chart are current.` : "This link opens a particular saved reading. Your other Sky tools are still here."} <a className="daily-sky-link" href={`${currentSkyUrl.pathname}${currentSkyUrl.search}`}>Open today’s sky</a></p> : null;
 
   // ── no chart → the onboarding, in the same language ──
-  if (!astro) {
+  if (!astro && !(complete && chartState.exactReading && reading)) {
     return (
       <div className={world ? "sky-celestial sky-world-body" : celestial ? "sky-celestial" : undefined} style={{ display: "flex", flexDirection: "column" }}>
         {celestial && <style>{CELESTIAL_CSS}</style>}
         <JessAstraBanner />
         {chartFailure}
+        {exactReadingNote}
         <Summary Icon={Moon} cw="lavender">{moon?.name ? `The moon is ${moon.name.toLowerCase()}${moon.illumination != null ? `, ${moon.illumination}% lit` : ""} tonight — your own sky opens once you add your birth date.` : "Your own sky opens once you add your birth date."}</Summary>
         <section>
           <Eyebrow cw="lavender">Read me the sky</Eyebrow>
@@ -292,18 +304,18 @@ function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, o
           <div style={{ marginTop: 6 }}><Cta filled Icon={Sparkles} onClick={() => setSheetOpen(true)}>Set up your sky</Cta></div>
         </section>
         {dailyLessons ? <><DailySkyLesson human={world} userId={user?.id} moon={moon} direction={direction} previewRoute={lessonRoute}/><PrivateSkyNotes userId={user?.id} moon={moon}/></> : celestial && <MoonLesson moon={moon} />}
+        {complete && <div id="sky-observed-diary" tabIndex={-1} ref={el=>{refs.current.diary=el;}} style={{scrollMarginTop:70}}><ObservedSkyDiary human userId={user?.id}/></div>}
         {birthSheet(null)}
       </div>
     );
   }
 
-  const headline = clean(reading?.headline) || (celestial ? "A moment under the same moon." : `A steady day. The moon is ${moon?.waxing ? "climbing" : "releasing"}.`);
+  const headline = clean(reading?.headline) || (exactUnavailable ? "This reading isn’t here." : celestial ? "A moment under the same moon." : `A steady day. The moon is ${moon?.waxing ? "climbing" : "releasing"}.`);
   const weather = complete ? skyParagraphs(reading?.narrative) : celestial ? paras(reading?.narrative) : paras(reading?.narrative).slice(0, 3);
   const energy = reading?.weather_energy || null;
   const mood = reading?.weather_mood ? clean(reading.weather_mood) : null;
   const playlist = chart.moonSign ? MOON_SIGN_PLAYLIST[String(chart.moonSign).toLowerCase()] : null;
   const notice = reading?.pressure_title || reading?.trouble_title ? { t: clean(reading.pressure_title || reading.trouble_title), b: clean(reading.pressure_body || reading.trouble_body) } : null;
-  const readingDate=reading?.reading_date ? new Date(`${reading.reading_date}T12:00:00`).toLocaleDateString("en-GB",{day:"numeric",month:"short"}) : null;
   const shareArtifact = { kind: "horoscope", source: "horoscope", line: headline, footer: complete && readingDate ? `Sky · ${readingDate}` : "Today's sky", url: "https://femwells.com", shareText: complete && readingDate ? `My sky reading · ${readingDate}, from FemWell.` : "Today's sky, from FemWell." };
   const stateBits = [cyc.phase ? `${cap(cyc.phase)}${cyc.day ? ` · Day ${cyc.day}` : ""}` : null, moon?.name ? cap(moon.name) : null, chart.sun ? `${cap(chart.sun)} sun` : null].filter(Boolean);
   const lead = weather.length ? weather[0].match(/^(.+?[.!?])(\s+|$)([\s\S]*)$/) : null;
@@ -314,6 +326,7 @@ function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, o
       {celestial && <style>{CELESTIAL_CSS}</style>}
       <JessAstraBanner />
       {chartFailure}
+      {exactReadingNote}
       {complete && chartState.newDay && <p className="daily-sky-status">A new day is here. Your open reading stays put. <button className="daily-sky-link" type="button" disabled={chartState.refreshing} onClick={refresh}>{chartState.refreshing ? "Checking…" : "Check today’s sky"}</button></p>}
       {complete && chartState.refreshing && !chartState.newDay && <p role="status" className="daily-sky-status">Checking your sky…</p>}
 
@@ -323,7 +336,7 @@ function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, o
           <Eyebrow cw="lavender" align="left">{artful && reading?.reading_date ? `Your sky · ${new Date(`${reading.reading_date}T12:00:00`).toLocaleDateString("en-GB",{day:"numeric",month:"short"})}` : "Your sky today"}</Eyebrow>
           <h2 style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 30, lineHeight: 1.1, letterSpacing: -0.4, color: C.ink, margin: "0 0 10px", textShadow: "none" }}>{headline}</h2>
         </div>
-        <ShareButton iconOnly label={complete && readingDate ? `Share your sky reading from ${readingDate}` : "Share today's sky"} artifact={shareArtifact} />
+        <fieldset disabled={exactUnavailable} style={{border:0,padding:0,margin:0,minWidth:0}}><ShareButton iconOnly label={complete && readingDate ? `Share your sky reading from ${readingDate}` : "Share today's sky"} artifact={shareArtifact} /></fieldset>
       </div>
       <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "6px 12px", fontFamily: UI, fontSize: 12, fontWeight: 600, color: C.slate, letterSpacing: ".04em", margin: "0 0 14px" }}>
         {stateBits.map((b, i) => (<React.Fragment key={b}>{i ? <span style={{ width: 3, height: 3, borderRadius: 99, background: C.goldHair }} /> : null}<span>{b}</span></React.Fragment>))}
@@ -362,7 +375,7 @@ function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, o
           </div>
         ) : null}
         {dailyLessons && <div className={world ? "fw-world-weather-notes" : artful ? "fw-atelier-weather-notes" : undefined}>{[["Power",reading?.power_title,reading?.power_body],["Pressure",reading?.pressure_title,reading?.pressure_body],["Trouble",reading?.trouble_title,reading?.trouble_body]].map(([label,title,body])=>title || body ? <div key={label} className={world ? `fw-world-weather-entry fw-world-weather-entry--${label.toLowerCase()}` : artful ? `fw-atelier-weather-entry fw-atelier-weather-entry--${label.toLowerCase()}` : undefined} style={artful ? undefined : {borderTop:`1px solid ${C.hair}`,padding:"14px 0 0",marginTop:14}}>{artful ? <span className={world ? "fw-world-note-label" : "fw-atelier-note-label"}>{label}</span> : <Eyebrow cw="gold" align="left">{label}</Eyebrow>}{title && <Title align="left" size={26}>{clean(title)}</Title>}{body && (complete ? skyParagraphs(body).map((text,i)=><Body key={i}>{text}</Body>) : <Body>{clean(body)}</Body>)}</div> : null)}</div>}
-        <CarryItWithYou connectedDemo={dailyLessons} seed={headline} read={markedRead} onMarkRead={markReading} readDisabled={complete && (!readingKey || markedRead)} readError={readError} />
+        <fieldset disabled={exactUnavailable} style={{border:0,padding:0,margin:0,minWidth:0}}><CarryItWithYou connectedDemo={dailyLessons} seed={headline} read={markedRead} onMarkRead={markReading} readDisabled={complete && (!readingKey || markedRead)} readError={readError} /></fieldset>
       </Movement>
 
       {artful && !world && <AtelierIncident/>}
@@ -403,7 +416,7 @@ function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, o
 
       {/* V · YOUR YEAR — profections · Saturn letter · the sky diary */}
       {artful && !world && <AtelierIncident kind="growth"/>}
-      <Movement id="year" refs={refs} className={movementClass("year")}><YearMovement complete={complete} celestial={celestial} profections={profections} diary={celestial ? null : diary} />{celestial && <ObservedSkyDiary human={world} userId={user?.id} />}{dailyLessons && <PrivateSkyNotes userId={user?.id} moon={moon}/>}</Movement>
+      <Movement id="year" refs={refs} className={movementClass("year")}><YearMovement complete={complete} celestial={celestial} profections={profections} diary={celestial ? null : diary} />{celestial && <div id="sky-observed-diary" tabIndex={-1} ref={el=>{refs.current.diary=el;}} style={{scrollMarginTop:70}}><ObservedSkyDiary human={world} userId={user?.id} /></div>}{dailyLessons && <PrivateSkyNotes userId={user?.id} moon={moon}/>}</Movement>
 
       {!artful && <Fleuron my={24} />}
 
@@ -411,8 +424,8 @@ function SkyFocusBody({ userProfile, chartState, actionRequest, onActionState, o
       <Movement id="ask" refs={refs} className={movementClass("ask")}>
         <Eyebrow cw="lavender">Ask &amp; connect</Eyebrow>
         <Title>{world ? "What’s on your mind?" : "Put a question to it"}</Title>
-        <AskTheSky key={complete ? user?.id || "signed-out" : "legacy"} complete={complete} human={world} celestial={celestial} userId={user?.id} inputRef={questionRef} />
-        <Compatibility key={complete ? user?.id || "signed-out" : "legacy"} complete={complete} human={world} celestial={celestial} userId={user?.id} />
+        <AskTheSky key={`ask:${complete ? user?.id || "signed-out" : "legacy"}`} complete={complete} human={world} celestial={celestial} userId={user?.id} inputRef={questionRef} />
+        <Compatibility key={`pairing:${complete ? user?.id || "signed-out" : "legacy"}`} complete={complete} human={world} celestial={celestial} userId={user?.id} />
       </Movement>
 
       {!artful && <Fleuron my={24} />}

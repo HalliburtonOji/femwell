@@ -710,7 +710,7 @@ export function CoverCard({ item: raw, onOpen, onConsume, consumeLabel, previewT
   const playKind = facePlayable(item);
 
   if (presentation === "folio") {
-    const direct = onConsume || (item.external ? item.actions.find(action=>action.primary)?.onClick : null);
+    const direct = playKind ? null : onConsume || (item.external ? item.actions.find(action=>action.primary)?.onClick : null);
     const hook = previewText ?? summaryOf(item);
     const details = <><span className="fw-folio-card__kind"><I size={13}/>{item.kind}</span><span className="fw-folio-card__title">{item.title}</span>{hook && <span className="fw-folio-card__hook">{hook}</span>}<span className="fw-folio-card__meta">{item.meta.map(([ic,label]) => {const M = ICON[ic] || Clock; return <span key={label}><M size={13}/>{label}</span>;})}</span><span className="fw-folio-card__actions">{playKind ? "Details" : consumeLabel || (item.external ? "Open source" : "Open")}<ChevronRight size={15}/></span></>;
     return <div className="fw-folio-card" data-compact={compact} data-media={playKind || undefined}>

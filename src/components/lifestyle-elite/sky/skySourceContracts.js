@@ -39,9 +39,10 @@ export function safeSkySavedReturn(route, fallback) {
   try {
     const url = new URL(route, "https://femwells.com");
     const expected=new URL(fallback,"https://femwells.com");
-    const allowed = ["/SkyWorldsDemo", "/LivingLifestyleDemo", "/LivingAtelierDemo", "/LivingReadingRoomDemo"];
+    const allowed = ["/Lifestyle", "/SkyWorldsDemo", "/LivingLifestyleDemo", "/LivingAtelierDemo", "/LivingReadingRoomDemo"];
     if(url.origin!=="https://femwells.com" || !allowed.includes(url.pathname) || url.searchParams.get("lesson")!==expected.searchParams.get("lesson") || url.searchParams.get("lessonVersion")!==expected.searchParams.get("lessonVersion"))return fallback;
     for(const key of [...url.searchParams.keys()])if(!["direction","section","lesson","lessonVersion"].includes(key))url.searchParams.delete(key);
+    url.searchParams.set("section","sky");
     return `${url.pathname}${url.search}#daily-sky-lesson`;
   } catch { return fallback; }
 }

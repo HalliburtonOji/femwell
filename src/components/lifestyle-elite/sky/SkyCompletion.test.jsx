@@ -54,6 +54,54 @@ describe("Sky completion exact input and source safety",()=>{
   });
 });
 
+describe("promoted main preserves the existing daily-reading fallback",()=>{
+  const chart={id:"chart-a",user_id:"a"};
+  const reading=()=>({id:"made-a",user_id:"a",reading_date:new Date().toISOString().slice(0,10),narrative:"An actual produced reading."});
+  it("lets current tools render while the same existing generator produces an absent daily reading",async()=>{
+    mock.charts.mockResolvedValue([chart]);const pending=deferred();mock.invoke.mockReturnValue(pending.promise);
+    const {result}=renderHook(()=>useSelectedSkyChart(undefined,null,true));
+    await waitFor(()=>expect(result.current.generatingReading).toBe(true));expect(result.current.loading).toBe(false);expect(result.current.astro).toEqual(chart);expect(result.current.reading).toBeNull();
+    expect(mock.invoke).toHaveBeenCalledExactlyOnceWith("generateHoroscopeReading",{user_id:"a"});
+    await act(async()=>pending.resolve({data:{reading:reading()}}));await waitFor(()=>expect(result.current.generatingReading).toBe(false));expect(result.current.reading).toEqual(reading());
+  });
+  it.each([null,"older-reading"])("never generates in a founder preview, including an exact source %s",async id=>{
+    mock.charts.mockResolvedValue([chart]);const {result}=renderHook(()=>useSelectedSkyChart(undefined,id,false));
+    await waitFor(()=>expect(result.current.loading).toBe(false));expect(mock.invoke).not.toHaveBeenCalled();
+  });
+  it("never invokes production fallback for a missing exact historical reading",async()=>{
+    mock.charts.mockResolvedValue([chart]);const {result}=renderHook(()=>useSelectedSkyChart(undefined,"older-reading",true));
+    await waitFor(()=>expect(result.current.loading).toBe(false));expect(mock.invoke).not.toHaveBeenCalled();expect(result.current.reading).toBeNull();
+  });
+  it("uses an existing owned daily row without requesting regeneration",async()=>{
+    mock.charts.mockResolvedValue([chart]);mock.readings.mockResolvedValue([reading()]);const {result}=renderHook(()=>useSelectedSkyChart(undefined,null,true));
+    await waitFor(()=>expect(result.current.loading).toBe(false));expect(result.current.reading).toEqual(reading());expect(mock.invoke).not.toHaveBeenCalled();
+  });
+  it.each(["failed-read","foreign-chart"])("does not treat %s as evidence that generation is needed",async mode=>{
+    mock.charts.mockResolvedValue([{...chart,user_id:mode==="foreign-chart" ? "b" : "a"}]);if(mode==="failed-read")mock.readings.mockRejectedValue(new Error("offline"));
+    const {result}=renderHook(()=>useSelectedSkyChart(undefined,null,true));await waitFor(()=>expect(result.current.loading).toBe(false));expect(mock.invoke).not.toHaveBeenCalled();
+  });
+  it.each([{user_id:"b"},{reading_date:"1990-01-01"},{id:null}])("rejects an unconfirmed generated result %j",async patch=>{
+    mock.charts.mockResolvedValue([chart]);mock.invoke.mockResolvedValue({data:{reading:{...reading(),...patch}}});const {result}=renderHook(()=>useSelectedSkyChart(undefined,null,true));
+    await waitFor(()=>expect(result.current.error).toContain("couldn’t be made"));expect(result.current.generatingReading).toBe(false);expect(result.current.reading).toBeNull();
+  });
+  it("offers retry after failure and repeats the existing idempotent call without a force flag",async()=>{
+    mock.charts.mockResolvedValue([chart]);mock.invoke.mockRejectedValueOnce(new Error("offline")).mockResolvedValue({reading:reading()});const {result}=renderHook(()=>useSelectedSkyChart(undefined,null,true));
+    await waitFor(()=>expect(result.current.error).toContain("try again"));act(()=>result.current.refresh());await waitFor(()=>expect(result.current.reading?.id).toBe("made-a"));
+    expect(mock.invoke.mock.calls).toEqual([["generateHoroscopeReading",{user_id:"a"}],["generateHoroscopeReading",{user_id:"a"}]]);expect(result.current.error).toBe("");
+  });
+  it("does not let a former owner's delayed generation overwrite the next account",async()=>{
+    const pending=deferred();mock.me.mockResolvedValueOnce({id:"a"}).mockResolvedValue({id:"b"});mock.charts.mockImplementation(({user_id})=>Promise.resolve([{...chart,user_id}]));
+    mock.invoke.mockImplementation((_,{user_id})=>user_id==="a" ? pending.promise : Promise.resolve({reading:{...reading(),id:"made-b",user_id:"b"}}));
+    const {result,rerender}=renderHook(({profile})=>useSelectedSkyChart(profile,null,true),{initialProps:{profile:{user_id:"a"}}});await waitFor(()=>expect(result.current.generatingReading).toBe(true));
+    rerender({profile:{user_id:"b"}});await waitFor(()=>expect(result.current.reading?.id).toBe("made-b"));await act(async()=>pending.resolve({reading:reading()}));expect(result.current.user.id).toBe("b");expect(result.current.reading.id).toBe("made-b");
+  });
+  it("keeps an exact historical return after a delayed current-reading generation finishes",async()=>{
+    const pending=deferred(),older={...reading(),id:"older-reading",reading_date:"2026-09-04"};mock.charts.mockResolvedValue([chart]);mock.readings.mockImplementation(query=>Promise.resolve(query.id ? [older] : []));mock.invoke.mockReturnValue(pending.promise);
+    const {result,rerender}=renderHook(({id})=>useSelectedSkyChart(undefined,id,true),{initialProps:{id:null}});await waitFor(()=>expect(result.current.generatingReading).toBe(true));
+    rerender({id:"older-reading"});await waitFor(()=>expect(result.current.reading?.id).toBe("older-reading"));await act(async()=>pending.resolve({reading:reading()}));expect(result.current.reading).toEqual(older);expect(result.current.generatingReading).toBe(false);expect(mock.invoke).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("Selected Sky completion owner and partial-read lifecycle",()=>{
   it("ignores a late former-owner response after the current owner's letter has loaded",async()=>{
     const old=deferred();mock.letters.mockImplementation(({user_id})=>user_id==="a" ? old.promise : Promise.resolve([{...published,id:"letter-b",user_id:"b"}]));
@@ -107,6 +155,36 @@ describe("Selected Sky completion owner and partial-read lifecycle",()=>{
 });
 
 describe("Selected preview chart reads without generation",()=>{
+  it("returns the exact old owned reading instead of querying or substituting today's edition",async()=>{
+    const reading={id:"older-reading",user_id:"a",reading_date:"2026-09-04",narrative:"The full older edition."};mock.readings.mockResolvedValue([reading]);
+    const {result}=renderHook(()=>useSelectedSkyChart(undefined,"older-reading"));await waitFor(()=>expect(result.current.loading).toBe(false));
+    expect(mock.readings).toHaveBeenCalledExactlyOnceWith({user_id:"a",id:"older-reading"},"-created_date",1);
+    expect(result.current.reading).toEqual(reading);expect(result.current.exactReading).toBe(true);expect(mock.invoke).not.toHaveBeenCalled();expect(mock.subscribe).not.toHaveBeenCalled();
+  });
+  it.each([
+    {id:"today",user_id:"a",reading_date:"2026-10-07",narrative:"A newer edition."},
+    {id:"older-reading",user_id:"b",reading_date:"2026-09-04",narrative:"Another owner's reading."},
+    {id:"older-reading",user_id:"a",reading_date:"2026-02-30",narrative:"An impossible date."},
+  ])("rejects a wrong returned owner, edition or invalid date for an exact link",async row=>{
+    mock.readings.mockResolvedValue([row]);const {result}=renderHook(()=>useSelectedSkyChart(undefined,"older-reading"));await waitFor(()=>expect(result.current.loading).toBe(false));
+    expect(result.current.reading).toBeNull();expect(result.current.error).toContain("isn’t available in your account");expect(mock.invoke).not.toHaveBeenCalled();
+  });
+  it("retries the same missing historical identity and never requests a current reading",async()=>{
+    mock.readings.mockRejectedValueOnce(new Error("offline")).mockResolvedValue([{id:"older-reading",user_id:"a",reading_date:"2026-09-04",narrative:"The exact recovered text."}]);
+    const {result}=renderHook(()=>useSelectedSkyChart(undefined,"older-reading"));await waitFor(()=>expect(result.current.loading).toBe(false));
+    expect(result.current.error).toContain("couldn’t load");expect(result.current.reading).toBeNull();act(()=>result.current.refresh());await waitFor(()=>expect(result.current.reading?.id).toBe("older-reading"));
+    expect(mock.readings.mock.calls.every(([filter])=>filter.id==="older-reading" && !filter.reading_date)).toBe(true);expect(result.current.error).toBe("");
+  });
+  it("clears the former requested edition while ignoring its late result",async()=>{
+    const pending=deferred();mock.readings.mockImplementation(({id})=>id==="first" ? pending.promise : Promise.resolve([{id:"second",user_id:"a",reading_date:"2026-09-05",narrative:"Second edition."}]));
+    const {result,rerender}=renderHook(({id})=>useSelectedSkyChart(undefined,id),{initialProps:{id:"first"}});await waitFor(()=>expect(mock.readings).toHaveBeenCalledTimes(1));
+    rerender({id:"second"});expect(result.current.reading).toBeNull();await waitFor(()=>expect(result.current.reading?.id).toBe("second"));
+    await act(async()=>pending.resolve([{id:"first",user_id:"a",reading_date:"2026-09-04",narrative:"The late first edition."}]));expect(result.current.reading.id).toBe("second");
+  });
+  it.each(["","bad/id","id?injected=1"])("keeps malformed exact link %s out of the private reading query",async id=>{
+    const {result}=renderHook(()=>useSelectedSkyChart(undefined,id));await waitFor(()=>expect(result.current.loading).toBe(false));
+    expect(result.current.error).toContain("link isn’t complete");expect(mock.readings).not.toHaveBeenCalled();expect(mock.invoke).not.toHaveBeenCalled();
+  });
   it("never labels a returned older owned reading as the requested current edition",async()=>{
     mock.readings.mockResolvedValue([{id:"old",user_id:"a",reading_date:"1990-01-01",narrative:"An old reading."}]);
     const {result}=renderHook(()=>useSelectedSkyChart());await waitFor(()=>expect(result.current.loading).toBe(false));expect(result.current.reading).toBeNull();

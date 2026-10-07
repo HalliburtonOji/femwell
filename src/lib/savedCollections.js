@@ -1,7 +1,7 @@
 import { base44 } from "@/api/base44Client";
 import { parseSavedMeta } from "@/lib/savedItems";
 import { SKY_LESSONS, skyLessonRoute } from "@/components/lifestyle-elite/sky/skyLessons";
-const SKY_ROUTES = new Set(["/LivingLifestyleDemo", "/LivingAtelierDemo", "/LivingReadingRoomDemo", "/SkyWorldsDemo"]);
+const SKY_ROUTES = new Set(["/Lifestyle", "/LivingLifestyleDemo", "/LivingAtelierDemo", "/LivingReadingRoomDemo", "/SkyWorldsDemo"]);
 const cleanText = value => String(value || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 function safeSavedHref(value) {
   if (typeof value !== "string" || !value || /[\u0000-\u0020\\]/.test(value)) return null;

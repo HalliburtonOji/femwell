@@ -3,7 +3,7 @@ import { SKY_LESSONS, skyLessonRoute } from "@/components/lifestyle-elite/sky/sk
 
 // Only recognised app-owned references become links. Never navigate to a URL
 // copied from notes/ref, or silently substitute today's lesson for an old one.
-export function lifestyleReturnLink(item, route = "/SkyWorldsDemo") {
+export function lifestyleReturnLink(item, route = "/Lifestyle") {
   const source = item?.source ?? item?._raw?.source;
   const ref = String(item?.ref ?? item?._raw?.ref ?? "");
   if (source === "books") {
@@ -13,6 +13,8 @@ export function lifestyleReturnLink(item, route = "/SkyWorldsDemo") {
     if (club) return { href: `/Community?club=${encodeURIComponent(club[1])}`, label: "Open the book club" };
   }
   if (["sky", "sky-lesson", "lifestyle"].includes(source)) {
+    const reading = /^sky-reading:([\w-]{1,160})$/.exec(ref);
+    if (reading && source !== "sky-lesson") return { href: `/Lifestyle?section=sky&reading=${encodeURIComponent(reading[1])}`, label: "Open this Sky reading" };
     const key = /^sky-lesson:([\w-]+):v(\d+)$/.exec(ref);
     const lesson = key && SKY_LESSONS.find(entry => entry.id === key[1] && entry.version === Number(key[2]));
     if (lesson) return { href: skyLessonRoute(lesson, "petal-press", route), label: "Open this Sky lesson" };
@@ -20,7 +22,7 @@ export function lifestyleReturnLink(item, route = "/SkyWorldsDemo") {
   if (source === "lifestyle") {
     const joy = /^joy:([\w-]+)$/.exec(ref);
     if (joy) {
-      const page = ["/Lifestyle", "/SkyWorldsDemo"].includes(route) ? route : "/SkyWorldsDemo";
+      const page = ["/Lifestyle", "/SkyWorldsDemo"].includes(route) ? route : "/Lifestyle";
       return { href: `${page}?direction=petal-press&section=good&joy=${encodeURIComponent(joy[1])}`, label: "Open this small joy" };
     }
   }

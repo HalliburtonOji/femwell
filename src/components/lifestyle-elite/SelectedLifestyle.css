@@ -131,3 +131,9 @@
 .fw-plan-checkpoints{padding:12px 0 0;list-style:none}.fw-plan-checkpoints li{display:flex;flex-direction:column;padding:8px 0;border-bottom:1px solid #cec7d0}.fw-plan-checkpoints time{font:400 13px/1.4 system-ui;color:#6e6a61}
 .fw-lifestyle-plan [role=alert]{color:#7a1a12;font:500 15px/1.5 system-ui}
 .fw-lifestyle-plan button:disabled{opacity:.6;cursor:wait}
+
+/* Main keeps the accepted rooms while giving fixed page controls their own air. */
+.fw-lifestyle-main .fw-elite-in:not([style*="fixed"]){padding-top:64px!important}
+.fw-selected-overview__entries{display:grid;gap:20px}
+.fw-selected-overview .fw-folio-card{background:transparent}
+.fw-room-library .fw-room-cover{flex-shrink:0}

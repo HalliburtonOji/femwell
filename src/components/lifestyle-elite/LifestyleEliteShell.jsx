@@ -480,7 +480,7 @@ function FocusableBoards({ focusBoard, sliderRef, gold, children }) {
   return <div style={{ marginTop: 20 }}>{boards[focusBoard] || null}</div>;
 }
 
-export default function LifestyleEliteShell({ enableFocus = false, layout = null, clean = false, previewActions = false, initialSection = null, continuousSky = false, celestialSky = false, botanicalHeader = false, firstFoldVariant = null, dailySkyLessons = false, artDirection = null, skyWorld = null } = {}) {
+export default function LifestyleEliteShell({ enableFocus = false, layout = null, clean = false, previewActions = false, initialSection = null, continuousSky = false, celestialSky = false, botanicalHeader = false, firstFoldVariant = null, dailySkyLessons = false, artDirection = null, skyWorld = null, contentRoute } = {}) {
   const foldVariant = clean && (["living", "garden", "almanac", "canopy"].includes(firstFoldVariant) || isLivingDirection(firstFoldVariant)) ? firstFoldVariant : null;
   const livingDemo = isLivingDirection(foldVariant) || ["reading-room","sky-worlds"].includes(artDirection);
   const worldDirection = artDirection === "sky-worlds" ? getSkyWorld(skyWorld).id : foldVariant;
@@ -504,6 +504,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   // controller chip focuses the whole page onto that section: For-you filters to it, the boards
   // collapse to that ONE board shown full, the glance stays global. `null` = the full page.
   const [focusSection, setFocusSection] = useState(null);
+  const [roomRevision, setRoomRevision] = useState(0);
   const [skyActionRequest, setSkyActionRequest] = useState(null);
   const [skyActionState, setSkyActionState] = useState({ loading: true, hasChart: false });
 
@@ -576,6 +577,10 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   // THE gate — the same chapter every surface shows today (evergreen unless a fresh one exists)
   const storyPick = useMemo(() => chapterForDay(chapters), [chapters]);
   const story = storyPick?.chapter || null;
+  const openTodaysChapter = useCallback(() => {
+    if (selectedPresentation && story) { setReaderStart(storyPick?.index ?? 0); setReaderOpen(true); }
+    else setChapterOpen(true);
+  }, [selectedPresentation, story, storyPick?.index]);
   const storyNext = useMemo(() => nextChapterOf(chapters), [chapters]);
   const storyRead = story ? isChapterRead(story.id) : false;
   const storyReadCount = useMemo(() => readCount(chapters, storyPick), [chapters, storyPick, expanded, readerOpen]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -897,7 +902,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   const jumpTo = (idx) => {
     setJumpOpen(false);
     // In a slider-free layout demo, "jump to a board" becomes "focus that section" (no carousel).
-    if (layout) { const sec = BOARD_TO_SECTION[idx]; if (sec && enableFocus) { setFocusSection(sec); if(livingDemo){const heroIndex=heroCards.findIndex(card=>card.id===sec);if(heroIndex>=0)setHeroCard(heroIndex);const url=new URL(window.location.href);url.searchParams.set("section",sec);url.searchParams.delete("tab");window.history.replaceState(window.history.state,"",url);} window.scrollTo?.({ top: 0, behavior: "smooth" }); } return; }
+    if (layout) { const sec = BOARD_TO_SECTION[idx]; if (sec && enableFocus) { selectRoom(sec); window.scrollTo?.({ top: 0, behavior: "smooth" }); } return; }
     sliderRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     const track = sliderRef.current?.querySelector(".fw-clipboard-track"); if (!track) return;
     const boards = [...track.children].filter((c) => c.offsetWidth > 40);
@@ -1074,10 +1079,10 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
       meta: [["Feather", story.day_number ? `Day ${story.day_number}` : "Today"], ["Clock", "A few minutes"]],
       chips: ["daily story"], excerpt: stripHtml(story.segment_text || "").slice(0, 220) || undefined,
       body: [stripHtml(story.segment_text || "") || "Today's chapter is being written."],
-      actions: [{ label: "Read today's chapter", Icon: "Feather", primary: true, onClick: () => { setExpanded(null); setChapterOpen(true); } }],
+      actions: [{ label: "Read today's chapter", Icon: "Feather", primary: true, onClick: () => { setExpanded(null); openTodaysChapter(); } }],
     }] : [];
     return [...daily, ...(grouped.book || []).slice(0, 5).map((r) => rowCard(r, "book"))];
-  }, [story, grouped, rowCard]);
+  }, [story, grouped, rowCard, openTodaysChapter]);
   // §3 BOOKS — 2 taps, not 3: tap the card and you're READING (the pane paginates the
   // opening pages via the existing fetchGutenbergBook fn); the FULL reader is one clear option.
   const classicCards = useMemo(() => (gutenberg || []).slice(0, 6).map((b) => ({
@@ -1096,12 +1101,12 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
     meta: [["Feather", story.day_number ? `Day ${story.day_number}` : "Today"], ["Clock", "A few minutes"]],
     chips: ["daily story", "fiction"], excerpt: t.excerpt,
     body: t.body.length ? t.body : ["Today's chapter is being written — check back soon."],
-    actions: [{ label: "Read today's chapter", Icon: "Feather", primary: true, onClick: () => { setExpanded(null); setChapterOpen(true); } }],
+    actions: [{ label: "Read today's chapter", Icon: "Feather", primary: true, onClick: () => { setExpanded(null); openTodaysChapter(); } }],
   }]; })() : [{
     id: "story-soon", type: "daily_story", title: "Today's chapter is on its way",
     subtitle: "A new chapter lands each morning.", meta: [["Clock", "Back tomorrow"]], chips: ["daily story"],
     body: ["Your serialised story is being written — it'll be here shortly."], actions: [],
-  }]), [story]);
+  }]), [story, openTodaysChapter]);
   // ── YOUR SKY (component #6) ──────────────────────────────────────────────
   // The moon is REAL and free: getMoonPhase() is a synodic formula (±1% illumination,
   // client-side, no backend). So the card is honest and never blank even when today's
@@ -1241,7 +1246,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
     { id: "story", Icon: Feather, label: "Story", title: "Today's chapter",
       line: story?.cliffhanger ? `"${story.cliffhanger}"` : "A chapter a day — a finished story you can also read straight through.",
       openness: 1, cw: "crimson", creature: "butterfly",
-      action: { label: "Read today's chapter", on: () => setChapterOpen(true) } },
+      action: { label: "Read today's chapter", on: openTodaysChapter } },
     { id: "sky", Icon: Moon, label: "Sky", title: moonToday ? (moonToday.name.charAt(0).toUpperCase() + moonToday.name.slice(1)) : "Your sky today",
       line: moonToday ? `The moon is ${moonToday.name.toLowerCase()} — ${moonToday.illumination}% lit tonight, and how it meets your week.` : "Your sky, and how it meets your week.",
       openness: 0.5, cw: "lavender", creature: "moth",
@@ -1249,7 +1254,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
     { id: "good", Icon: Clock, label: "Good life", title: "The good life",
       line: "What do you have time for? A small joy, and permission to enjoy it.", openness: 0.92, cw: "gold", creature: "butterfly",
       action: { label: "Open the good life", on: () => jumpTo(0) } },
-  ], [firstName, story, moonToday]);
+  ], [firstName, story, moonToday, openTodaysChapter]);
   // On the focus/layout demos Books + Story are ONE chip (the merged surface); live keeps its six.
   const heroCards = useMemo(() => {
     if (!layout) return HERO_CARDS;
@@ -1257,10 +1262,10 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
       ...c, label: "Books", title: story ? "Today's chapter & your shelf" : "Your shelf",
       line: story?.cliffhanger ? `"${story.cliffhanger}"` : "A chapter a day through the month — and a shelf of free classics to fall into.",
       openness: 0.8, cw: "crimson", creature: "butterfly",
-      action: { label: story ? "Read today's chapter" : "Open your shelf", on: () => (story ? setChapterOpen(true) : jumpTo(3)) },
+      action: { label: story ? "Read today's chapter" : "Open your shelf", on: () => (story ? openTodaysChapter() : jumpTo(3)) },
     });
     return livingDemo ? [...cards, {id:"yours",Icon:Bookmark,label:"Yours",title:"What you keep",cw:"plum",action:{label:"Your saved things",on:()=>jumpTo(5)}}] : cards;
-  }, [HERO_CARDS, layout, story, livingDemo]);
+  }, [HERO_CARDS, layout, story, livingDemo, openTodaysChapter]);
 
   // Track A — Saved is now COLLECTIONS-READY: grouped by kind (Reads · Listens · Watches · Books)
   // so it clusters into auto-shelves instead of a flat dump. `savedCollections` also drives the
@@ -1348,7 +1353,9 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
     if (!enableFocus) return;            // the landing shell has no focus mode to deep-link into
     try {
       const q = new URLSearchParams(window.location.search);
-      const want = TAB_TO_SECTION[String(q.get("tab") || q.get("section") || "").toLowerCase()] || TAB_TO_SECTION[initialSection];
+      const requested = String(q.get("tab") || q.get("section") || "").toLowerCase();
+      if (requested === "all") { setFocusSection(null); return; }
+      const want = TAB_TO_SECTION[requested] || TAB_TO_SECTION[initialSection];
       if (!want) return;
       setFocusSection(want);
       const i = (previewActions ? heroCards : HERO_CARDS).findIndex((c) => c.id === want);
@@ -1359,6 +1366,20 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   }, [enableFocus]);
 
   const focus = (enableFocus && focusSection) ? (FOCUS_MAP[focusSection] || null) : null;
+  const selectRoom = (section, index = heroCards.findIndex(card => card.id === section), forceCurrent = false) => {
+    // An active-room tap keeps the exact source and any in-progress tools intact.
+    if (section === focusSection && !forceCurrent) return;
+    setFocusSection(section);
+    if (forceCurrent) setRoomRevision(value => value + 1);
+    if (index >= 0) { _lifeHeroCard = index; setHeroCard(index); }
+    if (livingDemo) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("section", section || "all");
+      ["tab", "reading", "lesson", "lessonVersion", "joy"].forEach(key => url.searchParams.delete(key));
+      url.hash = "";
+      window.history.replaceState(window.history.state, "", url);
+    }
+  };
   const focusBoard = focus ? focus.board : null;
   const forYouShown = focus ? forYouItems.filter((it) => focus.forYou.includes(it.forYouSection)) : forYouItems;
 
@@ -1372,8 +1393,8 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   const sectionActions = {
     read: [continueCards[0] ? {label:"Continue reading",run:()=>openReadCard(continueCards[0])} : choose("Choose a read", [...articleCards, ...storyCards], openReadCard), choose("Saved reads", actionSavedCards.filter((i) => ["article", "daily_story"].includes(i.type)), openReadCard, "No saved reads yet. Save a piece you enjoy and it will appear here.")],
     listen: [choose("Choose a listen", audioCards), choose("Choose a watch", videoCards)],
-    books: [{ label: "Today's chapter", run: () => { if(selectedPresentation && story){setReaderStart(storyPick?.index ?? 0);setReaderOpen(true);}else setChapterOpen(true);} }, choose("Choose a book", [...shelfBookCards, ...classicCards])],
-    good: [{ label: "Time for yourself", description: "Choose the time you have, then open a suggestion. Saving closes this picker and shows confirmation on the page.", content: (afterClose) => <TimePickerLens presentation={selectedPresentation} pickFor={pickFor} isSaved={isSaved} onSave={(it) => afterClose(toggleSave, it)} onOpen={(it) => afterClose(openItem, it)} onTry={(title) => afterClose(saveTryThis, title)} /> }, choose("A small joy", [...ritualCards, ...permissionCards], (it) => setGLFace({ slip: it }))],
+    books: [{ label: "Today's chapter", run: openTodaysChapter }, choose("Choose a book", [...shelfBookCards, ...classicCards])],
+    good: [{ label: "Time for yourself", description: "A read, a listen, or a little doing.", content: (afterClose) => <TimePickerLens presentation={selectedPresentation} pickFor={pickFor} isSaved={isSaved} onSave={(it) => afterClose(toggleSave, it)} onOpen={(it) => afterClose(openItem, it)} onTry={(title) => afterClose(saveTryThis, title)} /> }, choose("A small joy", [...ritualCards, ...permissionCards], (it) => setGLFace({ slip: it }))],
     yours: [livingDemo ? {label:"Open your saves",run:()=>window.location.assign("/Saved?tab=LIFESTYLE")} : choose("Open your saves", actionSavedCards), choose("Continue reading", continueCards, openReadCard, "No reading in progress yet. Start a book and your place will appear here.")],
     sky: [skyActionState.hasChart ? { label: "Ask the sky", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "ask" }) } : { label: "Set up your sky", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "chart" }) }, skyActionState.hasChart ? { label: "Edit your chart", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "chart" }) } : { label: "What you'll need", description: "Your birth date starts your sky. Add time and place only if you know them; do not guess. Unknown birth time limits what can be calculated.", content: <p style={{ lineHeight: 1.6 }}>Use Set up your sky when you are ready. You can review your details in the chart sheet before saving.</p> }],
   };
@@ -1382,7 +1403,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   // One action pair, in the review's earlier position OR the original position.
   const focusedActions = previewActions && clean && focus ? <FocusedSectionActions key={focusSection} section={focusSection} plum={plum} actions={sectionActions[focusSection]} /> : (
     <div aria-label={foldVariant ? "Section actions" : undefined} style={{ display: "flex", gap: 10, marginTop: 14 }}>
-      <button onClick={() => setChapterOpen(true)} className="fw-elite-press" style={clean ? { ...focusPill(plum), background: plum, boxShadow: "none", border: "none" } : focusPill(crimson)}><Feather size={16} /> Today's chapter</button>
+      <button onClick={openTodaysChapter} className="fw-elite-press" style={clean ? { ...focusPill(plum), background: plum, boxShadow: "none", border: "none" } : focusPill(crimson)}><Feather size={16} /> Today's chapter</button>
       <button onClick={() => jumpTo(0)} className="fw-elite-press" style={clean ? { ...focusPill(gold), background: C.gold, boxShadow: "none", border: "none" } : focusPill(plum)}><Clock size={16} /> What do you have time for?</button>
     </div>
   );
@@ -1402,7 +1423,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   return (
     // Clean & classy ground (§2.7) on the focus/layout demos only — live /Lifestyle passes no
     // `layout`, so it keeps PAPER_BG byte-for-byte until its surfaces migrate.
-    <div className={clean ? `fw-clean${foldVariant ? " fw-lifestyle-fold" : ""}` : undefined} data-fold={foldVariant || undefined} data-art-direction={artDirection || undefined} data-section={heroCards[heroCard]?.id} style={{ ...((layout || clean) ? CLEAN_BG : PAPER_BG), minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
+    <div className={clean ? `fw-clean${foldVariant ? " fw-lifestyle-fold" : ""}` : undefined} data-fold={foldVariant || undefined} data-art-direction={artDirection || undefined} data-section={selectedPresentation && !focus ? "all" : heroCards[heroCard]?.id} style={{ ...((layout || clean) ? CLEAN_BG : PAPER_BG), minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
       <style>{floraKeyframes}{ELITE_MOTION}{clean ? CLEAN_CSS + CLEAN_PAGE_CSS : ""}</style>
       <TopChrome onJump={() => setJumpOpen(true)} onCalendar={() => setCalOpen(true)} />
 
@@ -1415,7 +1436,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
             per §6.8.2) and the two focus pills are folded in — their actions are now the Story
             and Good-life chips. */}
         {(() => {
-          const active = heroCards[heroCard] || heroCards[0];
+          const active = selectedPresentation && !focus ? {...heroCards.find(card => card.id === "read"), title: "Your life, in bloom", overview: true} : heroCards[heroCard] || heroCards[0];
           const aCol = cwOf(active.cw).petal;
           return (
             <>
@@ -1427,10 +1448,10 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
                   creature={active.creature} flankL="iris" flankR="sunflower" titleColor={OXBLOOD} line={active.line}
                   garden="lifestyle" photo="lifestyle" />
               } />}
-              {foldVariant ? <FirstFoldNavigation cards={heroCards} activeIndex={heroCard}
-                onSelect={(card, index) => { _lifeHeroCard = index; setHeroCard(index); if (enableFocus) setFocusSection(card.id); if(livingDemo){const url=new URL(window.location.href);url.searchParams.set("section",card.id);url.searchParams.delete("tab");window.history.replaceState(window.history.state,"",url);} }}
+              {foldVariant ? <FirstFoldNavigation cards={heroCards} activeIndex={selectedPresentation && !focus ? -1 : heroCard}
+                onSelect={(card, index) => selectRoom(card.id, index)}
                 phaseLine={phaseKey ? `${phaseLabel(phaseKey)}${cycleDay ? ` · Day ${cycleDay}` : ""} · ${ph.day}` : "A few good things today"}
-                focusLabel={focus?.label} onClear={() => {setFocusSection(null);if(livingDemo){const url=new URL(window.location.href);url.searchParams.delete("section");url.searchParams.delete("tab");window.history.replaceState(window.history.state,"",url);}}} /> : <>
+                focusLabel={focus?.label} onClear={() => selectRoom(null)} /> : <>
               <div className="fw-hero-ctl" style={clean ? { display: "flex", gap: 7, padding: "14px 0 0" } : { display: "flex", gap: 8, overflowX: "auto", padding: "12px 2px 2px", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 22px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 22px), transparent 100%)" }}>
                 <style>{`.fw-hero-ctl{scrollbar-width:none}.fw-hero-ctl::-webkit-scrollbar{display:none}`}</style>
                 {heroCards.map((c, i) => {
@@ -1505,7 +1526,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
             jess.eyebrow = "Jess · " + (FOCUS_MAP[focusSection]?.label || "Lifestyle"); jess.body = lines[focusSection] || jess.body;
           }
           const glanceRows = [
-            { Icon: Feather, label: "Today's chapter", text: story ? `${story.series_title || story.title || "Today's chapter"}${story.cliffhanger ? ` — "${story.cliffhanger}"` : ""}` : "Today's chapter is on its way — tap to open the Daily Story.", onClick: () => setChapterOpen(true) },
+            { Icon: Feather, label: "Today's chapter", text: story ? `${story.series_title || story.title || "Today's chapter"}${story.cliffhanger ? ` — "${story.cliffhanger}"` : ""}` : "Today's chapter is on its way — tap to open the Daily Story.", onClick: openTodaysChapter },
             { Icon: BookOpen, label: "Your reading",
               text: continueCards.length ? `${continueCards.length} on the go · ${grouped.article.length} fresh reads`
                 : savedItems.length ? `${savedItems.length} saved to come back to · ${grouped.article.length} fresh reads`
@@ -1727,16 +1748,16 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
         {layout && (() => {
           const sec = focus ? focusSection : null;
           // BESPOKE section surfaces (§19). Each pulls everything for its section, in the new design.
-          if (sec === "sky") return <div className={livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><SkyFocus cycleContext={["marginalia","reading-room","sky-worlds"].includes(artDirection) ? {phase:phaseKey,day:cycleDay,len:profile?.cycle_avg_length || 28} : undefined} artDirection={artDirection} dailyLessons={dailySkyLessons} direction={worldDirection} userProfile={profile} celestial={celestialSky} continuous={continuousSky} portalChart={previewActions} actionRequest={previewActions ? skyActionRequest : undefined} onActionState={previewActions ? setSkyActionState : undefined} onActionHandled={previewActions ? setSkyActionRequest : undefined} /></div>;
+          if (sec === "sky") return <div className={livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><SkyFocus key={roomRevision} contentRoute={contentRoute} cycleContext={["marginalia","reading-room","sky-worlds"].includes(artDirection) ? {phase:phaseKey,day:cycleDay,len:profile?.cycle_avg_length || 28} : undefined} artDirection={artDirection} dailyLessons={dailySkyLessons} direction={worldDirection} userProfile={profile} celestial={celestialSky} continuous={continuousSky} portalChart={previewActions} actionRequest={previewActions ? skyActionRequest : undefined} onActionState={previewActions ? setSkyActionState : undefined} onActionHandled={previewActions ? setSkyActionRequest : undefined} /></div>;
           if (sec === "story" || sec === "books") return <div className={artDirection === "sky-worlds" ? "fw-living-content fw-reading-room" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><BooksStoryFocus artDirection={artDirection === "sky-worlds" ? "reading-room" : artDirection} chapters={chapters} story={story} pick={storyPick} onRead={(i) => { setReaderStart(i); setReaderOpen(true); }}
             userId={user?.id} onSchedule={scheduleReading} onCorner={(b) => window.location.assign(createPageUrl(`Community?club=${dailyReadClubKey(b.gutenberg_id)}&title=${encodeURIComponent(b.title || "")}`))}
-            continueCards={continueCards} shelfBookCards={shelfBookCards} classicCards={classicCards} onOpenBook={(it) => (it && it._library ? (livingDemo ? jumpTo(5) : setFocusSection("yours")) : openBook(it._continue || it._raw || it))} lifeStage={profile?.life_stage} /></div>;
+            continueCards={continueCards} shelfBookCards={shelfBookCards} classicCards={classicCards} onChapterDetails={() => setChapterOpen(true)} onBookDetails={setExpanded} onOpenBook={(it) => it?._library ? document.getElementById("book-library")?.scrollIntoView({behavior:"smooth"}) : it?.id === "daily-chapter" ? openTodaysChapter() : openBook(it._continue || it._raw || it)} lifeStage={profile?.life_stage} /></div>;
           if (sec === "listen") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--listen" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{livingDemo && <nav aria-label="Full media directories" style={{display:"flex",justifyContent:"space-between",gap:12,marginBottom:12,fontFamily:UI,fontSize:12}}><a href="/WatchListen?mode=listen" style={{color:C.ink,minHeight:44,alignContent:"center"}}>All listens & shows</a><a href="/WatchListen?mode=watch" style={{color:C.ink,minHeight:44,alignContent:"center"}}>All watches</a></nav>}<ListenFocus presentation={selectedPresentation} audioCards={audioCards} videoCards={videoCards} onOpen={setExpanded} /></div>;
           if (sec === "read") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--read" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><ReadFocus presentation={selectedPresentation} continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} onDetails={selectedPresentation ? setExpanded : undefined} /></div>;
           if (sec === "good") { const h = new Date().getHours(); const timeOfDay = h < 12 ? "morning" : h < 18 ? "afternoon" : "evening"; return <div className={selectedPresentation ? "fw-living-content fw-selected-room--good" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><GoodLifeFocus presentation={selectedPresentation} timeOfDay={timeOfDay} timeLens={<TimePickerLens presentation={selectedPresentation} pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />} joys={[...ritualCards, ...permissionCards]} onPlan={(it)=>glTick(it.id,it.doable?.title || it.title,it.doable?.kind)} onSlip={(it) => setGLFace({ slip: it })} /></div>; }
-          if (sec === "yours") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--yours" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{livingDemo && <SavedSkyLessons userId={user?.id} human={artDirection === "sky-worlds"} direction={worldDirection} previewRoute={artDirection === "sky-worlds" ? "/SkyWorldsDemo" : artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artDirection === "marginalia" ? "/LivingAtelierDemo" : undefined}/>}{selectedPresentation && keepsError && <div role="alert" style={{fontFamily:UI,fontSize:13,marginBottom:16}}><p>{keepsError}</p><button type="button" onClick={()=>setKeepsRevision(value=>value+1)}>Retry keeps</button> <a href="/Saved?tab=LIFESTYLE">Open the full saved collection</a></div>}<YoursFocus presentation={selectedPresentation} savedCards={savedCards} savedSummary={savedSummary} phaseCards={phaseCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={(it)=>it._keep?._unavailable ? setKeepsRevision(n=>n+1) : it._keep?._href ? window.location.assign(it._keep._href) : openReadCard(it)} onDetails={setExpanded} skySavedCount={livingDemo ? skySavedCount : 0} /></div>;
+          if (sec === "yours") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--yours" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{livingDemo && <SavedSkyLessons userId={user?.id} human={artDirection === "sky-worlds"} direction={worldDirection} previewRoute={contentRoute || (artDirection === "sky-worlds" ? "/SkyWorldsDemo" : artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artDirection === "marginalia" ? "/LivingAtelierDemo" : undefined)}/>}{selectedPresentation && keepsError && <div role="alert" style={{fontFamily:UI,fontSize:13,marginBottom:16}}><p>{keepsError}</p><button type="button" onClick={()=>setKeepsRevision(value=>value+1)}>Retry keeps</button> <a href="/Saved?tab=LIFESTYLE">Open the full saved collection</a></div>}<YoursFocus presentation={selectedPresentation} savedCards={savedCards} savedSummary={savedSummary} phaseCards={phaseCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={(it)=>it._keep?._unavailable ? setKeepsRevision(n=>n+1) : it._keep?._href ? window.location.assign(it._keep._href) : openReadCard(it)} onDetails={setExpanded} skySavedCount={livingDemo ? skySavedCount : 0} /></div>;
           // every section is bespoke — the generic slider-free layout is only ever the LANDING deck
-          return <div style={{ marginTop: 22 }}><FocusLayout layout={layout} groups={landingGroups} clean={clean} /></div>;
+          return <div style={{ marginTop: 22 }}><FocusLayout layout={layout} groups={landingGroups} clean={clean} presentation={selectedPresentation} onConsume={(it) => it.id === "story-today" || it.id === "daily-chapter" ? openTodaysChapter() : it.forYouSection === "Your sky" ? selectRoom("sky") : it._continue || it._raw ? openReadCard(it) : setExpanded(it)} /></div>;
         })()}
 
         {/* the good-life permission slip opens IN-PLACE (the FocusLayout path has no board FaceOverlay) */}
@@ -1759,11 +1780,11 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
         <div style={{ marginTop: 22 }}>
           <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 18, fontWeight: 600, color: clean ? C.ink : OXBLOOD, margin: "0 2px 9px" }}>Handy right now</div>
           <QuickRow items={[
-            { Icon: Feather, cw: "crimson", label: "Today's chapter", onClick: () => setChapterOpen(true) },
+            { Icon: Feather, cw: "crimson", label: "Today's chapter", onClick: openTodaysChapter },
             { Icon: Clock, cw: "gold", label: "What've you got time for?", onClick: () => jumpTo(0) },
             { Icon: BookOpen, cw: "plum", label: "Something to read", onClick: () => jumpTo(1) },
             { Icon: Headphones, cw: "sage", label: "Listen & watch", onClick: () => jumpTo(2) },
-            { Icon: Moon, cw: "sky", label: "Your sky tonight", onClick: () => livingDemo ? (setFocusSection("sky"),setHeroCard(heroCards.findIndex(card=>card.id==="sky")),setSkyActionRequest({type:"reading"})) : setSkyOpen(true) },
+            { Icon: Moon, cw: "sky", label: "Your sky tonight", onClick: () => livingDemo ? (selectRoom("sky",undefined,true),setSkyActionRequest({type:"reading"})) : setSkyOpen(true) },
             { Icon: Sparkles, cw: "blush", label: "The Mirror", onClick: () => window.location.assign(createPageUrl("Mirror")) },
             { Icon: Sun, cw: "sage", label: "Move", onClick: () => window.location.assign(createPageUrl("Move")) },
             { Icon: Heart, cw: "crimson", label: "Kindred", onClick: () => window.location.assign(createPageUrl("Kindred")) },
@@ -1783,7 +1804,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
         <p style={{ textAlign: "center", fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: clean ? C.faint : T.muted, margin: "6px auto 0", maxWidth: 300, lineHeight: 1.55 }}>A little to read, a little to feel — whenever the moment's yours.</p>
       </div>
 
-      {jumpOpen && <JumpSheet boards={BOARDS} onClose={() => setJumpOpen(false)} onJump={jumpTo} />}
+      {jumpOpen && <JumpSheet boards={selectedPresentation ? heroCards.map(card => ({t:card.label,sub:card.line})) : BOARDS} onClose={() => setJumpOpen(false)} onJump={selectedPresentation ? index => {setJumpOpen(false);selectRoom(heroCards[index].id,index);window.scrollTo?.({top:0,behavior:"smooth"});} : jumpTo} />}
       {calOpen && <CalendarOverlay user={user} profile={profile} onClose={() => setCalOpen(false)} />}
       {/* tap-to-expand — the shared card language's full-screen detail (§6.7.7).
           Save is CONTROLLED → real persistence + the feed's learning loop. */}
@@ -1796,7 +1817,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
           pick={storyPick}
           nextPick={storyNext}
           readSoFar={storyReadCount}
-          onImmersive={() => { setChapterOpen(false); setReaderOpen(true); }}
+          onImmersive={() => { setChapterOpen(false); setReaderStart(storyPick?.index ?? 0); setReaderOpen(true); }}
           onClose={() => setChapterOpen(false)}
           onMarkRead={() => {
             markChapterRead(story?.id);
@@ -1867,8 +1888,8 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
         <ReadingSheet
           reading={horoscope} phaseKey={phaseKey}
           onClose={() => setReadingOpen(false)}
-          onSaveReading={() => { savePlannerDay(horoscope?.headline || "Tonight's reading"); setReadingOpen(false); }}
-          onSkyDiary={() => { setReadingOpen(false); jumpTo(4); }}
+          onSaveReading={() => { if(selectedPresentation){if(!horoscope?.id){flash("That reading isn’t available to plan yet.");return;}startPlan({title:horoscope.headline || "Your sky reading",source:"sky",ref:`sky-reading:${horoscope.id}`});}else savePlannerDay(horoscope?.headline || "Tonight's reading");setReadingOpen(false); }}
+          onSkyDiary={() => { setReadingOpen(false); if(selectedPresentation){selectRoom("sky");setSkyActionRequest({type:"diary"});}else {setSkyOpen(true);} }}
         />
       )}
       {toast && <div className="fw-elite-in" style={{ position: "fixed", left: "50%", bottom: "calc(110px + env(safe-area-inset-bottom))", transform: "translateX(-50%)", zIndex: 9999, background: T.ink, color: T.paperHi, fontFamily: UI, fontSize: 13, fontWeight: 600, padding: "10px 16px", borderRadius: 999, boxShadow: "0 4px 16px rgba(11,8,5,0.3)" }}>{toast}</div>}

@@ -26,10 +26,10 @@ describe("default Planner Clipboard source and duration", () => {
     fireEvent.click(screen.getByRole("button", { name: "Plan a day (morning brief)" }));
     fireEvent.click(screen.getAllByRole("button", { name: "Today", exact: true }).at(-1));
     const source = await screen.findByRole("link", { name: "Open this small joy: Let the kettle win" });
-    expect(source).toHaveAttribute("href", "/SkyWorldsDemo?direction=petal-press&section=good&joy=quiet-kettle");
+    expect(source).toHaveAttribute("href", "/Lifestyle?direction=petal-press&section=good&joy=quiet-kettle");
     fireEvent.click(within(source.closest("li")).getByRole("checkbox"));
     await waitFor(() => expect(mock.update).toHaveBeenCalledWith("joy-plan", expect.objectContaining({ completed: true, is_completed: true })));
-    expect(source).toHaveAttribute("href", "/SkyWorldsDemo?direction=petal-press&section=good&joy=quiet-kettle");
+    expect(source).toHaveAttribute("href", "/Lifestyle?direction=petal-press&section=good&joy=quiet-kettle");
   });
 
   it("retains the canonical club return in the real Tomorrow tile", async () => {
@@ -46,7 +46,7 @@ describe("default Planner Clipboard source and duration", () => {
     await waitFor(() => expect(mock.filter).toHaveBeenCalled());
     fireEvent.click(screen.getByRole("button", { name: /Hour by hour/ }));
     const source = await screen.findByRole("link", { name: "Open this small joy: Let the kettle win" });
-    expect(source).toHaveAttribute("href", "/SkyWorldsDemo?direction=petal-press&section=good&joy=quiet-kettle");
+    expect(source).toHaveAttribute("href", "/Lifestyle?direction=petal-press&section=good&joy=quiet-kettle");
     expect(screen.queryByText("Someone else's plan")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /Let the kettle win.*5 MIN/ }));
     const editor = screen.getByRole("dialog", { name: "Edit planned block" });
@@ -57,7 +57,7 @@ describe("default Planner Clipboard source and duration", () => {
     await waitFor(() => expect(mock.update).toHaveBeenCalledWith("joy-plan", expect.objectContaining({ title: "Tea, then the world", time: "19:10", duration_minutes: 5, notes: "t:habit;d:5;A small pause", source: "lifestyle", ref: "joy:quiet-kettle", repeat: "weekly" })));
     await waitFor(() => expect(screen.queryByRole("dialog", { name: "Edit planned block" })).not.toBeInTheDocument());
     expect(screen.getByRole("button", { name: /Tea, then the world.*5 MIN/ })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Open this small joy: Tea, then the world" })).toHaveAttribute("href", "/SkyWorldsDemo?direction=petal-press&section=good&joy=quiet-kettle");
+    expect(screen.getByRole("link", { name: "Open this small joy: Tea, then the world" })).toHaveAttribute("href", "/Lifestyle?direction=petal-press&section=good&joy=quiet-kettle");
   });
 
   it("keeps the real editor and draft open after a rejected write, then retries once", async () => {
@@ -97,6 +97,6 @@ describe("default Planner Clipboard source and duration", () => {
     fireEvent.click(screen.getByRole("button", { name: "Delete", exact: true }));
     expect(await screen.findByRole("alert")).toHaveTextContent("That block couldn’t be removed");
     expect(screen.getByRole("textbox", { name: "TITLE" })).toHaveValue(stored.title);
-    expect(screen.getByRole("link", { name: "Open this small joy: Let the kettle win" })).toHaveAttribute("href", "/SkyWorldsDemo?direction=petal-press&section=good&joy=quiet-kettle");
+    expect(screen.getByRole("link", { name: "Open this small joy: Let the kettle win" })).toHaveAttribute("href", "/Lifestyle?direction=petal-press&section=good&joy=quiet-kettle");
   });
 });
