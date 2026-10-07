@@ -44,6 +44,7 @@ import ConnectivityMapDoc from "@/components/founders/ConnectivityMapDoc";
 import SharingProposalDoc from "@/components/founders/SharingProposalDoc";
 import HomeRedesignDoc from "@/components/founders/HomeRedesignDoc";
 import AppHealthAuditDoc from "@/components/founders/AppHealthAuditDoc";
+import CritiqueDoc from "@/components/founders/CritiqueDoc";
 import NutritionPlanDoc from "@/components/founders/NutritionPlanDoc";
 import NutritionMasterPlanDoc from "@/components/founders/NutritionMasterPlanDoc";
 // BrandIdentityDoc + FloraMeaningDoc folded into the single Brand Bible (brand-bible.html)
@@ -191,7 +192,7 @@ const CAT = {
 };
 const GROUP_ORDER = [CAT.CURRENT, CAT.BRANDDOCS, CAT.SPECS, CAT.BRAND, CAT.VISION, CAT.BUILD, CAT.ARCHIVE];
 const GROUP_BLURB = {
-  [CAT.CURRENT]:   "Builds, research and verification for your review. Sky is the current unfinished build. Every build stays here until you explicitly approve its move to the main page.",
+  [CAT.CURRENT]:   "Builds, research and verification for your review. The selected Lifestyle is approved on main. Routine repairs continue through the Critique Director; substantial new directions stay here for your decision.",
   [CAT.BRANDDOCS]: "One brand home — the consolidated Brand Bible (the old Living-Ecosystem / Brand Identity / Flora docs are folded into it).",
   [CAT.SPECS]:     "Standing plans, specs and audits — the reference for what we're building.",
   [CAT.BRAND]:     "Companion vision, cross-app UX patterns and the PWA/widget plan.",
@@ -203,6 +204,7 @@ const GROUP_BLURB = {
 const COLLAPSED_BY_DEFAULT = new Set([CAT.ARCHIVE]);
 
 const CATALOG = [
+  {kind:"doc",key:"Critique Director",group:CAT.CURRENT,sub:"Whole app · ongoing polish",status:"new",added:"2026-10-07",accent:"sage",title:"Critique Director · reports & decisions",desc:"Every four hours: one section in depth, frontend and backend, craft and real journeys. Routine fixes verified by Codex; substantial choices brought to you."},
   {kind:"route",href:"/lifestyle-workshop/index.html",group:CAT.CURRENT,sub:"Lifestyle · selected design",status:"new",added:"2026-10-06",accent:"plum",title:"Lifestyle · every section in detail",desc:"Headers approved. Six body plans, tappable local state studies, source wiring, cited options and minute build steps. Planning only; main remains held."},
   {kind:"route",href:"/Lifestyle",group:CAT.CURRENT,sub:"Lifestyle · approved main",status:"new",added:"2026-10-07",accent:"plum",title:"Lifestyle · living rooms on main",desc:"Halli-approved Petal × Star Press: six complete rooms, exact saved sources, direct reading, shared playback, visible shelf and classics. All eleven whole-life doors remain."},
   {kind:"route",href:"/SkyWorldsDemo?direction=petal-press&section=sky",group:CAT.CURRENT,sub:"Lifestyle · selected preview",status:"new",added:"2026-10-07",accent:"plum",title:"Selected · Petal × Star Press",desc:"The selected preview stays available alongside the approved main Lifestyle. Full dated Sky, direct reading, shared playback, actual club and shelf, chosen-time planning and complete keeps."},
@@ -1444,6 +1446,7 @@ function FoundersInner({ user }) {
       {tab === "Pages"     && <PagesTab />}
       {tab === "Roadmap"   && <RoadmapTab />}
       {tab === "Health Audit" && <AppHealthAuditDoc />}
+      {tab === "Critique Director" && <CritiqueDoc />}
       {tab === "Nutrition Plan" && <NutritionPlanDoc />}
       {tab === "Community Plan" && <CommunityPlanDoc />}
       {tab === "Books & Book Clubs" && <BooksBookClubsDoc />}

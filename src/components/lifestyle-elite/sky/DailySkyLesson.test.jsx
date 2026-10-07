@@ -58,8 +58,8 @@ describe("real save and private source-linked note contracts",()=>{
     expect(mock.filter).toHaveBeenCalledWith({user_id:"owner",item_type:"LIFESTYLE"},"-created_at",150);
     window.history.replaceState({},"",link.getAttribute("href"));unmount();
     render(<DailySkyLesson userId="owner" direction={direction} previewRoute="/SkyWorldsDemo"/>);
-    expect(screen.getByRole("article",{name:"1 of 5"})).toHaveTextContent(lesson.title);
-    expect(screen.getByRole("article",{name:"1 of 5"})).toHaveTextContent(lesson.body);
+    expect(screen.getByRole("group",{name:"1 of 5"})).toHaveTextContent(lesson.title);
+    expect(screen.getByRole("group",{name:"1 of 5"})).toHaveTextContent(lesson.body);
     expect(await screen.findByRole("button",{name:"Kept · undo"})).toHaveAttribute("aria-pressed","true");
     expect(mock.save).not.toHaveBeenCalled();
   });

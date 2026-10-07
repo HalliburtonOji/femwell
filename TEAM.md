@@ -1,5 +1,7 @@
 # FemWell Team
 
+**7 October 2026 addition:** Critique Director (`.claude/agents/critique-director.md`), explicitly requested by Halli. Independent section-by-section frontend/backend/craft audit every four hours through a Codex thread heartbeat. Durable rotation, criteria, evidence and learning: `claude-state/critique/`. Codex fixes routine defects and takes substantial decisions to Halli; current authority and preservation gates are Bible §10.5.20 and AGENTS.md, overriding the historical MP-only rules below.
+
 **6 October 2026 addition:** Creative Director (`.claude/agents/creative-director.md`), explicitly requested by Halli. Uses the canonical Bible and `claude-state/creative/CONTEXT.md`; owns researched whole-page concepts and critical feedback alongside Ms Deep Search/Ms Atelier. Current AGENTS.md/CLAUDE.md direct-repo workflow overrides the historical MP workflow below.
 
 FemWell is a UK women's wellness app being prepared for a £1M sale. This file defines the team — 11 agents in `.claude/agents/` plus the operating rules they share. Every contributor (Claude in Cowork, Claude Code, Lucha) should treat the agent specs as binding: who does what, with which tools, producing what shape of output, with which verification gates.

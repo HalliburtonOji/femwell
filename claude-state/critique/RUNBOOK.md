@@ -1,0 +1,44 @@
+# FemWell four-hour critique loop
+
+Owner: Codex. Independent reviewer: `.claude/agents/critique-director.md`. Requested by Halli, 7 October 2026. Canon: BRAND_IDENTITY.md §10.5.20 plus AGENTS.md. Scheduler is a Codex thread heartbeat, not a Base44 backend function or a continuously resident service.
+
+## Run protocol
+
+1. Read the baton, this runbook, STATE.json, LEARNING.md and latest report. Check clean Git / active claims / live hash. Respect concurrent ownership; do not stash, reset or overwrite another agent's work.
+2. Spawn/reuse an independent Critique Director with its full saved brief and the next atom. If there is a current reviewer, consume its report before starting another. Root remains the builder; the critic is read-only. If review cannot run, record the limitation rather than claiming an independent pass.
+3. Quick health/changed-route scan, then one deep section and one to three coherent atoms. Inventory the whole section. Inspect UI and backend source/available logs/owned test data, actual live taps and exact returns. Research the real atom before an improvement; not a whole-app superficial checklist.
+4. Receive findings, reproduce them, prioritise P0→P1→P2. Claim each implementation surface and commit the claim before edits. Root fixes routine defects within Halli's approval, retaining all features. Major decisions get a concrete Ideas proposal and concise options for Halli; keep auditing independent work.
+5. Run meaningful relevant checks. Build must finish with exit 0 before site deploy. Push without force. Deploy backend functions/entities separately when changed. Re-prove the original failure and nearby journeys at 360/390/430 with pixels/taps; record exact evidence/limits. Do not interpret mock writes or code inspection as live persistence.
+6. Append a timestamped report under reports/ (do not replace history), update STATE.json cursor, LEARNING.md and STATUS immediately. Update Bible/mirror for new decisions. Update the sanitised Ideas report in src/components/founders/CritiqueDoc.jsx after meaningful completed work; never put account records, emails/tokens or vulnerability details into bundled frontend content. Public report can say a protected branch needs repair without disclosing its exploit.
+7. Release claims after work lands. Continue a partial section next run; advance when all its atoms have evidence or a documented deferred branch. Outstanding auth-dependent proof goes into deferredChecks and is revisited once available; do not hold the whole rotation hostage. Recheck closed high-impact findings on a changed build. Preserve user decisions and stable IDs, avoiding duplicate proposals and pointless redeploys of unchanged content.
+
+## Rotation and completeness
+
+Start Lifestyle Sky → Read → Listen → Books → Good life → Yours → Everything/shared shell. Then Today → Planner → Community and DM → Journal → Garden/progress → Nutrition → Health → movement/rest/programmes → Jess/notifications → account/auth/settings/Saved. Discover the actual full route map and add missing live surfaces; this seed is not a promise every room has already been audited. Inspect account/logout early in the health scan because Halli previously reported trouble signing out. New regressions/P0/P1 can interrupt rotation. Cycle back after coverage. No universal 3-click rule: measure real intent-to-result taps and remove unnecessary detours while keeping useful depth.
+
+## Evidence criteria
+
+| Lens | What to observe and prove |
+|---|---|
+| User job / ease | Does the first screen explain the useful choice? Count actual taps/read burden for a real task; first-time and returning state; clear outcome and exit. Observe confidence, mistakes and recovery; user satisfaction remains unmeasured without feedback. |
+| Visual craft / voice | Approved composition continues from header into body; flora and section artefacts blend through light/material/colour, purposeful spacing, coherent type, restrained motion. Short human authored labels, occasional wit; full reading retained. Bible §§2–6,10.5,13,17,19. |
+| Function / data | Visible label→handler→dispatcher→owned entity→read-back→exact source; loading/empty/error/retry, date/zone, race, duplicate/idempotency, refresh and cross-device if available. No fake shelf, silent write, false success or orphan source. |
+| Connectivity | Real bidirectional Today/Planner/Community/DM/Garden/Jess/notification touchpoints; one canonical system, explicit user consent and proper context. Code existence alone is not a completed social journey. |
+| Access / mobile | WCAG 2.2 relevant criteria: names/roles, contrast, text resize/reflow, keyboard, focus order/visibility/not obscured, alternatives to swipe, status/error messages. FemWell's primary tap target is 44px; distinguish this product target from WCAG's 24px minimum with exceptions. 360/390/430 pixels+taps, sheet-safe clearance, reduced motion; don't claim physical iPhone proof from desktop emulation. |
+| Backend / trust | Authenticated owner checks, server validation, consent, moderation, data minimisation, cancellation and safe failure. Inspect real schemas/dispatchers/logs where supported, private test rows within scope. No secrets in reports. No destructive security probing. |
+| Performance / resilience | Observable cold/warm loading, image weight, repeated queries, responsiveness, layout stability, network failure, cache/build identity. Core Web Vitals field targets are reference points, not fabricated measurements from one local session. |
+| Missing capability | Concrete repeated unmet job; reuse existing capability first; mapped atom, cited alternatives, precise low-clutter placement and testable outcome. No automatic feature expansion to appear creative. |
+
+## Research register — fetched 7 October 2026
+
+- [W3C WCAG 2.2 quick reference](https://www.w3.org/WAI/WCAG22/quickref/): apply specific criteria to observed controls; no blanket compliance claim.
+- [Nielsen Norman Group usability heuristics](https://www.nngroup.com/articles/ten-usability-heuristics/): visibility, control, consistency, errors and recognition. Minimalist presentation cannot override no-strip; preserve access to complete content.
+- [Google Web Vitals](https://web.dev/articles/vitals): LCP, INP and CLS distinguish loading, response and stability; single-session lab observations do not establish field percentiles.
+- [OWASP ASVS](https://owasp.org/projects/asvs): structure relevant authentication, authorisation and validation inspection; do not label the whole app certified.
+- [OpenAI scheduled task documentation](https://learn.chatgpt.com/docs/automations): platform scheduling guidance. Tool-confirmed heartbeat status is recorded in STATE.json; local execution availability must be reported honestly.
+
+Add per-atom primary research with URL, retrieval date, actual applicable claim, rejected alternative and resulting decision. Check older references against current evidence rather than copying fashionable patterns.
+
+## Report shape
+
+Run ID/time · Git/live identity · section/atoms · preserved inventory · two-way wiring · evidence and verification limits · stable P0/P1/P2 findings · routine fixes/reproof · major decision options · research applied · learning · next cursor. Short founder summary: fixed / needs your decision / next / blocked branch. Never replace the detailed report with a long founder write-up.
