@@ -4,6 +4,8 @@ Owner: Codex. Halli's staged-delivery instruction, 7 October 2026. Forward queue
 
 ## Where we are
 
+- Halli's whole-journey/legacy correction is published in Ideas/Bible and the existing four-hour brief: source5cd9a4b/3f56cd5, finalsiteindex-D-3r8LdK.js, actual report/plan/Bible360/390/430 and repaired top-level Bible→plan→Ideas returns, independent source/HTTP/twelve-region review. S03-A01 stays next, all-stage secondary-surface gate and S06 catch-up added. Actual routed legacy inventory/migrations remain queued; [bounded workflow report](critique/legacy-workflow-2026-10-07.md).
+
 - The six accepted Lifestyle rooms and complete bodies are promoted to actual main with Halli's approval. Everything, summaries/Jess, focused actions and all existing tools remain. See [promotion evidence](creative/promotion-verification.md) and [finish evidence](creative/finish-verification.md).
 - First independent critique completed: CR-0001 lesson semantics and CR-0002 Ideas Back/calendar clearance repaired and re-proved. Source724e7d8/5faa13d; live baseline index--ssQW2DJ.js. See [run0001](critique/reports/0001-sky-lessons-2026-10-07.md). Bounded proof, not whole-app completion.
 - The four-hour heartbeat is active in this chat. Each wake resumes saved work and carries a coherent authorised stage to a verified checkpoint. Active work continues without asking Halli to type “continue”. Local scheduling needs the computer on and Codex running; no promise of execution while unavailable.
