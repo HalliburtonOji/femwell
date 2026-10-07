@@ -114,7 +114,14 @@ export function splitChapters(text) {
   }
   return { chapters, real: false };
 }
-function todayISO() { try { return new Date().toISOString().slice(0, 10); } catch { return ""; } }
+function todayISO() {
+  try {
+    // Daily marks already advance at local midnight. A UTC date here can put a
+    // brand-new reader a day ahead during the first hour of British summer time.
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  } catch { return ""; }
+}
 function daysSince(iso) {
   try {
     const s = new Date(iso + "T00:00:00");

@@ -99,7 +99,7 @@ function isVisibleKeySurface(element) {
 function eventOwner(event, includeFocus = true) {
   const native = event.nativeEvent || event;
   if (eventOwners.has(native)) return eventOwners.get(native);
-  const controls = 'input,textarea,select,button,a[href],summary,[contenteditable]:not([contenteditable="false"]),[role="button"],[role="link"],[role="textbox"],[role="searchbox"],[role="slider"],[role="spinbutton"],[role="combobox"],[role="checkbox"],[role="radio"],[role="switch"],[role="tab"],[role="menuitem"],[role="option"],[role="listbox"],[role="tree"],[role="grid"]';
+  const controls = 'input,textarea,select,button,a[href],summary,[data-reader-scroll-region="true"],[contenteditable]:not([contenteditable="false"]),[role="button"],[role="link"],[role="textbox"],[role="searchbox"],[role="slider"],[role="spinbutton"],[role="combobox"],[role="checkbox"],[role="radio"],[role="switch"],[role="tab"],[role="menuitem"],[role="option"],[role="listbox"],[role="tree"],[role="grid"]';
   const path = [...(native.composedPath?.() || [event.target]), ...(includeFocus ? [document.activeElement] : [])];
   const ownedControls = path.flatMap(node => node instanceof Element
     ? [node.closest(controls) || (node.isContentEditable ? node : null)].filter(Boolean) : []);
@@ -371,7 +371,7 @@ function ProgressDots({ current, total }) {
 // pages of paragraphs fit in the available viewport — and the user can flip
 // inside the chapter without ever scrolling. Re-measures when the textSize
 // changes or the viewport resizes.
-function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize, pageInChapter, onPageCount, immersive, layoutKey }) {
+function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize, pageInChapter, onPageCount, immersive, layoutKey, onPassageTap }) {
   const { heading, body } = useMemo(
     () => parseChapter(chapter.body || chapter.segment_text || ""),
     [chapter]
@@ -389,6 +389,8 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize,
   const measureRef = useRef(null);
   const [slices, setSlices] = useState(null);
   const [tallPages, setTallPages] = useState([]);
+  const [availableHeight, setAvailableHeight] = useState(null);
+  const passageGesture = useRef(null);
   const [vpKey, setVpKey] = useState(0);
 
   useEffect(() => {
@@ -430,6 +432,7 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize,
       }
       // Fallback only when the geometry isn't readable yet (keeps the old conservative guess).
       if (!(available > 160)) available = Math.max(260, window.innerHeight - (immersive ? 220 : 280));
+      setAvailableHeight(available);
 
       const out = [];
       const tall = [];   // slices that CANNOT fit — see the guard below
@@ -481,6 +484,21 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize,
   const [from, to] = slices ? slices[safePage] : [0, paragraphs.length - 1];
   const pageCount = slices ? slices.length : 1;
   const isFirstPage = safePage === 0;
+  const scrollablePassage = tallPages.includes(safePage) && availableHeight > 0;
+  const startPassageGesture = e => {
+    const point = e.touches?.[0] || e;
+    passageGesture.current = { x: point.clientX, y: point.clientY, time: Date.now(), moved: false };
+  };
+  const movePassageGesture = e => {
+    const start = passageGesture.current, point = e.touches?.[0] || e.changedTouches?.[0] || e;
+    if (start && (Math.abs(point.clientX - start.x) > 8 || Math.abs(point.clientY - start.y) > 8)) start.moved = true;
+  };
+  const tapPassage = e => {
+    const gesture = passageGesture.current;
+    passageGesture.current = null;
+    if (gesture?.moved || (gesture && Date.now() - gesture.time > 500) || window.getSelection()?.isCollapsed === false) return;
+    onPassageTap?.(e);
+  };
 
   return (
     <div
@@ -507,7 +525,22 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize,
       )}
 
       {/* Visible slice */}
-      <div className={`ds-reader-body${tallPages.includes(safePage) ? " ds-body-scroll" : ""}`}>
+      <div
+        key={`${chapter.id}:${from}`}
+        className={`ds-reader-body${tallPages.includes(safePage) ? " ds-body-scroll" : ""}`}
+        data-reader-scroll-region={scrollablePassage ? "true" : undefined}
+        role={scrollablePassage ? "region" : undefined}
+        aria-label={scrollablePassage ? "Reading passage" : undefined}
+        tabIndex={scrollablePassage ? 0 : undefined}
+        style={scrollablePassage ? { maxHeight: availableHeight } : undefined}
+        onPointerDown={scrollablePassage ? startPassageGesture : undefined}
+        onPointerMove={scrollablePassage ? movePassageGesture : undefined}
+        onTouchStart={scrollablePassage ? startPassageGesture : undefined}
+        onTouchMove={scrollablePassage ? movePassageGesture : undefined}
+        onTouchEnd={scrollablePassage ? movePassageGesture : undefined}
+        onScroll={scrollablePassage ? () => { if (passageGesture.current) passageGesture.current.moved = true; } : undefined}
+        onClick={scrollablePassage ? tapPassage : undefined}
+      >
         {slices && paragraphs.slice(from, to + 1).map((p, j) => {
           const i = from + j;
           // Drop cap only on the very first paragraph of the very first page.
@@ -1045,9 +1078,9 @@ export default function DailyStoryReader({
       if (owner.dialogs.length) return;
       // Escape still exits from our own toolbar; native editing controls and
       // controls outside this reader keep their own keyboard behaviour.
-      const ownEscapeButton = e.key === "Escape" && owner.controls.every(control =>
-        readerRootRef.current.contains(control) && control.matches('button,[role="button"]'));
-      if (owner.controls.length && !ownEscapeButton) return;
+      const ownEscapeControl = e.key === "Escape" && owner.controls.every(control =>
+        readerRootRef.current.contains(control) && control.matches('button,[role="button"],[data-reader-scroll-region="true"]'));
+      if (owner.controls.length && !ownEscapeControl) return;
       if (e.key === "ArrowRight") { e.preventDefault(); flipForward(); }
       else if (e.key === "ArrowLeft") { e.preventDefault(); flipBackward(); }
       else if (immersive) { e.preventDefault(); setImmersive(false); }
@@ -1064,7 +1097,7 @@ export default function DailyStoryReader({
   const controlOwnsTouch = e => {
     const owner = eventOwner(e, false);
     return owner.dialogs.length || owner.controls.some(control =>
-      !control.matches(".ds-reader-tap-left,.ds-reader-tap-right,.ds-reader-center-tap"));
+      !control.matches('.ds-reader-tap-left,.ds-reader-tap-right,.ds-reader-center-tap,[data-reader-scroll-region="true"]'));
   };
   const onTouchStart = (e) => {
     touchStartRef.current = null;
@@ -1075,7 +1108,7 @@ export default function DailyStoryReader({
   const onTouchEnd = (e) => {
     const start = touchStartRef.current;
     touchStartRef.current = null;
-    if (!start || controlOwnsTouch(e)) return;
+    if (!start || controlOwnsTouch(e) || window.getSelection()?.isCollapsed === false) return;
     const end = (e.changedTouches && e.changedTouches[0]) || null;
     if (!end) return;
     const dx = end.clientX - start.x;
@@ -1086,6 +1119,15 @@ export default function DailyStoryReader({
     if (Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 1.6) {
       if (dx < 0) flipForward(); else flipBackward();
     }
+  };
+
+  const tapPassage = e => {
+    const rect = readerRootRef.current?.getBoundingClientRect();
+    if (!rect?.width) return;
+    const position = (e.clientX - rect.left) / rect.width;
+    if (position < 0.45) flipBackward();
+    else if (position > 0.55) flipForward();
+    else if (immersive) toggleChrome();
   };
 
   if (loading || (!positionReady && chapters.length > 0)) {
@@ -1307,6 +1349,7 @@ export default function DailyStoryReader({
             pageInChapter={pageInChapter}
             onPageCount={reportPageCount}
             immersive={immersive}
+            onPassageTap={tapPassage}
             layoutKey={`${font}|${line}|${margins}|${cleanPreview}`}
           />
         )}
@@ -1405,8 +1448,6 @@ function CleanReaderStyles() {
     .ds-reader-root.fw-reader-clean.fw-theme-plum { --paper: #22262B; --reader-control: #30363B; --ink: #F3F4F1; --ink-mute: #BCC4C5; --accent: #B3CCBD; --rule: #4B545B; --border: #4B545B; }
     .ds-reader-root.fw-reader-clean.ds-immersive { background: var(--paper); }
     .fw-reader-clean .ds-reader-stage { background: var(--paper); color: var(--ink); border: 0; border-radius: 0; box-shadow: none; padding: 28px 20px 24px; }
-    /* The absolute measurement mirror must share the prose column after stage padding. */
-    .fw-reader-clean .ds-reader-page { position: relative; }
     .ds-reader-root.fw-reader-clean.ds-immersive .ds-reader-stage { padding: 84px 20px 64px; }
     .fw-reader-clean .ds-reader-controls { margin: 0; padding: 12px 20px; gap: 8px; border-block: 0; border-bottom: 1px solid var(--rule); background: var(--paper); }
     .fw-reader-clean .ds-reader-series-label { color: var(--ink-mute); font-family: ui-sans-serif,system-ui,sans-serif; font-size: 13px; line-height: 1.5; font-weight: 400; text-transform: none; letter-spacing: normal; white-space: normal; overflow-wrap: anywhere; }
@@ -2081,8 +2122,12 @@ function ReaderStyles({ reducedMotion }) {
 
       /* Chapter page */
       .ds-reader-page {
+        /* Absolute measurement uses this same padded prose column in every consumer. */
+        position: relative;
         height: 100%;
       }
+      [data-reader-scroll-region="true"] { position: relative; z-index: 11; overscroll-behavior: contain; touch-action: pan-y; }
+      [data-reader-scroll-region="true"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
       .ds-reader-h1 {
         font-family: 'Fraunces', 'Fraunces', Georgia, serif;

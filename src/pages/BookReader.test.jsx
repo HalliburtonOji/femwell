@@ -64,6 +64,35 @@ beforeEach(() => {
   } }));
 });
 
+describe("daily marks at British summer-time midnight", () => {
+  afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs(); });
+
+  it.each([false, true])("starts a fresh reader on chapter one at 00:15 BST (clean=%s)", async (cleanPreview) => {
+    vi.stubEnv("TZ", "Europe/London");
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-07T23:15:00Z"));
+    expect(new Date().getHours()).toBe(0);
+    expect(new Date().getDate()).toBe(8);
+    open(37106, false, cleanPreview);
+    await screen.findByRole("article", { name: "Controlled book reader" });
+    expect(localStorage.getItem("fw_dailyread_start_37106")).toBe("2026-10-08");
+    expect(screen.getByText(`${cleanPreview ? "Daily read" : "Today's daily read"} · Chapter 1`)).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Mark second chapter" }));
+    expect(screen.getByText(cleanPreview ? "Your place: chapter 2 · 1 chapter beyond the daily mark." : "You're ahead of the daily read — lovely.")).toBeVisible();
+  });
+
+  it("advances an existing previous-day start without rewriting its saved date", async () => {
+    vi.stubEnv("TZ", "Europe/London");
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-07T23:15:00Z"));
+    localStorage.setItem("fw_dailyread_start_37106", "2026-10-07");
+    open(37106, false, true);
+    await screen.findByRole("article", { name: "Controlled book reader" });
+    expect(screen.getByText("Daily read · Chapter 2")).toBeVisible();
+    expect(localStorage.getItem("fw_dailyread_start_37106")).toBe("2026-10-07");
+  });
+});
+
 describe("Ideas-only reader margin preview", () => {
   it("keeps the exact long-title book, chapter context and full prose through note save and close without another download", async () => {
     const title = "Little Women; Or, Meg, Jo, Beth, and Amy";

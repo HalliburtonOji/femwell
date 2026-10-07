@@ -95,6 +95,58 @@ describe("DailyStoryReader — v4 contract", () => {
   const visibleProse = () => document.querySelector(".ds-reader-body").textContent;
   const footer = () => within(document.querySelector(".ds-reader-nav"));
 
+  it("keeps immersive tall-passage left/right taps, centre chrome and focused Escape while native scroll keys keep the page", () => {
+    vi.stubGlobal("matchMedia",vi.fn(()=>({matches:true})));
+    const original=HTMLElement.prototype.getBoundingClientRect;
+    vi.spyOn(HTMLElement.prototype,"getBoundingClientRect").mockImplementation(function(){
+      if(this.classList.contains("ds-reader-root"))return {left:0,right:360,width:360,top:0,bottom:780,height:780};
+      if(this.classList.contains("ds-reader-stage"))return {top:0,bottom:780,height:780};
+      if(this.classList.contains("ds-reader-body"))return {top:120,bottom:1011,height:891};
+      if(this.classList.contains("ds-measure-p")){const index=[...this.parentElement.children].indexOf(this);return [{top:0,bottom:40,height:40},{top:60,bottom:951,height:891},{top:971,bottom:1011,height:40}][index];}
+      return original.call(this);
+    });
+    render(<DailyStoryReader defaultImmersive source={{kind:"book",currentIndex:0,items:[{id:"long",body:"Before the long passage.\n\nThe entire long passage stays here.\n\nAfter the long passage."}]}}/>);
+    fireEvent.click(document.querySelector(".ds-reader-tap-right"));let passage=screen.getByRole("region",{name:"Reading passage"});
+    fireEvent.click(passage,{clientX:30});expect(visibleProse()).toBe("Before the long passage.");
+    fireEvent.click(document.querySelector(".ds-reader-tap-right"));passage=screen.getByRole("region",{name:"Reading passage"});
+    fireEvent.click(passage,{clientX:180});expect(document.querySelector(".ds-reader-root")).toHaveClass("ds-chrome-hidden");
+    passage.focus();expect(fireEvent.keyDown(passage,{key:"End"})).toBe(true);expect(passage).toHaveTextContent("The entire long passage stays here.");
+    fireEvent.keyDown(passage,{key:"Escape"});expect(document.querySelector(".ds-reader-root")).not.toHaveClass("ds-immersive");
+    passage=screen.getByRole("region",{name:"Reading passage"});fireEvent.click(passage,{clientX:330});expect(visibleProse()).toBe("After the long passage.");
+  });
+
+  it.each([[false,"book"],[true,"book"],[false,"daily_story"],[true,"daily_story"]])("bounds complete oversized prose for clean=%s source=%s, preserves scroll ownership, resize and later navigation", (cleanPreview,kind) => {
+    vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: true })));
+    let stageBottom = 780;
+    const original = HTMLElement.prototype.getBoundingClientRect;
+    vi.spyOn(HTMLElement.prototype,"getBoundingClientRect").mockImplementation(function () {
+      if(this.classList.contains("ds-reader-root"))return {left:0,right:360,width:360,top:0,bottom:780,height:780};
+      if(this.classList.contains("ds-reader-stage"))return {top:0,bottom:stageBottom,height:stageBottom};
+      if(this.classList.contains("ds-reader-body"))return {top:113.5,bottom:1004.5,height:891};
+      if(this.classList.contains("ds-measure-p")){const index=[...this.parentElement.children].indexOf(this);return index===0?{top:0,bottom:891,height:891}:{top:913,bottom:960,height:47};}
+      return original.call(this);
+    });
+    const words="Go then, my little Book. ".repeat(30)+"The final preserved line.";
+    const source={kind,currentIndex:0,items:[{id:"long",body:words+"\n\nThe following complete paragraph."}]};
+    render(<DailyStoryReader cleanPreview={cleanPreview} source={source}/>);
+    const passage=screen.getByRole("region",{name:"Reading passage"});expect(passage).toHaveTextContent(words);
+    const padding=parseFloat(getComputedStyle(document.querySelector(".ds-reader-stage")).paddingBottom);
+    expect(parseFloat(passage.style.maxHeight)).toBe(stageBottom-padding-113.5);expect(passage).toHaveAttribute("tabindex","0");
+    passage.focus();for(const key of ["ArrowRight","ArrowLeft","ArrowDown","PageDown","End"]){expect(fireEvent.keyDown(passage,{key})).toBe(true);expect(passage).toHaveTextContent(words);}
+    fireEvent.touchStart(passage.firstElementChild,{touches:[{clientX:260,clientY:380}]});fireEvent.touchEnd(passage.firstElementChild,{changedTouches:[{clientX:255,clientY:175}]});fireEvent.click(passage,{clientX:330});expect(passage).toHaveTextContent(words);
+    stageBottom=680;fireEvent(window,new Event("resize"));expect(parseFloat(passage.style.maxHeight)).toBe(stageBottom-padding-113.5);
+    fireEvent.touchStart(passage.firstElementChild,{touches:[{clientX:260,clientY:180}]});fireEvent.touchEnd(passage.firstElementChild,{changedTouches:[{clientX:50,clientY:175}]});
+    expect(visibleProse()).toBe("The following complete paragraph.");expect(screen.queryByRole("region",{name:"Reading passage"})).toBeNull();
+    expect(document.querySelector(".ds-reader-body").style.maxHeight).toBe("");
+    if(kind==="daily_story"){
+      fireEvent.click(footer().getByRole("button",{name:"Next chapter"}));expect(screen.getByText("Reveals at midnight")).toBeVisible();
+      fireEvent.click(footer().getByRole("button",{name:"Back to chapter"}));expect(visibleProse()).toBe("The following complete paragraph.");
+    }
+    fireEvent.click(footer().getByRole("button",{name:"Previous page"}));const restored=screen.getByRole("region",{name:"Reading passage"});expect(restored).toHaveTextContent(words);expect(restored.scrollTop).toBe(0);
+    const selection=vi.spyOn(window,"getSelection").mockReturnValue({isCollapsed:false});fireEvent.click(restored,{clientX:330});expect(restored).toHaveTextContent(words);selection.mockRestore();
+    fireEvent.click(restored,{clientX:330});expect(visibleProse()).toBe("The following complete paragraph.");
+  });
+
   it("clean note owns native typing and Escape above the actual immersive reader, then returns to its Reflect tool", async () => {
     const source = measuredSource();
     function Host() {
