@@ -6,7 +6,7 @@
     "title": "Approved Lifestyle polish and existing connections",
     "status": "in progress",
     "currentStage": "B01-S03",
-    "nextAtom": "B01-S03-A02",
+    "nextAtom": "B01-S03-A05",
     "stageOrder": [
       "B01-S01",
       "B01-S02",
@@ -42,8 +42,8 @@
   },
   "current": {
     "section": "Lifestyle / Books and Yours",
-    "atom": "B01-S03-A02",
-    "status": "Routine keeps/feed/Saved/canonical reader live78d61aa/index-CKT0wUxR.js; root actual3width typed details/exact source/archives under verification. Independent native-discovered CR0022 P1 chapter detection repair interrupts release closure; claime3bb4a1, real37106 source47Roman headings misparsed2. Preserve all prose/short chapters/front matter; final tests/build/push/deploy/native/Ideas proof follows. S03 other continuation/returns/notes/legacy/cost atoms remain open. CR0023 actual-handler duplicate-profile/stale-owner deletion also interrupts release; separately claimed6669e94 authority/pending/retry repair in progress."
+    "atom": "B01-S03-A05",
+    "status": "bc13321/index-BphZRxKi.js public/native confirmed; chapter parser and exact owner save authority live, 607 tests pass. Final 3-width audit interrupts A02 closure for CR0024 pre-existing chapter-one page Previous disabled; claim16379e4, narrow shared reader controls delegated before edits. Complete bounded page/lock regression and final build/push/deploy/mobile/Ideas reproof, then resume A02 classic continuation. Broader S03 and visual/capacity work remains open."
   },
   "lastCompleted": {
     "run": 3,
@@ -235,6 +235,13 @@
       "severity": "P1",
       "title": "Reader failed profile lookup creates duplicate authority and deletion precedes owner guard",
       "status": "independent actual-handler matrix reproduced; A03 narrow repair separately claimed6669e94 in progress, no livewrites",
+      "report": "claude-state/critique/reports/0004-books-yours-growth-2026-10-07.md"
+    },
+    {
+      "id": "CR-0024",
+      "severity": "P1",
+      "title": "First chapter page-back button disabled and page turns mislabelled",
+      "status": "Root actual pages2/3/4 at360/390/430 and independent baseline reproduce; narrow A05 shared-reader repair claimed16379e4",
       "report": "claude-state/critique/reports/0004-books-yours-growth-2026-10-07.md"
     }
   ],

@@ -7,7 +7,10 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
-> ### CURRENT STATE — 2026-10-07 · S03 FINAL REPAIRS PUSHED / SITE DEPLOYED
+> ### CURRENT STATE — 2026-10-07 · SHARED READER P1 SOURCE CHECKPOINT
+> - CR0024 repair preserves page-back within chapter1 and the measured last page when returning across a chapter boundary. Correct dynamic page/chapter names and true-first-page disabled state; no styles/store/backend/paid work. Six new actual paging/lock/motion regressions fail oldsource and pass repair; **20/20 independent**, scopedlint0errors. Full regression/build/push/deploy/newbundle mobile proof pending; live still **index-BphZRxKi.js**.
+> - Actual Ideas report/cost/rolling-plan/return and settled exact-story actions at360/390/430 on that bundle pass; critic reviews ninefresh regions. Fulltext/keeps/control inventories retained. Brown reader/detail and founder parent presentation still A05/legacy, not migrated. STATE A05 interrupts release for bounded P1; resume A02classiccontinuation after proof.
+>
 > ### CURRENT STATE — 2026-10-07 · FINAL NATIVE REPROOF / SHARED READER CONTROL P1
 > - Public HTTP and actual native confirm **bc13321 / index-BphZRxKi.js**; real shelf→37106 now47chapters and full front matter/prose/page turns at360/390/430. Exact Tuesday reader authority settles to enabled existing keep/like controls without action taps; full prose/returns retained. Old brown reader/detail visual foundation remains A05.
 > - Independent **CR0024 P1**: footer Previous disabled on chapter1 pages2–4 despite existing backward-page handler; same baseline condition predates parser repair. Page turns also wrongly labelled as chapter turns. Narrow shared-reader claim added before delegated edits; truthful boundary/paging controls, multipage/lock/nearby regressions and final new release proof next. No new remote/paid work or substantial design change.

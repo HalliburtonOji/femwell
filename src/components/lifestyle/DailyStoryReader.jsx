@@ -743,6 +743,8 @@ export default function DailyStoryReader({
   useEffect(() => {
     if (pendingPageRef.current != null) {
       setPageInChapter(pendingPageRef.current);
+      // Non-persistent readers have no position-save effect to consume the hint.
+      if (!posKey) pendingPageRef.current = null;
     } else if (pendingAnchorRef.current == null) {
       setPageInChapter(0);
     }
@@ -917,14 +919,19 @@ export default function DailyStoryReader({
     // feels continuous instead of teleporting to its first.
     const prevChapter = chapters[currentIndex - 1];
     const prevPageCount = chapterPageCounts[prevChapter?.id] || 1;
-    if (reducedMotion) {
+    const reachPreviousChapter = () => {
+      // The chapter-change effect normally resets to page zero. Preserve this
+      // deliberate backward landing until that effect and position saving settle.
+      pendingPageRef.current = prevPageCount - 1;
       setCurrentIndex(i => Math.max(i - 1, 0));
       setPageInChapter(prevPageCount - 1);
+    };
+    if (reducedMotion) {
+      reachPreviousChapter();
     } else {
       setFlipState({ phase: "flipping", dir: -1 });
       setTimeout(() => {
-        setCurrentIndex(i => Math.max(i - 1, 0));
-        setPageInChapter(prevPageCount - 1);
+        reachPreviousChapter();
         setFlipState({ phase: "idle", dir: 0 });
       }, 600);
     }
@@ -1002,6 +1009,9 @@ export default function DailyStoryReader({
     : noLock
     ? `Chapter ${currentIndex + 1} / ${chapters.length}`
     : `Chapter ${currentChapter.day_number || currentIndex + 1} / ${totalCount}`;
+  const previousDisabled = !showLocked && currentIndex <= 0 && pageInChapter <= 0;
+  const previousLabel = showLocked ? "Back to chapter" : pageInChapter > 0 ? "Previous page" : "Previous chapter";
+  const nextLabel = !showLocked && pageInChapter < currentChapterPages - 1 ? "Next page" : "Next chapter";
 
   const readerBody = (
     <div
@@ -1143,14 +1153,16 @@ export default function DailyStoryReader({
       <div
         className="ds-reader-tap-left"
         onClick={flipBackward}
-        aria-label="Previous chapter"
+        aria-label={previousLabel}
+        aria-disabled={previousDisabled}
         role="button"
         tabIndex={-1}
       />
       <div
         className="ds-reader-tap-right"
         onClick={flipForward}
-        aria-label="Next chapter"
+        aria-label={nextLabel}
+        aria-disabled={showLocked}
         role="button"
         tabIndex={-1}
       />
@@ -1227,8 +1239,8 @@ export default function DailyStoryReader({
         <button
           className="ds-reader-nav-btn"
           onClick={flipBackward}
-          disabled={!showLocked && currentIndex <= 0}
-          aria-label="Previous chapter"
+          disabled={previousDisabled}
+          aria-label={previousLabel}
         >
           <ChevronLeft size={18} />
         </button>
@@ -1237,7 +1249,7 @@ export default function DailyStoryReader({
           className="ds-reader-nav-btn"
           onClick={flipForward}
           disabled={showLocked}
-          aria-label="Next chapter"
+          aria-label={nextLabel}
         >
           <ChevronRight size={18} />
         </button>

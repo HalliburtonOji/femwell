@@ -39,7 +39,7 @@ export default function CritiqueDoc() {
         <h2 id="critique-current" style={{ ...heading, fontSize: 23 }}>Where we are · Books & Yours</h2>
         <p style={{ margin: 0 }}>Batch 01 · Books and Yours are in progress. Sky, Read and Listen’s earlier repairs stay live. The accepted design and every tool stay.</p>
         <p style={{ fontSize: 14 }}><strong>This build:</strong> one recommendation request serves both views. Keeps reuse their loaded sources and retain known references when a refresh fails. Physical-only saves get their proper content type and tools.</p>
-        <p style={{ fontSize: 14 }}><strong>Books:</strong> the reader checks the current club edition. One Little Women edition had two enormous “chapters”; it now has its proper 47. Every word stays.</p>
+        <p style={{ fontSize: 14 }}><strong>Books:</strong> the reader checks the current club edition. One Little Women edition had two enormous “chapters”; it now has its proper 47. Every word stays. Page turns work both ways.</p>
         <p style={{ fontSize: 14 }}><strong>Your keeps:</strong> failed account reads pause the action for retry. Confirmed changes reach Yours when you return, without another full archive scan.</p>
         <p style={{ fontSize: 14 }}>Independent source and regression checks pass. Mobile source journeys use 360, 390 and 430px; failed writes and account changes remain controlled tests. The whole Books/Yours stage is still open.</p>
         <p style={{ fontSize: 14 }}>Physical iPhone, VoiceOver and opening an external episode window remain unverified.</p>

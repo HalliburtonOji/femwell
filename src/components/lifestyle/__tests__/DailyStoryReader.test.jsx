@@ -73,6 +73,119 @@ describe("DailyStoryReader — v4 contract", () => {
   });
   afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
+  function measuredSource(kind = "book") {
+    vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: true })));
+    const originalRect = HTMLElement.prototype.getBoundingClientRect;
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function () {
+      if (this.classList.contains("ds-reader-stage")) return { top: 0, bottom: 600, height: 600 };
+      if (this.classList.contains("ds-reader-body")) return { top: 100, bottom: 600, height: 500 };
+      if (this.classList.contains("ds-measure-p")) {
+        const index = Array.from(this.parentElement.children).indexOf(this);
+        return { top: index * 300, bottom: (index + 1) * 300, height: 300 };
+      }
+      return originalRect.call(this);
+    });
+    return { kind, currentIndex: 0, items: [
+      { id: "measured-1", heading: "First chapter", body: "The first page opens beside the harbour.\n\nThe second page follows the path uphill.\n\nThe third page reaches the cottage.", chapter_context: { chapterIndex: 1, chapterCount: 2 } },
+      { id: "measured-2", heading: "Second chapter", body: "The next chapter opens the door.", chapter_context: { chapterIndex: 2, chapterCount: 2 } },
+    ] };
+  }
+  const visibleProse = () => document.querySelector(".ds-reader-body").textContent;
+  const footer = () => within(document.querySelector(".ds-reader-nav"));
+
+  it("enables footer Previous inside the first measured chapter and returns to the exact prior prose", () => {
+    const source = measuredSource();
+    render(<DailyStoryReader source={source} />);
+    expect(screen.getByRole("article")).toHaveTextContent("page 1 of 3");
+    const firstProse = visibleProse();
+    expect(footer().getByRole("button", { name: /Previous/ })).toBeDisabled();
+    expect(document.querySelector(".ds-reader-tap-left")).toHaveAttribute("aria-disabled", "true");
+    fireEvent.click(document.querySelector(".ds-reader-tap-left"));
+    expect(visibleProse()).toBe(firstProse);
+    fireEvent.click(footer().getByRole("button", { name: /Next/ }));
+    expect(visibleProse()).toBe("The second page follows the path uphill.");
+    expect(footer().getByRole("button", { name: /Previous/ })).toBeEnabled();
+    fireEvent.click(footer().getByRole("button", { name: /Previous/ }));
+    expect(visibleProse()).toBe(firstProse);
+    expect(footer().getByRole("button", { name: /Previous/ })).toBeDisabled();
+  });
+
+  it("names page turns and chapter crossings accurately in both footer and tap zones", () => {
+    const source = measuredSource(); render(<DailyStoryReader source={source} />);
+    expect(screen.getAllByRole("button", { name: "Next page" })).toHaveLength(2);
+    fireEvent.click(footer().getByRole("button", { name: "Next page" }));
+    expect(screen.getAllByRole("button", { name: "Previous page" })).toHaveLength(2);
+    expect(document.querySelector(".ds-reader-tap-left")).toHaveAttribute("aria-disabled", "false");
+    fireEvent.click(document.querySelector(".ds-reader-tap-right"));
+    expect(visibleProse()).toBe("The third page reaches the cottage.");
+    expect(screen.getAllByRole("button", { name: "Next chapter" })).toHaveLength(2);
+    fireEvent.click(footer().getByRole("button", { name: "Next chapter" }));
+    expect(visibleProse()).toBe("The next chapter opens the door.");
+    expect(screen.getAllByRole("button", { name: "Previous chapter" })).toHaveLength(2);
+    expect(footer().getByRole("button", { name: "Previous chapter" })).toBeEnabled();
+  });
+
+  it("keeps locked next navigation inert while Back to chapter returns to its last measured page", () => {
+    const source = measuredSource("daily_story"); source.items = source.items.slice(0, 1);
+    render(<DailyStoryReader source={source} />);
+    fireEvent.keyDown(window, { key: "ArrowRight" });
+    fireEvent.keyDown(window, { key: "ArrowRight" });
+    fireEvent.click(footer().getByRole("button", { name: "Next chapter" }));
+    expect(screen.getByText("Reveals at midnight")).toBeVisible();
+    expect(footer().getByRole("button", { name: "Next chapter" })).toBeDisabled();
+    expect(document.querySelector(".ds-reader-tap-right")).toHaveAttribute("aria-disabled", "true");
+    fireEvent.click(footer().getByRole("button", { name: "Next chapter" }));
+    fireEvent.click(document.querySelector(".ds-reader-tap-right"));
+    expect(screen.getByText("Reveals at midnight")).toBeVisible();
+    expect(screen.getAllByRole("button", { name: "Back to chapter" })).toHaveLength(2);
+    fireEvent.click(footer().getByRole("button", { name: "Back to chapter" }));
+    expect(visibleProse()).toBe("The third page reaches the cottage.");
+    expect(footer().getByRole("button", { name: "Previous page" })).toBeEnabled();
+    const root = document.querySelector(".ds-reader-root");
+    fireEvent.touchStart(root, { touches: [{ clientX: 100, clientY: 100 }] });
+    fireEvent.touchEnd(root, { changedTouches: [{ clientX: 230, clientY: 110 }] });
+    expect(visibleProse()).toBe("The second page follows the path uphill.");
+  });
+
+  it.each([true, false])("returns across a chapter boundary to its measured last page (reduced motion %s), preserving explicit jumps and bookmarks", async reducedMotion => {
+    vi.useFakeTimers();
+    try {
+      const source = measuredSource();
+      vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: reducedMotion })));
+      const reached = vi.fn();
+      const view = render(<DailyStoryReader source={source} bookId="boundary" onChapterReached={reached} />);
+      const turn = async name => {
+        fireEvent.click(footer().getByRole("button", { name }));
+        await act(async () => { await vi.advanceTimersByTimeAsync(600); });
+      };
+      await turn("Next page"); await turn("Next page"); await turn("Next chapter");
+      expect(visibleProse()).toBe("The next chapter opens the door.");
+      await turn("Previous chapter");
+      expect(visibleProse()).toBe("The third page reaches the cottage.");
+      expect(screen.getByRole("article")).toHaveTextContent("page 3 of 3");
+      expect(JSON.parse(localStorage.getItem("fw_reader_pos_boundary"))).toMatchObject({ chapterIndex: 0, pageInChapter: 2, paragraphIndex: 2 });
+      fireEvent.click(screen.getByRole("button", { name: "Set your bookmark here" }));
+      expect(JSON.parse(localStorage.getItem("fw_reader_bookmarks_boundary"))).toEqual([expect.objectContaining({ chapterIndex: 0, pageInChapter: 2 })]);
+      expect(reached.mock.calls.map(([index]) => index)).toEqual([0, 1, 0]);
+      view.rerender(<DailyStoryReader source={source} bookId="boundary" onChapterReached={reached} goToChapter={{ index: 0, nonce: "explicit-reset" }} />);
+      expect(visibleProse()).toBe("The first page opens beside the harbour.");
+      expect(JSON.parse(localStorage.getItem("fw_reader_pos_boundary"))).toMatchObject({ chapterIndex: 0, pageInChapter: 0, paragraphIndex: 0 });
+      expect(JSON.parse(localStorage.getItem("fw_reader_bookmarks_boundary"))).toEqual([expect.objectContaining({ chapterIndex: 0, pageInChapter: 2 })]);
+    } finally { vi.useRealTimers(); }
+  });
+  it("consumes backward page intent without a persistence key so the next chapter still opens at its beginning", () => {
+    const source = measuredSource(); render(<DailyStoryReader source={source} />);
+    fireEvent.click(footer().getByRole("button", { name: "Next page" }));
+    fireEvent.click(footer().getByRole("button", { name: "Next page" }));
+    fireEvent.click(footer().getByRole("button", { name: "Next chapter" }));
+    fireEvent.click(footer().getByRole("button", { name: "Previous chapter" }));
+    expect(visibleProse()).toBe("The third page reaches the cottage.");
+    fireEvent.click(footer().getByRole("button", { name: "Next chapter" }));
+    expect(visibleProse()).toBe("The next chapter opens the door.");
+    expect(footer().getByRole("button", { name: "Previous chapter" })).toBeEnabled();
+    expect(screen.queryByRole("button", { name: "Previous page" })).toBeNull();
+  });
+
   it("opens an explicit numeric chapter after a delayed fetch without reaching or saving the stored final chapter", async () => {
     const rows = Array.from({ length: 30 }, (_, index) => ({
       id: `daily-${index + 1}`, day_number: index + 1, series_key: "requested_series", is_active: true,

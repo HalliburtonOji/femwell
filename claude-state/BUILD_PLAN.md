@@ -4,6 +4,8 @@ Owner: Codex. Halli's staged-delivery instruction, 7 October 2026. Forward queue
 
 ## Where we are
 
+- Final native release audit interrupts A02 closure for **CR0024 P1**, the pre-existing shared reader footer: chapter1 page2+ cannot go back with the visible button although its handler supports it. Labels describe chapters while turning pages. Claimed16379e4, mapped A05 narrow control repair before release checkpoint; preserve all pagination/locks/source/reader tools. Correct names/states per [W3C](https://www.w3.org/WAI/WCAG22/Understanding/name-role-value.html), disabled semantics per [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button). No added network/AI/store cost. STATE temporarily A05; after bounded release proof, resume A02 classic continuation rather than declare S03 complete.
+
 - A03 two-way acceptance now includes the kept-open Yours consumer: existing save event refreshed only physical rows while cached profile IDs stayed stale. Reuse it for whitelisted same-owner confirmed profile IDs and physical acknowledgements, with source→mounted-keeps integration proof. Retain legacy untyped Sky refresh. Failed writes/read-back never manufacture a full profile snapshot; no additional save system, polling or schema.
 
 - CR0023 also joins A03: actual reader Keep/Like turns failed profile lookup into absence, then creates a duplicate row; saved removal runs physical deletion before fresh-owner guard. Independent in-memory actual-handler reproduction, no live writes. Narrow exact-reader authority/pending/retry repair is claimed separately; full content/source/positions/tools and all owned arrays remain. This is a routine data-integrity correction, not a new save system or visual migration.

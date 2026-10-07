@@ -64,3 +64,25 @@ Conformance within these mapped atoms: §§2.7,10.5.20–23,11/11.0,14,15,17.3/1
 ## Pre-release execution receipt
 
 Bundled Node24.19.0: **544 tests in44 suites pass** (65.48s). System Node25.9.0 run failed50 before normal assertions in three older suites due its Web Storage API; preserved source/tests and reran with bundled runtime, no test weakening. Scoped lint0errors; existing unused/duplicate-property/jsdom navigation warnings remain outside changed source. Actual new code/owned Saved tests and independent28+47 scope pass. Completed-build exit/hash and live/mobile checks follow.
+
+## Final live audit interruption — CR0024, 7 October
+
+Root real free-classic shelf tap reaches Gutenberg37106 on bc13321/index-BphZRxKi.js. At360/390/430 the actual reader now shows47chapters and full front matter (first chapter119/118/111 measured pages). Next control turns real page content; this is not evidence of a native chapter2 transition. Critic independently confirms exact HTTP bundle and fresh three pixels. Old brown paper/grain stays A05 unfinished.
+
+CR0024 P1: supplied chapter1 pages2/3/4 show footer Previous disabled although flipBackward supports pageInChapter>0. Baseline31bbb34 has the same condition: pre-existing, not parser regression. Invisible left tap/keyboard can still work; no wholesale navigation-loss claim. Associated P2: controls name Next/Previous chapter while turning a page. Narrow shared-reader claim16379e4 committed before delegated source edits.
+
+Brainstorm/acceptance: first page alone disables visible Previous; later pages expose usable page-back, boundary names stay honest and locked return behavior stays. Preserve full prose, chapter identity, marks/settings/animations/swipe/key/exit and all consumers. Actual multipage and boundary/lock regressions must fail old source, pass repair; then final native taps. Primary research read before implementation: W3C SC4.1.2 https://www.w3.org/WAI/WCAG22/Understanding/name-role-value.html and MDN native disabled controls https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button. Costcard: pure local control/state derivation, zero new backend/AI/paid/subscription/store work. No broad visual direction change.
+
+## CR0024 source reproof — shared page controls
+
+Three measured multipage regressions failed old source (first chapter page2 Previous disabled, inaccurate Next-page name, absent locked-zone state). Two further actual-motion-path tests reproduced prior-chapter Previous landing on its first rather than measured last page. Narrow repair uses existing pendingPageRef so intentional last-page landing survives the chapter-reset effect; nonpersistent readers consume the hint too. No new storage format or history migration.
+
+Final shared reader20/20 pass, independently rerun under bundledNode24.19; scoped ESLint0errors, three prior warnings. Tests retain original14 controls/settings/stacking/resume/jump coverage, plus6 meaningful page/lock/boundary regressions. Animated and reduced-motion paths preserve exact prose, saved paragraph anchor and bookmark; explicit same-chapter jump resets0; no-bookId previous→forward resets0. Source change28lines, no styles/AI/backend/schema/store/polling changes. Known measured-page return is proved; historical broken partition positions stay uncertified. Native final controls/new bundle proof pending.
+
+Root native Ideas pill→report→cost disclosure→rolling plan→Ideas and fresh cost/plan/settled story authority pixels360/390/430 on index-BphZRxKi.js pass; critic reviewed ninefresh regions. Exact saved story full prose/controls settle, without Keep/Like/Remove taps. Failure/race/confirmed bridge writes remain controlled actual-handler/component proof, not native live injected-fault proof. Founder parent chrome retains old presentation in the legacy ledger.
+
+## Final regression/build checkpoint
+
+Root bundledNode24.19 full regression: **613 tests /45 suites pass** (81.64s). Independent final reader20/20 plus prior135/6 owner/producer/consumer/parser scope; scoped ESLint0errors and JSON/diff checks pass. Existing jsdom scrolling/navigation, planner duplicate boxSizing and old Browserslist warnings were not changed. Vite final build running; no deploy until exit0 and normal Git push.
+
+Conformance: full inventory/no-strip §§17.3,19.9; mapped atom/research/Ideas/mobile/adversarial lifecycle §11; canonical exact identity and two-way acknowledgement §19.8; growthwork/boundedunits/unknowns §10.5.23; whole-journey scope §10.5.22. Approved parent header/section/focusedactions remain. Clean§2.7 visual conformance is explicitly unfinished for legacy reader/detail/reflection/parent founder chrome; data repair is not a completed visual migration. No new substantial layout/product direction, schema/function/default/notification/paid upgrade.
