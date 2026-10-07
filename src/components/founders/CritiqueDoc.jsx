@@ -36,16 +36,17 @@ export default function CritiqueDoc() {
       </section>
       <section style={card} aria-labelledby="critique-current">
         <h2 id="critique-current" style={{ ...heading, fontSize: 23 }}>Where we are · Read & Listen</h2>
-        <p style={{ margin: 0 }}>Batch 01 · Sky is complete. Read and Listen’s repairs are built; mobile release checks are underway. The accepted design and every tool stay.</p>
+        <p style={{ margin: 0 }}>Batch 01 · Read and Listen’s repairs are live and mobile-checked. The accepted design and every tool stay.</p>
         <p style={{ fontSize: 14 }}><strong>Read:</strong> proper paragraphs, a retry when a lookup fails, and your last place saved as you leave.</p>
         <p style={{ fontSize: 14 }}><strong>Listen:</strong> one player follows you into a read. Saved places, buffering, retries and real episode links now agree.</p>
-        <p style={{ fontSize: 14 }}>Independent source and regression checks pass. Real taps at 360, 390 and 430px follow deployment. Physical iPhone and VoiceOver remain unverified.</p>
+        <p style={{ fontSize: 14 }}>Regression checks, real taps at 360, 390 and 430px, and independent source and screenshot review pass. Episode progress reads back from the existing account record.</p>
+        <p style={{ fontSize: 14 }}>Physical iPhone, VoiceOver and opening an external episode window remain unverified.</p>
         <a href="/Lifestyle?section=read" style={action}>Open Read</a>{" · "}<a href="/Lifestyle?section=listen" style={action}>Open Listen</a>
       </section>
       <section style={card} aria-labelledby="critique-batch">
         <h2 id="critique-batch" style={{ ...heading, fontSize: 23 }}>Next big build</h2>
         <p style={{ margin: 0 }}><strong>Batch 01 · Lifestyle polish & connections</strong></p>
-        <p style={{ fontSize: 14 }}>Finish Read and Listen’s mobile proof, then Books and Yours: one shelf, private notes and exact source returns.</p>
+        <p style={{ fontSize: 14 }}>Books and Yours next: one shelf, club checkpoints, private notes and exact Planner/Journal returns. Then Good life, the shared shell and cross-app proof.</p>
         <ol style={{ paddingLeft: 23, fontSize: 14 }}>{buildStages.map((stage) => <li key={stage} style={{ padding: "5px 0" }}>{stage}</li>)}</ol>
         <p style={{ fontSize: 14 }}>Then Community & DM, followed by the remaining app. New substantial features stay in Ideas for your go-ahead.</p>
         <a href="/staged-builds/index.html" style={action}>Open the rolling build plan</a>
