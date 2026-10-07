@@ -157,6 +157,8 @@ line: **no generative AI writing about her reading** (the Fable incident, Jan 20
 
 ## 6. IN FLIGHT — claim a surface before you edit it
 
+2026-10-07 current claim: **Codex** owns staged autonomous delivery and the rolling build plan: `claude-state/BUILD_PLAN.md`, `CLAUDE.md`, `claude-state/critique/{RUNBOOK.md,STATE.json,LEARNING.md}`, `.claude/agents/critique-director.md`, `claude-state/{STATUS,BRAND_IDENTITY}.md`, the Bible HTML mirror, `src/components/founders/CritiqueDoc.jsx`, the staged-plan HTML export and existing heartbeat configuration. Workflow/Ideas summary only; preserve current main features and four-hour cadence. Commit this claim before edits.
+
 2026-10-07 finish release: Claims08c67e6 /93b7f8e /6f187e1 and the four active finish rows below are RELEASED. Source98b1604 final live index-Ct5Eb3OV.js,357 tests, actual six-room mobile taps and independent craft reproof. Default Planner Elite exact short activity return is proved; import-only earlier route inference is superseded. See creative/finish-verification.md and STATUS top for bounded evidence/remaining social/iPhone/main-approval work.
 
 2026-10-07 correction / claim: Codex owns src/components/planner-elite/PlannerEliteShell.jsx and its regression tests. Full default-prop branch inspection proves /Planner defaults to Elite, not the Clipboard import alias. Carry exact joy returns and actual short duration into Elite; preserve all existing controls. Earlier Clipboard changes remain valid for /PlannerLiveTest; its route inference above is superseded.
