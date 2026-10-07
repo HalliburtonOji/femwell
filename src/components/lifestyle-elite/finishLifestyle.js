@@ -13,7 +13,32 @@ export function timeFit(rows, seconds) {
 export function gutenbergReaderHref(item) {
   const raw=item?._raw || item;
   const id=item?._gutenbergId || item?.gutenbergId || raw?._gutenbergId || raw?.gutenbergId;
-  return /^[1-9]\d*$/.test(String(id || '')) ? `/BookReader?gutenberg_id=${id}` : null;
+  const exact = exactGutenbergId(id);
+  return exact ? `/BookReader?gutenberg_id=${exact}` : null;
+}
+
+// An edition is its exact positive numeric identity, never a title match.
+export function exactGutenbergId(value) {
+  const id = String(value ?? '');
+  return /^[1-9]\d*$/.test(id) && Number.isSafeInteger(Number(id)) ? id : null;
+}
+
+export function isLifestylePosition(id) {
+  const value = String(id || '');
+  return value.length >= 12 && /^[A-Za-z0-9_-]+$/.test(value) && !value.startsWith('daily_') && !/^[+-]?\d+(?:e[+-]?\d+)?$/i.test(value);
+}
+
+export function classicContinuation(pos, catalogue = []) {
+  const id = pos?.kind === 'book' && exactGutenbergId(pos.bookId);
+  if (!id) return null;
+  const metadata = catalogue.find(book => exactGutenbergId(book._gutenbergId ?? book.gutenbergId ?? book.gutenberg_id) === id);
+  // Catalogue titles describe the matching edition only. Old marks have no
+  // parser provenance, so their chapter/page must not be sold as verified here.
+  return { item: {
+    id: `gut-${id}`, _gutenbergId: id, _book: 'gutenberg', content_type: 'FICTION',
+    title: (typeof metadata?.title === 'string' && metadata.title.trim()) || `Project Gutenberg book ${id}`,
+    source_name: 'Project Gutenberg', author_name: metadata?.author || '', summary: metadata?.summary || '',
+  }, pos };
 }
 
 export function rankedReads(feed, rows) {
@@ -23,16 +48,26 @@ export function rankedReads(feed, rows) {
 
 export function continuePositions(storage) {
   const rows = [];
+  // Reader timestamps come from Date.now(). Damage to recency must never
+  // delete a valid place or let Infinity/string coercion lead the selection.
+  const timestamp = value => Number.isSafeInteger(value) && value > 0 ? value : 0;
   try {
     for (const key of Object.keys(storage)) {
       try {
         if (key.startsWith('fw_reader_pos_')) {
           const pos = JSON.parse(storage.getItem(key) || '{}');
-          rows.push({ ...pos, bookId: key.slice(14), kind: 'book' });
+          const bookId = key.slice(14);
+          if (!pos || typeof pos !== 'object' || Array.isArray(pos)) continue;
+          // Numeric classics need an actual valid saved place. Missing legacy
+          // paragraph/page fields are allowed; malformed coordinates are not.
+          if (/^\d+$/.test(bookId) && (!exactGutenbergId(bookId) ||
+            !Number.isSafeInteger(pos.chapterIndex) || pos.chapterIndex < 0 ||
+            ['pageInChapter', 'paragraphIndex'].some(field => pos[field] != null && (!Number.isSafeInteger(pos[field]) || pos[field] < 0)))) continue;
+          rows.push({ ...pos, bookId, kind: 'book', ts: timestamp(pos.ts) });
         } else if (key.startsWith('fw_article_pos_')) {
           const saved = JSON.parse(storage.getItem(key) || '0');
           const scrollY = Number(typeof saved === 'number' ? saved : saved?.scrollY);
-          if (Number.isFinite(scrollY) && scrollY > 40) rows.push({ bookId: key.slice(15), kind: 'article', scrollY, ts: Number(saved?.ts) || 0 });
+          if (Number.isFinite(scrollY) && scrollY > 40) rows.push({ bookId: key.slice(15), kind: 'article', scrollY, ts: timestamp(saved?.ts) });
         }
       } catch { /* one damaged position cannot hide the others */ }
     }

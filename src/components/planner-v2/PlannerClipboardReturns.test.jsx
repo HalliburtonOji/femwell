@@ -37,7 +37,7 @@ describe("default Planner Clipboard source and duration", () => {
     mock.filter.mockResolvedValue([{ ...stored, title: "Chapter two with the club", date: tomorrow.toISOString().split("T")[0], source: "books", ref: "club:club-42" }]);
     render(<MemoryRouter><PlannerV2ShellClipboard user={{ id: "owner" }} /></MemoryRouter>);
     fireEvent.click(screen.getByRole("button", { name: "Tomorrow", exact: true }));
-    expect(await screen.findByRole("link", { name: "Open the book club: Chapter two with the club" })).toHaveAttribute("href", "/Community?club=club-42");
+    expect(await screen.findByRole("link", { name: "Open the book club: Chapter two with the club" })).toHaveAttribute("href", "/Community?view=bookclub&pick=club-42");
     expect(screen.getByRole("button", { name: "Plan tomorrow" })).toBeInTheDocument();
   });
 

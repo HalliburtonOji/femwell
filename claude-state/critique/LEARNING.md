@@ -1,5 +1,15 @@
 # Critic learning — append dated evidence
 
+## 7 October2026 — run0005 continuation and acknowledgement
+
+- A numeric book mark is an existing real continuation, not an invalid Lifestyle id. Reuse the loaded Gutenberg catalogue by exact edition, with a truthful id fallback and no new text fetch; invalid recency must sort last rather than erase genuine positions. The actual mounted main→reader paragraph writer→Back→Yours test exposes keepalive return work helper-only checks miss.
+- Same-document storage events exclude their writer; use route return or an identity-only confirmed event. Intersect pending resolver results with current marks and invalidate generations. A late catalogue title must not rerun full shell init/feed/subscriptions.
+- Exact curated pick_key and Community corner club ids are different namespaces. Historical inactive picks need exact consumer lookup; missing must never quietly become the current book. Loaded-request state and keyed thread drafts protect source changes; preserve no-argument callers and Back semantics. Native age-gated proof stays unattested.
+- Local note success needs write/read-back, truthful device scope, retained failure draft and a real mounted consumer event. A hunch needs acknowledged transport plus fresh owner after awaited hash, not an optimistic browser flag. A timeout limits waiting, not uncertain remote side effects/exactly-once. Close suppresses late UI, not a started send; historical unowned flags are not retrospective success proof.
+- No room consumer means “sent” is a defect, even if an orphan row was stored. Keep the intended tool/draft/discussion, truthfully guard delivery, then stage an exact reached-checkpoint/preview/Post proposal instead of inventing chapter mappings or a second social store.
+- Download cancellation must include unread non-OK bodies. Independent real Response/ReadableStream repro caught404 body overlap after successful-header deadline repair. Abort transport and best-effort cancel stream before fallback; actual transpiled handler red→green6pass. Eight seconds is pervariant, not totalbookload or crossfunctionconcurrency.
+- These functional/cost repairs do not complete old brown readers, notes, clubs, details or enclosing founder chrome. Full opened-state visual registry, exact native return proof and earlier-build retrospective remain separate acceptance work. No invoice/supported-user/satisfaction claims from fixtures.
+
 ## 7 October 2026 — run0004 native audit interrupts release
 
 - Never choose the first chapter regex with two matches: actual37106 contents CHAPTER and transcriber sentence overrode47 Roman headings. Choose a coherent numbered body run, preserve all short chapters/front matter/prose and existing edition indices; real source conservation hashes and actual component delivery matter. Independent fresh source agrees. Historical saved page meaning from an incorrect partition cannot be promised or silently migrated.

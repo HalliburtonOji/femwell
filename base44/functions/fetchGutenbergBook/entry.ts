@@ -11,22 +11,14 @@
 // - Auth-gated (same pattern as expandContent). Project Gutenberg is free and
 // public domain so there's no licensing question; the gate is purely so we
 // don't get scraped through a public endpoint.
-// - Chrome UA + 20s timeout via AbortSignal — Gutenberg can be slow for big
-// books served from the .txt mirror.
+// - Chrome UA + 8s cancellation through headers AND body consumption per variant.
+// - Books are served from the .txt mirror.
 // - We try a few URL variants because Gutenberg's filename scheme drifts:
 // /cache/epub/{id}/pg{id}.txt (most common)
 // /files/{id}/{id}.txt (older books)
 // /files/{id}/{id}-0.txt (UTF-8 variant)
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-
-// Timeout guard — an awaited platform/AI call that HANGS would wedge the function.
-function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
-    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
-  });
-}
 
 const CHROME_UA =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 ' +
@@ -45,18 +37,27 @@ const URL_VARIANTS = (id: number): string[] => [
   `https://www.gutenberg.org/files/${id}/${id}.txt`,
 ];
 
-async function fetchOnce(url: string, timeoutMs = 20000): Promise<string | null> {
+async function fetchOnce(url: string, timeoutMs = 8000): Promise<string | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const res = await fetch(url, {
       method: 'GET',
       headers: { 'User-Agent': CHROME_UA, Accept: 'text/plain, */*' },
       redirect: 'follow',
-      signal: AbortSignal.timeout(timeoutMs),
+      signal: controller.signal,
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      // Stop the transport even when the error response body was never read.
+      controller.abort();
+      try { void res.body?.cancel().catch(() => {}); } catch { /* already aborted */ }
+      return null;
+    }
     return await res.text();
   } catch {
     return null;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -102,14 +103,14 @@ Deno.serve(async (req) => {
   }
 
   const id = Number(payload?.gutenberg_id);
-  if (!Number.isFinite(id) || id <= 0) {
+  if (!Number.isSafeInteger(id) || id <= 0) {
     return Response.json({ error: 'Missing or invalid gutenberg_id' }, { status: 400 });
   }
 
   let raw: string | null = null;
   let source_url = '';
   for (const url of URL_VARIANTS(id)) {
-    raw = await withTimeout(fetchOnce(url), 8000, 'fetch').catch(() => null);
+    raw = await fetchOnce(url);
     if (raw) {
       source_url = url;
       break;

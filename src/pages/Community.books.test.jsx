@@ -1,6 +1,6 @@
 import React from "react";
 import { beforeEach, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 const mock = vi.hoisted(() => ({ load:vi.fn(),cohort:vi.fn() }));
 vi.mock("@/api/base44Client",()=>({base44:{entities:{},auth:{},functions:{}}}));
@@ -20,6 +20,22 @@ it("book club retries a read failure without substituting the seed and retains i
 it("keeps a live book with no checkpoints without borrowing prompts from another book",async()=>{
   mock.load.mockResolvedValue({...pick,checkpoints:[]}); render(<MemoryRouter><BookClubView/></MemoryRouter>);
   expect(await screen.findByText("Persuasion")).toBeVisible(); expect(screen.getByText(/checkpoints haven’t been published/)).toBeVisible(); expect(screen.getByRole("button",{name:"Read it in the Library"})).toBeVisible();
+});
+it("explicit missing edition keeps Back and never opens another book",async()=>{
+  mock.load.mockResolvedValue(null); render(<MemoryRouter><BookClubView requestedPickKey="past" onBack={vi.fn()}/></MemoryRouter>);
+  expect(await screen.findByText(/This club edition isn’t available/)).toBeVisible();
+  expect(mock.load).toHaveBeenCalledWith("past");
+  expect(screen.queryByRole("button",{name:"Read it in the Library"})).not.toBeInTheDocument();
+  expect(screen.getByRole("button",{name:"Community",exact:true})).toBeVisible();
+});
+it("a changed request clears prior book and ignores its delayed response",async()=>{
+  let old; mock.load.mockImplementation(key=>key==="old"?new Promise(resolve=>{old=resolve;}):Promise.resolve({...pick,pick_key:key,title:"New exact edition"}));
+  const mounted=render(<MemoryRouter><BookClubView requestedPickKey="old"/></MemoryRouter>);
+  await waitFor(()=>expect(old).toBeTypeOf("function"));
+  mounted.rerender(<MemoryRouter><BookClubView requestedPickKey="new"/></MemoryRouter>);
+  expect(await screen.findByText("New exact edition")).toBeVisible();
+  await act(async()=>old({...pick,pick_key:"old",title:"Old late book"}));
+  expect(screen.queryByText("Old late book")).not.toBeInTheDocument();
 });
 it("Books circle uses the same canonical loader, retries failure and shows no invented cohort",async()=>{
   mock.load.mockRejectedValueOnce(new Error("offline")); render(<MemoryRouter><BooksCircleSharedRead/></MemoryRouter>);

@@ -36,12 +36,20 @@ export const clubReached = (pickKey) => { try { const v = localStorage.getItem("
 export const setClubReached = (pickKey, idx) => { try { const cur = clubReached(pickKey); if (Number.isInteger(idx) && idx >= 0 && idx > cur) localStorage.setItem("fw_club_" + pickKey, String(idx)); } catch { /* ignore */ } };
 
 // Never substitute another book on error or borrow the seed's spoiler prompts.
-export async function loadBookClubPick() {
-  const picks = await base44.entities.BookClubPick.filter({ active: true }, "-created_date", 1);
+export function validClubPickKey(key) {
+  return typeof key === "string" && /^[a-zA-Z0-9_-]{1,160}$/.test(key);
+}
+
+export async function loadBookClubPick(requestedPickKey = null) {
+  const exact = requestedPickKey !== null;
+  if (exact && !validClubPickKey(requestedPickKey)) return null;
+  const picks = await base44.entities.BookClubPick.filter(exact ? { pick_key: requestedPickKey } : { active: true }, "-created_date", 1);
   if (!Array.isArray(picks)) throw new Error("Couldn't load the book club.");
-  const pick = picks.find(row => row?.active !== false && row?.pick_key && row?.title);
+  const pick = picks.find(row => validClubPickKey(row?.pick_key) && typeof row?.title === "string" && row.title.trim() &&
+    (exact ? row.pick_key === requestedPickKey : row.active !== false));
   if (!pick) {
-    if (picks.length) throw new Error("Couldn't identify the current club book.");
+    if (picks.length) throw new Error("Couldn't identify the requested club book.");
+    if (exact && requestedPickKey !== SEED_PICK.pick_key) return null;
     return { ...SEED_PICK, _origin: "seed" };
   }
   const rows = await base44.entities.ClubCheckpoint.filter({ pick_key: pick.pick_key }, "index", 150);

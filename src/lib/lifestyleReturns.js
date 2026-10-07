@@ -9,8 +9,11 @@ export function lifestyleReturnLink(item, route = "/Lifestyle") {
   if (source === "books") {
     const book = /^gutenberg:([1-9]\d*)$/.exec(ref);
     if (book) return { href: `/BookReader?gutenberg_id=${book[1]}`, label: "Open this book" };
-    const club = /^club:([\w-]+)$/.exec(ref);
-    if (club) return { href: `/Community?club=${encodeURIComponent(club[1])}`, label: "Open the book club" };
+    const club = /^club:([\w-]{1,160})$/.exec(ref);
+    if (club) {
+      const href = /^daily-?read-/.test(club[1]) ? `/Community?club=${encodeURIComponent(club[1])}` : `/Community?view=bookclub&pick=${encodeURIComponent(club[1])}`;
+      return { href, label: "Open the book club" };
+    }
   }
   if (["sky", "sky-lesson", "lifestyle"].includes(source)) {
     const reading = /^sky-reading:([\w-]{1,160})$/.exec(ref);

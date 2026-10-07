@@ -38,17 +38,18 @@ export default function CritiqueDoc() {
       <section style={card} aria-labelledby="critique-current">
         <h2 id="critique-current" style={{ ...heading, fontSize: 23 }}>Where we are · Books & Yours</h2>
         <p style={{ margin: 0 }}>Batch 01 · Books and Yours are in progress. Sky, Read and Listen’s earlier repairs stay live. The accepted design and every tool stay.</p>
-        <p style={{ fontSize: 14 }}><strong>This build:</strong> one recommendation request serves both views. Keeps reuse their loaded sources and retain known references when a refresh fails. Physical-only saves get their proper content type and tools.</p>
-        <p style={{ fontSize: 14 }}><strong>Books:</strong> the reader checks the current club edition. One Little Women edition had two enormous “chapters”; it now has its proper 47. Every word stays. Page turns work both ways.</p>
-        <p style={{ fontSize: 14 }}><strong>Your keeps:</strong> failed account reads pause the action for retry. Confirmed changes reach Yours when you return, without another full archive scan.</p>
-        <p style={{ fontSize: 14 }}>Independent source and regression checks pass. Mobile source journeys use 360, 390 and 430px; failed writes and account changes remain controlled tests. The whole Books/Yours stage is still open.</p>
+        <p style={{ fontSize: 14 }}><strong>This build:</strong> classics reappear in Continue reading and open their exact edition. Planner returns find the actual club pick, including older ones. Missing books stay honestly missing.</p>
+        <p style={{ fontSize: 14 }}><strong>Your words:</strong> private notes confirm storage before saying “Kept”. Failed saves keep the draft. Hunches wait for acknowledgement. The room button now tells the truth: direct sharing still needs wiring.</p>
+        <p style={{ fontSize: 14 }}><strong>Less repeated work:</strong> classic continuation reuses the loaded catalogue. Private note confirmation needs no remote call. Each Gutenberg fetch now cancels at its deadline, including a stalled download.</p>
+        <details><summary style={{ cursor: "pointer", minHeight: 44 }}>Earlier repairs stay</summary><p style={{ fontSize: 14 }}>Shared recommendations, recoverable keeps, exact reader saves and all 47 Little Women chapters remain. Every word, shelf tool and page control stays.</p></details>
+        <p style={{ fontSize: 14 }}>Independent source and regression checks pass. Release verification covers actual 360, 390 and 430px journeys; failures and account changes use controlled tests. Reader, reflection and club design work remains open.</p>
         <p style={{ fontSize: 14 }}>Physical iPhone, VoiceOver and opening an external episode window remain unverified.</p>
         <a href="/Lifestyle?section=books" style={action}>Open Books</a>{" · "}<a href="/Lifestyle?section=yours" style={action}>Open Yours</a>
       </section>
       <section style={card} aria-labelledby="critique-batch">
         <h2 id="critique-batch" style={{ ...heading, fontSize: 23 }}>Next big build</h2>
         <p style={{ margin: 0 }}><strong>Batch 01 · Lifestyle polish & connections</strong></p>
-        <p style={{ fontSize: 14 }}>Finish Books and Yours: honest notes, exact club/Planner returns and every opened surface. Then Good life, the shared shell and cross-app proof.</p>
+        <p style={{ fontSize: 14 }}>Finish Books and Yours’s opened surfaces: reader, notes, club, details and pickers. Carry the accepted design through loading, errors and Back. Then Good life, the shared shell and cross-app proof.</p>
         <p style={{ fontSize: 14 }}><strong>The whole journey gets the same care.</strong> Popups, overlays and details must belong to their room. Burnt styling goes; unfinished older builds join the catch-up pass. Features and each section’s personality stay.</p>
         <p style={{ fontSize: 14 }}>This rule is now in the cycle. The actual surface migrations are queued, including earlier rooms whose functional repairs are already complete.</p>
         <ol style={{ paddingLeft: 23, fontSize: 14 }}>{buildStages.map((stage) => <li key={stage} style={{ padding: "5px 0" }}>{stage}</li>)}</ol>
@@ -63,7 +64,10 @@ export default function CritiqueDoc() {
       </section>
       <section style={card} aria-labelledby="critique-decisions">
         <h2 id="critique-decisions" style={{ ...heading, fontSize: 23 }}>Your decision desk</h2>
-        <p style={{ margin: 0 }}>No new decision needed this time. Earlier reading-nudge and backlog choices remain held.</p>
+        <p style={{ margin: 0 }}><strong>Chapter notes → the club.</strong> Private Keep stays. Direct sharing needs a real destination, so this addition is staged.</p>
+        <p style={{ fontSize: 14 }}><strong>Recommended:</strong> Add to the room → choose a reached checkpoint for this exact book → preview your words and destination → Post. Cancel returns to the same reading place. Existing club moderation and spoiler gates stay.</p>
+        <p style={{ fontSize: 14 }}><strong>Smaller alternative:</strong> open the exact club discussion and paste a note there. Less building, more switching.</p>
+        <p style={{ fontSize: 14 }}>No automatic post, age confirmation or private-context attachment. This proposal awaits your choice. Earlier reading-nudge and backlog choices remain held.</p>
       </section>
       <details style={card}>
         <summary style={{ cursor: "pointer", minHeight: 44, fontWeight: 600, display: "list-item" }}>What gets a close look</summary>

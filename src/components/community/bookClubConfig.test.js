@@ -22,3 +22,25 @@ it("rejects pick and checkpoint errors rather than silently substituting another
 it("rejects malformed active records rather than presenting a misleading seed", async () => {
   api.picks.mockResolvedValue([{id:"invalid",active:true}]); await expect(loadBookClubPick()).rejects.toThrow(/identify/);
 });
+it("loads an inactive exact pick and only its own checkpoints without an archive scan", async () => {
+  api.picks.mockResolvedValue([{ pick_key: "past-read", title: "An earlier book", active: false, gutenberg_id: 105 }]);
+  api.checkpoints.mockResolvedValue([{pick_key:"past-read",index:0,label:"Its first part"}]);
+  expect((await loadBookClubPick("past-read")).title).toBe("An earlier book");
+  expect(api.picks).toHaveBeenCalledExactlyOnceWith({pick_key:"past-read"},"-created_date",1);
+  expect(api.checkpoints).toHaveBeenCalledExactlyOnceWith({pick_key:"past-read"},"index",150);
+});
+it("a missing requested pick stays missing and never substitutes the active or seed book", async () => {
+  expect(await loadBookClubPick("removed-pick")).toBeNull();
+  expect(api.checkpoints).not.toHaveBeenCalled();
+  expect((await loadBookClubPick(SEED_PICK.pick_key)).pick_key).toBe(SEED_PICK.pick_key);
+});
+it.each(["", "../other", "pick?other", "x".repeat(161)])("invalid exact key %s makes no query", async key => {
+  expect(await loadBookClubPick(key)).toBeNull(); expect(api.picks).not.toHaveBeenCalled();
+});
+it("foreign exact response and failed seed lookup are errors, never successful fallback", async () => {
+  api.picks.mockResolvedValue([{pick_key:"current",title:"Other book",active:true}]);
+  await expect(loadBookClubPick("past")).rejects.toThrow(/identify/);
+  expect(api.checkpoints).not.toHaveBeenCalled();
+  api.picks.mockRejectedValue(new Error("offline"));
+  await expect(loadBookClubPick(SEED_PICK.pick_key)).rejects.toThrow("offline");
+});

@@ -13,8 +13,9 @@
 // Spoiler-safe: only rendered for chapters already reached, and the prompt references only that
 // chapter. Dismiss is frictionless — closing leaves NO "you skipped" state, ever.
 //
-// Engineering: ALL free text runs through the EXISTING crisisCheck before any save. Writes are
-// optimistic + fire-and-forget (readingActivity helpers); the reveal/cohort reads fail open.
+// Engineering: ALL free text runs through the EXISTING crisisCheck before any save.
+// Private saves and hunches require acknowledgement; reveal/cohort reads fail open.
+// Direct club sharing remains visible but unavailable until exact thread mapping.
 // No emoji anywhere — Fraunces/Inter + Lucide only.
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -23,7 +24,7 @@ import { X, Send, BookOpen, Users } from "lucide-react";
 import { crisisCheck } from "@/components/community/communityConfig";
 import { promptFor } from "@/components/community/chapterPrompts";
 import {
-  recordPrediction, recordClubReflection, hasPredicted,
+  recordPrediction, hasPredicted,
   cohortReachedCount, predictionAggregate,
 } from "@/components/community/readingActivity";
 
@@ -43,10 +44,16 @@ function readSolo(bookId, chapterIndex) {
   try { return localStorage.getItem(soloKey(bookId, chapterIndex)) || ""; } catch { return ""; }
 }
 function writeSolo(bookId, chapterIndex, text) {
-  try { localStorage.setItem(soloKey(bookId, chapterIndex), text); } catch { /* ignore */ }
+  try {
+    const key = soloKey(bookId, chapterIndex);
+    localStorage.setItem(key, text);
+    if (localStorage.getItem(key) !== text) return false;
+    window.dispatchEvent(new CustomEvent("fw_read_reflection_saved", { detail: { bookId, chapterIndex } }));
+    return true;
+  } catch { return false; }
 }
 
-export default function ChapterEndCard({
+function ChapterEndCardContent({
   bookId,
   chapterIndex,
   userId,
@@ -66,8 +73,14 @@ export default function ChapterEndCard({
   const prompt = overridePrompt ? { prompt: overridePrompt } : promptFor(bookId, chapterIndex);
   const [reflection, setReflection] = useState(() => readSolo(bookId, chapterIndex));
   const [savedNote, setSavedNote] = useState("");
+  const [saveError, setSaveError] = useState("");
   const [guess, setGuess] = useState("");
   const [guessed, setGuessed] = useState(() => hasPredicted(bookId, chapterIndex));
+  const [guessBusy, setGuessBusy] = useState(false);
+  const [guessError, setGuessError] = useState("");
+  const guessPending = useRef(false);
+  const lifecycle = useRef(0);
+  useEffect(() => { lifecycle.current++; return () => { lifecycle.current++; }; }, []);
   const [reveal, setReveal] = useState(null);       // null=loading, []=below floor, [..]=lines
   const [cohort, setCohort] = useState(null);       // null=loading/below floor, number=k-floored
   const closedRef = useRef(false);
@@ -80,11 +93,12 @@ export default function ChapterEndCard({
   // readers have guessed here, "what the room imagined" is shown to everyone who reached this far —
   // guessers and lurkers alike. We always fetch it; predictionAggregate returns [] below the floor.
   useEffect(() => {
+    if (anytime) return;
     let alive = true;
     cohortReachedCount(bookId, chapterIndex).then((n) => { if (alive) setCohort(n); }).catch(() => {});
     predictionAggregate(bookId, chapterIndex).then((l) => { if (alive) setReveal(l); }).catch(() => {});
     return () => { alive = false; };
-  }, [bookId, chapterIndex]);
+  }, [bookId, chapterIndex, anytime]);
 
   const close = useCallback(() => {
     if (closedRef.current) return;
@@ -104,31 +118,44 @@ export default function ChapterEndCard({
     const text = reflection.trim();
     if (!text) return;
     if (crisisCheck(text).intercept) { onCrisis && onCrisis(); return; }
-    writeSolo(bookId, chapterIndex, text);     // device-local only, never an entity
-    setSavedNote("Kept, just for you.");
+    setSavedNote(""); setSaveError("");
+    if (!writeSolo(bookId, chapterIndex, text)) {
+      setSaveError("Couldn't keep that here. Your words are still above; try again.");
+      return;
+    }
+    setSavedNote("Kept on this device.");
   };
 
-  // ── share reflection to the room (club only) — crisis-checked, anonymous, fire-and-forget ──
+  // The old ReadingActivity write has no club-thread consumer. Keep the intended
+  // action and draft, but never claim delivery before exact checkpoint wiring.
   const shareToRoom = () => {
     const text = reflection.trim();
     if (!text) return;
     if (crisisCheck(text).intercept) { onCrisis && onCrisis(); return; }
-    writeSolo(bookId, chapterIndex, text);
-    recordClubReflection(bookId, chapterIndex, text, userId);  // optimistic + fire-and-forget
-    setSavedNote("Added to the room. Thank you for trusting it here.");
+    setSavedNote("");
+    setSaveError("Not shared. Your words are still here; direct sharing needs fixing.");
   };
 
   // ── guess the next chapter — crisis-checked, anonymous, aggregate-only ──
-  const sendGuess = () => {
+  const sendGuess = async () => {
     const text = guess.trim();
-    if (!text) return;
+    if (!text || guessPending.current) return;
     if (crisisCheck(text).intercept) { onCrisis && onCrisis(); return; }
-    recordPrediction(bookId, chapterIndex, text, userId);   // optimistic + fire-and-forget
-    setGuessed(true);
-    setGuess("");
+    const current = lifecycle.current;
+    guessPending.current = true; setGuessBusy(true); setGuessError("");
+    try {
+      const result = await recordPrediction(bookId, chapterIndex, text, userId);
+      if (current !== lifecycle.current || closedRef.current) return;
+      if (result?.ok !== true) throw new Error("Unconfirmed hunch");
+      setGuessed(true); setGuess("");
     // optimistically re-fetch the reveal (shows the warm line if still below floor, the aggregate
     // once the k-floor is met — never whose guess was "right", never a rank).
-    predictionAggregate(bookId, chapterIndex).then((l) => setReveal(l)).catch(() => {});
+      predictionAggregate(bookId, chapterIndex).then(l => { if (current === lifecycle.current && !closedRef.current) setReveal(l); }).catch(() => {});
+    } catch {
+      if (current === lifecycle.current && !closedRef.current) setGuessError(userId ? "Couldn't confirm that sent. Your hunch is still here; try again." : "Sign in to share your hunch. Your words are still here.");
+    } finally {
+      if (current === lifecycle.current && !closedRef.current) { guessPending.current = false; setGuessBusy(false); }
+    }
   };
 
   // The warm aggregate reveal (k-floored inside predictionAggregate). Shown to anyone who reached
@@ -192,7 +219,7 @@ export default function ChapterEndCard({
         </p>
         <textarea
           value={reflection}
-          onChange={(e) => { setReflection(e.target.value); setSavedNote(""); }}
+          onChange={(e) => { setReflection(e.target.value); setSavedNote(""); setSaveError(""); }}
           maxLength={600}
           rows={3}
           placeholder="A line is plenty — for yourself, or leave it blank."
@@ -207,7 +234,8 @@ export default function ChapterEndCard({
               <Send size={13} /> Add to the room
             </button>
           )}
-          {savedNote && <span style={{ fontFamily: UI, fontSize: 12, color: MUTED }}>{savedNote}</span>}
+          {savedNote && <span role="status" style={{ fontFamily: UI, fontSize: 12, color: MUTED }}>{savedNote}</span>}
+          {saveError && <span role="alert" style={{ fontFamily: UI, fontSize: 12, color: INK }}>{saveError}</span>}
         </div>
 
         {/* 2 — guess the next chapter (projective prediction -> warm aggregate). Chapter-end only —
@@ -224,17 +252,19 @@ export default function ChapterEndCard({
             <>
               <textarea
                 value={guess}
-                onChange={(e) => setGuess(e.target.value)}
+                onChange={(e) => { setGuess(e.target.value); setGuessError(""); }}
+                disabled={guessBusy}
                 maxLength={300}
                 rows={2}
                 placeholder="What do you think happens next? No right answer — just a hunch."
                 style={inputStyle}
               />
               <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
-                <button type="button" onClick={sendGuess} disabled={!guess.trim()} style={{ ...primaryBtn, opacity: guess.trim() ? 1 : 0.5 }}>
-                  <Send size={13} /> Add my hunch
+                <button type="button" onClick={sendGuess} disabled={!guess.trim() || guessBusy} style={{ ...primaryBtn, opacity: guess.trim() ? 1 : 0.5 }}>
+                  <Send size={13} /> {guessBusy ? "Sending…" : "Add my hunch"}
                 </button>
               </div>
+              {guessError && <p role="alert" style={{ fontFamily: UI, fontSize: 13, color: INK }}>{guessError}</p>}
             </>
           )}
 
@@ -292,4 +322,10 @@ export default function ChapterEndCard({
       </div>
     </div>
   );
+}
+
+export default function ChapterEndCard(props) {
+  // A different source/chapter starts from its own saved text, never the previous
+  // chapter's unsaved draft. Existing keys and full reflections are preserved.
+  return <ChapterEndCardContent key={`${props.bookId}:${props.chapterIndex}`} {...props} />;
 }

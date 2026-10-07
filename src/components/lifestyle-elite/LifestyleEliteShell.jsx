@@ -26,7 +26,7 @@
 //   • SAVE/BOOKMARK toggle → persists to UserProfile.saved_item_ids (exact live mechanism; see
 //     Lifestyle.jsx ArticleSheet.handleSave) — optimistic + rollback + flash, like Nutrition's toggleShop.
 import { useState, useMemo, useEffect, useRef, useCallback, Children, isValidElement } from "react";
-import { useInRouterContext, useNavigate } from "react-router-dom";
+import { useInRouterContext, useNavigate, useLocation } from "react-router-dom";
 import {
   BookOpen, Feather, Book, Film, Headphones, Moon, Heart, Sparkles, Sun, Bookmark,
   Wind, ChevronRight, ChevronLeft, Music2, Compass, Loader, ExternalLink, Clock, Coffee, Sunset, Check, Star, Sprout, Leaf, Coins, X,
@@ -34,7 +34,8 @@ import {
 import { base44 } from "@/api/base44Client";
 import { useLifestyleKeeps } from "./useLifestyleKeeps";
 import { useLifestyleFeed } from "./useLifestyleFeed";
-import { authoredJoyId, timeFit, rankedReads, continuePositions, gutenbergReaderHref, newestOwnedReading } from "./finishLifestyle";
+import { authoredJoyId, timeFit, rankedReads, gutenbergReaderHref, newestOwnedReading } from "./finishLifestyle";
+import useLifestyleContinuation from "./useLifestyleContinuation";
 import LifestylePlanSheet from "./LifestylePlanSheet";
 import { FloraAudio } from "@/components/brand/expandCards";
 import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
@@ -210,7 +211,6 @@ const phaseTagsOf = (i) => (Array.isArray(i?.phase_tags) ? i.phase_tags : [])
 // device-locally as `fw_reader_pos_{bookId}` = {chapterIndex, pageInChapter, paragraphIndex, ts}
 // (DailyStoryReader). We read those back, newest first, so the Read board can offer "pick up
 // where you left off" — no new entity, no server state, just her own device.
-const readContinuePositions = () => continuePositions(localStorage);
 
 // ── §6.8.2 band 3+4 — Jess's WRITTEN read for Lifestyle. Signal-driven from what's actually
 // loaded (her reading, her saves, today's chapter, her sky, the phase) and rotates every load.
@@ -485,14 +485,15 @@ function FocusableBoards({ focusBoard, sliderRef, gold, children }) {
 
 function RoutedLifestyleShell(props) {
   const navigate = useNavigate();
-  return <LifestyleShell {...props} navigate={navigate}/>;
+  const location = useLocation();
+  return <LifestyleShell {...props} navigate={navigate} routePathname={location.pathname}/>;
 }
 export default function LifestyleEliteShell(props = {}) {
   const routed = useInRouterContext();
   // Standalone founder studies can render without App's router; main keeps one document/player.
   return routed ? <RoutedLifestyleShell {...props}/> : <LifestyleShell {...props} navigate={href=>window.location.assign(href)}/>;
 }
-function LifestyleShell({ navigate, enableFocus = false, layout = null, clean = false, previewActions = false, initialSection = null, continuousSky = false, celestialSky = false, botanicalHeader = false, firstFoldVariant = null, dailySkyLessons = false, artDirection = null, skyWorld = null, contentRoute } = {}) {
+function LifestyleShell({ navigate, routePathname, enableFocus = false, layout = null, clean = false, previewActions = false, initialSection = null, continuousSky = false, celestialSky = false, botanicalHeader = false, firstFoldVariant = null, dailySkyLessons = false, artDirection = null, skyWorld = null, contentRoute } = {}) {
   const foldVariant = clean && (["living", "garden", "almanac", "canopy"].includes(firstFoldVariant) || isLivingDirection(firstFoldVariant)) ? firstFoldVariant : null;
   const livingDemo = isLivingDirection(foldVariant) || ["reading-room","sky-worlds"].includes(artDirection);
   const worldDirection = artDirection === "sky-worlds" ? getSkyWorld(skyWorld).id : foldVariant;
@@ -524,7 +525,9 @@ function LifestyleShell({ navigate, enableFocus = false, layout = null, clean = 
   const [horoscope, setHoroscope] = useState(null);// today's HoroscopeReading
   const [savedIds, setSavedIds] = useState([]);    // UserProfile.saved_item_ids (the SAVE field)
   const [skyNotes, setSkyNotes] = useState([]);    // recent SkyNote rows (real, persisted)
-  const [continueItems, setContinueItems] = useState([]); // books she's part-way through (device-local)
+  const continuationRoute = useRef(contentRoute || routePathname || window.location.pathname);
+  const continuationActive = !routePathname || routePathname === continuationRoute.current || (continuationRoute.current === "/Lifestyle" && routePathname === "/LifestyleElite");
+  const {items: continueItems, refresh: loadContinue} = useLifestyleContinuation({enabled: !loading, active: continuationActive, routePathname, catalogue: gutenberg});
 
   // overlays
   const [calOpen, setCalOpen] = useState(false);
@@ -643,29 +646,6 @@ function LifestyleShell({ navigate, enableFocus = false, layout = null, clean = 
     setHoroscope(previous => selectedPresentation ? newestOwnedReading(previous, incomingReading, ownerId) : incomingReading);
   }, [selectedPresentation]);
 
-  // CONTINUE READING — resolve her device-local saved positions into real rows (a tiny by-id
-  // fetch, ≤3). Guarded; if a book has since gone it's simply dropped, never a broken card.
-  const loadContinue = useCallback(async () => {
-    const positions = readContinuePositions();
-    if (!positions.length) { setContinueItems([]); return; }
-    // A saved position's bookId is whatever reader wrote it: a real LifestyleItems id (FemWell
-    // fiction), a `daily_<series>` key (the Daily Story), or a BARE GUTENBERG ID like "514" /
-    // "1342" (public-domain books, read on /BookReader). Only the first kind lives in
-    // LifestyleItems — querying that entity with a Gutenberg id 500s on EVERY page load (it's
-    // the wrong id-space, not a missing row). So we only resolve real LifestyleItems ids here;
-    // daily + Gutenberg positions have their own homes and never hit this query.
-    const isLsId = (id) => { const s = String(id || ""); return s.length >= 12 && !s.startsWith("daily_") && !/^\d{1,9}$/.test(s); };
-    const dbPositions = positions.filter((p) => isLsId(p.bookId)).slice(0, 24);
-    if (!dbPositions.length) { setContinueItems([]); return; }
-    try {
-      const rows = await Promise.all(dbPositions.map((p) =>
-        withTimeout(base44.entities.LifestyleItems.filter({ id: p.bookId }, undefined, 1), 6000, "continue")
-          .then((r) => (Array.isArray(r) ? r[0] : null)).catch(() => null)
-      ));
-      setContinueItems(dbPositions.map((p, i) => (rows[i] && rows[i].title ? { item: rows[i], pos: p } : null)).filter(Boolean).slice(0, 3));
-    } catch { setContinueItems([]); }
-  }, []);
-
   // record a real action (open / save) so the feed LEARNS — fire-and-forget, never blocks UX,
   // never records the seeded fallback (no raw id). Reuses recordLifestyleAction (existing fn).
   const recordAction = useCallback((rawOrItem, action) => {
@@ -721,13 +701,12 @@ function LifestyleShell({ navigate, enableFocus = false, layout = null, clean = 
         await loadContent(u?.id);
         loadGutenberg();          // background — never blocks the loader
         loadSkyNotes(u?.id);      // background — real sky-diary rows
-        loadContinue();           // background — "pick up where you left off"
         try { unsubItems = base44.entities.LifestyleItems.subscribe(() => { invalidateKeptSources(); loadContent(u?.id); }); } catch { /* no-op */ }
       } catch { /* unauth / offline — render gracefully */ }
       if (alive) setLoading(false);
     })();
     return () => { alive = false; unsubItems?.(); };
-  }, [loadContent, loadGutenberg, loadSkyNotes, loadContinue, invalidateKeptSources]);
+  }, [loadContent, loadGutenberg, loadSkyNotes, invalidateKeptSources]);
 
   // ── SAVE toggle (persists to UserProfile.saved_item_ids — optimistic + rollback) ──
   const toggleSave = useCallback(async (item) => {
@@ -964,9 +943,12 @@ function LifestyleShell({ navigate, enableFocus = false, layout = null, clean = 
   // immersive reader as #4, which restores her saved position from fw_reader_pos_{bookId}).
   const continueCards = useMemo(() => continueItems.map(({ item, pos }) => {
     const ch = Number(pos?.chapterIndex) || 0;
-    const where = pos?.kind === "article" ? "Your saved place · this device" : ch > 0 ? `Chapter ${ch + 1} · this device` : "Your saved place · this device";
+    const where = pos?.kind === "article" || item._book === "gutenberg" ? "Your saved place · this device" : ch > 0 ? `Chapter ${ch + 1} · this device` : "Your saved place · this device";
     return {
       ...rowCard(item, CARD_TYPE_OF(item)),
+      // A local classic position is not a LifestyleItems row or a keep. Do not
+      // make its synthetic gut-id look saveable through UserProfile's row IDs.
+      ...(item._book === "gutenberg" ? {_raw: undefined} : {}),
       kind: "Continue reading", overline: "Continue reading", cw: "gold",
       meta: [["Book", where], ["Clock", "Pick up where you left off"]],
       chips: ["reading now"],

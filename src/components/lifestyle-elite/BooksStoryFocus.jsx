@@ -111,6 +111,19 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
   const pos = readingPosition(chapters, pick);
   const [doorway, setDoor] = useState(() => getDoorway());
   const [passTick, setPassTick] = useState(0);
+  const [confirmedReflection, setConfirmedReflection] = useState(null);
+  useEffect(() => {
+    const changed = event => {
+      const { bookId, chapterIndex } = event.detail || {};
+      if (!/^[a-zA-Z0-9_-]{1,160}$/.test(String(bookId || "")) || !Number.isSafeInteger(chapterIndex) || chapterIndex < 0) return;
+      try {
+        const text = localStorage.getItem(`fw_read_reflect_${bookId}_${chapterIndex}`);
+        if (typeof text === "string" && text.trim()) setConfirmedReflection(text.trim());
+      } catch { /* retain the last actually read note */ }
+    };
+    window.addEventListener("fw_read_reflection_saved", changed);
+    return () => window.removeEventListener("fw_read_reflection_saved", changed);
+  }, []);
   // THE ONE SHELF (2026-09-27): Books and Community's Library now read/write the SAME UserBook
   // rows via the existing bookshelf API — adding here shows up there, and her status (reading /
   // want / finished / set aside) is one cross-device truth instead of two device-local copies.
@@ -210,6 +223,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
 
   // her own words — the ONLY progress artefact in this section. No counts anywhere.
   const herWords = useMemo(() => {
+    if (confirmedReflection) return confirmedReflection;
     try {
       const out = [];
       for (let i = 0; i < localStorage.length; i++) {
@@ -218,7 +232,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
       }
       return out.slice(-1)[0] || null;
     } catch { return null; }
-  }, [passTick]);
+  }, [passTick, confirmedReflection]);
 
   const summary = pos
     ? (pick?.complete
@@ -460,7 +474,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
         <section className={room ? "fw-room-private-slip" : undefined} style={{ marginTop: 24 }}>
           <Eyebrow cw="plum">What you wrote</Eyebrow>
           <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, fontWeight: 500, color: C.ink, lineHeight: 1.55, textAlign: "center", margin: "0 auto", maxWidth: "28em" }}>“{clean(herWords).slice(0, 220)}”</p>
-          <div style={{ fontFamily: UI, fontSize: 13, color: C.faint, textAlign: "center", marginTop: 8 }}>the last thing you left at the end of a chapter</div>
+          <div style={{ fontFamily: UI, fontSize: 13, color: C.faint, textAlign: "center", marginTop: 8 }}>a reading note you kept on this device</div>
         </section>
       ) : null}
 

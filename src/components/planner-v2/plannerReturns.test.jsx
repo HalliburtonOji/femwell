@@ -10,7 +10,7 @@ const row = { id: "planned", user_id: "owner", title: "Read a little", time: "09
 describe("routed planner exact returns", () => {
   it.each([
     [{ source: "books", ref: "gutenberg:1342" }, "/BookReader?gutenberg_id=1342"],
-    [{ source: "books", ref: "club:quiet-pages-2" }, "/Community?club=quiet-pages-2"],
+    [{ source: "books", ref: "club:quiet-pages-2" }, "/Community?view=bookclub&pick=quiet-pages-2"],
     [{ source: "lifestyle", ref: "joy:walk-7fa8" }, "/Lifestyle?direction=petal-press&section=good&joy=walk-7fa8"],
     [{ source: "sky-lesson", ref: "sky-lesson:earthshine:v1" }, "/Lifestyle?direction=petal-press&section=sky&lesson=earthshine&lessonVersion=1#daily-sky-lesson"],
     [{ source: "sky", ref: "sky-lesson:earthshine:v9" }, "/Lifestyle?direction=petal-press&section=sky&lesson=earthshine&lessonVersion=9#daily-sky-lesson"],

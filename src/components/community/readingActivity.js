@@ -7,14 +7,14 @@
 //   2. ANONYMOUS community aggregates (guess-the-next-chapter predictions + shared-read cohort
 //      milestones) via the ReadingActivity entity, keyed only by a device-derived author_hash.
 //
-// CRITICAL: every write is OPTIMISTIC (localStorage first, synchronous) then a guarded,
-// FIRE-AND-FORGET entity create (NEVER awaited on an interaction path) — a wedged backend can
-// never block or break the reader [[base44-fetch-no-timeout-hangs]]. Reads are guarded + fail
-// open (.catch(() => [])). Mirrors companion.js / garden.js exactly.
+// Progress remains local-first/fire-and-forget so reading is never blocked.
+// A prediction is a sent message: confirm its bounded write before marking sent
+// or clearing the draft. Aggregate reads remain guarded and fail open.
 
 import { base44 } from "@/api/base44Client";
 import { communityHash } from "@/components/community/communityAnon";
 import { REVEAL_K_FLOOR } from "@/components/community/ritualsConfig";
+import { withTimeout } from "@/utils/safeEntity";
 
 export { REVEAL_K_FLOOR };
 
@@ -84,22 +84,27 @@ export function recordProgress(bookId, chapterIndex, userId) {
 }
 
 // ── 2b. Prediction — "guess the next chapter" (anonymous, aggregate-only) ─────────────────────
-// Optimistic: mark predicted locally FIRST, then fire-and-forget the create. Crisis-checking the
+// Confirm the existing aggregate write before marking sent. Crisis-checking the
 // text is the caller's responsibility (reuse the existing crisisCheck) BEFORE calling this.
-export function recordPrediction(bookId, chapterIndex, body, userId) {
-  markPredicted(bookId, chapterIndex);
-  if (!userId) return;
-  (async () => {
-    try {
-      const wh = await communityHash(userId);
-      if (!wh) return;
-      await base44.functions.invoke("createCommunityPost", {
+export async function recordPrediction(bookId, chapterIndex, body, userId) {
+  if (!userId) throw new Error("Sign in before sharing a hunch.");
+  const me = await withTimeout(base44.auth.me(), 6000, "prediction-owner");
+  if (me?.id !== userId) throw new Error("Reading account changed.");
+  const wh = await withTimeout(communityHash(userId), 6000, "prediction-session");
+  if (!wh) throw new Error("Couldn't identify this reading session.");
+  const sender = await withTimeout(base44.auth.me(), 6000, "prediction-owner");
+  if (sender?.id !== userId) throw new Error("Reading account changed.");
+  const result = await withTimeout(base44.functions.invoke("createCommunityPost", {
         action: "readingActivity.record",
-        author_hash: wh, book_id: String(bookId), chapter_index: chapterIndex,
+        user_id: userId, author_hash: wh, book_id: String(bookId), chapter_index: chapterIndex,
         kind: "prediction", body: String(body || "").slice(0, 600),
-      }).catch(() => null);
-    } catch { /* fail-open */ }
-  })();
+      }), 8000, "prediction-send");
+  const data = result?.data ?? result;
+  if (data?.ok !== true || data?.error) throw new Error("Couldn't confirm the hunch.");
+  const current = await withTimeout(base44.auth.me(), 6000, "prediction-owner");
+  if (current?.id !== userId) throw new Error("Reading account changed.");
+  markPredicted(bookId, chapterIndex);
+  return { ok: true };
 }
 
 // ── 2c. Club reflection — a reflection shared "to the room" (anonymous) ───────────────────────

@@ -14,7 +14,7 @@
 // borderline→flagged review queue) + Jess auto-support replies (judicious, tone-locked).
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import {
   Grid2x2, MessageCircle, Send, Lock, Unlock, Plus, Flag,
   ShieldAlert, ShieldCheck, Phone, Mic, Check, ChevronLeft, Users,
@@ -835,31 +835,34 @@ function ClubCheckpointThread({ pickKey, cp, user, onCrisis }) {
   );
 }
 
-export function BookClubView({ user, onCrisis, onBack }) {
+export function BookClubView({ user, onCrisis, onBack, requestedPickKey = null }) {
   const navigate = useNavigate();
   const [pick, setPick] = useState(null);
   const [checkpoints, setCheckpoints] = useState([]);
   const [reached, setReached] = useState(-1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [loadedRequest, setLoadedRequest] = useState(undefined);
   const sequence = useRef(0);
   const load = useCallback(async () => {
     const request = ++sequence.current; setLoading(true); setError("");
+    setPick(null); setCheckpoints([]); setReached(-1); setLoadedRequest(undefined);
     try {
-      const next = await loadBookClubPick();
-      if (request === sequence.current) { setPick(next); setCheckpoints(next.checkpoints); setReached(clubReached(next.pick_key)); }
+      const next = await loadBookClubPick(requestedPickKey);
+      if (request === sequence.current) { setPick(next); setCheckpoints(next?.checkpoints || []); setReached(next ? clubReached(next.pick_key) : -1); setLoadedRequest(requestedPickKey); }
     } catch { if (request === sequence.current) setError("Couldn't refresh this season’s read. Try again."); }
     finally { if (request === sequence.current) setLoading(false); }
-  }, []);
+  }, [requestedPickKey]);
   useEffect(() => { load(); return () => { sequence.current++; }; }, [load]);
   const attest = (idx) => { setClubReached(pick.pick_key, idx); setReached((r) => Math.max(r, idx)); };
   return (
     <div style={{ padding: "26px 18px 60px" }}>
       <button onClick={onBack} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
       <Eyebrow color={T.gold} mb={8}>Book club · Jess hosts</Eyebrow>
-      {loading && <div role="status"><Hand size={17} color={T.muted}>Finding this season’s read…</Hand></div>}
+      {(loading || loadedRequest !== requestedPickKey && !error) && <div role="status"><Hand size={17} color={T.muted}>Finding the club book…</Hand></div>}
       {error && <div role="alert"><Hand size={17} color={T.muted}>{error}</Hand><button onClick={load} style={{...ghostBtn,minHeight:44,minWidth:44}}>Try again</button></div>}
-      {pick && <>
+      {!loading && !error && loadedRequest === requestedPickKey && !pick && <div role="status"><Hand size={17} color={T.muted}>This club edition isn’t available. Your plan still keeps its reference.</Hand></div>}
+      {pick && loadedRequest === requestedPickKey && <>
       <Script size={32} color={OXBLOOD} style={{ marginBottom: 2 }}>{pick.title}</Script>
       <div style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, marginBottom: 12 }}>{pick.author}{pick.cadence ? ` · ${pick.cadence}` : ""}</div>
       <Hand size={17} color={T.inkSoft} style={{ marginBottom: 14 }}>{pick.host_intro}</Hand>
@@ -882,7 +885,7 @@ export function BookClubView({ user, onCrisis, onBack }) {
       {checkpoints.map((cp) => {
         const unlocked = reached >= cp.index;
         return (
-          <div key={cp.index} style={{ background: T.paperHi, border: `1px solid ${unlocked ? T.gold : T.paperDeep}`, borderRadius: 6, padding: "13px 14px", marginBottom: 12 }}>
+          <div key={`${pick.pick_key}:${cp.index}`} style={{ background: T.paperHi, border: `1px solid ${unlocked ? T.gold : T.paperDeep}`, borderRadius: 6, padding: "13px 14px", marginBottom: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {unlocked ? <MessageCircle size={14} style={{ color: T.gold }} /> : <Lock size={14} style={{ color: T.muted }} />}
               <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 17, color: unlocked ? T.ink : T.muted }}>{cp.label}</div>
@@ -3154,8 +3157,13 @@ function RedesignHome({ presence, lifeStage, profile, user, onEnter, onCrisis, o
 
 export function CommunityInner({ initialView = null, embedded = false, homeVariant = "classic" } = {}) {
   useEditorialFonts();
+  const location = useLocation();
+  const bookClubRequest = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return { open: params.get("view") === "bookclub", key: params.has("pick") ? params.get("pick") : null };
+  }, [location.search]);
   const [user, setUser] = useState(null);
-  const [view, setView] = useState(initialView || "home");      // "home" | room key
+  const [view, setView] = useState(initialView || (bookClubRequest.open ? "bookclub" : "home"));      // "home" | room key
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadErr, setLoadErr] = useState(false);
@@ -3208,6 +3216,12 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
       if (sp.get("view") === "mentor") setView("mentor");
     } catch { /* ignore */ }
   }, []);
+
+  // Observe requested edition changes, not history keys: Community's existing
+  // same-URL Back trap must still return home instead of reopening this view.
+  useEffect(() => {
+    if (bookClubRequest.open) setView("bookclub");
+  }, [bookClubRequest.open, bookClubRequest.key]);
 
   // ── BACK-BUTTON FIX ──────────────────────────────────────────────────────────
   // Community sub-views are internal `view` STATE, not routes — so the browser/global
@@ -3322,7 +3336,7 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
           : view === "wisdom"
           ? <WisdomLibrary onBack={goBack} />
           : view === "bookclub"
-          ? <BookClubView user={user} onCrisis={() => setCrisis(true)} onBack={() => setView("library")} />
+          ? <BookClubView user={user} onCrisis={() => setCrisis(true)} onBack={() => setView("library")} requestedPickKey={bookClubRequest.open ? bookClubRequest.key : null} />
           : view === "clubs"
           ? <div style={{ padding: "30px 18px 50px" }}><ClubsView user={user} onCrisis={() => setCrisis(true)} onBack={goBack} initialActive={initialClub} clubTitle={clubTitle} /></div>
           : view === "echo"
