@@ -4,6 +4,8 @@ Owner: Codex. Halli's staged-delivery instruction, 7 October 2026. Forward queue
 
 ## Where we are
 
+- CR0023 also joins A03: actual reader Keep/Like turns failed profile lookup into absence, then creates a duplicate row; saved removal runs physical deletion before fresh-owner guard. Independent in-memory actual-handler reproduction, no live writes. Narrow exact-reader authority/pending/retry repair is claimed separately; full content/source/positions/tools and all owned arrays remain. This is a routine data-integrity correction, not a new save system or visual migration.
+
 - Native S03 release check discovered CR0022: Gutenberg37106 has47 actual Roman chapter headings but the reader chooses a contents label and transcriber sentence as two chapters. Independent real-source reproduction confirms a pre-existing P1. A02 includes bounded chapter-detection repair before this release checkpoint; retain complete prose, short chapters, front matter and every reader tool. Primary source: https://www.gutenberg.org/cache/epub/37106/pg37106.txt. No added network/paid/schema work.
 
 - Affordable-growth standing gate added (§10.5.23) with prior-build ledger/current primary research. S03 A01 canonical reader and A02 typed keeps/A03 bounded feed/owner recovery/full Saved are implemented in verification; remaining exact club returns, classic continuation, notes and complete opened-state design stay open. Release evidence in [run0004](critique/reports/0004-books-yours-growth-2026-10-07.md); no cost/capacity guarantee.
