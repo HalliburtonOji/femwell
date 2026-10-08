@@ -1,6 +1,3 @@
-// Actual reader regression: a later page omits its opening heading, so a
-// needless remeasure on cached return changes pagination. Font/viewport
-// changes must still reflow without losing the previously visible paragraph.
 import {it,expect,beforeEach,afterEach,vi} from 'vitest';
 import {act,fireEvent,render,screen} from '@testing-library/react';
 import DailyStoryReader from '@/components/lifestyle/DailyStoryReader';
@@ -61,3 +58,54 @@ it('cancels the old pending font measurement while hidden and reflows on return 
  expect(measurementReads).toBeGreaterThan(measurementsBefore);expect(prose()).toContain('Actual paragraph 2');expect(prose()).not.toBe(before);
 });
 
+it('retains the old paragraph through hidden viewport reflow plus the resolved-font second measure and another settings return',async()=>{
+ fontSet('loaded',Promise.resolve());
+ const {rerender}=render(<DailyStoryReader active source={source} bookId='two-measures' defaultImmersive/>);await settleFrames();
+ fireEvent.click(screen.getByRole('button',{name:'Next page'}));fireEvent.click(screen.getByRole('button',{name:'Next page'}));
+ expect(prose()).toContain('Actual paragraph 3');expect(prose()).not.toContain('Actual paragraph 2');
+ rerender(<DailyStoryReader active={false} source={source} bookId='two-measures' defaultImmersive/>);
+ vi.stubGlobal('innerHeight',850);fireEvent(window,new Event('resize'));
+ rerender(<DailyStoryReader active source={source} bookId='two-measures' defaultImmersive/>);await settleFrames();
+ expect(prose()).toContain('Actual paragraph 3');
+ fireEvent.click(screen.getByRole('button',{name:'Reader settings'}));
+ rerender(<DailyStoryReader active={false} source={source} bookId='two-measures' defaultImmersive/>);
+ rerender(<DailyStoryReader active source={source} bookId='two-measures' defaultImmersive/>);await settleFrames();
+ expect(prose()).toContain('Actual paragraph 3');expect(screen.getByRole('dialog',{name:'Reader settings'})).toBeVisible();
+});
+
+it('retains exact settled later-page prose and count through a redundant unchanged resize event',async()=>{
+ fontSet('loaded',Promise.resolve());
+ render(<DailyStoryReader active source={source} bookId='unchanged-resize' defaultImmersive/>);await settleFrames();
+ fireEvent.click(screen.getByRole('button',{name:'Next page'}));
+ const before=prose(),label=document.querySelector('.ds-reader-nav').textContent;
+ expect(before).toContain('Actual paragraph 2');expect(before).not.toContain('Actual paragraph 1');
+ fireEvent(window,new Event('resize'));await settleFrames();
+ expect(prose()).toBe(before);expect(document.querySelector('.ds-reader-nav').textContent).toBe(label);
+});
+it('retains the original paragraph anchor through immediate fallback-font reflow and its later settled-font reflow',async()=>{
+ const fonts=fontSet('loaded',Promise.resolve());
+ const {rerender}=render(<DailyStoryReader active source={source} bookId='two-font-epochs' defaultImmersive/>);await settleFrames();
+ fireEvent.click(screen.getByRole('button',{name:'Next page'}));
+ expect(prose()).toContain('Actual paragraph 2');expect(prose()).not.toContain('Actual paragraph 1');
+ rerender(<DailyStoryReader active={false} source={source} bookId='two-font-epochs' defaultImmersive/>);
+ let resolveReady;fonts.status='loading';fonts.ready=new Promise(resolve=>{resolveReady=resolve;});paragraphHeight=160;
+ rerender(<DailyStoryReader active source={source} bookId='two-font-epochs' defaultImmersive/>);await act(async()=>{});
+ expect(prose()).toContain('Actual paragraph 2');
+ paragraphHeight=220;fonts.status='loaded';resolveReady();await settleFrames();
+ expect(prose()).toContain('Actual paragraph 2');
+});
+
+it('a deliberate next-page selection supersedes the earlier resume anchor during pending fonts',async()=>{
+ const fonts=fontSet('loaded',Promise.resolve());
+ const {rerender}=render(<DailyStoryReader active source={source} bookId='pending-intent' defaultImmersive/>);await settleFrames();
+ fireEvent.click(screen.getByRole('button',{name:'Next page'}));
+ expect(prose()).toContain('Actual paragraph 2');
+ rerender(<DailyStoryReader active={false} source={source} bookId='pending-intent' defaultImmersive/>);
+ let resolveReady;fonts.status='loading';fonts.ready=new Promise(resolve=>{resolveReady=resolve;});paragraphHeight=160;
+ rerender(<DailyStoryReader active source={source} bookId='pending-intent' defaultImmersive/>);await act(async()=>{});
+ expect(prose()).toContain('Actual paragraph 2');
+ fireEvent.click(screen.getByRole('button',{name:'Next page'}));
+ expect(prose()).toContain('Actual paragraph 3');expect(prose()).not.toContain('Actual paragraph 2');
+ paragraphHeight=220;fonts.status='loaded';resolveReady();await settleFrames();
+ expect(prose()).toContain('Actual paragraph 3');expect(prose()).not.toContain('Actual paragraph 2');
+});

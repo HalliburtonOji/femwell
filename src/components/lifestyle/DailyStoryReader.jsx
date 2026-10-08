@@ -394,7 +394,6 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize,
   const passageGesture = useRef(null);
   const [vpKey, setVpKey] = useState(0);
   const measurementEnvironment = useRef(null);
-  const measurementActive = useRef(false);
 
   useEffect(() => {
     if (!active) return;
@@ -408,33 +407,38 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize,
   }, [active]);
 
   useLayoutEffect(() => {
-    const resuming = !measurementActive.current;
-    measurementActive.current = active;
     if (!active) return;
-    const environment = () => ({
-      key: JSON.stringify([chapter.id, paragraphs.length, textSize, immersive, layoutKey,
-        window.innerWidth, window.innerHeight, measureRef.current?.clientWidth, document.fonts?.status || "loaded"]),
-      content: body,
-      fontsReady: document.fonts?.ready,
-    });
+    const environment = () => {
+      const stage = measureRef.current?.closest(".ds-reader-stage");
+      const stageStyle = stage && getComputedStyle(stage);
+      return {
+        key: JSON.stringify([chapter.id, paragraphs.length, textSize, immersive, layoutKey,
+          window.innerWidth, window.innerHeight, measureRef.current?.clientWidth,
+          stage?.getBoundingClientRect().height, stageStyle?.paddingTop, stageStyle?.paddingBottom,
+          document.fonts?.status || "loaded"]),
+        content: body,
+        fontsReady: document.fonts?.ready,
+      };
+    };
     // A resumed page may omit the opening heading. Measuring it as a new
     // chapter would change its page breaks despite unchanged type/viewport.
     // Keep its measured session; hidden viewport or font changes still reflow.
-    const previous = measurementEnvironment.current;
-    const current = environment();
-    // A complete font-load cycle can happen while hidden. Its ready promise
-    // changes even when both observed statuses are "loaded".
-    if (resuming && previous?.key === current.key && previous.content === current.content
-      && previous.fontsReady === current.fontsReady && document.fonts?.status !== "loading") return;
     let cancelled = false;
     let raf = 0;
 
     const measure = () => {
       if (cancelled || !measureRef.current) return;
+      const previous = measurementEnvironment.current;
+      const current = environment();
+      // Every pass needs a real change, including duplicate resize/font-ready
+      // callbacks. A completed hidden font cycle has a new ready promise.
+      if (previous?.key === current.key && previous.content === current.content
+        && previous.fontsReady === current.fontsReady && document.fonts?.status !== "loading") return;
       const ps = Array.from(measureRef.current.querySelectorAll(".ds-measure-p"));
       if (!ps.length) {
         setSlices([[0, 0]]);
-        onPageCount && onPageCount(chapter.id, 1, 0);
+        measurementEnvironment.current = current;
+        onPageCount && onPageCount(chapter.id, 1, 0, undefined, document.fonts?.status !== "loading");
         return;
       }
 
@@ -485,7 +489,7 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize,
       setSlices(out);
       measurementEnvironment.current = environment();
       // report the slices so the parent can resume by a STABLE PARAGRAPH ANCHOR, not a page index
-      onPageCount && onPageCount(chapter.id, out.length, ps.length, out);
+      onPageCount && onPageCount(chapter.id, out.length, ps.length, out, document.fonts?.status !== "loading");
     };
 
     // Measure now so the page paints — then AGAIN once the webfonts land. Our faces are remote
@@ -735,9 +739,11 @@ export default function DailyStoryReader({
   // the phone's orientation and "page 7" is a different place in the book — which is exactly
   // why resume used to jump.
   const chapterSlicesRef = useRef({});
-  const reportPageCount = useCallback((chapterId, count, _paraCount, slices) => {
+  const chapterFontSettledRef = useRef({});
+  const reportPageCount = useCallback((chapterId, count, _paraCount, slices, fontSettled = true) => {
     if (!chapterId || !activeRef.current) return;
     if (slices) chapterSlicesRef.current[chapterId] = slices;
+    chapterFontSettledRef.current[chapterId] = fontSettled;
     setMeasurementRevision(revision => revision + 1);
     setChapterPageCounts(prev =>
       prev[chapterId] === count ? prev : { ...prev, [chapterId]: count }
@@ -928,7 +934,10 @@ export default function DailyStoryReader({
     const restoredPage = pageForParagraph(currentChapterRef.id, pendingAnchorRef.current);
     pendingPageRef.current = restoredPage;
     setPageInChapter(restoredPage);
-    pendingAnchorRef.current = null;
+    // Fallback and final webfont measurements can partition differently.
+    // Keep the original paragraph through both; never recapture the start
+    // of an intermediate page, which can be earlier than that paragraph.
+    if (chapterFontSettledRef.current[currentChapterRef.id] !== false) pendingAnchorRef.current = null;
   }, [active, measurementRevision, measuredPages, currentChapterRef, pageForParagraph]);
 
   // Resolve once after loading. Explicit numeric/marks-bar selections outrank resume;
@@ -1035,6 +1044,10 @@ export default function DailyStoryReader({
       if (activeRef.current && generation === flipGenerationRef.current) finish();
     }, delay);
   }, []);
+  const clearRestoreAnchor = useCallback(() => {
+    pendingAnchorRef.current = null;
+    pendingPageRef.current = null;
+  }, []);
 
   const flipForward = useCallback(() => {
     if (!activeRef.current) return;
@@ -1043,10 +1056,12 @@ export default function DailyStoryReader({
     // Step inside the current chapter first.
     if (pageInChapter < currentChapterPages - 1) {
       if (reducedMotion) {
+        clearRestoreAnchor();
         setPageInChapter(p => p + 1);
       } else {
         setFlipState({ phase: "flipping", dir: 1 });
         scheduleFlip(() => {
+          clearRestoreAnchor();
           setPageInChapter(p => p + 1);
           setFlipState({ phase: "idle", dir: 0 });
         }, 350);
@@ -1061,10 +1076,12 @@ export default function DailyStoryReader({
     if (currentIndex >= latestRevealed) {
       if (noLock) return; // books: no lock screen, stay on last page
       if (reducedMotion) {
+        clearRestoreAnchor();
         setShowLocked(true);
       } else {
         setFlipState({ phase: "flipping", dir: 1 });
         scheduleFlip(() => {
+          clearRestoreAnchor();
           setShowLocked(true);
           setFlipState({ phase: "idle", dir: 0 });
         }, 600);
@@ -1072,25 +1089,29 @@ export default function DailyStoryReader({
       return;
     }
     if (reducedMotion) {
+      clearRestoreAnchor();
       setCurrentIndex((i) => Math.min(i + 1, latestRevealed));
     } else {
       setFlipState({ phase: "flipping", dir: 1 });
       scheduleFlip(() => {
+        clearRestoreAnchor();
         setCurrentIndex((i) => Math.min(i + 1, latestRevealed));
         setFlipState({ phase: "idle", dir: 0 });
       }, 600);
     }
-  }, [pageInChapter, currentChapterPages, measuredPages, currentIndex, latestRevealed, reducedMotion, showLocked, noLock, flipState.phase, scheduleFlip]);
+  }, [pageInChapter, currentChapterPages, measuredPages, currentIndex, latestRevealed, reducedMotion, showLocked, noLock, flipState.phase, scheduleFlip, clearRestoreAnchor]);
 
   const flipBackward = useCallback(() => {
     if (!activeRef.current) return;
     if (flipState.phase === "flipping") return;   // one flip at a time
     if (showLocked) {
       if (reducedMotion) {
+        clearRestoreAnchor();
         setShowLocked(false);
       } else {
         setFlipState({ phase: "flipping", dir: -1 });
         scheduleFlip(() => {
+          clearRestoreAnchor();
           setShowLocked(false);
           setFlipState({ phase: "idle", dir: 0 });
         }, 600);
@@ -1100,10 +1121,12 @@ export default function DailyStoryReader({
     // Step inside the current chapter first.
     if (pageInChapter > 0) {
       if (reducedMotion) {
+        clearRestoreAnchor();
         setPageInChapter(p => p - 1);
       } else {
         setFlipState({ phase: "flipping", dir: -1 });
         scheduleFlip(() => {
+          clearRestoreAnchor();
           setPageInChapter(p => p - 1);
           setFlipState({ phase: "idle", dir: 0 });
         }, 350);
@@ -1118,6 +1141,7 @@ export default function DailyStoryReader({
     const reachPreviousChapter = () => {
       // The chapter-change effect normally resets to page zero. Preserve this
       // deliberate backward landing until that effect and position saving settle.
+      clearRestoreAnchor();
       pendingPageRef.current = prevPageCount - 1;
       setCurrentIndex(i => Math.max(i - 1, 0));
       setPageInChapter(prevPageCount - 1);
@@ -1131,7 +1155,7 @@ export default function DailyStoryReader({
         setFlipState({ phase: "idle", dir: 0 });
       }, 600);
     }
-  }, [pageInChapter, currentIndex, reducedMotion, showLocked, chapters, chapterPageCounts, flipState.phase, scheduleFlip]);
+  }, [pageInChapter, currentIndex, reducedMotion, showLocked, chapters, chapterPageCounts, flipState.phase, scheduleFlip, clearRestoreAnchor]);
 
   // Keyboard nav
   useEffect(() => {
