@@ -41,13 +41,13 @@
     "reason": "Halli stopped recurring builds: usage consumption and endless loop. Tool and automation.toml confirm PAUSED; explicit user restart required."
   },
   "baseline": {
-    "commit": "4282e6b",
-    "liveBundle": "index-tmLZ0QGN.js"
+    "commit": "2b5ef22",
+    "liveBundle": "index-BY5CHwe0.js"
   },
   "current": {
     "section": "Lifestyle / Books and Yours",
     "atom": "B01-S03-A05",
-    "status": "Stopped by Halli. Source4282e6b/liveindex-tmLZ0QGN.js; full733/53 pass. Original portal/scroll ownership repaired; settled360 exact return passes. Final390 settings-return changes page/prose partition while retaining paragraph. CR0033 residual OPEN; final430 and remaining A05/legacy/cost work deferred. Appearance held."
+    "status": "Automation PAUSED; A05 reader residual remains open with original functional source4282. Manual four-photo proposal2b5ef22 is published in Ideas; liveindex-BY5CHwe0.js. No main Lifestyle redesign. Full native every-tap census and implementation pending; held choices unchanged."
   },
   "lastCompleted": {
     "run": 5,
@@ -455,7 +455,7 @@
   },
   "latestManualBrief": {
     "date": "2026-10-08",
-    "status": "four-photo brainstorm/proposal; no main redesign",
+    "status": "Published proposal only; source2b5ef22/liveindex-BY5CHwe0.js. Actual Today Ideas pill to new catalogue proposal and settled Back to Ideas verified. Native document360/390/430 views; optional plan/research open-close and layout checks pass. Main product journeys not certified.",
     "report": "claude-state/critique/lifestyle-tap-cleanup-2026-10-08.md",
     "ideas": "/lifestyle-tap-cleanup/index.html",
     "direction": "Reduce crowding; explicit remove/merge/retire authority after importance review; one room popup; replace retired backgrounds at owner; inspect every tap/destination",
