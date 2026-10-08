@@ -4,6 +4,8 @@ Owner: Codex. Halli's staged-delivery instruction, 7 October 2026. Forward queue
 
 ## Where we are
 
+- **Latest manual brief,8October: reduce crowding and replace the entire tapped journey.** Halli's four photos authorise retiring redundant text/navigation/presentations after judging importance. [Tap-cleanup proposal](critique/lifestyle-tap-cleanup-2026-10-08.md) maps the eleven room links, legacy Becoming, the separate daily ReadingSheet and shared expanded-card fiction preamble. First review batch: compact single room popup, useful brief Sky reading, direct book reading and real foundation replacement. Full capabilities/history remain; exact chosen layouts stay staged. This is a manual proposal task, not renewed automation or completion of the paused A05 reader repair.
+
 - **8 October stop checkpoint:** Halli stopped the scheduled build loop; automation `femwell-critique-director` is confirmed **PAUSED**. No future automatic runs or agent restarts. Manual resumption only, at **B01-S03-A05**; neither S03 nor A05 is complete.
 - Latest functional source **4282e6b**, live **index-tmLZ0QGN.js**, full **733 tests/53 files** pass. Cached reader/chooser ownership and keep authority/removal/completion repairs are live. Final native360 settled return is exact;390 settings/Back/Forward retains the paragraph but changes page/prose partition, so CR0033 exact-return acceptance remains open. Independent frozen-source counterproof confirms heading-sensitive capacity, with the proposed repair **not implemented**. Final430 reproof and remaining opened-state/legacy/cost work are carried forward. New reader appearance remains Ideas-only. [Run0006](critique/reports/0006-books-opened-states-2026-10-08.md) preserves the evidence and precise next step.
 
