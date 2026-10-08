@@ -62,7 +62,7 @@
       "5491962",
       "32bac79"
     ],
-    "reportCommit": "pending final receipt commit",
+    "reportCommit": "ffd7bce",
     "liveBundle": "index-5OEW8Bz1.js",
     "backendDeployment": "Existing fetchGutenbergBook separately deployed1/1 earlier in run0005; final reader releases are frontend-only, no later backend/entity/function-name delta.",
     "tests": "Root full712/51 on final shared behaviour/local date, independent96/5 (reader53/note14/BookReader26/continuation2/router1). Final margins/note root93/3 and MrFix67/2 pass at15s without weakened assertions. Scoped lint0errors/existing warnings only; fresh Vite buildexit0, normal push/site deploy, dist/public/native identity and diff/JSON checks.",
