@@ -846,6 +846,12 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
     finally { pendingIntentions.current.delete(key); }
   }, [savePlannerDay, saveTryThis, selectedPresentation,startPlan]);
 
+  const openJoy = useCallback((slip) => {
+    if(!slip)return;
+    if(!focusedPreview){setGLFace({slip});return;}
+    setExpanded({...slip,saveable:false,body:[slip.why,...(slip.body || [])].filter(Boolean),actions:[{label:"Plan a time",primary:true,onClick:()=>glTick(slip.id,slip.doable?.title || slip.title,slip.doable?.kind)}]});
+  },[focusedPreview,glTick]);
+
   // #4 — open a book at OUR reader standard, IN PLACE (no navigation to a slow route).
   // FemWell fiction is already loaded (its chapters live on the row), so we mount the
   // immersive DailyStoryReader right here — instant, no re-fetch. Gutenberg classics still
@@ -1154,10 +1160,10 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
     const sources=[{kind:"aday",title:A_DAY.title},{kind:"aday",title:"A quiet hour, just for you"},{kind:"slip",title:"You don’t have to make a project of your day off."},...A_DAY.alts.map(title=>({kind:"aday",title})),...TRY_THIS.map(row=>({kind:"try",title:row.title})),...PERMISSION_SLIPS.map(title=>({kind:"slip",title})),...TIME_BANDS.map(band=>({kind:"try",title:band.make.title}))];
     const source=sources.find(row=>authoredJoyId(row.kind,row.title)===wanted);
     handledJoy.current=wanted;
-    if(current)setGLFace({slip:current});
-    else if(source)setGLFace({slip:{id:wanted,type:source.kind==="slip" ? "quote" : "ritual",title:source.title,why:whyFor(source.title),doable:{label:"Plan a time",title:source.kind==="slip" ? "A quiet hour, just for you" : source.title,kind:["aday","slip"].includes(source.kind) ? "day" : "try"}}});
+    if(current)openJoy(current);
+    else if(source)openJoy({id:wanted,type:source.kind==="slip" ? "quote" : "ritual",title:source.title,why:whyFor(source.title),doable:{label:"Plan a time",title:source.kind==="slip" ? "A quiet hour, just for you" : source.title,kind:["aday","slip"].includes(source.kind) ? "day" : "try"}});
     else flash("That activity has changed. Your plan is still in Planner.");
-  },[livingDemo,focusSection,ritualCards,permissionCards]);
+  },[livingDemo,focusSection,ritualCards,permissionCards,openJoy]);
 
   // ── THE "FOR YOU" DECK (pass d) — a taste of EVERYTHING, not a reads list ────────────────
   // One personalised pick from a DIFFERENT section each: Story · Read · Listen & watch · Sky ·
@@ -1387,7 +1393,7 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
     read: [continueCards[0] ? {label:"Continue reading",run:()=>openReadCard(continueCards[0])} : choose("Choose a read", [...articleCards, ...storyCards], openReadCard), choose("Saved reads", actionSavedCards.filter((i) => ["article", "daily_story"].includes(i.type)), openReadCard, "No saved reads yet. Save a piece you enjoy and it will appear here.")],
     listen: [choose("Choose a listen", audioCards), choose("Choose a watch", videoCards)],
     books: [{ label: "Today's chapter", run: openTodaysChapter }, choose("Choose a book", [...shelfBookCards, ...classicCards])],
-    good: [{ label: "Time for yourself", description: "A read, a listen, or a little doing.", content: (afterClose) => <TimePickerLens presentation={selectedPresentation} pickFor={pickFor} isSaved={isSaved} onSave={(it) => afterClose(toggleSave, it)} onOpen={(it) => afterClose(openItem, it)} onTry={(title) => afterClose(saveTryThis, title)} /> }, choose("A small joy", [...ritualCards, ...permissionCards], (it) => setGLFace({ slip: it }))],
+    good: [{ label: "Time for yourself", description: "A read, a listen, or a little doing.", content: (afterClose) => <TimePickerLens presentation={selectedPresentation} pickFor={pickFor} isSaved={isSaved} onSave={(it) => afterClose(toggleSave, it)} onOpen={(it) => afterClose(openItem, it)} onTry={(title) => afterClose(saveTryThis, title)} /> }, choose("A small joy", [...ritualCards, ...permissionCards], openJoy)],
     yours: [livingDemo ? {label:"Open your saves",run:()=>window.location.assign("/Saved?tab=LIFESTYLE")} : choose("Open your saves", actionSavedCards), choose("Continue reading", continueCards, openReadCard, "No reading in progress yet. Start a book and your place will appear here.")],
     sky: [skyActionState.hasChart ? { label: "Ask the sky", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "ask" }) } : { label: "Set up your sky", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "chart" }) }, skyActionState.hasChart ? { label: "Edit your chart", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "chart" }) } : { label: "What you'll need", description: "Your birth date starts your sky. Add time and place only if you know them; do not guess. Unknown birth time limits what can be calculated.", content: <p style={{ lineHeight: 1.6 }}>Use Set up your sky when you are ready. You can review your details in the chart sheet before saving.</p> }],
   };
@@ -1532,7 +1538,7 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
           // what you're looking at" rather than a summary about other sections sitting on top of one
           // that already summarises itself.
           if(livingDemo && focusSection === "listen")glanceRows.unshift({Icon:Headphones,label:"Listen & watch",text:`${audioCards.length} listens · ${videoCards.length} watches in this selection`,onClick:()=>audioCards[0] || videoCards[0] ? setExpanded(audioCards[0] || videoCards[0]) : window.location.assign("/WatchListen")});
-          if(livingDemo && focusSection === "good")glanceRows.unshift({Icon:Coffee,label:"A small joy",text:ritualCards[0]?.title || permissionCards[0]?.title || "A little time to yourself",onClick:()=>setGLFace({slip:ritualCards[0] || permissionCards[0]})});
+          if(livingDemo && focusSection === "good")glanceRows.unshift({Icon:Coffee,label:"A small joy",text:ritualCards[0]?.title || permissionCards[0]?.title || "A little time to yourself",onClick:()=>openJoy(ritualCards[0] || permissionCards[0])});
           if(livingDemo && focusSection === "yours")glanceRows.unshift({Icon:Bookmark,label:"Your kept things",text:skySavedCount ? `${skySavedCount} Sky ${skySavedCount===1 ? "lesson" : "lessons"}${savedItems.length ? ` · ${savedItems.length} Lifestyle ${savedItems.length===1 ? "find" : "finds"}` : " kept for another day"}` : savedItems.length ? `${savedItems.length} Lifestyle ${savedItems.length===1 ? "find" : "finds"} · your Sky keepsakes below` : "Your saved things, with room for more",onClick:()=>window.location.assign("/Saved?tab=LIFESTYLE")});
           const focusRowLabel = { read: "Your reading", books: "Today's chapter", story: "Today's chapter", sky: "Your sky", ...(livingDemo ? {listen:"Listen & watch",good:"A small joy",yours:"Your kept things"} : {}) }[focusSection] || null;
           const orderedGlance = focusRowLabel
@@ -1747,7 +1753,7 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
             continueCards={continueCards} shelfBookCards={shelfBookCards} classicCards={classicCards} onChapterDetails={() => setChapterOpen(true)} onBookDetails={setExpanded} onOpenBook={(it) => it?._library ? document.getElementById("book-library")?.scrollIntoView({behavior:"smooth"}) : it?.id === "daily-chapter" ? openTodaysChapter() : openBook(it._continue || it._raw || it)} lifeStage={profile?.life_stage} /></div>;
           if (sec === "listen") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--listen" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{livingDemo && <nav aria-label="Full media directories" style={{display:"flex",justifyContent:"space-between",gap:12,marginBottom:12,fontFamily:UI,fontSize:12}}><a href="/WatchListen?mode=listen" style={{color:C.ink,minHeight:44,alignContent:"center"}}>All listens & shows</a><a href="/WatchListen?mode=watch" style={{color:C.ink,minHeight:44,alignContent:"center"}}>All watches</a></nav>}<ListenFocus presentation={selectedPresentation} audioCards={audioCards} videoCards={videoCards} onOpen={setExpanded} /></div>;
           if (sec === "read") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--read" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><ReadFocus presentation={selectedPresentation} continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} onDetails={selectedPresentation ? setExpanded : undefined} /></div>;
-          if (sec === "good") { const h = new Date().getHours(); const timeOfDay = h < 12 ? "morning" : h < 18 ? "afternoon" : "evening"; return <div className={selectedPresentation ? "fw-living-content fw-selected-room--good" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><GoodLifeFocus onOpenRooms={focusedPreview ? ()=>setRoomsOpen(true) : undefined} presentation={selectedPresentation} timeOfDay={timeOfDay} timeLens={<TimePickerLens presentation={selectedPresentation} pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />} joys={[...ritualCards, ...permissionCards]} onPlan={(it)=>glTick(it.id,it.doable?.title || it.title,it.doable?.kind)} onSlip={(it) => setGLFace({ slip: it })} /></div>; }
+          if (sec === "good") { const h = new Date().getHours(); const timeOfDay = h < 12 ? "morning" : h < 18 ? "afternoon" : "evening"; return <div className={selectedPresentation ? "fw-living-content fw-selected-room--good" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><GoodLifeFocus onOpenRooms={focusedPreview ? ()=>setRoomsOpen(true) : undefined} presentation={selectedPresentation} timeOfDay={timeOfDay} timeLens={<TimePickerLens presentation={selectedPresentation} pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />} joys={[...ritualCards, ...permissionCards]} onPlan={(it)=>glTick(it.id,it.doable?.title || it.title,it.doable?.kind)} onSlip={openJoy} /></div>; }
           if (sec === "yours") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--yours" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{livingDemo && <SavedSkyLessons userId={user?.id} human={artDirection === "sky-worlds"} direction={worldDirection} previewRoute={contentRoute || (artDirection === "sky-worlds" ? "/SkyWorldsDemo" : artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artDirection === "marginalia" ? "/LivingAtelierDemo" : undefined)}/>}{selectedPresentation && keepsError && <div role="alert" style={{fontFamily:UI,fontSize:13,marginBottom:16}}><p>{keepsError}</p><button type="button" onClick={()=>setKeepsRevision(value=>value+1)}>Retry keeps</button> <a href="/Saved?tab=LIFESTYLE">Open the full saved collection</a></div>}<YoursFocus presentation={selectedPresentation} savedCards={savedCards} savedSummary={savedSummary} phaseCards={phaseCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={(it)=>it._keep?._unavailable ? setKeepsRevision(n=>n+1) : it._keep?._href ? window.location.assign(it._keep._href) : openReadCard(it)} onDetails={setExpanded} skySavedCount={livingDemo ? skySavedCount : 0} /></div>;
           // every section is bespoke — the generic slider-free layout is only ever the LANDING deck
           return <div style={{ marginTop: 22 }}><FocusLayout layout={layout} groups={landingGroups} clean={clean} presentation={selectedPresentation} onConsume={(it) => it.id === "story-today" || it.id === "daily-chapter" ? openTodaysChapter() : it.forYouSection === "Your sky" ? selectRoom("sky") : it._continue || it._raw ? openReadCard(it) : setExpanded(it)} /></div>;
@@ -1770,7 +1776,7 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
             Every chip is a REAL jump (no dead labels); spans the whole-life spread, not just
             reading — story, a small joy, listen/watch, your sky, your saved. Mirrors Nutrition's
             "Handy right now" via the shared QuickRow. */}
-        <div style={{ marginTop: 22 }}>
+        {!focusedPreview && <div style={{ marginTop: 22 }}>
           <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 18, fontWeight: 600, color: clean ? C.ink : OXBLOOD, margin: "0 2px 9px" }}>Handy right now</div>
           <QuickRow items={[
             { Icon: Feather, cw: "crimson", label: "Today's chapter", onClick: openTodaysChapter },
@@ -1791,7 +1797,7 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
             { Icon: Coins, cw: "sage", label: "Money", onClick: () => window.location.assign(createPageUrl("Money")) },
             { Icon: Bookmark, cw: "plum", label: "Your saved", onClick: () => jumpTo(5) },
           ]} />
-        </div>
+        </div>}
 
         <div style={{ display: "grid", placeItems: "center", margin: "18px 0 0" }}><Pollinator kind="butterfly" size={36} color={cwOf(ph.cw).petal} color2={cwOf(ph.cw).tip} pattern="bands" animate idx="elite-close" /></div>
         <p style={{ textAlign: "center", fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: clean ? C.faint : T.muted, margin: "6px auto 0", maxWidth: 300, lineHeight: 1.55 }}>A little to read, a little to feel — whenever the moment's yours.</p>

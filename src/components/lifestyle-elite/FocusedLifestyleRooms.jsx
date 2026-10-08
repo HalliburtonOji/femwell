@@ -96,7 +96,7 @@ export default function FocusedLifestyleRooms({ active, onClose, user, profile, 
   const RoomIcon=ROOMS.find(([name])=>name===room)[1];
   useLayoutEffect(()=>{if(sheet.current)sheet.current.scrollTop=item ? 0 : positions.current[room] || 0;},[item,room]);
   const switchRoom=next=>{if(sheet.current)positions.current[room]=sheet.current.scrollTop;setRoom(next);setItem(null);setSaveError("");};
-  const open=row=>{positions.current[room]=sheet.current?.scrollTop || 0;setItem(toCard({...row,title:cleanTitle(row.title)},null));setSaveError("");};
+  const open=row=>{positions.current[room]=sheet.current?.scrollTop || 0;const card=toCard({...row,title:cleanTitle(row.title)},null);if(card.type === "book" && card.actions?.[0]){onClose();card.actions[0].onClick?.(card);return;}setItem(card);setSaveError("");};
   const loadMoreLibrary=async()=>{if(loading)return;setLoading(true);setLibraryError("");try{const rows=await base44.entities.LifestyleItems.filter({status:"PUBLISHED"},"-engagement_score",500,library?.length || 0);if(!Array.isArray(rows))throw new Error("Unexpected library reply");setLibrary(previous=>[...(previous || []),...rows.filter(Boolean)]);setLibraryHasMore(rows.length===500);}catch{setLibraryError("Couldn’t load more of the library. Your current pieces are still here.");}finally{setLoading(false);}};
   const save=async()=>{if(pending.current)return;pending.current=true;setSaving(true);setSaveError("");try{if(await onSave(!isSaved(item),item)===false)throw new Error("Save not acknowledged");}catch{setSaveError("That save didn’t stick. Try again.");}finally{pending.current=false;setSaving(false);}};
   const keepIntention=async()=>{

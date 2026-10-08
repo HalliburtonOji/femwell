@@ -26,7 +26,7 @@ export default function FocusedLifestyleSheet({ title, eyebrow, children, onClos
 export function FocusedText({ text }) {
   // The existing horoscope authoring contract uses *emphasis*. Render text,
   // never HTML or literal markers; no rewrite/generation of a stored reading.
-  return String(text || "").replace(/<[^>]*>/g, "").split(/(\*[^*]+\*)/g).map((part, i) => part.startsWith("*") && part.endsWith("*") ? <em key={i}>{part.slice(1,-1)}</em> : part);
+  return String(text || "").replace(/<[^>]*>/g, "").split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g).map((part, i) => part.startsWith("**") && part.endsWith("**") ? <strong key={i}>{part.slice(2,-2)}</strong> : part.startsWith("*") && part.endsWith("*") ? <em key={i}>{part.slice(1,-1)}</em> : part);
 }
 
 export function firstSentences(text, count = 2) {

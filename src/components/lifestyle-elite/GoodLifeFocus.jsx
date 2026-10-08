@@ -71,6 +71,7 @@ function GoodCard({ eyebrow, title, accent = "gold", children, style, className 
 }
 
 export default function GoodLifeFocus({ timeLens, joys = [], onSlip, onPlan, timeOfDay, presentation, onOpenRooms }) {
+  const [moreJoys,setMoreJoys]=React.useState(false);
   const greet = timeOfDay === "morning" ? "What have you got time for this morning?"
     : timeOfDay === "evening" ? "What have you got time for this evening?"
     : "What have you got time for right now?";
@@ -91,7 +92,8 @@ export default function GoodLifeFocus({ timeLens, joys = [], onSlip, onPlan, tim
       {joys.length ? (
         <GoodCard className="fw-selected-joys" eyebrow={presentation ? "For the pleasure of it" : "No streaks, nothing owed"} title={presentation ? "Small joys" : "Small joys & permission"} accent="plum">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {joys.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} previewText={presentation ? (it.type === "quote" ? "" : JOY_HOOKS[it.title] ?? it.subtitle) : undefined} compact onOpen={() => onSlip && onSlip(it)} onConsume={presentation && onPlan ? ()=>onPlan(it) : undefined} consumeLabel="Plan a time" />)}
+            {(onOpenRooms && !moreJoys ? joys.slice(0,3) : joys).map((it) => <CoverCard presentation={presentation} key={it.id} item={it} previewText={presentation ? (it.type === "quote" ? "" : JOY_HOOKS[it.title] ?? it.subtitle) : undefined} compact onOpen={() => onSlip && onSlip(it)} onConsume={presentation && onPlan ? ()=>onPlan(it) : undefined} consumeLabel="Plan a time" />)}
+            {onOpenRooms && joys.length>3 && <button className="fw-focused-button" onClick={()=>setMoreJoys(value=>!value)}>{moreJoys ? "A few is plenty" : "More small joys"}</button>}
           </div>
         </GoodCard>
       ) : null}

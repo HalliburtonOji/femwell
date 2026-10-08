@@ -799,6 +799,9 @@ export function FocusedCardContents({ item: raw }) {
   const source = item._raw;
   const warnings = source?.trigger_warnings || source?.content_warnings || [];
   const sourceUrl = source?.content_url || source?.source_url || item.externalUrl;
+  // Old authored imports carry a placeholder on femwell.app, although the
+  // complete article is already here. Keep genuine publisher source exits.
+  const authoredPlaceholder = body.length > 0 && /^https:\/\/femwell\.app\/articles\//i.test(sourceUrl || "");
   const ingredients = Array.isArray(item.ingredients) ? item.ingredients : item.ingredients?.items || [];
   return <div className="fw-focused-prose">
     {item.author && <p className="fw-focused-note">{item.author}</p>}
@@ -806,7 +809,7 @@ export function FocusedCardContents({ item: raw }) {
     {!item.external && item.audioSrc && <FloraAudio src={item.audioSrc} label={item.title} accent="#51444e" initialDuration={item.duration || 0} item={item} presentation="focused"/>}
     {book ? synopsis && <p><FocusedText text={synopsis}/></p> : <>
       {item.quote && <blockquote><FocusedText text={typeof item.quote === "string" ? item.quote : item.quote.text}/>{item.quote.attrib && <cite className="fw-focused-note">{item.quote.attrib}</cite>}</blockquote>}
-      {body.length ? body.map((text,i)=><p key={i}><FocusedText text={text}/></p>) : synopsis && <p><FocusedText text={synopsis}/></p>}
+      {body.length ? body.map((text,i)=>/^\s*#{1,6}\s/.test(text) ? <h3 key={i}><FocusedText text={text.replace(/^\s*#{1,6}\s+/,"")}/></h3> : <p key={i}><FocusedText text={text}/></p>) : synopsis && <p><FocusedText text={synopsis}/></p>}
       {item.reading && <section><h3>Your reading</h3>{item.reading.headline && <p><FocusedText text={item.reading.headline}/></p>}{(item.reading.lines || []).map((line,i)=><p key={i}><FocusedText text={line}/></p>)}</section>}
       {item.excerpt && !body.includes(item.excerpt) && <blockquote><FocusedText text={item.excerpt}/></blockquote>}
       {ingredients.length > 0 && <><h3>Ingredients</h3>{(item.ingredients.serves || item.ingredients.time) && <p className="fw-focused-note">{[item.ingredients.serves ? `Serves ${item.ingredients.serves}` : null,item.ingredients.time].filter(Boolean).join(" · ")}</p>}<ul>{ingredients.map((value,i)=><li key={i}>{typeof value === "string" ? value : value.name || value.text}</li>)}</ul></>}
@@ -814,7 +817,7 @@ export function FocusedCardContents({ item: raw }) {
     </>}
     {warnings.length > 0 && <details className="fw-focused-depth"><summary>Worth knowing</summary>{(Array.isArray(warnings) ? warnings : [warnings]).map((text,i)=><p key={i}>{text}</p>)}</details>}
     {!book && item.takeaways?.length > 0 && <details className="fw-focused-depth"><summary>A few things to keep</summary><ul>{item.takeaways.map((text,i)=><li key={i}><FocusedText text={text}/></li>)}</ul></details>}
-    {!book && (item.external || (!item.audioSrc && !item.videoSrc && !item.youtubeId)) && /^https?:\/\//i.test(sourceUrl || "") && <a className="fw-focused-button" href={sourceUrl} target="_blank" rel="noopener noreferrer">{item.type === "video" ? "Watch" : item.type === "audio" ? "Listen" : "Read"} at {item.sourceName || "the source"}<ExternalLink size={15}/></a>}
+    {!book && !authoredPlaceholder && (item.external || (!item.audioSrc && !item.videoSrc && !item.youtubeId)) && /^https?:\/\//i.test(sourceUrl || "") && <a className="fw-focused-button" href={sourceUrl} target="_blank" rel="noopener noreferrer">{item.type === "video" ? "Watch" : item.type === "audio" ? "Listen" : "Read"} at {item.sourceName || "the source"}<ExternalLink size={15}/></a>}
     {item.meta.some(([,label])=>label && !/duration unavailable/i.test(label)) && <details className="fw-focused-depth"><summary>About this {book ? "book" : "piece"}</summary><div className="fw-focused-note">{item.meta.filter(([,label])=>label && !/duration unavailable/i.test(label)).map(([,label],i)=><p key={i}>{label}</p>)}</div></details>}
   </div>;
 }
@@ -827,7 +830,7 @@ function FocusedCardDetail({ item, active, onClose, saved, saving, onSave }) {
   const readableSource = !media && item.type !== "book" && /^https?:\/\//i.test(sourceUrl || "");
   const actions = item.actions.filter(action => item.type === "book" || item.external || (!body.length && !media && !readableSource) || !/^(read this|open episode|open full-screen)$/i.test(action.label));
   return <FocusedLifestyleSheet title={item.title} eyebrow={item.kind} active={active} onClose={onClose}
-    footer={<><button className="fw-focused-button" onClick={onSave} disabled={saving} aria-busy={saving} aria-pressed={saved}>{saved ? <BookmarkCheck size={16}/> : <Bookmark size={16}/>} {saving ? "Saving…" : saved ? "Saved" : "Save"}</button>{actions.map(action=><button key={action.label} className={`fw-focused-button${action.primary ? " fw-focused-button--primary" : ""}`} onClick={()=>{onClose();action.onClick?.(item);}}>{action.label}</button>)}</>}>
+    footer={<>{item.saveable !== false && <button className="fw-focused-button" onClick={onSave} disabled={saving} aria-busy={saving} aria-pressed={saved}>{saved ? <BookmarkCheck size={16}/> : <Bookmark size={16}/>} {saving ? "Saving…" : saved ? "Saved" : "Save"}</button>}{actions.map(action=><button key={action.label} className={`fw-focused-button${action.primary ? " fw-focused-button--primary" : ""}`} onClick={()=>{onClose();action.onClick?.(item);}}>{action.label}</button>)}</>}>
     <FocusedCardContents item={item}/>
     {!body.length && !media && !readableSource && !item.quote && item.type !== "book" && <p className="fw-focused-note">Only a summary is published here so far.</p>}
   </FocusedLifestyleSheet>;
