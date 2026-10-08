@@ -137,3 +137,47 @@ Creative independently inspected nine regions: two bounded previewP2s remain (pr
 Creative noted the desktop-only maxwidth pattern. Root actual canonical430 Narrow/ Wide/ Default transitions set correct classes, yet all retain24px stagegutters and382px prose. Claimed f09d5d4 before shared functional edits. Mapped existing-intended setting: make only selected narrow/wide mobile gutters differ; retain default24/main20/preview, existing desktop widths, full source, measurement, preferences, paragraph anchors and tools. [MDN max-width](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/max-width) explains why a limit above the viewport never changes this prose; [padding-inline](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/padding-inline) gives actual inline spacing. No new control/store/query/media/function/schema/paid work. Final meaningful scoped checks/build/site/mobile selected geometry/reflow and nearby returns required. No claim that margin selection alone proves visible reflow.
 
 CR0032 responsive direction review: critic correctly identifies that older desktop Narrow means480px prosecolumn, Wide680, opposite the actual Margins label. Root native1024 confirms stage480/body416 versus680/body616 with32px innergutters. Extension claim8d254a1 precedes correction: keep normal580, stored keys/options and the same480/680caps but assign Narrow680/Wide480. Mobile selected narrower/wider gutters stay−8/+8. This completes a consistent intended existing setting; preserving the old inversion would make the UI label false. No default layout/theme change, added preference/schema/query, new asset/paid work or feature stripping. Rebuild after the final frozen assignments; earlier in-progress build is not a deployment candidate. Actual3phone widths plus1024 normal/direction/source proof required.
+
+## Final A05 reader/note review checkpoint — 8 October 2026
+
+**Source32bac79 is pushed normally; completed Vite build and successful frontend deployment produce index-5OEW8Bz1.js.** Dist, public HTTP and the actual browser agree. Earlier separately deployed fetchGutenbergBook remains unchanged; no new backend/entity deployment, function name or schema. The reader's functional corrections are live across its existing consumers. The new reader/note/settings appearance remains an opt-in working Ideas preview, awaiting Halli's appearance decision. This checkpoint does not finish S03 or the legacy migration.
+
+Final checks: root full712/51 covers the shared behaviour and local-date repair; independent96/5 verifies reader53, note14, BookReader26, mounted continuation2 and router1. Final responsive-margin/note scope passes root93/3 and MrFix67/2; scoped lint has zero errors with existing warnings only. No assertions were weakened to hide the real midnight failure. The earlier source/control suites and real source conservation remain valid; final CSS effects were checked in the deployed browser.
+
+### Final native margin effects, not just selected buttons
+
+All widths below are actual body widths and match the hidden text measurer. Original defaults were restored after each test.
+
+| Frame / viewport | Narrow | Default | Wide | Actual gutter / stage behaviour |
+|---|---:|---:|---:|---|
+| Main immersive360 |328|312|296|16 /24 /32px gutters|
+| Main immersive390 |358|342|326|16 /24 /32px gutters|
+| Main immersive430 |398|382|366|16 /24 /32px gutters|
+| Clean preview360 |336|320|304|12 /20 /28px gutters|
+| Clean preview390 |366|350|334|12 /20 /28px gutters|
+| Clean preview430 |406|390|374|12 /20 /28px gutters|
+| Main immersive1024 |616|516|416|Stage caps680 /580 /480px, existing32px inner gutters|
+
+Final preview360 Wide/XL preserves the entire678-character preface on page5/116: body=measurer304px, client667px, scroll height1016px. Actual native wheel moves349.2px on the same page; the true last line ends757.9px, inside the780px content bottom. This is a real scroll/hit/source proof rather than a z-index assertion. Prior unchanged functional release5491962 also proves default preview long passages at360/390/430, canonical360/390 scroll and430 natural fit, nearby page taps and exact note return. Those older screenshots are labelled with their actual source; the final selected-margin capture is from5OE.
+
+The final private note has a20px generic prompt, primary plum/white Keep and quiet discussion, all44px targets. Full authored prompts retain their supplied words. Root360 re-saves only the existing nonpersonal QA note and receives “Kept on this device.”;390/430 reopen/read-back the same note. Escape returns focus to Reflect across all three widths. No original note was overwritten/deleted, social/hunch message sent, age attested, purchase made or Planner row deliberately created. Normal existing automatic reading progress may still occur.
+
+CR0031 has explicit Europe/London00:15 BST controlled fresh-default/fresh-preview tests, both chapter1, plus an existing prior-day mark advancing to chapter2 without changing its date. The native account already had that historical date and correctly displays Chapter2 on8October. This is not a claim that native browser storage was reset to prove a fresh start.
+
+Actual final Ideas→Critique Director→working preview remains reachable. Back returns the Ideas dashboard, not its previously expanded ephemeral report. Source and plan stay one board tap away. Exact37106 title,47 chapters, complete prose/front matter, page/bookmark anchors, three themes/five preferences, note/hunch/reveal/warning/resources/locks and source tools remain; no second reader engine or store was introduced.
+
+### Independent closure and evidence
+
+Independent Critique Director accepts ten final regions: three note, three settings, three main-default and the360 Wide/XL passage. Git/dist/public identity independently matches32bac79/5OE. Earlier independent96/96 source/control proof retained. No new reproducible P0/P1/P2 in this mapped scope; bounded **CR0028–CR0032 are closed**. Creative Director accepts the two private-save/prompt refinements in all six note/settings regions. Root performed the native interactions; independent review separately inspected source, tests, HTTP and screenshots, not an independent physical browser session.
+
+External evidence directory: C:/Users/Halli/femwell-handoff/. Final captures: critique-0005-preview-review-{360,390,430}-note.png and -settings.png; critique-0005-main-review-{360,390,430}-default.png; critique-0005-preview-review-360-wide-tall.png; critique-0005-preview-review-360-frame.png. The browser override is reset at handoff; working preview retained as the deliverable.
+
+Conformance in the verified scope: Brand Bible §§1,2.7,6.7.8,10.5.22–23,11,17.3,19.8–9. Clean reader/note craft, short human prompt, complete preserved sources, exact app consumers, actual controls/returns and the growth card are addressed. Existing Halli directions are already recorded in Bible/mirror §§10.5.22–23; this review supplies evidence, not new appearance approval or invented canon.
+
+Growth delta: zero added runtime requests, rows, subscriptions, retries, storage keys, media/fonts/images, paid AI work, scheduled fan-out or function names. Existing margin layoutKey/viewport invalidation reuses full-chapter measurement. Audit opens exercise original downloads/club lookups/automatic progress; zero added source work does not mean zero audit traffic. Final raw dist script11,416,398bytes is not compressed wire transfer, monthly billing or supported users. Prior measured script response and all broader capacity unknowns stay separate.
+
+### Exact resumption and decisions
+
+Keep **B01-S03-A05** current. Reader/note review checkpoint is ready; continue remaining actual club/details/pickers/secondary-state registry, exact source returns, portal-origin keepalive lifetime and accessible deferred branches. Preserve S04 Good life/shared→S05 connections→S06 old/unfinished catch-up→B02/B03 and earlier history/audio/Sky/Founders/scheduled cost atoms. Physical iPhone/touchscreen/VoiceOver/virtual keyboard, native warning/support/lock/write-fault branches, full-book boundary traversal and atomic multi-device/RLS remain unproved. Touchstart/chrome ordering is an unconfirmed candidate, not a severity-labelled bug.
+
+One new concrete decision was asked: promote the verified reader/private-note/settings appearance from Ideas to main (recommended), keep it staged, or revise first. No answer yet. Earlier reached-checkpoint→preview→Post, reading nudge and backlog choices remain held without being re-asked. Independent remaining work does not depend on this choice. No further “continue” prompt is required.

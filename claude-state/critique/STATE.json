@@ -26,7 +26,8 @@
     "heldDecisions": [
       "Reading notification nudge",
       "Backlog count versus silence",
-      "Chapter reflection reached-checkpoint / preview / Post connection: concrete Ideas proposal published and asked run0005; no answer or approval"
+      "Chapter reflection reached-checkpoint / preview / Post connection: concrete Ideas proposal published and asked run0005; no answer or approval",
+      "Verified reader/private-note/settings appearance: working Ideas preview ready and approval asked run0005; no answer yet, main visual promotion held"
     ],
     "resumeRule": "Active batch/stage/nextAtom outranks seed rotation; update current section/atom together. Continue ready authorised atoms without a continue prompt; save exact cursor on interruption; substantial decisions remain staged."
   },
@@ -38,29 +39,35 @@
     "id": "femwell-critique-director"
   },
   "baseline": {
-    "commit": "cd51a2d",
-    "liveBundle": "index-fX_oYqza.js"
+    "commit": "32bac79",
+    "liveBundle": "index-5OEW8Bz1.js"
   },
   "current": {
     "section": "Lifestyle / Books and Yours",
     "atom": "B01-S03-A05",
-    "status": "A05 shared width/tall/date repairs live5491962/BDFv9nX_ with actual default+preview3width fullparagraph fit or native scroll/hits/lastlines. Independent8pixels accepted. Creative2preview craftP2s frozen and mobileMargins CR0032 actualno-op claimed f09d5d4 before fix; final source/build/native chosen-gutter reproof pending. New appearance remains Ideas-only."
+    "status": "A05 reader/note review checkpoint verified: source32bac79/live5OE. Shared clipping/scroll/midnight/margin controls repaired on main; opt-in reader/private-note/settings appearance stays Ideas-only pending the new explicit decision. Remaining club/details/pickers/secondary-state registry and exact returns are next, around held social delivery."
   },
   "lastCompleted": {
     "run": 5,
-    "completedAt": "2026-10-07T22:14:32Z",
-    "sourceCommit": "cd51a2d",
+    "completedAt": "2026-10-08T00:03:49Z",
+    "sourceCommit": "32bac79",
     "sourceCommits": [
       "3b134cf",
       "1e1ce8f",
-      "cd51a2d"
+      "cd51a2d",
+      "e6ae20e",
+      "14642ef",
+      "d48b063",
+      "b02c08c",
+      "5491962",
+      "32bac79"
     ],
-    "reportCommit": "a810c47",
-    "liveBundle": "index-fX_oYqza.js",
-    "backendDeployment": "Existing fetchGutenbergBook separately1/1deployed6.5s; no otherbackend/entity/function-name change",
-    "tests": "689 tests/51 suites bundledNode24 pass at2workers/15s; first4worker/5s run had3fixturetimeouts, affected13/3 pass without assertions changed. Independent65/4 reader/canonical/mountedcontinuation,58 exactcontinuation/club,25notes/hunch and6 actualservedhandler pass; scopedlint0errors/buildexit0/diffJSON valid",
-    "proof": "Root final360/390/430 actualnamedclassics→exact37106 fullsource/savedplace→YoursBack; toolbarhit-tests,textareaHome→Rightcaret0→1/pageheld, allnoteEscape;360bookmarkrestore/font2→3→2,430fontrestore,390 immersiveone-layernote/settingsEscape thenreaderexit. Earlier360newdeviceQA notewrite/readback/reopen→mountedBooksconsumer andexactrereadtile. FinalIdeasreport-preview/cost/decision→rollingplan-expandedcost→Ideas returns3widths. Independent final8reader+6Ideas pixels/HTTP accept; no new scopedP0/P1/P2.",
-    "limits": "Native operations performed by root, critic separately reviews source/tests/images/HTTP. No physicaliPhone/VoiceOver/touchscreen, liveinjectedabort/write/ownerfault, full119pageboundary, nativeinnerCommunity behind18+, portal-origin lifetime, atomicmulti-device/RLS/cloud-accountprivacy or bills/usercapacity certificate. Original automaticchapterreach outcomes not separatelycertified. One new nonpersonal deviceQA note retained; noexistingnote overwritten/deleted, social/hunchsend,attestation,purchase,Plannerrowcreation orothers-data modification."
+    "reportCommit": "pending final receipt commit",
+    "liveBundle": "index-5OEW8Bz1.js",
+    "backendDeployment": "Existing fetchGutenbergBook separately deployed1/1 earlier in run0005; final reader releases are frontend-only, no later backend/entity/function-name delta.",
+    "tests": "Root full712/51 on final shared behaviour/local date, independent96/5 (reader53/note14/BookReader26/continuation2/router1). Final margins/note root93/3 and MrFix67/2 pass at15s without weakened assertions. Scoped lint0errors/existing warnings only; fresh Vite buildexit0, normal push/site deploy, dist/public/native identity and diff/JSON checks.",
+    "proof": "Root actual main+preview360/390/430 Narrow/Default/Wide effects with body=measurer, main desktop1024 consistent caps680/580/480. Final360 preview Wide/XL full678-character preface page5/116 body304, native wheel349.2 and lastline757.9<780. Note save acknowledgement360, readback390/430, Escape Reflectfocus all3. Prior unchanged549 functional native full-source scroll/hits/default fit/nearby page taps/club realfailure-retry and Ideas paths retained. Final Ideas actual preview reachable; Back returns dashboard, not expanded report. Independent ten final regions/source/tests/HTTP accept and Creative six note/settings regions close two refinements.",
+    "limits": "Root performed native interactions; independent review separately uses source/tests/HTTP/images. No physicaliPhone/touchscreen/VoiceOver/virtualkeyboard, live injected write/owner/abort faults, full-book boundary traversal, full warning/support/locked native coverage, inner Community18+ attestation, portal-origin lifetime, atomic multi-device/RLS or bills/usercapacity certificate. CR31 fresh BST starts are controlled Date-only tests; native existing historical start remains unchanged. Only existing nonpersonal QA device note repeated; no original note deletion/overwrite, social/hunch sends, purchase, age attestation, deliberate Planner creation or others-data change. Existing automatic reading progress may occur. Main appearance remains held."
   },
   "rotation": [
     "Lifestyle / Sky",
@@ -277,35 +284,35 @@
       "id": "CR-0028",
       "severity": "P2",
       "title": "Opt-in reader toolbar reflows awkwardly, range leaks old colour and preview label collides with fixed chrome",
-      "status": "Actualnative360 reproducedonindex-5foGl7Tp.js, client345/toolbar305 vs320 basis; source scopedrepair underway under87184b7. Need rebuilt3width reproof.",
+      "status": "Closed bounded: scoped toolbar/label/range source repair14642ef, actual360/390/430 same-row44px controls/centre hits and clear label, independent final pixels; old default unchanged.",
       "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
     },
     {
       "id": "CR-0029",
       "severity": "P1",
       "title": "Clean immersive reader measures a wider column and clips final lines",
-      "status": "Clean width repair d48b063 live/settled360 body320==measure320 ordinaryfinal752.5<780. Canonical native360XL cleanfalse body312 versus measure360 and final912.5>804 proves main fault; shared functional scope claimed fceb25a before default edits. Full three-width release reproof pending.",
+      "status": "Closed bounded shared functional content-fit: b02c08c/5491962/32bac79 live5OE, actual main/preview three-width body equals measurer, complete ordinary/tall prose and lastlines accessible. Consumer source/control tests and independent review pass; no all-page or physicaliPhone claim.",
       "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
     },
     {
       "id": "CR-0030",
       "severity": "P1",
       "title": "Oversized reader paragraph has no height bound and cannot scroll to its last lines",
-      "status": "Open native pointer reproof: main realprefacepage4/108 client711scroll1016 but wheel0; effectiveelementFromPoint selects siblingleft/rightz10 andcentre z1. Final sameclaim3CSS tallstage11/pointertransparentpadding/bodyauto/progress12 source/control accepted. Nativepostdeployscroll/hit/lastline pending.",
+      "status": "Closed bounded: tall-only stage pointer/stacking5491962 and final32bac79 preserve full words/anchors/side taps, native main/preview long-passage wheel/hits/lastlines and final360Wide/XL349.2scroll proven. Independent final tall pixels/source/control accept; physical touchscreen remains unproved.",
       "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
     },
     {
       "id": "CR-0031",
       "severity": "P1",
       "title": "Fresh daily mark advances prematurely at BST midnight",
-      "status": "Source/control repaired after claim c215c04. Actual midnight independent92/93 and root708/709 exposed UTC/local mix; local-calendar new starts preserve existing dates; root26 and independent96 pass. Final deployment/native display proof pending.",
+      "status": "Closed bounded: local-calendar fresh daily startsb02c08c/live5OE; original genuine BST midnight failing assertions kept. Explicit Europe/London00:15 fresh canonical/previewchapter1 and historical prior-daychapter2/dateunchanged tests pass. Native historical mark correctlychapter2; no nativefreshstorage reset certificate.",
       "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
     },
     {
       "id": "CR-0032",
       "severity": "P2",
       "title": "Mobile reader margin choices change selected state but not prose spacing",
-      "status": "Actual canonical430 Narrow/Default/Wide all24px gutters andbody382; preview shareddesktop-only maxwidth cause. Claim f09d5d4 before scoped mobile chosen-gutter completion, defaults/desktop widths retained. Final geometry/reflow proof pending.",
+      "status": "Closed bounded: claimsf09d5d4/8d254a1 before source32bac79. Actual main mobile16/24/32 and preview12/20/28 gutters at360/390/430, body=measurer and full reflow; desktop1024 Narrow680/Default580/Wide480 consistent. Same defaults/keys/options/full source preserved, independent source/final pixels accepted.",
       "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
     }
   ],
@@ -321,6 +328,12 @@
       "source": "Halli's direct instruction",
       "decision": "Affordable expandability and running cost must be baked into every thought/build/check and retrospectively across earlier work, preserving every feature and approved design.",
       "scope": "Standing §10.5.23 acceptance card; optional budget question, no paid/schema/platform/architecture/load-storm approval."
+    },
+    {
+      "date": "2026-10-08",
+      "source": "Concrete Ideas proposal presented to Halli, not approval",
+      "decision": "Verified reader/private-note/settings appearance is ready for review. Recommend promoting this look while preserving all full text/source/place/tools; approval question asked once and remains unanswered.",
+      "scope": "Working ReaderMarginDemo only; main appearance held under AGENTS3.2.4. Functional repairs already live. Continue independent remaining A05 work without re-asking older choices."
     }
   ],
   "deferredChecks": [
@@ -340,7 +353,10 @@
     "Actual physical touchscreen gestures; controlled touch-start/move proof is not an iPhone gesture certificate",
     "Body-portalled embedded reader originating keepalive-hidden Lifestyle route lifetime; source candidate needs exact route fixture/native Back reproof in A05/S06",
     "Ownerless raw device notes and historical optimistic hunch flags retained; no account-isolated cloud note migration or retrospective social acknowledgement",
-    "CR0015 direct reflection sharing awaits exact reached-checkpoint/preview/Post proposal decision; existing ClubNote thread route remains, no orphan delivery or new social send"
+    "CR0015 direct reflection sharing awaits exact reached-checkpoint/preview/Post proposal decision; existing ClubNote thread route remains, no orphan delivery or new social send",
+    "Native warning/support/locked/failure reader branches remain controlled-only proof; complete secondary-state registry and physical virtual keyboard pending.",
+    "Possible touchstart/centre-toggle reader-chrome ordering is an unconfirmed source/native candidate; reproduce before assigning severity or changing behavior.",
+    "Ideas preview Back currently returns dashboard rather than an expanded ephemeral report; route works, exact expanded-report lifetime not certified."
   ],
   "learningFile": "claude-state/critique/LEARNING.md",
   "deliveryWorkflow": {
@@ -368,7 +384,7 @@
     "ledger": "claude-state/critique/CAPACITY_COST.md",
     "addedAt": "2026-10-07",
     "status": "Standing gate/canon-mirror/critic/cycle/heartbeat and Ideas published; bounded shared feed/owned keeps/confirmed bridge repairs live and proved; earlier/current cost retrospective remains mapped",
-    "evidence": "InstalledSDK/authcache and sourceworkunits; earlieroneHTTP200 gzip script3,165,969bodybytes index-CKT0wUxR.js. Finalsourcecd51a2d/livefX_oYqza verified. Nativecontrols/metadata/notes corroborated; no actual invoices/trafficdashboard/allapptransfer/usercapacity/paidupgrade proof.",
+    "evidence": "Installed SDK/auth cache and source work units retained; earlier observed gzip index-CKT0wUxR.js response3,165,969bytes remains historical. Final source32bac79/live5OE matched. Raw final dist11,416,398bytes is not wire transfer, bills or supported users. Reader changes add no runtime requests/stores/assets/paid units; audit opens retain original traffic/progress. Current/prior growth retrospective remains open.",
     "budget": "Optional monthly ceiling question pending; no spending or upgrade authorised",
     "scope": "Every current/prior build, frontend/backend/secondary state, AI/media/storage/jobs. Keep complete features/history/design; paid versus included/frequency/fan-out/owner/source/freshness/retries/ack/bytes/unknowns on every atom."
   },
@@ -376,8 +392,8 @@
     "batch": "B01",
     "stage": "B01-S03",
     "atom": "B01-S03-A05",
-    "nextStep": "Finish CR0032 real mobile margin-choice effects plus two clean note craftP2s in activeMrFix claim; scopedchecks/build/normalpush/site, actual360/390/430 chosen geometry/reflow/note/scroll and independentpixels. Preserve712full/96independent/shared549nativeproof, no mainappearance promotion. Then remaining S03 club/detail/pickers/fullsecondary registry around heldA04.",
-    "readyWork": "Classic ready→anytime Reflect→acknowledged Keep/failure→Close to identical passage, with all full prose/frontmatter/settings3themes/5preferences/bookmarks/immersive/locks/warnings/hunch/reveal/sourceBack preserved. No invented FictionReader Reflect. Zero new asset/font/query/store/engine/socialdelivery. Source candidate hidden-route portal lifetime gets exact fixture/native proof before closure.",
+    "nextStep": "Reader/note review checkpoint complete. Continue remaining B01-S03-A05 actual club/details/pickers/secondary-state registry and exact source-return proof, including accessible rare branches and hidden-route portal lifetime. Reconcile full source/consumers and specific research before each mapped repair; claim anew before edits. Reader appearance approval is pending and does not block independent work; no main visual promotion without answer.",
+    "readyWork": "Actual trigger→complete content/tools/state→open/interact/close/exact source path for remaining Books/Yours secondary surfaces. Preserve all earlier functional repairs/full history, approved section personality and raw QA note. No second shelf/reader/store, no inferred checkpoint or social send. Revisit source-only portal/chrome candidates with precise fixtures/native journeys rather than manufacturing changes.",
     "acceptance": "Actual360/390/430 open/interact/close/theme/preferences/exactsource/Back, controlledfailure/owner/keyboard/touch plus independentP0/P1/P2; bespoke clean§2.7/6.7.8 with safe sheets/44px controls, short human copy and peratom costcard§10.5.23. Link working preview/research/checks/gaps in Ideas before main promotion.",
     "heldBranch": "A04 exact reached-checkpoint→selectedwords/destinationpreview→explicitPost proposal is published/asked, unanswered; do notimplement socialdelivery/defaults orreattest/reask unchangedchoices. Continue independentA05 work.",
     "carryForward": "Remaining opened club/details/pickers and state registry; S04→S05→S06 thenB02/B03; broad eager/subscriptionhistory, Sky/audio/Founders/scheduledjobs cost retrospective; full historical preview registry retained."
