@@ -15,6 +15,7 @@
 //   (16 JessAstraBanner rides the ?from=jess arrival, rendered at the top when present.)
 // No flower hero inside the surface — the page's ONE header is the section still above it.
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { firstSentences, FocusedText } from "./FocusedLifestyleSheet";
 import { createPortal } from "react-dom";
 import { Moon, Sun, Sunrise, Sparkles, Music2, Pencil, ChevronDown, Check, PenLine, MessageCircle } from "lucide-react";
 import { getSunSign, getSunDegree, getRulingPlanet, getElement, getModality, getMoonPhase } from "@/utils/astrology";
@@ -202,13 +203,13 @@ function LegacySkyFocus(props) {
   const chartState = useBirthChart(props.userProfile);
   return <SkyFocusBody {...props} chartState={chartState}/>;
 }
-function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onActionState, onActionHandled, onReadingState, portalChart = false, continuous = false, celestial = false, dailyLessons = false, direction, artDirection, cycleContext, contentRoute }) {
+function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onActionState, onActionHandled, onReadingState, portalChart = false, continuous = false, celestial = false, dailyLessons = false, direction, artDirection, cycleContext, contentRoute, focusedPreview = false }) {
   const world = artDirection === "sky-worlds";
   const complete = world && direction === "petal-press";
   const artful = world || ["marginalia","reading-room"].includes(artDirection);
   const lessonFirst = world && ["workbench","light"].includes(direction);
   const movementClass = name => world ? `fw-world-${name}` : artful ? `fw-atelier-${name}` : undefined;
-  const lessonRoute = ["/Lifestyle","/SkyWorldsDemo","/LivingLifestyleDemo","/LivingReadingRoomDemo","/LivingAtelierDemo"].includes(contentRoute) ? contentRoute : world ? "/SkyWorldsDemo" : artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artful ? "/LivingAtelierDemo" : undefined;
+  const lessonRoute = ["/Lifestyle","/FocusedLifestyleDemo","/SkyWorldsDemo","/LivingLifestyleDemo","/LivingReadingRoomDemo","/LivingAtelierDemo"].includes(contentRoute) ? contentRoute : world ? "/SkyWorldsDemo" : artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artful ? "/LivingAtelierDemo" : undefined;
   const { user, astro, reading, userProfile: up, loading, generatingReading, setAstro, error:chartError, refresh } = chartState;
   const completion = useSkyCompletion(user, complete);
   const readingKey = skyReadingKey(user?.id, reading?.user_id === user?.id ? reading : null);
@@ -322,7 +323,7 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
   }
 
   const headline = clean(reading?.headline) || (exactUnavailable ? "This reading isn’t here." : celestial ? "A moment under the same moon." : `A steady day. The moon is ${moon?.waxing ? "climbing" : "releasing"}.`);
-  const weather = complete ? skyParagraphs(reading?.narrative) : celestial ? paras(reading?.narrative) : paras(reading?.narrative).slice(0, 3);
+  const weather = focusedPreview ? [firstSentences(reading?.narrative)].filter(Boolean) : complete ? skyParagraphs(reading?.narrative) : celestial ? paras(reading?.narrative) : paras(reading?.narrative).slice(0, 3);
   const energy = reading?.weather_energy || null;
   const mood = reading?.weather_mood ? clean(reading.weather_mood) : null;
   const playlist = chart.moonSign ? MOON_SIGN_PLAYLIST[String(chart.moonSign).toLowerCase()] : null;
@@ -364,7 +365,7 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
         <Eyebrow cw="crimson">{world ? "Astra, for you" : "Today's weather"}</Eyebrow>
         {weather.length ? (
           <>
-            <Body size={18}>{lead ? <><span style={{ fontStyle: artful ? "normal" : "italic", color: artful ? C.ink : C.crimson }}>{lead[1]}</span> {lead[3]}</> : weather[0]}</Body>
+            <Body size={18}>{focusedPreview ? <FocusedText text={weather[0]}/> : lead ? <><span style={{ fontStyle: artful ? "normal" : "italic", color: artful ? C.ink : C.crimson }}>{lead[1]}</span> {lead[3]}</> : weather[0]}</Body>
             {weather.slice(1).map((p, i) => <Body key={i} size={18}>{p}</Body>)}
           </>
         ) : <Body size={18}>{celestial ? "Your reading isn't available yet. Your chart and the moon notes are still here to explore." : `A steady ${chart.sun || "quiet"} day — begin the thing you've been thinking about.`}</Body>}
@@ -385,7 +386,8 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
             {notice.b ? <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16, fontWeight: 500, color: C.ink, lineHeight: 1.5, margin: "3px 0 0" }}>{notice.b}</p> : null}
           </div>
         ) : null}
-        {dailyLessons && <div className={world ? "fw-world-weather-notes" : artful ? "fw-atelier-weather-notes" : undefined}>{[["Power",reading?.power_title,reading?.power_body],["Pressure",reading?.pressure_title,reading?.pressure_body],["Trouble",reading?.trouble_title,reading?.trouble_body]].map(([label,title,body])=>title || body ? <div key={label} className={world ? `fw-world-weather-entry fw-world-weather-entry--${label.toLowerCase()}` : artful ? `fw-atelier-weather-entry fw-atelier-weather-entry--${label.toLowerCase()}` : undefined} style={artful ? undefined : {borderTop:`1px solid ${C.hair}`,padding:"14px 0 0",marginTop:14}}>{artful ? <span className={world ? "fw-world-note-label" : "fw-atelier-note-label"}>{label}</span> : <Eyebrow cw="gold" align="left">{label}</Eyebrow>}{title && <Title align="left" size={26}>{clean(title)}</Title>}{body && (complete ? skyParagraphs(body).map((text,i)=><Body key={i}>{text}</Body>) : <Body>{clean(body)}</Body>)}</div> : null)}</div>}
+        {dailyLessons && !focusedPreview && <div className={world ? "fw-world-weather-notes" : artful ? "fw-atelier-weather-notes" : undefined}>{[["Power",reading?.power_title,reading?.power_body],["Pressure",reading?.pressure_title,reading?.pressure_body],["Trouble",reading?.trouble_title,reading?.trouble_body]].map(([label,title,body])=>title || body ? <div key={label} className={world ? `fw-world-weather-entry fw-world-weather-entry--${label.toLowerCase()}` : artful ? `fw-atelier-weather-entry fw-atelier-weather-entry--${label.toLowerCase()}` : undefined} style={artful ? undefined : {borderTop:`1px solid ${C.hair}`,padding:"14px 0 0",marginTop:14}}>{artful ? <span className={world ? "fw-world-note-label" : "fw-atelier-note-label"}>{label}</span> : <Eyebrow cw="gold" align="left">{label}</Eyebrow>}{title && <Title align="left" size={26}>{clean(title)}</Title>}{body && (complete ? skyParagraphs(body).map((text,i)=><Body key={i}>{text}</Body>) : <Body>{clean(body)}</Body>)}</div> : null)}</div>}
+        {focusedPreview && reading && <details className="fw-focused-depth"><summary>Read the whole reading</summary><div className="fw-focused-prose">{skyParagraphs(reading.narrative).map((line,i)=><p key={i}><FocusedText text={line}/></p>)}{[[reading.power_title,reading.power_body],[reading.pressure_title,reading.pressure_body],[reading.trouble_title,reading.trouble_body]].filter(([title,body])=>title || body).map(([title,body],i)=><section key={i}><h3><FocusedText text={title}/></h3><p><FocusedText text={body}/></p></section>)}</div></details>}
         <fieldset disabled={exactUnavailable} style={{border:0,padding:0,margin:0,minWidth:0}}><CarryItWithYou connectedDemo={dailyLessons} seed={headline} read={markedRead} onMarkRead={markReading} readDisabled={complete && (!readingKey || markedRead)} readError={readError} /></fieldset>
       </Movement>
 

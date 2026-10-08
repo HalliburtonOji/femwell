@@ -48,12 +48,13 @@ import { usePodcastPlayer } from "@/hooks/usePodcastPlayer";
 import { playableEpisode, episodeSourceUrl } from "@/components/lifestyle/listen/episode";
 import ReadingColumn from "@/components/brand/ReadingColumn";
 import FloraCover from "@/components/brand/FloraCover";
+import FocusedLifestyleSheet, { FocusedText } from "@/components/lifestyle-elite/FocusedLifestyleSheet";
 import { ChapterBlock } from "@/utils/chapterProse";
 import { cwOf, Pollinator, floraKeyframes, FlowerGlyph } from "@/components/brand/flora";
 import {
   ChevronRight, ChevronLeft, ArrowLeft, Play, Pause, Bookmark, BookmarkCheck, Quote as QuoteIcon,
   BookOpen, Feather, Headphones, Moon, Clock, HeartPulse, Book, Users, Flame,
-  MessageCircle, Sparkles, Leaf, Film, UtensilsCrossed, ListChecks, Star, Sun, Wind,
+  MessageCircle, Sparkles, Leaf, Film, UtensilsCrossed, ListChecks, Star, Sun, Wind, ExternalLink,
 } from "lucide-react";
 
 export const SCRIPT = '"Ephesis","Pinyon Script",cursive';
@@ -394,7 +395,7 @@ const fmtTime = (s) => (Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Mat
 // So we ROUTE card audio into the app's real player: tap play here and it keeps playing when
 // she navigates or locks the phone, and resumes where she left off. Reuse, don't duplicate.
 // (Falls back to a local <audio> when rendered outside the provider — e.g. a standalone demo.)
-export function FloraAudio({ src, label, accent, initialDuration = 0, item = {}, compact = false }) {
+export function FloraAudio({ src, label, accent, initialDuration = 0, item = {}, compact = false, presentation }) {
   const player = usePodcastPlayer();
   const ref = useRef(null);
   const [localPlaying, setLocalPlaying] = useState(false);
@@ -424,7 +425,7 @@ export function FloraAudio({ src, label, accent, initialDuration = 0, item = {},
 
   const pct = dur > 0 ? Math.min(100, (t / dur) * 100) : 0;
   return (
-    <div className="fw-audio-transport" style={{ background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 16, padding: "12px 14px 10px", boxShadow: "inset 0 1px 0 rgba(255,253,247,0.6)" }}>
+    <div className="fw-audio-transport" style={{ background: presentation === "focused" ? "#FFFFFF" : T.paper, border: `1px solid ${presentation === "focused" ? "#EAE7E0" : T.paperDeep}`, borderRadius: 16, padding: "12px 14px 10px", boxShadow: presentation === "focused" ? "none" : "inset 0 1px 0 rgba(255,253,247,0.6)" }}>
       <div className="fw-audio-garden"><FloraVisualiser playing={playing} height={compact ? 36 : 66} /></div>
       <div style={{ display: "flex", alignItems: "center", gap: 13, marginTop: 6 }}>
         <button onClick={toggle} aria-label={playing || busy ? "Pause" : playerError || err ? "Retry playback" : "Play"} style={{ width: 46, height: 46, borderRadius: 999, background: accent, color: "#fff", border: "none", display: "grid", placeItems: "center", cursor: "pointer", flexShrink: 0, boxShadow: `0 4px 14px ${accent}55` }}>
@@ -782,7 +783,57 @@ export function CoverCard({ item: raw, onOpen, onConsume, consumeLabel, previewT
 }
 
 // ── EXPANDED full-screen detail card — ONE expand, typed blocks ───────────────
-export function ExpandDetailCard({ item: raw, onClose, saved: savedProp, onSave, presentation }) {
+// Exact source paragraphs, without the legacy taster cap or prefix deduplication.
+export function focusedSourceParagraphs(item) {
+  const raw = item?._raw;
+  const source = raw?.chapters_json?.length ? raw.chapters_json.map(chapter => chapter.body || "")
+    : raw?.lede ? [raw.lede] : Array.isArray(item.body) ? item.body : [item.body];
+  return source.filter(value => typeof value === "string").flatMap(value => value.replace(/<[^>]*>/g," ").split(/\n\s*\n+/)).map(value=>value.trim()).filter(Boolean);
+}
+
+export function FocusedCardContents({ item: raw }) {
+  const item = resolveCard(raw);
+  const book = item.type === "book" || !!item.gutenbergId;
+  const body = focusedSourceParagraphs(item);
+  const synopsis = item.summary || item.subtitle;
+  const source = item._raw;
+  const warnings = source?.trigger_warnings || source?.content_warnings || [];
+  const sourceUrl = source?.content_url || source?.source_url || item.externalUrl;
+  const ingredients = Array.isArray(item.ingredients) ? item.ingredients : item.ingredients?.items || [];
+  return <div className="fw-focused-prose">
+    {item.author && <p className="fw-focused-note">{item.author}</p>}
+    {!item.external && (item.videoSrc || item.youtubeId) && <MediaBlock item={item} accent="#51444e"/>}
+    {!item.external && item.audioSrc && <FloraAudio src={item.audioSrc} label={item.title} accent="#51444e" initialDuration={item.duration || 0} item={item} presentation="focused"/>}
+    {book ? synopsis && <p><FocusedText text={synopsis}/></p> : <>
+      {item.quote && <blockquote><FocusedText text={typeof item.quote === "string" ? item.quote : item.quote.text}/>{item.quote.attrib && <cite className="fw-focused-note">{item.quote.attrib}</cite>}</blockquote>}
+      {body.length ? body.map((text,i)=><p key={i}><FocusedText text={text}/></p>) : synopsis && <p><FocusedText text={synopsis}/></p>}
+      {item.reading && <section><h3>Your reading</h3>{item.reading.headline && <p><FocusedText text={item.reading.headline}/></p>}{(item.reading.lines || []).map((line,i)=><p key={i}><FocusedText text={line}/></p>)}</section>}
+      {item.excerpt && !body.includes(item.excerpt) && <blockquote><FocusedText text={item.excerpt}/></blockquote>}
+      {ingredients.length > 0 && <><h3>Ingredients</h3>{(item.ingredients.serves || item.ingredients.time) && <p className="fw-focused-note">{[item.ingredients.serves ? `Serves ${item.ingredients.serves}` : null,item.ingredients.time].filter(Boolean).join(" · ")}</p>}<ul>{ingredients.map((value,i)=><li key={i}>{typeof value === "string" ? value : value.name || value.text}</li>)}</ul></>}
+      {item.steps?.length > 0 && <><h3>{item.stepsLabel || "Give it a go"}</h3><ol>{item.steps.map((value,i)=><li key={i}>{typeof value === "string" ? value : value.text || value.title}</li>)}</ol></>}
+    </>}
+    {warnings.length > 0 && <details className="fw-focused-depth"><summary>Worth knowing</summary>{(Array.isArray(warnings) ? warnings : [warnings]).map((text,i)=><p key={i}>{text}</p>)}</details>}
+    {!book && item.takeaways?.length > 0 && <details className="fw-focused-depth"><summary>A few things to keep</summary><ul>{item.takeaways.map((text,i)=><li key={i}><FocusedText text={text}/></li>)}</ul></details>}
+    {!book && (item.external || (!item.audioSrc && !item.videoSrc && !item.youtubeId)) && /^https?:\/\//i.test(sourceUrl || "") && <a className="fw-focused-button" href={sourceUrl} target="_blank" rel="noopener noreferrer">{item.type === "video" ? "Watch" : item.type === "audio" ? "Listen" : "Read"} at {item.sourceName || "the source"}<ExternalLink size={15}/></a>}
+    {item.meta.some(([,label])=>label && !/duration unavailable/i.test(label)) && <details className="fw-focused-depth"><summary>About this {book ? "book" : "piece"}</summary><div className="fw-focused-note">{item.meta.filter(([,label])=>label && !/duration unavailable/i.test(label)).map(([,label],i)=><p key={i}>{label}</p>)}</div></details>}
+  </div>;
+}
+
+function FocusedCardDetail({ item, active, onClose, saved, saving, onSave }) {
+  const body = focusedSourceParagraphs(item);
+  const media = !!(item.audioSrc || item.videoSrc || item.youtubeId);
+  // Already reading/playing here. Keep genuine external and book/tool actions.
+  const sourceUrl = item._raw?.content_url || item._raw?.source_url;
+  const readableSource = !media && item.type !== "book" && /^https?:\/\//i.test(sourceUrl || "");
+  const actions = item.actions.filter(action => item.type === "book" || item.external || (!body.length && !media && !readableSource) || !/^(read this|open episode|open full-screen)$/i.test(action.label));
+  return <FocusedLifestyleSheet title={item.title} eyebrow={item.kind} active={active} onClose={onClose}
+    footer={<><button className="fw-focused-button" onClick={onSave} disabled={saving} aria-busy={saving} aria-pressed={saved}>{saved ? <BookmarkCheck size={16}/> : <Bookmark size={16}/>} {saving ? "Saving…" : saved ? "Saved" : "Save"}</button>{actions.map(action=><button key={action.label} className={`fw-focused-button${action.primary ? " fw-focused-button--primary" : ""}`} onClick={()=>{onClose();action.onClick?.(item);}}>{action.label}</button>)}</>}>
+    <FocusedCardContents item={item}/>
+    {!body.length && !media && !readableSource && !item.quote && item.type !== "book" && <p className="fw-focused-note">Only a summary is published here so far.</p>}
+  </FocusedLifestyleSheet>;
+}
+
+export function ExpandDetailCard({ item: raw, onClose, saved: savedProp, onSave, presentation, active = true }) {
   const item = resolveCard(raw);
   const [show, setShow] = useState(false);
   // SAVE is controlled when `saved`/`onSave` are supplied (so a page can persist it);
@@ -804,12 +855,15 @@ export function ExpandDetailCard({ item: raw, onClose, saved: savedProp, onSave,
   const I = ICON[item.Icon] || Sparkles;
   const close = useCallback(() => { setShow(false); setTimeout(onClose, reduceMotion() ? 0 : 280); }, [onClose]);
   useEffect(() => {
+    if (presentation === "focused" || !active) return;
     const r = requestAnimationFrame(() => setShow(true));
     const onKey = (e) => { if (e.key === "Escape") close(); };
     window.addEventListener("keydown", onKey);
     return () => { cancelAnimationFrame(r); window.removeEventListener("keydown", onKey); };
-  }, [close]);
+  }, [close,presentation,active]);
   const anim = reduceMotion() ? {} : { opacity: show ? 1 : 0, transform: show ? "scale(1) translateY(0)" : "scale(0.96) translateY(14px)", transition: "opacity .28s ease, transform .32s cubic-bezier(.32,.72,.24,1)" };
+
+  if (presentation === "focused") return <FocusedCardDetail item={item} active={active} onClose={onClose} saved={saved} saving={saving} onSave={toggleSave}/>;
 
   return (
     <div className={presentation === "folio" ? "fw-selected-detail" : undefined} style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(28,20,12,0.28)", backdropFilter: "blur(2px)", display: "flex", justifyContent: "center" }} onClick={close}>

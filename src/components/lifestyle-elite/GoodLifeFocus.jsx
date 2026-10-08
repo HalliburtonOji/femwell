@@ -70,7 +70,7 @@ function GoodCard({ eyebrow, title, accent = "gold", children, style, className 
   );
 }
 
-export default function GoodLifeFocus({ timeLens, joys = [], onSlip, onPlan, timeOfDay, presentation }) {
+export default function GoodLifeFocus({ timeLens, joys = [], onSlip, onPlan, timeOfDay, presentation, onOpenRooms }) {
   const greet = timeOfDay === "morning" ? "What have you got time for this morning?"
     : timeOfDay === "evening" ? "What have you got time for this evening?"
     : "What have you got time for right now?";
@@ -97,7 +97,7 @@ export default function GoodLifeFocus({ timeLens, joys = [], onSlip, onPlan, tim
       ) : null}
 
       {/* 3 · YOUR ROOMS — the 11 whole-life doors (health is one room, not the house) */}
-      <GoodCard className="fw-selected-doors" eyebrow="The rest of your life" title="Step into a room" accent="crimson">
+      {onOpenRooms ? <button className="fw-focused-button" onClick={onOpenRooms} style={{alignSelf:"flex-start"}}><Sprout size={17}/>Explore life’s rooms</button> : <GoodCard className="fw-selected-doors" eyebrow="The rest of your life" title="Step into a room" accent="crimson">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           {ROOMS.map((r) => (
             <a key={r.href} href={createPageUrl(r.href)} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", background: C.sunk, border: `1px solid ${C.hair}`, borderRadius: 13, padding: "11px 12px" }}>
@@ -109,7 +109,7 @@ export default function GoodLifeFocus({ timeLens, joys = [], onSlip, onPlan, tim
             </a>
           ))}
         </div>
-      </GoodCard>
+      </GoodCard>}
 
       <Foot>{presentation ? "Some things are worth doing badly, just for fun." : "Leisure is the point — a little is plenty, and “not today” is a fine answer."}</Foot>
     </div>

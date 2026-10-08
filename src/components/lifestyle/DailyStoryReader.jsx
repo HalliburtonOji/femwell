@@ -388,6 +388,7 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize,
   // Slice each chapter into pages that fit the visible viewport.
   // slices: [[startParaIdx, endParaIdx], ...] — end is inclusive.
   const measureRef = useRef(null);
+  const headingMeasureRef = useRef(null);
   const [slices, setSlices] = useState(null);
   const [tallPages, setTallPages] = useState([]);
   const [availableHeight, setAvailableHeight] = useState(null);
@@ -455,6 +456,13 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize,
       if (stage && realBody) {
         const padB = parseFloat(getComputedStyle(stage).paddingBottom) || 0;
         available = (stage.getBoundingClientRect().bottom - padB) - realBody.getBoundingClientRect().top;
+        // Every slice uses the opening page's capacity. A later page omits the
+        // heading visually, but a real font/viewport remeasure must not suddenly
+        // pack extra paragraphs and move the saved page. Measure the same type,
+        // width and contained margins, rather than guessing a heading height.
+        if (headingText && !realBody.parentElement.querySelector(":scope > .ds-reader-h1")) {
+          available -= headingMeasureRef.current?.getBoundingClientRect().height || 0;
+        }
       }
       // Fallback only when the geometry isn't readable yet (keeps the old conservative guess).
       if (!(available > 160)) available = Math.max(260, window.innerHeight - (immersive ? 220 : 280));
@@ -589,6 +597,10 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize,
         aria-hidden="true"
         className="ds-reader-measure"
       >
+        {headingText && <div ref={headingMeasureRef} className="ds-reader-measure-heading" style={{display:"flow-root"}} aria-hidden="true">
+          <h1 className="ds-reader-h1">{headingText}</h1>
+          <div className="ds-reader-ornament">· · ·</div>
+        </div>}
         {paragraphs.map((p, i) => (
           <p key={i} className={i === 0 ? "ds-reader-p ds-measure-p ds-reader-p-first" : "ds-reader-p ds-measure-p"}>
             {p}
@@ -1044,10 +1056,14 @@ export default function DailyStoryReader({
       if (activeRef.current && generation === flipGenerationRef.current) finish();
     }, delay);
   }, []);
-  const clearRestoreAnchor = useCallback(() => {
-    pendingAnchorRef.current = null;
+  const clearRestoreAnchor = useCallback(nextPage => {
+    // A deliberate page choice outranks the old resume anchor. If fonts are
+    // still settling, carry the newly chosen paragraph through that reflow.
+    const slices = currentChapterRef && chapterSlicesRef.current[currentChapterRef.id];
+    pendingAnchorRef.current = Number.isFinite(nextPage) && chapterFontSettledRef.current[currentChapterRef?.id] === false
+      ? slices?.[nextPage]?.[0] ?? null : null;
     pendingPageRef.current = null;
-  }, []);
+  }, [currentChapterRef]);
 
   const flipForward = useCallback(() => {
     if (!activeRef.current) return;
@@ -1056,12 +1072,12 @@ export default function DailyStoryReader({
     // Step inside the current chapter first.
     if (pageInChapter < currentChapterPages - 1) {
       if (reducedMotion) {
-        clearRestoreAnchor();
+        clearRestoreAnchor(pageInChapter + 1);
         setPageInChapter(p => p + 1);
       } else {
         setFlipState({ phase: "flipping", dir: 1 });
         scheduleFlip(() => {
-          clearRestoreAnchor();
+          clearRestoreAnchor(pageInChapter + 1);
           setPageInChapter(p => p + 1);
           setFlipState({ phase: "idle", dir: 0 });
         }, 350);
@@ -1121,12 +1137,12 @@ export default function DailyStoryReader({
     // Step inside the current chapter first.
     if (pageInChapter > 0) {
       if (reducedMotion) {
-        clearRestoreAnchor();
+        clearRestoreAnchor(pageInChapter - 1);
         setPageInChapter(p => p - 1);
       } else {
         setFlipState({ phase: "flipping", dir: -1 });
         scheduleFlip(() => {
-          clearRestoreAnchor();
+          clearRestoreAnchor(pageInChapter - 1);
           setPageInChapter(p => p - 1);
           setFlipState({ phase: "idle", dir: 0 });
         }, 350);

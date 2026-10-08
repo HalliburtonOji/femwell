@@ -11,6 +11,7 @@ import ErrorBoundary from "./components/common/ErrorBoundary";
 import { MilestoneEventListener } from "./components/programs/MilestoneCelebrationModal";
 import { PodcastPlayerProvider } from "./components/lifestyle/listen/PodcastPlayerProvider";
 import { PAPER_BG, InkFilter, Heart as BrandHeart } from "./components/journal/Editorial";
+import { CLEAN_BG } from "./components/brand/cleanTokens";
 import MiniPlayer from "./components/lifestyle/listen/MiniPlayer";
 import ExpandedPlayer from "./components/lifestyle/listen/ExpandedPlayer";
 
@@ -20,7 +21,8 @@ const LITE_NAV = ["ProgramDay", "ProgramDetail"];
 const todayStr = new Date().toISOString().split("T")[0];
 
 export default function Layout({ children, currentPageName }) {
-  const navPageName = currentPageName === "SkyWorldsDemo" ? "Lifestyle" : currentPageName;
+  const cleanPreview = currentPageName === "FocusedLifestyleDemo";
+  const navPageName = ["SkyWorldsDemo","FocusedLifestyleDemo"].includes(currentPageName) ? "Lifestyle" : currentPageName;
   const showNav = !HIDE_NAV.includes(currentPageName) || LITE_NAV.includes(currentPageName);
   const navMode = LITE_NAV.includes(currentPageName) ? "lite" : "full";
 
@@ -59,7 +61,7 @@ export default function Layout({ children, currentPageName }) {
     <PodcastPlayerProvider>
     {/* App shell — the real cream paper texture is the base surface for every
         page (the per-page cream backgrounds now sit seamlessly on top). */}
-    <div className="min-h-screen" style={{ ...PAPER_BG }}>
+    <div className="min-h-screen" style={{ ...(cleanPreview ? CLEAN_BG : PAPER_BG) }}>
       {/* Global SVG <filter> defs (#inkCarve / #inkCarveSm) — supplies the metallic
           3D carve that tier-1 .fw-display headings reference via filter:url(#inkCarve),
           so every production page title matches the journal demo's <Script carve>.

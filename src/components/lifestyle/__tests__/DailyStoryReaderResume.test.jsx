@@ -10,7 +10,8 @@ beforeEach(()=>{
  const original=HTMLElement.prototype.getBoundingClientRect;
  vi.spyOn(HTMLElement.prototype,'getBoundingClientRect').mockImplementation(function(){
   if(this.classList.contains('ds-reader-stage'))return {top:0,bottom:window.innerHeight,height:window.innerHeight,width:350};
-  if(this.classList.contains('ds-reader-body')){const top=this.closest('.ds-reader-page').querySelector('.ds-reader-h1')?200:100;return {top,bottom:600,height:600-top,width:350};}
+  if(this.classList.contains('ds-reader-body')){const top=this.closest('.ds-reader-page').querySelector(':scope > .ds-reader-h1')?200:100;return {top,bottom:600,height:600-top,width:350};}
+  if(this.classList.contains('ds-reader-measure-heading'))return {top:0,bottom:100,height:100,width:350};
   if(this.classList.contains('ds-measure-p')){measurementReads++;const i=[...this.parentElement.children].indexOf(this);return {top:i*paragraphHeight,bottom:(i+1)*paragraphHeight,height:paragraphHeight,width:350};}
   return original.call(this);
  });
@@ -108,4 +109,16 @@ it('a deliberate next-page selection supersedes the earlier resume anchor during
  expect(prose()).toContain('Actual paragraph 3');expect(prose()).not.toContain('Actual paragraph 2');
  paragraphHeight=220;fonts.status='loaded';resolveReady();await settleFrames();
  expect(prose()).toContain('Actual paragraph 3');expect(prose()).not.toContain('Actual paragraph 2');
+});
+
+it('a new loaded ready promise with identical glyphs and viewport preserves exact later-page prose and count',async()=>{
+ const fonts=fontSet('loaded',Promise.resolve());
+ const {rerender}=render(<DailyStoryReader active source={source} bookId='unchanged-font-generation' defaultImmersive/>);await settleFrames();
+ fireEvent.click(screen.getByRole('button',{name:'Next page'}));
+ const before=prose(),label=document.querySelector('.ds-reader-nav').textContent;
+ expect(before).toContain('Actual paragraph 2');expect(before).not.toContain('Actual paragraph 1');
+ rerender(<DailyStoryReader active={false} source={source} bookId='unchanged-font-generation' defaultImmersive/>);
+ fonts.ready=Promise.resolve();
+ rerender(<DailyStoryReader active source={source} bookId='unchanged-font-generation' defaultImmersive/>);await settleFrames();
+ expect(prose()).toBe(before);expect(document.querySelector('.ds-reader-nav').textContent).toBe(label);
 });
