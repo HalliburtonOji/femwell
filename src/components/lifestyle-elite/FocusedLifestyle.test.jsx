@@ -8,6 +8,12 @@ vi.mock('@/api/base44Client',()=>({base44:sdk}));vi.mock('@/hooks/usePodcastPlay
 beforeEach(()=>{vi.clearAllMocks();sdk.entities.LifestyleItems.filter.mockResolvedValue([]);sdk.auth.me.mockResolvedValue({id:'owner-a'});sdk.entities.Goal.create.mockResolvedValue({id:'new-goal'});});
 const base={id:'real-piece',type:'article',title:'Real confidence source',body:[],summary:'Source opening',meta:[],actions:[]};
 const roomsProps={active:true,onClose:vi.fn(),user:{id:'owner-a'},profile:{},shellItems:[],toCard:r=>({...base,...r}),isSaved:()=>false,onSave:vi.fn(),onStory:vi.fn(),onSky:vi.fn()};
+it('cleans decorative publisher title marks without changing the source row',async()=>{
+ const row={id:'emoji-source',title:'Real confidence source 🌅',category:'Lifestyle'};
+ sdk.entities.LifestyleItems.filter.mockResolvedValue([row]);render(<FocusedLifestyleRooms {...roomsProps}/>);
+ expect(await screen.findByRole('button',{name:'Real confidence source',exact:true})).toBeVisible();
+ expect(row.title).toBe('Real confidence source 🌅');
+});
 it('preserves the existing structured quote and attribution in focused detail',()=>{
  expect(()=>render(<FocusedCardContents item={{...base,type:'quote',quote:{text:'Take a quiet hour',attrib:'FemWell'}}}/>)).not.toThrow();
  expect(screen.getByText('Take a quiet hour')).toBeVisible();expect(screen.getByText('FemWell')).toBeVisible();

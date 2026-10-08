@@ -3,7 +3,7 @@ import { ArrowLeft, ArrowRight, Bookmark, Sprout, Flower2, Feather, Moon, Trees,
 import { base44 } from "@/api/base44Client";
 import { isClickbait } from "@/utils/clickbait";
 import { cleanTitle } from "@/utils/cleanTitle";
-import { FocusedCardContents, focusedSourceParagraphs } from "@/components/brand/expandCards";
+import { FocusedCardContents, focusedSourceParagraphs, resolveCard } from "@/components/brand/expandCards";
 import FocusedLifestyleSheet, { firstSentences, FocusedText } from "./FocusedLifestyleSheet";
 import * as BLUEPRINTS from "./roomBlueprints";
 
@@ -129,7 +129,7 @@ export default function FocusedLifestyleRooms({ active, onClose, user, profile, 
         {topic.line && <p className="fw-focused-note">{firstSentences(topic.line,1)}</p>}
         {room === "Kindred" && topic.nudge && <details className="fw-focused-depth"><summary>A little reach-out idea</summary><p className="fw-focused-prose">{d.REACH_OUT}</p></details>}
         {loading && <p role="status" className="fw-focused-note">Opening the library…</p>}{libraryError && <div role="alert"><p className="fw-focused-note">{libraryError}</p><button className="fw-focused-button" disabled={loading} onClick={()=>library ? loadMoreLibrary() : setRevision(value=>value+1)}>Try again</button></div>}
-        <ul className="fw-focused-room-list">{rows.map(row=><li key={row.id}><button onClick={()=>open(row)}><span style={{flex:1}}>{cleanTitle(row.title)}<small>{row.source_name || row.channel_name || row.author_name}</small></span><ArrowRight size={16}/></button></li>)}</ul>
+        <ul className="fw-focused-room-list">{rows.map(row=><li key={row.id}><button onClick={()=>open(row)}><span style={{flex:1}}>{resolveCard({title:cleanTitle(row.title)}).title}<small>{row.source_name || row.channel_name || row.author_name}</small></span><ArrowRight size={16}/></button></li>)}</ul>
         {ordered.length>rows.length && <button className="fw-focused-button" onClick={()=>setVisibleCounts(values=>({...values,[`${room}:${topic.key}`]:(values[`${room}:${topic.key}`] || 3)+6}))}>More in this room</button>}
         {libraryHasMore && <details className="fw-focused-depth"><summary>Browse the wider library</summary><button className="fw-focused-button" disabled={loading} onClick={loadMoreLibrary}>{loading ? "Loading…" : "Load more published pieces"}</button></details>}
         {!rows.length && !loading && !libraryError && topic.key!=="solitude" && <p className="fw-focused-note">No published pieces here yet. Try another topic.</p>}
