@@ -1,5 +1,9 @@
 # Legacy surfaces and unfinished builds — rolling closure ledger
 
+## 8 October run0006 · opened-tools functional batch
+
+Books native390 and real components expose cached reader/chooser body portals above Today; bounded owner suspension and retained return repair CR0033/35. Expanded-card Save/physical Remove authority and completion repair CR0034/36/37 with controlled real components. Release/native evidence pending in run0006 report; these changes add **no visual coverage** for old ChapterSheet/Expand/Calendar material, small close buttons, uncommon reader states or other popups. Same full features/content/header remain. Next A05 maps every remaining open/interact/close state and bespoke Ideas preview; source-only Sky chart portal/FaceOverlay/SliderKit key lifetimes remain S06 candidates. Do not call the whole legacy ecosystem complete or flatten every surface through a mass replacement.
+
 Halli's correction,7October2026; canon§10.5.22/§2.7. OwnerCodex; independentCritiqueDirector. This is a newly added scope, **not a completed app-wide visual audit**. Baselinea0dcfae/siteindex-vgy9xevr.js; workflowclaimc4ac79c. Existing B01-S03-A01 cursor retained.
 
 ## Completion contract

@@ -72,6 +72,8 @@ Cost cards/research in CAPACITY_COST; complete feature inventory/primary referen
 
 ## B02 — Community and DM with meaningful shared context
 
+8October run0006 A05 carry-over: complete coherent CR0033–37 opened-tool repairs (cached reader/chooser lifetime, current canonical keep authority, exact physical removal and kept-card completion exit), re-prove mobile and record live receipt. Continue A05 actual ChapterSheet/ExpandDetailCard/plan/calendar/club state registry and bespoke legacy preview next; functional closure is not appearance approval. Existing opt-in reader study/held sharing/nudge/backlog stay held. Broader Sky birth-chart portal and other hidden-overlay listeners are source-only S06 candidates, not newly closed bugs. Growth retrospective stays action-aware: cached readers add no download; safety writes need targeted authority/ack/absence reads; logical auth checks share the existing30s cache, not necessarily independent network work.
+
 **Planned; substantial additions unapproved.** Inspect actual existing rooms, moderation, sender/recipient state, handlers and schema. Carry forward connected-life research and Lifestyle context; avoid another social system. Verify existing links and repair broken intended behaviour where authorised.
 
 For an evidenced missing connection, prepare an Ideas prototype: exact source/passage/episode/lesson→explicit preview/audience→recipient controls→response→source return. Keep private reflection distinct, retain recipient/age gates, count real taps/reading cost. Halli decides substantial new behaviour, audience/privacy defaults, notification or schema changes. No posting/DM sends on his behalf. Held proposals do not block independent existing-journey audits.

@@ -1,5 +1,11 @@
 # Critic learning — append dated evidence
 
+## 8 October — run0006 opened tools own their lifetime and completion
+
+A kept page's display:none does not hide its body portal. Native client-nav Back and independent real Shell readers/chooser prove the distinction; a document-navigation control tears down correctly. Use the exact App owner, not an alias inferred by a child. Retain reader source/paragraph/settings/DOM, suspend global effects and hidden measurement/progress, cancel turns and return without refetch/duplicate reached signals. A hidden portal's absent selector is the wrong final assertion; test its visibility/inert/input/lock and retained return, keeping the original red evidence.
+
+A repaired routed detail does not repair the shell's separate expanded producer. Actual Save revealed cached-array overwrite, failed-read duplicate and foreign acknowledgement; exact physical Remove revealed auth change mid-loop and false absence. Reuse authority, preserve requested retry and cumulative receipts, read current canonical arrays and actual absence before success. Completion includes the UI: a stale kept-card snapshot still showed pressed Remove after deletion; confirmed removal returns that card to the existing collection, while ordinary full source detail stays. No invented unsupported re-keep or second store. Logical auth checks share existing30s/in-flight cache; transport, credential races, atomic writes and RLS remain different proof questions.
+
 ## 7 October2026 — run0005 continuation and acknowledgement
 
 - Real toolbar hit-testing caught page zones covering visible Reflect; raising the whole positioned toolbar preserved all functions while restoring actual control hits. Source keyboard audit then found keys and touch from note/range/settings bubbling into paging. Capture key ownership before a sheet removes itself, preserve native widgets/modifiers/composition/defaultPrevented and close one layer per Escape. Actual43reader and independent65regressions plus root360/390/430 caret0→1/no pageflip and390 layeredEscape corroborate the repair. Native range2→3→2 and bookmark restoration add real interactions; actual touchscreen gestures remain controlled/physicaliPhoneunverified.

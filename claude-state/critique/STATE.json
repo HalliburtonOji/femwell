@@ -45,7 +45,7 @@
   "current": {
     "section": "Lifestyle / Books and Yours",
     "atom": "B01-S03-A05",
-    "status": "A05 reader/note review checkpoint verified: source32bac79/live5OE. Shared clipping/scroll/midnight/margin controls repaired on main; opt-in reader/private-note/settings appearance stays Ideas-only pending the new explicit decision. Remaining club/details/pickers/secondary-state registry and exact returns are next, around held social delivery."
+    "status": "Run0006 coherent CR0033–37 opened-tool repair batch in release verification; baseline32bac79/index-5OEW8Bz1.js still live."
   },
   "lastCompleted": {
     "run": 5,
@@ -89,7 +89,7 @@
     "Account, auth, settings and Saved"
   ],
   "nextRunNumber": 6,
-  "latestReport": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md",
+  "latestReport": "claude-state/critique/reports/0006-books-opened-states-2026-10-08.md",
   "findings": [
     {
       "id": "CR-0001",
@@ -314,6 +314,41 @@
       "title": "Mobile reader margin choices change selected state but not prose spacing",
       "status": "Closed bounded: claimsf09d5d4/8d254a1 before source32bac79. Actual main mobile16/24/32 and preview12/20/28 gutters at360/390/430, body=measurer and full reflow; desktop1024 Narrow680/Default580/Wide480 consistent. Same defaults/keys/options/full source preserved, independent source/final pixels accepted.",
       "report": "claude-state/critique/reports/0005-books-continuation-notes-2026-10-07.md"
+    },
+    {
+      "id": "CR-0033",
+      "severity": "P1",
+      "title": "Cached Lifestyle reader portal survives browser Back and locks the destination",
+      "status": "Source repaired; independent actual-component reproof, full test gate and final mobile release pending. No appearance closure.",
+      "report": "claude-state/critique/reports/0006-books-opened-states-2026-10-08.md"
+    },
+    {
+      "id": "CR-0034",
+      "severity": "P1",
+      "title": "Expanded detail Save uses stale authority or false acknowledgement",
+      "report": "claude-state/critique/reports/0006-books-opened-states-2026-10-08.md",
+      "status": "Source repaired; independent actual-component reproof, full test gate and final mobile release pending. No appearance closure."
+    },
+    {
+      "id": "CR-0035",
+      "severity": "P1",
+      "title": "Cached book chooser covers the destination after Back",
+      "report": "claude-state/critique/reports/0006-books-opened-states-2026-10-08.md",
+      "status": "Source repaired; independent actual-component reproof, full test gate and final mobile release pending. No appearance closure."
+    },
+    {
+      "id": "CR-0036",
+      "severity": "P1",
+      "title": "Physical keep removal misses owner change and absence acknowledgement",
+      "report": "claude-state/critique/reports/0006-books-opened-states-2026-10-08.md",
+      "status": "Source repaired; independent actual-component reproof, full test gate and final mobile release pending. No appearance closure."
+    },
+    {
+      "id": "CR-0037",
+      "severity": "P2",
+      "title": "Kept-card detail remains pressed after confirmed removal",
+      "report": "claude-state/critique/reports/0006-books-opened-states-2026-10-08.md",
+      "status": "Source repaired; independent actual-component reproof, full test gate and final mobile release pending. No appearance closure."
     }
   ],
   "decisions": [
@@ -392,10 +427,16 @@
     "batch": "B01",
     "stage": "B01-S03",
     "atom": "B01-S03-A05",
-    "nextStep": "Reader/note review checkpoint complete. Continue remaining B01-S03-A05 actual club/details/pickers/secondary-state registry and exact source-return proof, including accessible rare branches and hidden-route portal lifetime. Reconcile full source/consumers and specific research before each mapped repair; claim anew before edits. Reader appearance approval is pending and does not block independent work; no main visual promotion without answer.",
+    "nextStep": "Finish CR0033–37 independent completion reproof/full tests/build/push/frontend deploy, original cached reader/chooser Back/Forward and nearby details/returns360/390/430; record final source/live receipt. Then A05 remaining ChapterSheet/Expand/plan/calendar/club state registry and bespoke Ideas legacy preview. No held appearance/social/nudge/backlog promotion or repeated question.",
     "readyWork": "Actual trigger→complete content/tools/state→open/interact/close/exact source path for remaining Books/Yours secondary surfaces. Preserve all earlier functional repairs/full history, approved section personality and raw QA note. No second shelf/reader/store, no inferred checkpoint or social send. Revisit source-only portal/chrome candidates with precise fixtures/native journeys rather than manufacturing changes.",
     "acceptance": "Actual360/390/430 open/interact/close/theme/preferences/exactsource/Back, controlledfailure/owner/keyboard/touch plus independentP0/P1/P2; bespoke clean§2.7/6.7.8 with safe sheets/44px controls, short human copy and peratom costcard§10.5.23. Link working preview/research/checks/gaps in Ideas before main promotion.",
     "heldBranch": "A04 exact reached-checkpoint→selectedwords/destinationpreview→explicitPost proposal is published/asked, unanswered; do notimplement socialdelivery/defaults orreattest/reask unchangedchoices. Continue independentA05 work.",
     "carryForward": "Remaining opened club/details/pickers and state registry; S04→S05→S06 thenB02/B03; broad eager/subscriptionhistory, Sky/audio/Founders/scheduledjobs cost retrospective; full historical preview registry retained."
+  },
+  "activeRun": {
+    "run": 6,
+    "status": "in progress",
+    "startedAt": "2026-10-08T00:35:06.377Z",
+    "claimCommit": "4e9ae4b"
   }
 }

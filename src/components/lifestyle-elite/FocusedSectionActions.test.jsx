@@ -12,6 +12,25 @@ const openChooser = (label) => {
 };
 
 describe("FocusedSectionActions — preview interaction contract", () => {
+  it("suspends a cached chooser without choosing or focusing its hidden origin, then restores its choices", async () => {
+    const open = vi.fn(), item = { id: "book", title: "A real book" };
+    const actions = [{ label: "Choose a book", items: [item], open }];
+    const { rerender } = render(<><button>Destination control</button><FocusedSectionActions routeActive actions={actions} plum="#402D46"/></>);
+    const opener = openChooser("Choose a book");
+    await screen.findByRole("dialog", { name: "Choose a book" });
+    const focus = vi.spyOn(opener, "focus");
+    rerender(<><button>Destination control</button><FocusedSectionActions routeActive={false} actions={actions} plum="#402D46"/></>);
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(open).not.toHaveBeenCalled();
+    expect(focus).not.toHaveBeenCalled();
+    const destination = screen.getByRole("button", { name: "Destination control" });
+    destination.focus(); fireEvent.keyDown(destination, { key: "Escape" });
+    expect(destination).toHaveFocus();
+    rerender(<><button>Destination control</button><FocusedSectionActions routeActive actions={actions} plum="#402D46"/></>);
+    const dialog = await screen.findByRole("dialog", { name: "Choose a book" });
+    fireEvent.click(within(dialog).getByRole("button", { name: item.title }));
+    await waitFor(() => expect(open).toHaveBeenCalledExactlyOnceWith(item));
+  });
   it("should run the matching action directly and leave disabled actions untouched", () => {
     const ask = vi.fn();
     const edit = vi.fn();

@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useLifestyleKeeps } from "./useLifestyleKeeps";
+import { readLifestyleFindAuthority, readSavedFindAuthority } from "@/lib/savedCollections";
 import { useLifestyleFeed } from "./useLifestyleFeed";
 import { authoredJoyId, timeFit, rankedReads, gutenbergReaderHref, newestOwnedReading } from "./finishLifestyle";
 import useLifestyleContinuation from "./useLifestyleContinuation";
@@ -493,7 +494,7 @@ export default function LifestyleEliteShell(props = {}) {
   // Standalone founder studies can render without App's router; main keeps one document/player.
   return routed ? <RoutedLifestyleShell {...props}/> : <LifestyleShell {...props} navigate={href=>window.location.assign(href)}/>;
 }
-function LifestyleShell({ navigate, routePathname, enableFocus = false, layout = null, clean = false, previewActions = false, initialSection = null, continuousSky = false, celestialSky = false, botanicalHeader = false, firstFoldVariant = null, dailySkyLessons = false, artDirection = null, skyWorld = null, contentRoute } = {}) {
+function LifestyleShell({ navigate, routePathname, routeActive = true, enableFocus = false, layout = null, clean = false, previewActions = false, initialSection = null, continuousSky = false, celestialSky = false, botanicalHeader = false, firstFoldVariant = null, dailySkyLessons = false, artDirection = null, skyWorld = null, contentRoute } = {}) {
   const foldVariant = clean && (["living", "garden", "almanac", "canopy"].includes(firstFoldVariant) || isLivingDirection(firstFoldVariant)) ? firstFoldVariant : null;
   const livingDemo = isLivingDirection(foldVariant) || ["reading-room","sky-worlds"].includes(artDirection);
   const worldDirection = artDirection === "sky-worlds" ? getSkyWorld(skyWorld).id : foldVariant;
@@ -526,7 +527,7 @@ function LifestyleShell({ navigate, routePathname, enableFocus = false, layout =
   const [savedIds, setSavedIds] = useState([]);    // UserProfile.saved_item_ids (the SAVE field)
   const [skyNotes, setSkyNotes] = useState([]);    // recent SkyNote rows (real, persisted)
   const continuationRoute = useRef(contentRoute || routePathname || window.location.pathname);
-  const continuationActive = !routePathname || routePathname === continuationRoute.current || (continuationRoute.current === "/Lifestyle" && routePathname === "/LifestyleElite");
+  const continuationActive = routeActive && (!routePathname || routePathname === continuationRoute.current || (continuationRoute.current === "/Lifestyle" && routePathname === "/LifestyleElite"));
   const {items: continueItems, refresh: loadContinue} = useLifestyleContinuation({enabled: !loading, active: continuationActive, routePathname, catalogue: gutenberg});
 
   // overlays
@@ -550,6 +551,9 @@ function LifestyleShell({ navigate, routePathname, enableFocus = false, layout =
   const [toast, setToast] = useState(null);
   const sliderRef = useRef(null);
   const savePending = useRef(false);
+  const saveIntent = useRef(null);
+  const saveMounted = useRef(true);
+  useEffect(() => { saveMounted.current = true; return () => { saveMounted.current = false; }; }, []);
   const [planRequest, setPlanRequest] = useState(null);
   const planResolve = useRef(null);
   const ownerRef = useRef(null);
@@ -708,32 +712,60 @@ function LifestyleShell({ navigate, routePathname, enableFocus = false, layout =
     return () => { alive = false; unsubItems?.(); };
   }, [loadContent, loadGutenberg, loadSkyNotes, invalidateKeptSources]);
 
-  // ── SAVE toggle (persists to UserProfile.saved_item_ids — optimistic + rollback) ──
+  // Exact authority at action time; acknowledge the requested keep before changing UI.
   const toggleSave = useCallback(async (item) => {
     if (!item?.id || savePending.current) return false;
     if (!user?.id) { flash("Sign in to keep this find"); return false; }
-    const owner = user.id, was = isSaved(item.id);
-    const next = was ? savedIds.filter(id => id !== item.id) : [...new Set([...savedIds, item.id])];
+    const owner = user.id, itemId = item.id;
+    const priorIntent = saveIntent.current;
+    const sameIntent = priorIntent?.owner === owner && priorIntent.itemId === itemId && priorIntent.itemType === "LIFESTYLE";
+    const target = sameIntent ? priorIntent.target : !isSaved(itemId);
+    const intent = sameIntent ? priorIntent : { owner, itemId, itemType: "LIFESTYLE", target, removed: new Set() };
+    saveIntent.current = intent;
+    const current = () => saveMounted.current && ownerRef.current === owner;
+    const assertOwner = async () => {
+      if (!current() || (await base44.auth.me())?.id !== owner || !current()) throw new Error("Account changed");
+    };
     savePending.current = true;
     try {
-      const currentUser=await base44.auth.me();
-      if(currentUser?.id!==owner) throw new Error("Account changed");
-      if(was) {
-        const rows=await base44.entities.SavedItems.filter({user_id:owner,item_type:"LIFESTYLE",item_id:item.id});
-        for(const row of rows.filter(row=>row.user_id===owner)) await base44.entities.SavedItems.delete(row.id);
+      let { profile: latest, physical } = await readLifestyleFindAuthority(owner, itemId, assertOwner);
+      const removedSavedRecordIds = intent.removed;
+      if (!target) {
+        for (const row of physical) { await assertOwner(); await base44.entities.SavedItems.delete(row.id); removedSavedRecordIds.add(row.id); }
+        ({ profile: latest, physical } = await readLifestyleFindAuthority(owner, itemId, assertOwner));
+        if (physical.length) throw new Error("Removal not confirmed");
       }
-      const result = profile?.id
-        ? await base44.entities.UserProfile.update(profile.id, { saved_item_ids: next })
-        : await base44.entities.UserProfile.create({ user_id: owner, user_email: user.email, saved_item_ids: next });
-      if (!result?.id || ownerRef.current !== owner) return false;
-      setProfile(p => ({ ...p, ...result, saved_item_ids: next })); setSavedIds(next);
-      if (was) removeConfirmedKeeps(owner, keep => keep.item_id === item.id);
-      flash(was ? "Removed from saved" : "Kept for later");
-      if (!was) recordAction(item, "save");
+      const before = latest?.saved_item_ids || [];
+      const next = target ? (before.includes(itemId) ? before : [...before, itemId]) : before.filter(id => id !== itemId);
+      await assertOwner();
+      if ((!latest && target) || (latest && JSON.stringify(before) !== JSON.stringify(next))) {
+        const result = latest
+          ? await base44.entities.UserProfile.update(latest.id, { saved_item_ids: next })
+          : await base44.entities.UserProfile.create({ user_id: owner, user_email: user.email, saved_item_ids: next });
+        const matches = row => row?.id && row.user_id === owner && (!latest || row.id === latest.id) && Array.isArray(row.saved_item_ids) && JSON.stringify(row.saved_item_ids) === JSON.stringify(next);
+        if (!matches(result)) {
+          if (!result?.id || (latest && result.id !== latest.id) || (result.user_id && result.user_id !== owner)) throw new Error("Wrong acknowledgement");
+          await assertOwner();
+          const rows = await base44.entities.UserProfile.filter({ user_id: owner, id: result.id });
+          const accepted = Array.isArray(rows) ? rows.find(row => row.id === result.id && matches(row)) : null;
+          if (!accepted) throw new Error("Keep not confirmed");
+          latest = accepted;
+        } else latest = { ...latest, ...result };
+      }
+      await assertOwner();
+      setProfile(latest ? { ...latest, saved_item_ids: next } : null); setSavedIds(next);
+      if (!target) {
+        removeConfirmedKeeps(owner, keep => keep.item_type === "LIFESTYLE" && keep.item_id === itemId);
+        setExpanded(card => card?._keep?.item_type === "LIFESTYLE" && card._keep.item_id === itemId ? null : card);
+      }
+      window.dispatchEvent(new CustomEvent("fw_sky_lesson_saved", { detail: { ownerId: owner, itemId, profile: { id: latest?.id || null, user_id: owner, saved_item_ids: next }, removedSavedRecordIds: [...removedSavedRecordIds] } }));
+      saveIntent.current = null;
+      flash(target ? "Kept for later" : "Removed from saved");
+      if (target) recordAction(item, "save");
       return true;
-    } catch { if (ownerRef.current === owner) { flash("Couldn't update your keeps — try again"); setKeepsRevision(n=>n+1); } return false; }
+    } catch { if (current()) { flash("Couldn't update your keeps — try again"); setKeepsRevision(n=>n+1); } return false; }
     finally { savePending.current = false; }
-  }, [savedIds, user, profile, recordAction,isSaved,removeConfirmedKeeps]);
+  }, [user, recordAction,isSaved,removeConfirmedKeeps]);
 
   // ── Sky diary → SkyNote.create (real persistence; optimistic + rollback) ──
   const addSkyNote = useCallback(async (text) => {
@@ -1253,12 +1285,29 @@ function LifestyleShell({ navigate, routePathname, enableFocus = false, layout =
     if(it?._raw || (it?._keep?.item_type==="LIFESTYLE" && it._keep.item_id))return toggleSave(it._raw || {id:it._keep.item_id});
     if(!it?._keep){flash("This source has no saveable item yet");return false;}
     if(savePending.current || !user?.id)return false;
+    const owner = user.id, keep = it._keep, itemId = keep.item_id || keep.id, itemType = keep.item_type;
+    if (!itemId || !itemType || keep.user_id !== owner) return false;
+    const previous = saveIntent.current;
+    const intent = previous?.owner === owner && previous.itemId === itemId && previous.itemType === itemType
+      ? previous : { owner, itemId, itemType, target: false, removed: new Set() };
+    saveIntent.current = intent;
+    const current = () => saveMounted.current && ownerRef.current === owner;
+    const assertOwner = async () => {
+      if (!current() || (await base44.auth.me())?.id !== owner || !current()) throw new Error("Account changed");
+    };
     savePending.current=true;
     try{
-      if((await base44.auth.me())?.id!==user.id)throw new Error("Account changed");
-      for(const row of (it._keep._savedRecords || []).filter(row=>row.user_id===user.id))await base44.entities.SavedItems.delete(row.id);
-      removeConfirmedKeeps(user.id, row => row.item_type === it._keep.item_type && (row.item_id || row.id) === (it._keep.item_id || it._keep.id));flash("Removed from your keeps");return true;
-    }catch{flash("Couldn’t update your keeps — try again");setKeepsRevision(n=>n+1);return false;}
+      const rows = await readSavedFindAuthority(owner, itemType, keep.item_id, keep.id, assertOwner);
+      for (const row of rows) { await assertOwner(); await base44.entities.SavedItems.delete(row.id); intent.removed.add(row.id); }
+      const remaining = await readSavedFindAuthority(owner, itemType, keep.item_id, keep.id, assertOwner);
+      if (remaining.length) throw new Error("Removal not confirmed");
+      await assertOwner();
+      removeConfirmedKeeps(owner, row => row.item_type === itemType && (row.item_id || row.id) === itemId);
+      setExpanded(card => card?._keep?.item_type === itemType && (card._keep.item_id || card._keep.id) === itemId ? null : card);
+      window.dispatchEvent(new CustomEvent("fw_sky_lesson_saved", { detail: { ownerId: owner, itemId, removedSavedRecordIds: [...intent.removed] } }));
+      saveIntent.current = null;
+      flash("Removed from your keeps");return true;
+    }catch{if(current()){flash("Couldn’t update your keeps — try again");setKeepsRevision(n=>n+1);}return false;}
     finally{savePending.current=false;}
   }, [toggleSave,user,removeConfirmedKeeps]);
 
@@ -1337,7 +1386,7 @@ function LifestyleShell({ navigate, routePathname, enableFocus = false, layout =
   sectionActions.story = sectionActions.books;
   const landingGroups = [{ key: "foryou", label: "For you today", accent: "gold", items: forYouItems, open: setExpanded, sectioned: true }];
   // One action pair, in the review's earlier position OR the original position.
-  const focusedActions = previewActions && clean && focus ? <FocusedSectionActions key={focusSection} section={focusSection} plum={plum} actions={sectionActions[focusSection]} /> : (
+  const focusedActions = previewActions && clean && focus ? <FocusedSectionActions routeActive={routeActive} key={focusSection} section={focusSection} plum={plum} actions={sectionActions[focusSection]} /> : (
     <div aria-label={foldVariant ? "Section actions" : undefined} style={{ display: "flex", gap: 10, marginTop: 14 }}>
       <button onClick={openTodaysChapter} className="fw-elite-press" style={clean ? { ...focusPill(plum), background: plum, boxShadow: "none", border: "none" } : focusPill(crimson)}><Feather size={16} /> Today's chapter</button>
       <button onClick={() => jumpTo(0)} className="fw-elite-press" style={clean ? { ...focusPill(gold), background: C.gold, boxShadow: "none", border: "none" } : focusPill(plum)}><Clock size={16} /> What do you have time for?</button>
@@ -1795,6 +1844,7 @@ function LifestyleShell({ navigate, routePathname, enableFocus = false, layout =
       {readerOpen && (
         <div style={{ position: "fixed", inset: 0, zIndex: 1200, ...PAPER_BG }}>
           <DailyStoryReader
+            active={routeActive}
             seriesKey={storyPick?.seriesKey || DAILY_STORY_SERIES}
             bookId={`daily_${storyPick?.seriesKey || DAILY_STORY_SERIES}`}
             goToChapter={readerStart ?? (storyPick?.index ?? 0)}
@@ -1815,7 +1865,7 @@ function LifestyleShell({ navigate, routePathname, enableFocus = false, layout =
         const chs = buildBookChapters(bookReader);
         return (
           <div style={{ position: "fixed", inset: 0, zIndex: 1200, ...PAPER_BG }}>
-            <DailyStoryReader source={{ kind: "book", items: chs, currentIndex: 0 }} totalCount={chs.length}
+            <DailyStoryReader active={routeActive} source={{ kind: "book", items: chs, currentIndex: 0 }} totalCount={chs.length}
               defaultImmersive onExit={() => { setBookReader(null); loadContinue(); }} bookId={bookReader.id} />
           </div>
         );

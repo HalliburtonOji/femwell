@@ -54,11 +54,10 @@ const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 // during idle after first paint so even the first tap is instant. Everything
 // else routes normally (mount/unmount) through the animated swap below.
 const KEEP_ALIVE = ["Today", "Lifestyle", "Profile"];
-// Memoized wrapper — a kept-alive page renders ONCE and never re-renders when
-// the route changes (Comp is a stable reference), so switching tabs is just a
-// cheap display toggle, not a re-render of all 3 heavy pages.
-const KeepAlivePage = memo(function KeepAlivePage({ Comp }) {
-  return <Comp />;
+// Lifestyle owns body portals as well as its cached page. Give it the exact
+// visibility owner; the other cached pages still receive stable props.
+const KeepAlivePage = memo(function KeepAlivePage({ Comp, routeActive }) {
+  return <Comp routeActive={routeActive} />;
 });
 const PAGE_ALIASES = { CommunityMP8: "Community", terms: "Terms", privacy: "Privacy", SkinHairLegacy: "SkinHair" };
 const pageNameFromPath = (pathname) => {
@@ -251,7 +250,7 @@ const AuthenticatedApp = () => {
             aria-hidden={active ? undefined : true}
             style={{ display: active ? "block" : "none" }}
           >
-            <KeepAlivePage Comp={PageComp} />
+            <KeepAlivePage Comp={PageComp} routeActive={name === "Lifestyle" ? active : undefined} />
           </div>
         );
       })}

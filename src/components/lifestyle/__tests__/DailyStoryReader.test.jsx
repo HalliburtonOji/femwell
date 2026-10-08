@@ -95,6 +95,78 @@ describe("DailyStoryReader — v4 contract", () => {
   const visibleProse = () => document.querySelector(".ds-reader-body").textContent;
   const footer = () => within(document.querySelector(".ds-reader-nav"));
 
+  it("suspends a cached portal, settings and keys while retaining its source, page and preferences", async () => {
+    const source = measuredSource();
+    const reached = vi.fn();
+    const { rerender } = render(<DailyStoryReader active source={source} bookId="cached" defaultImmersive cleanPreview onChapterReached={reached}/>);
+    fireEvent.click(document.querySelector(".ds-reader-tap-right"));
+    const prose = visibleProse();
+    fireEvent.click(screen.getByRole("button", { name: "Reader settings" }));
+    const dialog = screen.getByRole("dialog", { name: "Reader settings" });
+    fireEvent.click(within(dialog).getByRole("button", { name: /Plum Night/ }));
+    const root = document.querySelector(".ds-reader-root");
+    const reachedCount = reached.mock.calls.length;
+    readerStorage.setItem.mockClear();
+    rerender(<DailyStoryReader active={false} source={source} bookId="cached" defaultImmersive cleanPreview onChapterReached={reached}/>);
+    expect(root).not.toBeVisible();
+    expect(root).toHaveAttribute("inert");
+    expect(document.body.style.overflow).not.toBe("hidden");
+    expect(screen.queryByRole("dialog", { name: "Reader settings" })).toBeNull();
+    fireEvent.keyDown(window, { key: "ArrowRight" });
+    fireEvent.keyDown(window, { key: "Escape" });
+    fireEvent(window, new Event("resize"));
+    expect(visibleProse()).toBe(prose);
+    expect(readerStorage.setItem).not.toHaveBeenCalled();
+    expect(reached).toHaveBeenCalledTimes(reachedCount);
+    rerender(<DailyStoryReader active source={source} bookId="cached" defaultImmersive cleanPreview onChapterReached={reached}/>);
+    expect(document.querySelector(".ds-reader-root")).toBe(root);
+    expect(root).toBeVisible();
+    expect(root).toHaveClass("fw-theme-plum");
+    expect(visibleProse()).toBe(prose);
+    expect(screen.getByRole("dialog", { name: "Reader settings" })).toBeVisible();
+    expect(document.body.style.overflow).toBe("hidden");
+    expect(reached).toHaveBeenCalledTimes(reachedCount);
+    expect(storyApi.filter).not.toHaveBeenCalled();
+    await act(async () => {});
+  });
+
+  it("defers an unseen daily load and its progress until active, without refetching", async () => {
+    const source = measuredSource("daily_story");
+    let resolveRows;
+    storyApi.filter.mockReturnValue(new Promise(resolve => { resolveRows = resolve; }));
+    const reached = vi.fn(), marks = vi.fn();
+    const { rerender } = render(<DailyStoryReader active defaultImmersive bookId="cached-load" goToChapter={0} onChapterReached={reached} onMarks={marks}/>);
+    rerender(<DailyStoryReader active={false} defaultImmersive bookId="cached-load" goToChapter={0} onChapterReached={reached} onMarks={marks}/>);
+    readerStorage.setItem.mockClear();
+    await act(async () => resolveRows(source.items));
+    expect(reached).not.toHaveBeenCalled();
+    expect(marks).not.toHaveBeenCalled();
+    expect(readerStorage.setItem).not.toHaveBeenCalled();
+    rerender(<DailyStoryReader active defaultImmersive bookId="cached-load" goToChapter={0} onChapterReached={reached} onMarks={marks}/>);
+    await waitFor(() => expect(reached).toHaveBeenCalledWith(0, source.items[0]));
+    expect(storyApi.filter).toHaveBeenCalledTimes(1);
+    expect(visibleProse()).toContain("The first page opens");
+    expect(reached).toHaveBeenCalledTimes(1);
+  });
+
+  it("cancels a pending animated turn before an inactive reader returns", async () => {
+    const source = measuredSource();
+    vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: false })));
+    vi.useFakeTimers();
+    try {
+      const { rerender } = render(<DailyStoryReader source={source} active defaultImmersive/>);
+      const prose = visibleProse();
+      fireEvent.click(document.querySelector(".ds-reader-tap-right"));
+      rerender(<DailyStoryReader source={source} active={false} defaultImmersive/>);
+      rerender(<DailyStoryReader source={source} active defaultImmersive/>);
+      await act(async () => vi.advanceTimersByTime(700));
+      expect(visibleProse()).toBe(prose);
+      fireEvent.click(document.querySelector(".ds-reader-tap-right"));
+      await act(async () => vi.advanceTimersByTime(350));
+      expect(visibleProse()).not.toBe(prose);
+    } finally { vi.useRealTimers(); }
+  });
+
   it("keeps immersive tall-passage left/right taps, centre chrome and focused Escape while native scroll keys keep the page", () => {
     vi.stubGlobal("matchMedia",vi.fn(()=>({matches:true})));
     const original=HTMLElement.prototype.getBoundingClientRect;

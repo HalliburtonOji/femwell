@@ -152,7 +152,7 @@ export function useCleanReaderDialog(enabled, dialogRef, onClose, initialSelecto
       pendingCleanDialogReturn = previous;
       queueMicrotask(() => {
         const next = top();
-        if (previous?.isConnected && (!next || next.contains(previous))) previous.focus?.({ preventScroll: true });
+        if (isVisibleKeySurface(previous) && (!next || next.contains(previous))) previous.focus?.({ preventScroll: true });
         if (pendingCleanDialogReturn === previous) pendingCleanDialogReturn = null;
       });
     };
@@ -213,6 +213,7 @@ function FontSliderControl({ textSize, setSize, variant, cleanPreview = false })
 // spacing, margins. All changes persist immediately to localStorage. Closes
 // on scrim click, Esc, or the close button.
 function SettingsDrawer({
+  active = true,
   textSize, setSize,
   theme, setTheme,
   font, setFont,
@@ -222,9 +223,9 @@ function SettingsDrawer({
   cleanPreview = false,
 }) {
   const sheetRef = useRef(null);
-  useCleanReaderDialog(cleanPreview, sheetRef, onClose, 'input[type="range"]');
+  useCleanReaderDialog(active && cleanPreview, sheetRef, onClose, 'input[type="range"]');
   useEffect(() => {
-    if (cleanPreview) return;
+    if (!active || cleanPreview) return;
     const onKey = (e) => {
       if (e.key !== "Escape" || ownsModifiedKey(e)) return;
       if (!isVisibleKeySurface(sheetRef.current)) return;
@@ -235,7 +236,7 @@ function SettingsDrawer({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose, cleanPreview]);
+  }, [onClose, cleanPreview, active]);
 
   const themeLabel = { cream: "Cream", honey: "Honey", plum: "Plum Night" };
   const lineLabel = { tight: "Tight", normal: "Default", relaxed: "Relaxed" };
@@ -371,7 +372,7 @@ function ProgressDots({ current, total }) {
 // pages of paragraphs fit in the available viewport — and the user can flip
 // inside the chapter without ever scrolling. Re-measures when the textSize
 // changes or the viewport resizes.
-function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize, pageInChapter, onPageCount, immersive, layoutKey, onPassageTap }) {
+function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize, pageInChapter, onPageCount, immersive, layoutKey, onPassageTap, active = true }) {
   const { heading, body } = useMemo(
     () => parseChapter(chapter.body || chapter.segment_text || ""),
     [chapter]
@@ -394,6 +395,7 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize,
   const [vpKey, setVpKey] = useState(0);
 
   useEffect(() => {
+    if (!active) return;
     const onResize = () => setVpKey(k => k + 1);
     window.addEventListener("resize", onResize);
     window.addEventListener("orientationchange", onResize);
@@ -401,9 +403,10 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize,
       window.removeEventListener("resize", onResize);
       window.removeEventListener("orientationchange", onResize);
     };
-  }, []);
+  }, [active]);
 
   useLayoutEffect(() => {
+    if (!active) return;
     let cancelled = false;
     let raf = 0;
 
@@ -477,7 +480,7 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize,
   // layoutKey carries font / line-spacing / margins — changing any of them reflows the column,
   // so pagination MUST recompute (it previously did not, leaving stale, clipped pages).
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chapter.id, paragraphs.length, textSize, vpKey, immersive, layoutKey]);
+  }, [chapter.id, paragraphs.length, textSize, vpKey, immersive, layoutKey, active]);
 
   // Clamp pageInChapter into range — re-flow may shrink the count.
   const safePage = Math.max(0, Math.min((slices?.length ?? 1) - 1, pageInChapter || 0));
@@ -585,12 +588,14 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize,
 }
 
 // ─── Locked cliffhanger screen ────────────────────────────────────────────────
-function LockedCliffhanger({ cliffhanger, animClass }) {
+function LockedCliffhanger({ cliffhanger, animClass, active = true }) {
   const [count, setCount] = useState(secondsUntilMidnight());
   useEffect(() => {
+    if (!active) return;
+    setCount(secondsUntilMidnight());
     const id = setInterval(() => setCount(secondsUntilMidnight()), 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [active]);
 
   return (
     <div
@@ -614,6 +619,8 @@ function LockedCliffhanger({ cliffhanger, animClass }) {
 
 // ─── Main reader ──────────────────────────────────────────────────────────────
 export default function DailyStoryReader({
+  // Cached Lifestyle keeps this session mounted; only its active route owns UI/effects.
+  active = true,
   source: providedSource,
   seriesKey = "the_long_room",
   // When the caller doesn't pass totalCount we fall back to the actual
@@ -656,6 +663,8 @@ export default function DailyStoryReader({
   cleanPreview = false,
 }) {
   const readerRootRef = useRef(null);
+  const activeRef = useRef(active);
+  activeRef.current = active;
   const [chapters, setChapters] = useState(providedSource?.items || []);
   const [currentIndex, setCurrentIndex] = useState(providedSource?.currentIndex ?? 0);
   // A requested chapter or saved position must settle before it is shown or recorded.
@@ -700,14 +709,16 @@ export default function DailyStoryReader({
   }, [bookmarksKey, currentIndex, pageInChapter]);
   // chapter id → page count (reported back by ChapterPage's measurement pass)
   const [chapterPageCounts, setChapterPageCounts] = useState({});
+  const [measurementRevision, setMeasurementRevision] = useState(0);
   // Slices per chapter — kept so resume can land on a STABLE PARAGRAPH ANCHOR rather than a
   // page index. A page index is meaningless across a reflow: change the type, the margins or
   // the phone's orientation and "page 7" is a different place in the book — which is exactly
   // why resume used to jump.
   const chapterSlicesRef = useRef({});
   const reportPageCount = useCallback((chapterId, count, _paraCount, slices) => {
-    if (!chapterId) return;
+    if (!chapterId || !activeRef.current) return;
     if (slices) chapterSlicesRef.current[chapterId] = slices;
+    setMeasurementRevision(revision => revision + 1);
     setChapterPageCounts(prev =>
       prev[chapterId] === count ? prev : { ...prev, [chapterId]: count }
     );
@@ -775,7 +786,7 @@ export default function DailyStoryReader({
     hideTimerRef.current = setTimeout(() => setChromeVisible(false), 3000);
   }, []);
   useEffect(() => {
-    if (!immersive) {
+    if (!active || !immersive) {
       setChromeVisible(true);
       if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
       return;
@@ -789,7 +800,7 @@ export default function DailyStoryReader({
       window.removeEventListener("touchstart", onActivity);
       window.removeEventListener("keydown", onActivity);
     };
-  }, [immersive, showChrome]);
+  }, [active, immersive, showChrome]);
   const toggleChrome = useCallback(() => {
     setChromeVisible((v) => {
       const next = !v;
@@ -802,21 +813,21 @@ export default function DailyStoryReader({
   // a localStorage seen-flag so we don't badger returning readers.
   const [showDndTip, setShowDndTip] = useState(false);
   useEffect(() => {
-    if (!immersive) { setShowDndTip(false); return; }
+    if (!active || !immersive) { setShowDndTip(false); return; }
     let seen = false;
     try { seen = localStorage.getItem("fw_reader_dnd_seen") === "1"; } catch { /* silent */ }
     if (seen) return;
     setShowDndTip(true);
     const t = setTimeout(() => setShowDndTip(false), 6000);
     return () => clearTimeout(t);
-  }, [immersive]);
+  }, [active, immersive]);
   const dismissDndTip = useCallback(() => {
     setShowDndTip(false);
     try { localStorage.setItem("fw_reader_dnd_seen", "1"); } catch { /* silent */ }
   }, []);
   // Lock body scroll while immersive so the page behind doesn't drift (shared,
   // ref-counted hook — replaces the old ad-hoc document.body.style.overflow lock).
-  useScrollLock(immersive);
+  useScrollLock(active && immersive);
 
   // Fetch DailyStory rows if no external source provided
   useEffect(() => {
@@ -869,6 +880,15 @@ export default function DailyStoryReader({
   const pendingPageRef = useRef(null);
   // The saved PARAGRAPH anchor, waiting for this chapter's slices to be measured.
   const pendingAnchorRef = useRef(null);
+  const wasActiveRef = useRef(active);
+  useLayoutEffect(() => {
+    if (!active && wasActiveRef.current && pendingAnchorRef.current == null) {
+      const slices = currentChapterRef && chapterSlicesRef.current[currentChapterRef.id];
+      const anchor = slices?.[pageInChapter]?.[0];
+      if (Number.isFinite(anchor)) pendingAnchorRef.current = anchor;
+    }
+    wasActiveRef.current = active;
+  }, [active, currentChapterRef, pageInChapter]);
   useEffect(() => {
     if (pendingPageRef.current != null) {
       setPageInChapter(pendingPageRef.current);
@@ -883,18 +903,18 @@ export default function DailyStoryReader({
   // at may now sit on a different page (bigger type, wider margins, a rotated phone) — so we
   // resolve the page from the anchor rather than trusting a stale page number.
   useEffect(() => {
-    if (pendingAnchorRef.current == null || !currentChapterRef) return;
+    if (!active || pendingAnchorRef.current == null || !currentChapterRef) return;
     if (measuredPages === undefined) return;   // wait for the measurement pass
     const restoredPage = pageForParagraph(currentChapterRef.id, pendingAnchorRef.current);
     pendingPageRef.current = restoredPage;
     setPageInChapter(restoredPage);
     pendingAnchorRef.current = null;
-  }, [measuredPages, currentChapterRef, pageForParagraph]);
+  }, [active, measurementRevision, measuredPages, currentChapterRef, pageForParagraph]);
 
   // Resolve once after loading. Explicit numeric/marks-bar selections outrank resume;
   // an ordinary book open retains its saved paragraph anchor or legacy page number.
   useEffect(() => {
-    if (loading || fetchingChaptersRef.current || !chapters.length) return;
+    if (!active || loading || fetchingChaptersRef.current || !chapters.length) return;
     const clamp = value => Math.min(Math.max(0, Number.isFinite(value) ? Math.trunc(value) : 0), chapters.length - 1);
     if (!initialPositionRef.current) {
       let index = providedSource ? clamp(providedSource.currentIndex ?? 0) : chapters.length - 1;
@@ -927,24 +947,29 @@ export default function DailyStoryReader({
     setPageInChapter(0);
     setCurrentIndex(clamp(jumpIndex));
     setAppliedJump({kind: jumpKind, nonce: jumpNonce});
-  }, [loading, chapters.length, posKey, jumpIndex, jumpKind, jumpNonce, jumpPending, providedSource?.currentIndex]);
+  }, [active, loading, chapters.length, posKey, jumpIndex, jumpKind, jumpNonce, jumpPending, providedSource?.currentIndex]);
 
   // Phase-1 Books — fire the chapter-boundary hook whenever the reader REACHES a
   // chapter (initial mount included). Fire-and-forget + guarded so a throwing or
   // slow handler can never wedge the reader. Only fires for real chapters.
   const onChapterReachedRef = useRef(onChapterReached);
+  const lastReachedRef = useRef(null);
   onChapterReachedRef.current = onChapterReached;
   useEffect(() => {
     const cb = onChapterReachedRef.current;
     if (typeof cb !== "function") return;
-    if (!positionReady || fetchingChaptersRef.current || jumpPending) return;
+    if (!active || !positionReady || fetchingChaptersRef.current || jumpPending) return;
     if (!chapters.length || currentIndex < 0 || currentIndex >= chapters.length) return;
+    const reached = { source: bookId || seriesKey, chapter: chapters[currentIndex], index: currentIndex };
+    const previous = lastReachedRef.current;
+    if (previous?.source === reached.source && previous.chapter === reached.chapter && previous.index === reached.index) return;
+    lastReachedRef.current = reached;
     try { cb(currentIndex, chapters[currentIndex]); } catch { /* never let a handler break the reader */ }
-  }, [currentIndex, chapters, positionReady, jumpPending]);
+  }, [active, bookId, seriesKey, currentIndex, chapters, positionReady, jumpPending]);
 
   // v4d — save reading position whenever it changes (after restore).
   useEffect(() => {
-    if (!posKey || !positionReady || fetchingChaptersRef.current || jumpPending || pendingAnchorRef.current != null) return;
+    if (!active || !posKey || !positionReady || fetchingChaptersRef.current || jumpPending || pendingAnchorRef.current != null) return;
     if (pendingPageRef.current != null) {
       if (pageInChapter !== pendingPageRef.current) return;
       pendingPageRef.current = null;
@@ -961,17 +986,38 @@ export default function DailyStoryReader({
         ts: Date.now(),
       }));
     } catch { /* silent */ }
-  }, [posKey, currentIndex, pageInChapter, measuredPages, positionReady, jumpPending]);
+  }, [active, posKey, currentIndex, pageInChapter, measuredPages, positionReady, jumpPending]);
 
   // Report the live marks (current chapter + bookmarks) up to the host marks bar.
   const onMarksRef = useRef(onMarks);
   onMarksRef.current = onMarks;
   useEffect(() => {
-    if (!positionReady || fetchingChaptersRef.current || jumpPending) return;
+    if (!active || !positionReady || fetchingChaptersRef.current || jumpPending) return;
     if (typeof onMarksRef.current === "function") onMarksRef.current({ currentIndex, bookmarks });
-  }, [currentIndex, bookmarks, positionReady, jumpPending]);
+  }, [active, currentIndex, bookmarks, positionReady, jumpPending]);
+
+  const flipTimerRef = useRef(null);
+  const flipGenerationRef = useRef(0);
+  useLayoutEffect(() => {
+    if (!active) {
+      setFlipState({ phase: "idle", dir: 0 });
+      touchStartRef.current = null;
+    }
+    return () => {
+      flipGenerationRef.current += 1;
+      clearTimeout(flipTimerRef.current);
+    };
+  }, [active]);
+  const scheduleFlip = useCallback((finish, delay) => {
+    const generation = flipGenerationRef.current;
+    clearTimeout(flipTimerRef.current);
+    flipTimerRef.current = setTimeout(() => {
+      if (activeRef.current && generation === flipGenerationRef.current) finish();
+    }, delay);
+  }, []);
 
   const flipForward = useCallback(() => {
+    if (!activeRef.current) return;
     if (showLocked) return;
     if (flipState.phase === "flipping") return;   // one flip at a time — rapid taps can't queue skips
     // Step inside the current chapter first.
@@ -980,7 +1026,7 @@ export default function DailyStoryReader({
         setPageInChapter(p => p + 1);
       } else {
         setFlipState({ phase: "flipping", dir: 1 });
-        setTimeout(() => {
+        scheduleFlip(() => {
           setPageInChapter(p => p + 1);
           setFlipState({ phase: "idle", dir: 0 });
         }, 350);
@@ -998,7 +1044,7 @@ export default function DailyStoryReader({
         setShowLocked(true);
       } else {
         setFlipState({ phase: "flipping", dir: 1 });
-        setTimeout(() => {
+        scheduleFlip(() => {
           setShowLocked(true);
           setFlipState({ phase: "idle", dir: 0 });
         }, 600);
@@ -1009,21 +1055,22 @@ export default function DailyStoryReader({
       setCurrentIndex((i) => Math.min(i + 1, latestRevealed));
     } else {
       setFlipState({ phase: "flipping", dir: 1 });
-      setTimeout(() => {
+      scheduleFlip(() => {
         setCurrentIndex((i) => Math.min(i + 1, latestRevealed));
         setFlipState({ phase: "idle", dir: 0 });
       }, 600);
     }
-  }, [pageInChapter, currentChapterPages, measuredPages, currentIndex, latestRevealed, reducedMotion, showLocked, noLock, flipState.phase]);
+  }, [pageInChapter, currentChapterPages, measuredPages, currentIndex, latestRevealed, reducedMotion, showLocked, noLock, flipState.phase, scheduleFlip]);
 
   const flipBackward = useCallback(() => {
+    if (!activeRef.current) return;
     if (flipState.phase === "flipping") return;   // one flip at a time
     if (showLocked) {
       if (reducedMotion) {
         setShowLocked(false);
       } else {
         setFlipState({ phase: "flipping", dir: -1 });
-        setTimeout(() => {
+        scheduleFlip(() => {
           setShowLocked(false);
           setFlipState({ phase: "idle", dir: 0 });
         }, 600);
@@ -1036,7 +1083,7 @@ export default function DailyStoryReader({
         setPageInChapter(p => p - 1);
       } else {
         setFlipState({ phase: "flipping", dir: -1 });
-        setTimeout(() => {
+        scheduleFlip(() => {
           setPageInChapter(p => p - 1);
           setFlipState({ phase: "idle", dir: 0 });
         }, 350);
@@ -1059,15 +1106,16 @@ export default function DailyStoryReader({
       reachPreviousChapter();
     } else {
       setFlipState({ phase: "flipping", dir: -1 });
-      setTimeout(() => {
+      scheduleFlip(() => {
         reachPreviousChapter();
         setFlipState({ phase: "idle", dir: 0 });
       }, 600);
     }
-  }, [pageInChapter, currentIndex, reducedMotion, showLocked, chapters, chapterPageCounts, flipState.phase]);
+  }, [pageInChapter, currentIndex, reducedMotion, showLocked, chapters, chapterPageCounts, flipState.phase, scheduleFlip]);
 
   // Keyboard nav
   useEffect(() => {
+    if (!active) return;
     const capture = e => {
       if (["ArrowRight", "ArrowLeft", "Escape"].includes(e.key)) eventOwner(e);
     };
@@ -1091,7 +1139,7 @@ export default function DailyStoryReader({
       window.removeEventListener("keydown", capture, true);
       window.removeEventListener("keydown", onKey);
     };
-  }, [flipForward, flipBackward, immersive]);
+  }, [active, flipForward, flipBackward, immersive]);
 
   // Touch swipe
   const controlOwnsTouch = e => {
@@ -1178,6 +1226,10 @@ export default function DailyStoryReader({
   const readerBody = (
     <div
       ref={readerRootRef}
+      hidden={!active}
+      aria-hidden={active ? undefined : true}
+      inert={active ? undefined : ""}
+      style={active ? undefined : { display: "none" }}
       className={[
         "ds-reader-root",
         cleanPreview ? "fw-reader-clean" : "",
@@ -1337,9 +1389,10 @@ export default function DailyStoryReader({
       <div className="ds-reader-stage">
         {cleanPreview && isCurrentBookmarked && !showLocked && <span className="ds-clean-bookmark-ribbon" role="status" aria-label="This page is bookmarked"><Bookmark size={14} aria-hidden="true" /></span>}
         {showLocked ? (
-          <LockedCliffhanger cliffhanger={cliffhanger} animClass={animClass} />
+          <LockedCliffhanger active={active} cliffhanger={cliffhanger} animClass={animClass} />
         ) : (
           <ChapterPage
+            active={active}
             chapter={currentChapter}
             dayLabel={null}
             indexHint={currentIndex}
@@ -1361,6 +1414,7 @@ export default function DailyStoryReader({
           changes persist immediately to localStorage. */}
       {immersive && showSettings && (
         <SettingsDrawer
+          active={active}
           textSize={textSize}
           setSize={setSize}
           theme={theme}

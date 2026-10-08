@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { pickProfile } from "@/utils/userProfile";
+import { readLifestyleFindAuthority as readFindAuthority } from "@/lib/savedCollections";
 import { ArrowLeft, Bookmark, BookmarkCheck, Heart, HeartOff, Loader2, PlayCircle } from "lucide-react";
 import { format } from "date-fns";
 import { getCategoryGradient, attachFallbackOverlay } from "@/utils/imageFallback";
@@ -141,29 +141,6 @@ export function renderBodyBlocks(body) {
 
   rawBlocks.forEach((raw) => pushParagraph(raw.trim()));
   return blocks;
-}
-
-// Exact find plus canonical profile: bounded pages, strict owner and shape checks.
-async function readFindAuthority(ownerId,itemId,assertOwner) {
-  await assertOwner();
-  const readPages=async(entity,filter,validate)=>{
-    const rows=[],seen=new Set();
-    for(let skip=0;;skip+=100){
-      const page=await entity.filter(filter,"-created_date",100,skip);
-      if(!Array.isArray(page) || page.some(row=>!row?.id || row.user_id!==ownerId || !validate(row)))throw new Error("Authority unavailable");
-      const fresh=page.filter(row=>!seen.has(row.id));
-      fresh.forEach(row=>{seen.add(row.id);rows.push(row);});
-      if(page.length<100)return rows;
-      if(!fresh.length)throw new Error("Authority pagination stalled");
-      await assertOwner();
-    }
-  };
-  const [profiles,physical]=await Promise.all([
-    readPages(base44.entities.UserProfile,{user_id:ownerId},row=>["saved_item_ids","liked_item_ids"].every(field=>row[field]===undefined || (Array.isArray(row[field]) && row[field].every(id=>typeof id==="string")))),
-    readPages(base44.entities.SavedItems,{user_id:ownerId,item_type:"LIFESTYLE",item_id:itemId},row=>row.item_type==="LIFESTYLE" && row.item_id===itemId),
-  ]);
-  await assertOwner();
-  return {profile:pickProfile(profiles),physical};
 }
 
 export default function LifestyleDetail() {

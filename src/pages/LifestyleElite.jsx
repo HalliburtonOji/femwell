@@ -3,8 +3,8 @@
 import LifestyleEliteShell from "@/components/lifestyle-elite/LifestyleEliteShell";
 import "@/components/lifestyle-elite/SkyWorlds.css";
 
-export default function LifestyleElite() {
+export default function LifestyleElite({ routeActive = true }) {
   return <main className="fw-sky-worlds fw-lifestyle-main" data-world="petal-press">
-    <LifestyleEliteShell enableFocus layout="bespoke" clean previewActions initialSection="read" continuousSky celestialSky firstFoldVariant="living" dailySkyLessons artDirection="sky-worlds" skyWorld="petal-press" contentRoute="/Lifestyle" />
+    <LifestyleEliteShell routeActive={routeActive} enableFocus layout="bespoke" clean previewActions initialSection="read" continuousSky celestialSky firstFoldVariant="living" dailySkyLessons artDirection="sky-worlds" skyWorld="petal-press" contentRoute="/Lifestyle" />
   </main>;
 }

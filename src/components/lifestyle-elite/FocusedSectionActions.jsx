@@ -6,10 +6,12 @@ import { SERIF, UI } from "@/components/journal/Editorial";
 
 // Preview-only action pair. Each action owns a real handler or a real-content chooser.
 const SECTION_ICONS = { sky: [Moon, Settings], read: [BookOpen, Bookmark], listen: [Headphones, Film], books: [Feather, BookOpen], story: [Feather, BookOpen], good: [Clock, Heart], yours: [Bookmark, BookOpen] };
-export default function FocusedSectionActions({ actions, plum, section }) {
+export default function FocusedSectionActions({ actions, plum, section, routeActive = true }) {
   const [active, setActive] = useState(null);
   const [selected, setSelected] = useState(null);
   const opener = useRef(null);
+  const routeOwner = useRef(routeActive);
+  routeOwner.current = routeActive;
   const current = active === null ? null : actions[active];
   const afterClose = (run, item) => { setSelected({ run, item }); setActive(null); };
   return <>
@@ -23,11 +25,13 @@ export default function FocusedSectionActions({ actions, plum, section }) {
         </button>;
       })}
     </div>
-    <Dialog.Root open={active !== null} onOpenChange={(open) => { if (!open) setActive(null); }}>
+    <Dialog.Root open={routeActive && active !== null} onOpenChange={(open) => { if (!open) setActive(null); }}>
       <Dialog.Portal>
         <Dialog.Overlay style={{ position: "fixed", inset: 0, background: "rgba(25,20,28,.3)", zIndex: 10000 }} />
         <Dialog.Content className="fw-clean fw-dialog-cap" onCloseAutoFocus={(event) => {
           event.preventDefault();
+          // Leaving a cached page is suspension, not a choice or a focus return.
+          if (!routeOwner.current) { setSelected(null); return; }
           opener.current?.focus({ preventScroll: true });
           if (selected) { const next = selected; setSelected(null); next.run(next.item); }
         }} style={{ position: "fixed", zIndex: 10001, left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: "min(480px, calc(100vw - 24px))", maxHeight: "calc(100dvh - var(--fw-sheet-safe, 100px) - 24px)", overflowY: "auto", background: C.surface, color: C.ink, borderRadius: 24, padding: "26px 20px", fontFamily: UI }}>

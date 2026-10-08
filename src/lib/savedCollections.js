@@ -1,8 +1,42 @@
 import { base44 } from "@/api/base44Client";
+import { pickProfile } from "@/utils/userProfile";
 import { parseSavedMeta } from "@/lib/savedItems";
 import { SKY_LESSONS, skyLessonRoute } from "@/components/lifestyle-elite/sky/skyLessons";
 const SKY_ROUTES = new Set(["/Lifestyle", "/LivingLifestyleDemo", "/LivingAtelierDemo", "/LivingReadingRoomDemo", "/SkyWorldsDemo"]);
 const cleanText = value => String(value || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+
+// Shared by the routed detail and its in-place card. A failed read is never an
+// empty collection; use the latest canonical profile and exact physical records.
+async function readAuthorityPages(entity, filter, validate, ownerId, assertOwner) {
+    const rows = [], seen = new Set();
+    for (let skip = 0; ; skip += 100) {
+      const page = await entity.filter(filter, "-created_date", 100, skip);
+      if (!Array.isArray(page) || page.some(row => !row?.id || row.user_id !== ownerId || !validate(row))) throw new Error("Authority unavailable");
+      const fresh = page.filter(row => !seen.has(row.id));
+      fresh.forEach(row => { seen.add(row.id); rows.push(row); });
+      if (page.length < 100) return rows;
+      if (!fresh.length) throw new Error("Authority pagination stalled");
+      await assertOwner();
+    }
+}
+
+export async function readSavedFindAuthority(ownerId, itemType, itemId, recordId, assertOwner) {
+  await assertOwner();
+  const filter = { user_id: ownerId, item_type: itemType, ...(itemId ? { item_id: itemId } : { id: recordId }) };
+  const rows = await readAuthorityPages(base44.entities.SavedItems, filter, row => row.item_type === itemType && (itemId ? row.item_id === itemId : row.id === recordId), ownerId, assertOwner);
+  await assertOwner();
+  return rows;
+}
+
+export async function readLifestyleFindAuthority(ownerId, itemId, assertOwner) {
+  await assertOwner();
+  const [profiles, physical] = await Promise.all([
+    readAuthorityPages(base44.entities.UserProfile, { user_id: ownerId }, row => ["saved_item_ids", "liked_item_ids"].every(field => row[field] === undefined || (Array.isArray(row[field]) && row[field].every(id => typeof id === "string"))), ownerId, assertOwner),
+    readSavedFindAuthority(ownerId, "LIFESTYLE", itemId, null, assertOwner),
+  ]);
+  await assertOwner();
+  return { profile: pickProfile(profiles), physical };
+}
 function safeSavedHref(value) {
   if (typeof value !== "string" || !value || /[\u0000-\u0020\\]/.test(value)) return null;
   if (value.startsWith("/") && !value.startsWith("//")) return value;
