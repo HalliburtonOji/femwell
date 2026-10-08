@@ -2,6 +2,12 @@
 
 Owner: Codex. Halli's staged-delivery instruction, 7 October 2026. Forward queue only: STATUS.md remains authoritative for what actually shipped; critique/STATE.json holds the precise resumable cursor. Revise this plan with evidence and decisions, preserving completed outcomes in STATUS/reports.
 
+## Latest manual review boundary — 9 October
+
+Working `/FocusedLifestyleDemo?section=good` is first in Ideas. Final source2648db4/bundleindex-BnFyEr9p.js finishes the four-photo batch: one eleven-room popup,3+More joys, one clean joy detail, short/full original Sky and direct full source/readers with actual foundation replacement. Approved headers and capabilities retained; main preview appearance awaits Halli review. Tests/full741/54 first source, deltas25/3 and8/1, independent72+2+10 plus final3pixels remain distinguished. Root native room flow at360/390/430 and source/Back/Close/Sky-cancel prove bounded journeys. Automation remains PAUSED.
+
+Next coherent manual batch: inventory actual remaining Books/Yours/club/picker/help/plan/calendar states and dedicated Journal/Planner/Community/Events/Deals/Jess owners; redesign or retire redundant wrappers after importance review, retain useful actions/content and exact returns. Include classic1342 frontmatter/Chapter I.] entry and native paging/settings/Back/Forward reproof, catalogue fallback relevance and the mapped growth/cost retrospective. Header-reserve repair is now implemented and controlled-tested; old statements below saying unimplemented are historical. Original B01-S03-A05 acceptance remains OPEN, no all-app or every-tap completion claim. Older held social/nudge/backlog/reader choices stay held without repeated questions.
+
 ## Where we are
 
 - **Latest manual brief,8October: reduce crowding and replace the entire tapped journey.** Halli's four photos authorise retiring redundant text/navigation/presentations after judging importance. [Tap-cleanup proposal](critique/lifestyle-tap-cleanup-2026-10-08.md) maps the eleven room links, legacy Becoming, the separate daily ReadingSheet and shared expanded-card fiction preamble. First review batch: compact single room popup, useful brief Sky reading, direct book reading and real foundation replacement. Full capabilities/history remain; exact chosen layouts stay staged. This is a manual proposal task, not renewed automation or completion of the paused A05 reader repair.
