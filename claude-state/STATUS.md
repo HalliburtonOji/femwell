@@ -7,6 +7,19 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-08 LOCAL · RUN0006 FINAL SOURCE READY
+> - Root final scoped **104/5** and lint0errors pass; independent geometry/font **4/4** passes. Committed first-release reader fails exact-return repro; isolated omission of ready-generation guard fails the hidden completed-font-cycle case. Four meaningful actual-reader regressions retained in the repo. Earlier full725/52 and independent9 actual journeys/77 consumer/59 reader proof remain recorded without double-counting. Fresh Vite buildexit0 creates **index-ANNhf1BD.js** (raw11,421,572bytes, not wire/bills); site still Cpy until deploy. Native final3width proof is next; no backend/entity/appearance delta.
+>
+> ### CURRENT STATE — 2026-10-08 LOCAL · RUN0006 PAGINATION REPROOF
+> - Independent heading-sensitive actual-reader test fails on c15613e and passes on the source refinement: unchanged return retains exact prose/page count; changed hidden viewport still reflows around the previous paragraph. Root scoped100/4 passes. Native final build proof remains pending; live still **index-Cpy6QK2W.js**. Under claim7cbf7bb, the guard also compares actual measuring width/body/font-ready promise generation so a complete hidden font load cannot be mistaken for unchanged metrics. CSS Font Loading specification checked before this refinement. No new requests, listeners, stores, assets, backend/schema or design direction.
+>
+> ### CURRENT STATE — 2026-10-08 LIVE/LOCAL · RUN0006 MOBILE REFINEMENT
+> - Native360 on c15613e/Cpy proves hidden/inert reader and settings, released bodylock/keys and retained preference, but same-size return unnecessarily remeasures the heading-sensitive geometry, changing page2of6 to page1of5 containing its old anchor. Full words remain, but this is not an exact unchanged-page pass. Under the existing CR0033 claim, preserve pagination on unchanged chapter/type/layout/viewport/font environment; changed hidden viewport/loading fonts still reflow. Independent causal geometry test/read-only diagnosis requested before final release. CR0034–37 controlled closure remains; no main appearance change.
+>
+> ### CURRENT STATE — 2026-10-08 LIVE · RUN0006 DEPLOYED / MOBILE REPROOF UNDERWAY
+> - Source **c15613e**, receipt **e831468** pushed normally toorigin/main; completed build deployed successfully. Public femwells.com now serves **index-Cpy6QK2W.js**, matching dist. CR0033–37 functional repairs and sanitised Ideas summary live; no main appearance promotion. Frontend-only, no backend/entity/function-name delta.
+> - Root725/52, independent9 actual journeys/77 consumers/59 reader scope and scoped lint pass. Actual live360/390/430 Back/Forward/source/settings/chooser/detail/Ideas reproof is underway; no native mutation/fault/account-switch or physical iPhone claim.
+>
 > ### CURRENT STATE — 2026-10-08 LOCAL · RUN0006 SOURCE COMMITTED
 > - Source **c15613e** commits CR0033–37 and organised Ideas summary/report/cursor; completed Vite artifact **index-Cpy6QK2W.js**, raw11,420,981bytes (not wire/bills). Root725/52, independent9 actual journeys/77 consumer/59 reader scope and lint pass. Normal Git push then frontend deploy pending; public live stillbaseline32bac79/index-5OEW8Bz1.js. No backend/entity delta or deployment needed.
 >

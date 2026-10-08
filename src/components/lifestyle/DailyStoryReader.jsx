@@ -393,6 +393,8 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize,
   const [availableHeight, setAvailableHeight] = useState(null);
   const passageGesture = useRef(null);
   const [vpKey, setVpKey] = useState(0);
+  const measurementEnvironment = useRef(null);
+  const measurementActive = useRef(false);
 
   useEffect(() => {
     if (!active) return;
@@ -406,7 +408,24 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize,
   }, [active]);
 
   useLayoutEffect(() => {
+    const resuming = !measurementActive.current;
+    measurementActive.current = active;
     if (!active) return;
+    const environment = () => ({
+      key: JSON.stringify([chapter.id, paragraphs.length, textSize, immersive, layoutKey,
+        window.innerWidth, window.innerHeight, measureRef.current?.clientWidth, document.fonts?.status || "loaded"]),
+      content: body,
+      fontsReady: document.fonts?.ready,
+    });
+    // A resumed page may omit the opening heading. Measuring it as a new
+    // chapter would change its page breaks despite unchanged type/viewport.
+    // Keep its measured session; hidden viewport or font changes still reflow.
+    const previous = measurementEnvironment.current;
+    const current = environment();
+    // A complete font-load cycle can happen while hidden. Its ready promise
+    // changes even when both observed statuses are "loaded".
+    if (resuming && previous?.key === current.key && previous.content === current.content
+      && previous.fontsReady === current.fontsReady && document.fonts?.status !== "loading") return;
     let cancelled = false;
     let raf = 0;
 
@@ -464,6 +483,7 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize,
       // noted as the upgrade path, not smuggled into a measure pass.)
       setTallPages(tall);
       setSlices(out);
+      measurementEnvironment.current = environment();
       // report the slices so the parent can resume by a STABLE PARAGRAPH ANCHOR, not a page index
       onPageCount && onPageCount(chapter.id, out.length, ps.length, out);
     };
@@ -480,7 +500,7 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize,
   // layoutKey carries font / line-spacing / margins — changing any of them reflows the column,
   // so pagination MUST recompute (it previously did not, leaving stale, clipped pages).
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chapter.id, paragraphs.length, textSize, vpKey, immersive, layoutKey, active]);
+  }, [chapter.id, body, paragraphs.length, textSize, vpKey, immersive, layoutKey, active]);
 
   // Clamp pageInChapter into range — re-flow may shrink the count.
   const safePage = Math.max(0, Math.min((slices?.length ?? 1) - 1, pageInChapter || 0));
