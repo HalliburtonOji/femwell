@@ -7,6 +7,9 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-08 LOCAL · RUN0006 SOURCE COMMITTED
+> - Source **c15613e** commits CR0033–37 and organised Ideas summary/report/cursor; completed Vite artifact **index-Cpy6QK2W.js**, raw11,420,981bytes (not wire/bills). Root725/52, independent9 actual journeys/77 consumer/59 reader scope and lint pass. Normal Git push then frontend deploy pending; public live stillbaseline32bac79/index-5OEW8Bz1.js. No backend/entity delta or deployment needed.
+>
 > ### CURRENT STATE — 2026-10-08 LOCAL · RUN0006 READY FOR RELEASE
 > - Coherent **CR0033–37** reader/chooser/expanded keep/removal/completion repairs pass **725 tests/52 suites**. Independent original actual journeys9/9, final consumer77/77 and earlier reader/continuation/router59/59 pass; scoped lint0errors, fresh Vite build exit0. Existing unrelated duplicate-key/Browserslist/test DOM limitations remain in local logs. **Not yet deployed:** baseline live32bac79/index-5OEW8Bz1.js.
 > - Claimed before edits:4e9ae4b evidence,7cbf7bb reader,a73413f save/chooser,ae093fb physical removal,877d123 kept-card completion. CR0036 stops after account change and checks exact absence; retries keep earlier receipts. CR0037 closes only a confirmed removed kept-card to current Yours, retaining ordinary source detail/tools. Actual live deletion/account/fault branches are controlled-only; no native destructive test, RLS/atomic/billing certificate or appearance approval.
