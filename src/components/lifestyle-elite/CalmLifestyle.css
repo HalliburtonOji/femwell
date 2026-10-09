@@ -29,6 +29,7 @@
 .fw-calm-chart-reading{padding:2px 8px 16px 40px;color:#191510}
 .fw-calm-chart-reading p{font:400 18px/1.5 var(--ff-serif,"Cormorant Garamond",serif);margin:0 0 10px;overflow-wrap:anywhere}
 .fw-calm-chart-reading p:last-child{margin-bottom:0}
+.fw-calm-lifestyle .daily-sky-heading{padding-right:52px}
 .fw-calm-lifestyle .fw-world-tides{margin-top:22px!important}
 .fw-calm-lifestyle .fw-world-tides>div{padding:18px!important;box-shadow:none!important;background:#fff!important}
 .fw-calm-lifestyle .fw-world-tides svg{width:100px!important;height:100px!important}

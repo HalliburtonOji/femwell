@@ -44,7 +44,7 @@ export function SavedSkyLessons({userId,direction,onCount,previewRoute,human=fal
   useEffect(()=>{if(onCount)onCount(loading || error ? 0 : rows.length);},[rows,loading,error,onCount]);
   return <Card className="daily-sky saved-sky-lessons" style={{marginTop:20}}>
     <Eyebrow cw="lavender" align="left">Your sky keepsakes</Eyebrow><Title align="left" size={26}>Little things you kept.</Title>
-    {loading ? <p role="status">Opening your lessons…</p> : error ? <><p role="alert">Your saved lessons couldn’t load.</p><button onClick={retry}>Try again</button></> : rows.length ? rows.map(row=>{
+    {loading ? <p role="status">Opening your Sky keepsakes…</p> : error ? <><p role="alert">Your Sky keepsakes couldn’t load.</p><button onClick={retry}>Try again</button></> : rows.length ? rows.map(row=>{
       const meta=parseSavedMeta(row);const lesson=findSkyPiece(meta.lessonId,meta.lessonVersion);
       const fallback=skyLessonRoute({id:meta.lessonId || "unavailable",version:meta.lessonVersion || "unknown"},direction,previewRoute);
       return <a className="saved-sky-row" key={row.id} href={lesson ? skyLessonRoute(lesson,direction,previewRoute) : safeSkySavedReturn(meta.route,fallback)}><span>{row.title}{!lesson && <small className="daily-sky-edition">Saved edition · unavailable</small>}</span><ArrowRight size={16} aria-hidden="true"/></a>;
