@@ -2,6 +2,11 @@
 
 Owner: Codex. Halli's staged-delivery instruction, 7 October 2026. Forward queue only: STATUS.md remains authoritative for what actually shipped; critique/STATE.json holds the precise resumable cursor. Revise this plan with evidence and decisions, preserving completed outcomes in STATUS/reports.
 
+## Latest manual review boundary — Sky Bulletin, 9 October
+
+SB01–SB03 ready in Ideas: finalsource8bd125d/liveindex-CKmMkj_Z.js, independent134/6, root129 affected+39 final component checks, actual Sun/Moon/rising open/close at360/390/430 and twelve final pixels independently accepted. Upfront chart meaning/clear action/local full source; seven original short everyday stories, five manual cards and daily starter rotation. Full Saved route P1 and petal/date P2 repaired and re-proved; native390 draft/keep/Yours/fullSaved/source and old exact astronomy edition verified. Bible/mirror/critic standing closure rule updated. Main promotion awaits Halli; automation PAUSED. Stop at MANUAL-SKY-BULLETIN-REVIEW, no automatic scope restart.
+
+Next coherent manual batch carries the already saved dedicated older destinations/club/pickers and all loading/error/draft/exit states, room relevance, classic1342 entry and settled native paging/settings/Back/Forward, and growth/cost retrospective. OriginalB01-S03-A05 remains open; no feature quota or blanket every-tap claim. Research/brainstorm/fix evidence stays in the new Sky report and organised Ideas.
 ## Current manual batch — 9 October, three-photo Sky correction
 
 SB01: visible chart orientation plus unmistakable row action, each full reading inline beneath its selected sign. SB02: Sky Bulletin, seven short original everyday celestial stories and a daily selection of five; preserve historical exact editions and all keep/note/Yours/Saved/lounge source contracts. SB03: self/independent critique must produce bounded improvements and reproof before readiness; Bible/mirror §10.5.26, organised Ideas research and working preview, real 360/390/430 interactions. Claim c908c93; implementation/proof in progress, main promotion held, automation PAUSED. This coherent manual batch precedes the prior review cursor without completing original B01-S03-A05 or the remaining legacy/relevance/cost queue. [Mapped atoms and brainstorm](critique/sky-bulletin-2026-10-09.md).

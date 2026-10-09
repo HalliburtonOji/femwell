@@ -42,13 +42,13 @@
     "reason": "Halli stopped recurring builds: usage consumption and endless loop. Tool and automation.toml confirm PAUSED; explicit user restart required."
   },
   "baseline": {
-    "commit": "fe6205f",
-    "liveBundle": "index-B7F3nhkw.js"
+    "commit": "8bd125d",
+    "liveBundle": "index-CKmMkj_Z.js"
   },
   "current": {
     "section": "Lifestyle / Sky inline chart and Bulletin preview",
-    "atom": "MANUAL-SB01-SB03",
-    "status": "Claim c908c93; mapped source implementation and controlled/mobile/independent proof in progress. Ideas only; scheduler PAUSED; original B01-S03-A05 and prior legacy/relevance/cost gaps preserved."
+    "atom": "MANUAL-SKY-BULLETIN-REVIEW",
+    "status": "SB01-SB03 ready in Ideas at manual review boundary. Finalsource8bd125d/liveindex-CKmMkj_Z.js; independent134/6, root129 affected +39 final component checks, root native3width all3 chart rows/story movement and12 final pixels independently accepted. Native390 draft/acknowledged keep/Yours/fullSaved/exact return and historical edition proved. Main held, automation PAUSED; originalB01-S03-A05/legacy/relevance/cost queue not completed."
   },
   "lastCompleted": {
     "run": 5,
