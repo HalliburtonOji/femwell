@@ -8,6 +8,14 @@ import { CalmTaskDialog } from "./CalmLifestyle";
 vi.mock("@/api/base44Client", () => ({ base44: { auth: { me: vi.fn() }, entities: {}, functions: { invoke: vi.fn() } } }));
 
 describe("calmer lists preserve exact source tasks", () => {
+  it("distinguishes different same-title discoveries with their own source words and preserves both exact actions", () => {
+    const onOpen=vi.fn(),onDetails=vi.fn();
+    const rows=[{id:"mara",type:"book",title:"Starting Over",summary:"Mara runs her mother's flower shop."},{id:"lena",type:"book",title:"Starting Over",summary:"Lena makes ceramics while caring for her mother."},{id:"unique",type:"article",title:"Other find",summary:"No repeated preview needed."}];
+    render(<YoursFocus calmLayout presentation="focused" phaseCards={rows} onOpen={onOpen} onDetails={onDetails}/>);
+    expect(screen.getByText(rows[0].summary)).toBeVisible();expect(screen.getByText(rows[1].summary)).toBeVisible();expect(screen.queryByText(rows[2].summary)).not.toBeInTheDocument();
+    const opens=screen.getAllByRole("button",{name:/^Starting Over.*Open$/});const details=screen.getAllByRole("button",{name:"Details & tools for Starting Over"});
+    rows.slice(0,2).forEach((row,index)=>{fireEvent.click(opens[index]);expect(onOpen).toHaveBeenLastCalledWith(row);fireEvent.click(details[index]);expect(onDetails).toHaveBeenLastCalledWith(row);});
+  });
   it("wraps the modal keyboard boundary in both directions while keeping the opener return", () => {
     const previousModal=Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype,"showModal"),previousClose=Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype,"close");
     Object.defineProperty(HTMLDialogElement.prototype,"showModal",{configurable:true,value:vi.fn(function(){this.setAttribute("open","");})});

@@ -4,6 +4,7 @@
 .fw-calm-find-primary>span:first-child{min-width:0;flex:1}
 .fw-calm-find strong{font:600 20px/1.25 var(--ff-serif,"Cormorant Garamond",serif);display:block;overflow-wrap:anywhere}
 .fw-calm-find small{display:block;font:500 12px/1.4 var(--ff-ui,system-ui);color:#6E6A61;margin-top:5px}
+.fw-calm-find .fw-calm-find-context{font-weight:400;font-size:13px;line-height:1.5;color:#51444e;margin-top:7px}
 .fw-calm-find-action{display:inline-flex;align-items:center;gap:5px;font:600 12px/1.4 var(--ff-ui,system-ui);flex-shrink:0}
 .fw-calm-find-details{border:0;background:transparent;min-height:44px;color:#6E6A61;font:500 12px var(--ff-ui,system-ui);padding:0 0 8px;cursor:pointer}
 .fw-calm-lifestyle .fw-ff-summary{margin-top:14px!important}

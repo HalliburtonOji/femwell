@@ -1,5 +1,7 @@
 # Lifestyle: a calmer whole page — 9 October 2026
 
+Final independent saved-pixel review covered all18 section captures and Ask360/390: no visible P0/P1 established. C02 P2: two Yours discoveries have identical title/source captions. Root actual Details proves different full sources: Mara/the flower shop versus Lena/the ceramicist. Preserve both exact source callbacks. A short verbatim source-summary excerpt only on ambiguous repeated titles will distinguish them; no renamed edition, invented protagonist blurb, deduplication or database change. Same optional-support research and §10.5.25 apply. Native final Ask boundary wraps/escape/opener passed360/390/430, after effective-disabled filter repair; source fixtures and native proof remain separate.
+
 Halli: “do that but lifestyle still looks too busy as a page”. Manual coherent batch; automation PAUSED. Main currently uses the approved headers but still renders full Sky/forms/QuickRow. Previous FocusedLifestyleDemo fixed specific destinations and preserved full capability, but did not solve the whole page's rhythm. New working CalmLifestyleDemo, no main promotion inferred. Claim ddc0318 precedes edits.
 
 ## Motherboard and preserved inventory
@@ -48,4 +50,10 @@ First native390 actual Ask pill→clean native modal→draft→Close→reopen→
 
 
 Final source reproof: independent identified inherited-fieldset/explicit-tabindex disabled controls in the new trap. Filter excludes effective :disabled; real component regression covers both and exact wrap/opener. Independent source closure confirms; final14/2 passes, lint0errors. Earlier22/3 and65/3 remain distinct from first751/56. No broad full re-run. Final source build/deploy/native reproof next, then review boundary; do not manufacture another audit or resume recurring builds.
+
+## Final native review boundary — source0695f45 / index-BPP0TrnO.js
+
+Root actually selected all six sections and saved full pixels at360/390/430; independent critic reviewed all18 and Ask360/390. No visible P0/P1 established; ambiguous Yours captions are the single P2 above. Root explicit keyboard reproof passes first Close Shift+Tab→last existing history button→Tab→Close, Escape→exact Ask opener at all3widths. Some large combined capture calls timed out: completed captures retained, lost arrays not claimed; smaller saved keyboard/360 metrics files preserve evidence. Final360 six sections have no horizontal overflow/0upfront forms. Sky final default3903905px/4303761px matches earlier3603933px; same-account main3908977px is a rendered state comparison only.
+
+Same-title correction15/2 real component checks pass; lint0errors. Both full sources remain original (root opened both Details); no backend/entity/account change. Existing full751/56, independent65/3, final22/3 and14/2 are separate stages, not a new full run. Classic1342 settled native paging/settings/Back/Forward and entry quality, all remaining dedicated legacy owners/club/pickers/relevance, physical iPhone/VoiceOver and cost retrospective remain open. Existing audio Play can update own test listening progress. No social send, paid generation, age attestation or mutation of others.
 

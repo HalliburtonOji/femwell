@@ -4,12 +4,12 @@ import { resolveCard } from "@/components/brand/expandCards";
 import "./CalmLifestyle.css";
 
 // Title-led secondary finds. Exact actions and full details remain with their owner.
-export function CalmFindRow({ item: raw, onOpen, onDetails, label = "Read" }) {
+export function CalmFindRow({ item: raw, onOpen, onDetails, label = "Read", context }) {
   const item = resolveCard(raw);
   const meta = item.sourceName || item.author || item.meta?.find(([, value]) => value)?.[1];
   return <div className="fw-calm-find">
     <button className="fw-calm-find-primary" onClick={() => onOpen?.(raw)}>
-      <span><strong>{item.title}</strong>{meta && <small>{meta}</small>}</span>
+      <span><strong>{item.title}</strong>{meta && <small>{meta}</small>}{context && <small className="fw-calm-find-context">{context}</small>}</span>
       <span className="fw-calm-find-action">{label}<ArrowRight size={14}/></span>
     </button>
     {onDetails && <button className="fw-calm-find-details" aria-label={`Details & tools for ${item.title}`} onClick={() => onDetails(raw)}>Details</button>}

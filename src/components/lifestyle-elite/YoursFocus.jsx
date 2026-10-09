@@ -4,7 +4,7 @@
 // real saves + cycle phase. Tap → opens the exact saved item in place. Cream design.
 import React from "react";
 import { Bookmark } from "lucide-react";
-import { CoverCard } from "@/components/brand/expandCards";
+import { CoverCard, resolveCard } from "@/components/brand/expandCards";
 import { SERIF } from "@/components/journal/Editorial";
 import { C } from "@/components/brand/cleanTokens";
 import { Eyebrow, Title, Card as CleanCard, Summary, Foot } from "@/components/brand/cleanKit";
@@ -37,6 +37,16 @@ export default function YoursFocus({ savedCards = [], savedSummary, phaseCards =
   const other = savedCards.filter(c => !KINDS.some(k => k.test(String(c.type || ""))));
   if (presentation && other.length) groups.push({label:"Other keeps",accent:"gold",items:other});
   const hasSaved = savedCards.length > 0;
+  // Same-title sources can be different stories. Distinguish them with their own
+  // words, keeping every original item/action rather than merging by title.
+  const titleCounts = new Map();
+  phaseCards.forEach(item => { const title = resolveCard(item).title; titleCounts.set(title, (titleCounts.get(title) || 0) + 1); });
+  const discoveryContext = item => {
+    const card = resolveCard(item);
+    if (!calmLayout || titleCounts.get(card.title) < 2) return undefined;
+    const words = String(card.summary || "").trim().split(/\s+/).filter(Boolean);
+    return words.length ? words.slice(0, 18).join(" ") + (words.length > 18 ? "…" : "") : undefined;
+  };
   if (!hasSaved && !skySavedCount && !phaseCards.length) {
     return (
       <YoursCard eyebrow="Yours" title="Your saved things live here">
@@ -69,7 +79,7 @@ export default function YoursFocus({ savedCards = [], savedSummary, phaseCards =
       {phaseCards.length ? (
         <YoursCard className="fw-selected-phase" eyebrow={presentation ? "Something new" : "Tuned to your week"} title={presentation ? "A few discoveries" : phaseWord ? `For your ${phaseWord} week` : "For your phase"} accent="sage">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {phaseCards.map((it) => calmLayout && !it.audioSrc && !it.youtubeId && !it.videoSrc ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails} label="Open"/> : <CoverCard presentation={presentation} previewText={calmLayout ? "" : undefined} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />)}
+            {phaseCards.map((it) => calmLayout && !it.audioSrc && !it.youtubeId && !it.videoSrc ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails} label="Open" context={discoveryContext(it)}/> : <CoverCard presentation={presentation} previewText={calmLayout ? "" : undefined} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />)}
           </div>
         </YoursCard>
       ) : null}
