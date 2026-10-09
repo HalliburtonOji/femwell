@@ -57,3 +57,8 @@ Root actually selected all six sections and saved full pixels at360/390/430; ind
 
 Same-title correction15/2 real component checks pass; lint0errors. Both full sources remain original (root opened both Details); no backend/entity/account change. Existing full751/56, independent65/3, final22/3 and14/2 are separate stages, not a new full run. Classic1342 settled native paging/settings/Back/Forward and entry quality, all remaining dedicated legacy owners/club/pickers/relevance, physical iPhone/VoiceOver and cost retrospective remain open. Existing audio Play can update own test listening progress. No social send, paid generation, age attestation or mutation of others.
 
+## Final release — sourcefe6205f / index-B7F3nhkw.js
+Normal push, completed Vite exit0 then site deploy; dist/public/native script agree. Root actual Yours360/390/430 shows both source excerpts with no horizontal overflow; independent source/callback fixture review plus all3saved final images closes the sole P2 presentation issue. Unique-title rows remain quiet. All useful capabilities/headers/sources retained; report names conformance §§2.7,6.7/6.7.8,10.5.22–25,11,17.3,19.7–9. No visible open P0/P1/P2 established in reviewed frames; this is not a full-state/whole-app certificate.
+
+Ready in Ideas, main visual promotion held. Actual scheduler TOML remains PAUSED. Stop at this manual review boundary; saved originalA05 and legacy/relevance/cost work survive in STATE/BUILD_PLAN. Historical previews remain reachable. First full751/56 and final15/2 are labelled separately; no unnecessary full rerun or new backend deployment. Saved screenshots/proofs remain local, never published as account rows in the bundle.
+

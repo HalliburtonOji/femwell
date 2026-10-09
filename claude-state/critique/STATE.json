@@ -42,13 +42,13 @@
     "reason": "Halli stopped recurring builds: usage consumption and endless loop. Tool and automation.toml confirm PAUSED; explicit user restart required."
   },
   "baseline": {
-    "commit": "2648db4",
-    "liveBundle": "index-BnFyEr9p.js"
+    "commit": "fe6205f",
+    "liveBundle": "index-B7F3nhkw.js"
   },
   "current": {
     "section": "Lifestyle / calmer whole-page preview",
-    "atom": "MANUAL-CALM-C01-C07",
-    "status": "Claimddc0318, mapped source staged. Controlled/build and native independent360/390/430 checks next. Main unchanged; automation PAUSED; original B01-S03-A05 carried separately."
+    "atom": "MANUAL-CALM-REVIEW",
+    "status": "C01-C07 working preview ready in Ideas; sourcefe6205f/liveindex-B7F3nhkw.js. Mobile18images and independent final3delta accept, root native tools/source/keyboard proof recorded. Main appearance held; automation PAUSED; stop at manual review boundary. Original B01-S03-A05 carried separately."
   },
   "lastCompleted": {
     "run": 5,
@@ -92,7 +92,8 @@
     "Account, auth, settings and Saved"
   ],
   "nextRunNumber": 7,
-  "latestReport": "claude-state/critique/reports/0006-books-opened-states-2026-10-08.md",
+  "latestReport": "claude-state/critique/lifestyle-calm-2026-10-09.md",
+  "latestAutomatedReport": "claude-state/critique/reports/0006-books-opened-states-2026-10-08.md",
   "findings": [
     {
       "id": "CR-0001",
@@ -395,7 +396,7 @@
     "Native warning/support/locked/failure reader branches remain controlled-only proof; complete secondary-state registry and physical virtual keyboard pending.",
     "Possible touchstart/centre-toggle reader-chrome ordering is an unconfirmed source/native candidate; reproduce before assigning severity or changing behavior.",
     "Ideas preview Back currently returns dashboard rather than an expanded ephemeral report; route works, exact expanded-report lifetime not certified.",
-    "Run0006 user stop: residual exact reader settings/Back/Forward partition and final430/nearby chooser/detail/Ideas reproof; heading-reserve proposal unimplemented; manual resume only."
+    "Run0006 stop residual reconciled by manual2648db4: heading reserve/frozen paragraph repair implemented and controlled-tested. Classic1342 settled native paging/settings/Back/Forward and entry quality remain unverified after browser timeout. Manual only; do not repeat obsolete unimplemented-repair claim."
   ],
   "learningFile": "claude-state/critique/LEARNING.md",
   "deliveryWorkflow": {
@@ -431,10 +432,10 @@
     "batch": "B01",
     "stage": "B01-S03",
     "atom": "B01-S03-A05",
-    "nextStep": "Manual calmer preview C01–C07 in verification: complete tests/build, normalpush/site deploy and actual mobile/independent proof, then review boundary. Preserve old B01-S03-A05 native1342 and remaining destinations/cost work; no recurring restart.",
+    "nextStep": "At manual calmer-preview review boundary. Await Halli's review before main promotion; no automatic restart. Next requested coherent batch: remaining real opened secondary owners/states, room relevance and saved B01-S03-A05 classic1342 native/source return proof; preserve earlier repairs and cost retrospective.",
     "readyWork": "Actual trigger→complete content/tools/state→open/interact/close/exact source path for remaining Books/Yours secondary surfaces. Preserve all earlier functional repairs/full history, approved section personality and raw QA note. No second shelf/reader/store, no inferred checkpoint or social send. Revisit source-only portal/chrome candidates with precise fixtures/native journeys rather than manufacturing changes.",
     "acceptance": "Actual360/390/430 open/interact/close/theme/preferences/exactsource/Back, controlledfailure/owner/keyboard/touch plus independentP0/P1/P2; bespoke clean§2.7/6.7.8 with safe sheets/44px controls, short human copy and peratom costcard§10.5.23. Link working preview/research/checks/gaps in Ideas before main promotion.",
-    "heldBranch": "Focused preview appearance and existing reader/note/settings appearance, reached-checkpoint/preview/Post, nudge and backlog choices remain held. No automatic audit, repeated unchanged question or main promotion.",
+    "heldBranch": "Calmer/Focused preview appearance and existing reader/note/settings appearance, reached-checkpoint/preview/Post, nudge and backlog choices remain held. No automatic audit, repeated unchanged question or main promotion.",
     "carryForward": "Remaining opened club/details/pickers and state registry; S04→S05→S06 thenB02/B03; broad eager/subscriptionhistory, Sky/audio/Founders/scheduledjobs cost retrospective; full historical preview registry retained."
   },
   "activeRun": {
@@ -453,6 +454,18 @@
     "tests": "733/53 full; independent64/2; lint0errors/completed Vite/site deploy",
     "proof": "Settled360 exact return passes; hidden360to390 preserves paragraph;390 settings-return page/prose partition changes. No final3width acceptance.",
     "limits": "Final430/nearby chooser/detail/Ideas reproof, physicaliPhone/VoiceOver/touch/keyboard and live injected owner/write/delete faults unproved. Heading repair unimplemented."
+  },
+  "latestCalmPreview": {
+    "date": "2026-10-09",
+    "sourceCommit": "fe6205f",
+    "liveBundle": "index-B7F3nhkw.js",
+    "claimCommits": ["ddc0318", "465ab83"],
+    "status": "Ready in Ideas; review boundary; main unchanged; automation PAUSED",
+    "preview": "/CalmLifestyleDemo?section=sky",
+    "report": "claude-state/critique/lifestyle-calm-2026-10-09.md",
+    "checks": "First full751/56; later independent65/3, root22/3 then14/2 then final15/2; scoped lint0errors; completed Vite and normalpush/site deploy. Native all6sections selected/captured360/390/430, Ask first/last Tab/Escape/opener3widths; full source/lesson/depth/draft/Read/audio/rooms exercised. Independent18pixels+Ask and final3Yoursdelta/source closure; no visible open P0/P1/P2 established within reviewed frames.",
+    "limits": "No wholeapp/everytap/physicaliPhone/VoiceOver certificate. Classic1342 paging/settings/Back/Forward and entry quality, dedicated older destinations/club/pickers/secondary states, roomfallback relevance and cost retrospective retained. No live injected save/owner faults, social/AI/purchase/age action or others-data modification.",
+    "next": "Halli layout review before main promotion; next manual request resumes saved remaining journey owners and A05, not a new audit loop."
   },
   "latestManualBrief": {
     "date": "2026-10-09",
