@@ -46,9 +46,9 @@
     "liveBundle": "index-B7F3nhkw.js"
   },
   "current": {
-    "section": "Lifestyle / calmer whole-page preview",
-    "atom": "MANUAL-CALM-REVIEW",
-    "status": "C01-C07 working preview ready in Ideas; sourcefe6205f/liveindex-B7F3nhkw.js. Mobile18images and independent final3delta accept, root native tools/source/keyboard proof recorded. Main appearance held; automation PAUSED; stop at manual review boundary. Original B01-S03-A05 carried separately."
+    "section": "Lifestyle / Sky inline chart and Bulletin preview",
+    "atom": "MANUAL-SB01-SB03",
+    "status": "Claim c908c93; mapped source implementation and controlled/mobile/independent proof in progress. Ideas only; scheduler PAUSED; original B01-S03-A05 and prior legacy/relevance/cost gaps preserved."
   },
   "lastCompleted": {
     "run": 5,
@@ -92,7 +92,7 @@
     "Account, auth, settings and Saved"
   ],
   "nextRunNumber": 7,
-  "latestReport": "claude-state/critique/lifestyle-calm-2026-10-09.md",
+  "latestReport": "claude-state/critique/sky-bulletin-2026-10-09.md",
   "latestAutomatedReport": "claude-state/critique/reports/0006-books-opened-states-2026-10-08.md",
   "findings": [
     {
@@ -459,7 +459,10 @@
     "date": "2026-10-09",
     "sourceCommit": "fe6205f",
     "liveBundle": "index-B7F3nhkw.js",
-    "claimCommits": ["ddc0318", "465ab83"],
+    "claimCommits": [
+      "ddc0318",
+      "465ab83"
+    ],
     "status": "Ready in Ideas; review boundary; main unchanged; automation PAUSED",
     "preview": "/CalmLifestyleDemo?section=sky",
     "report": "claude-state/critique/lifestyle-calm-2026-10-09.md",

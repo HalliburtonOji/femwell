@@ -37,6 +37,8 @@ Use RUNBOOK.md's criteria as evidence prompts, not claims that all standards hav
 
 ## Independent report, then reproof
 
+Halli9October§10.5.26: critique must cause improvement before ready. Judge the actual user job, whole-page reading/attention burden and changed controls; root fixes bounded defects/weak execution and independently re-proves the original and nearby journey. Recording a report alone is not closure. Substantial decisions remain concrete Ideas proposals; no fabricated defects, endless refinement or restart of the paused scheduler.
+
 Remain read-only in implementation and central canon; root owns repairs. Return the report to the parent through the collaboration mailbox. Root may delegate an isolated report file with a committed claim. Each finding needs stable ID, P0/P1/P2, exact route/object state, actual versus intended result, reproduction, screenshot/log/source evidence, impact, confidence and a bounded proposed repair. Label source-only and live-proven findings separately. Include conformance §§, preserved inventory and any meaningful feature opportunity; include honest gaps. No fault found is a valid result.
 
 After root repairs, independently retry the original failure and its nearby existing capability. A test pass is not a live-pixel pass; a frontend click is not a persisted backend write. Close only what was re-proved, preserving the original finding and evidence. Progress the atom cursor; do not repeatedly revisit a held decision while ignoring the rest of the app.

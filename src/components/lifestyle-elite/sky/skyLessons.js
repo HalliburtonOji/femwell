@@ -38,6 +38,28 @@ export const SKY_LESSONS = [
 export function localSkyDay(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
 }
+
+// Shared authored editorial fiction/observations, never predictions about her.
+// These unique IDs do not change any historical astronomy text or edition.
+export const SKY_BULLETINS = [
+  ["bulletin-group-chat","The group-chat constellation","People in orbit","A group chat is a tiny constellation: one friend blazing away, one sending a single mysterious dot, one missing until Sunday. Then someone posts a terrible photo and the whole sky wakes up. Friendship has a splendidly uneven rhythm. Sometimes the most eloquent contribution is ‘look at the state of us’."],
+  ["bulletin-family","Family, with satellites","People in orbit","Every family has its own astronomy. Someone is the Sun, someone knows where the spare keys are, and someone has been orbiting the same argument since Christmas. Then an ordinary afternoon produces a new story nobody saw coming. The family album makes room for it, between a birthday cake and somebody’s thumb."],
+  ["bulletin-meeting","Mercury joins the meeting","Earthbound business","Imagine Mercury joining a meeting that could have been an email. Even the messenger of the gods might mute himself. There is something magnificent about a roomful of capable people spending twenty minutes agreeing to ‘circle back’. Meanwhile, your excellent idea waits in the notebook, looking considerably less impressed by the agenda."],
+  ["bulletin-typing","Venus has a typing bubble","Venus, in practice","A typing bubble can contain an entire romantic epic. Perhaps they are composing something dazzling. Perhaps they are ordering chips. Venus gets the paintings and poetry; modern courtship gets ‘sorry, only just seen this’. The stars are wonderfully distant from all this, while the phone sits very close to your elbow."],
+  ["bulletin-doorway","The face at the door","Little life stories","Astrology has a word for the face we bring to the doorway: rising. The rest of us have several, depending on whether the door belongs to a party, a meeting or the delivery driver. A chart offers one lens. An unexpected parcel offers another. Apparently, both can reveal a surprising amount of personality."],
+  ["bulletin-knitting","Saturn’s knitting club","Off duty","Saturn has rings. The rest of us have hobbies with expanding storage requirements. One ball of wool becomes a basket, then a cupboard, then a small diplomatic incident about the spare room. There is a lovely kind of ambition in making something simply because you want to see what it turns into."],
+  ["bulletin-kitchen","The Moon and the washing up","Off duty","The Moon makes an excellent companion for a kitchen window. It never asks what you achieved today, and it has watched considerably more washing up than any lifestyle magazine acknowledges. A song comes on. One plate remains. For a few minutes, the room has its own small weather: warm water, bad singing, silver light."],
+].map(([id,title,lane,body])=>({id,title,lane,body,kind:"bulletin",version:1}));
+
+export const findSkyPiece = (id,version) => [...SKY_LESSONS,...SKY_BULLETINS].find(item=>item.id===id && (version==null || String(item.version)===String(version)));
+export function dailyBulletinDeck(day,exactId) {
+  const [year,month,date]=day.split("-").map(Number);
+  const ordinal=Math.round((Date.UTC(year,month-1,date)-Date.UTC(2026,9,9))/86400000);
+  const index=((ordinal%SKY_BULLETINS.length)+SKY_BULLETINS.length)%SKY_BULLETINS.length;
+  const daily=[0,1,3,4,6].map(offset=>SKY_BULLETINS[(index+offset)%SKY_BULLETINS.length]);
+  const exact=findSkyPiece(exactId);
+  return exact ? [exact,...daily.filter(item=>item.id!==exact.id)].slice(0,5) : daily;
+}
 export function dailyLessonDeck(day, exactId) {
   const [year,month,date] = day.split("-").map(Number);
   const ordinal = Math.round((Date.UTC(year,month-1,date)-Date.UTC(2026,9,5))/86400000);

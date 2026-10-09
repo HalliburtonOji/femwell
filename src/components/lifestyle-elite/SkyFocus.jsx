@@ -89,13 +89,14 @@ const Movement = ({ id, refs, children, focusable = false, className }) => (
 );
 
 // ── the chart triad — three hairline columns; tap one to unfold its reading ─────────────────────
-function TriadColumn({ world = false, Icon, label, sign, trait, desc, locked, onUnlock, first, celestial = false, expanded = false, onToggle }) {
+function TriadColumn({ world = false, Icon, label, sign, trait, desc, locked, onUnlock, first, celestial = false, expanded = false, onToggle, inline = false }) {
   const [localOpen, setOpen] = useState(false);
+  const panelId = React.useId();
   const open = celestial ? expanded : localOpen;
   const SignIcon = !locked && sign ? getSignIcon(sign) : Icon;
   return (
     <div className={world ? "fw-world-triad-column" : undefined} style={{ flex: 1, minWidth: 0, padding: "4px 6px", borderLeft: first ? "none" : `1px solid ${C.hair}` }}>
-      <button disabled={world && !locked && !desc} onClick={() => { if (locked) return onUnlock && onUnlock(); if (desc) { if (celestial) onToggle?.(); else setOpen((v) => !v); } }} className="fw-elite-press" aria-expanded={open}
+      <button disabled={world && !locked && !desc} onClick={() => { if (locked) return onUnlock && onUnlock(); if (desc) { if (celestial) onToggle?.(); else setOpen((v) => !v); } }} className="fw-elite-press" aria-expanded={open} aria-controls={inline && desc ? panelId : undefined}
         style={{ width: "100%", textAlign: "center", cursor: (desc || locked) ? "pointer" : "default", background: "transparent", border: "none", padding: 0 }}>
         <div className={celestial ? "sky-triad-icon" : undefined} style={{ display: "flex", justifyContent: "center", lineHeight: 1 }}><SignIcon size={26} color={locked ? C.faint : C.ink} strokeWidth={1.4} /></div>
         <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: C.faint, marginTop: 9 }}>{label}</div>
@@ -103,8 +104,10 @@ function TriadColumn({ world = false, Icon, label, sign, trait, desc, locked, on
         {!locked && trait ? <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: C.slate, marginTop: 3, lineHeight: 1.3 }}>{trait}</div> : null}
         {locked ? <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: C.gold, marginTop: 6 }}>+ add birth time</div>
           : desc ? <ChevronDown size={13} color={C.faint} style={{ marginTop: 6, transform: open ? "rotate(180deg)" : "none", transition: "transform .2s" }} /> : null}
+        {inline && !locked && <span className="fw-calm-chart-cue">{desc ? open ? "Close reading" : `Read my ${label.toLowerCase()}` : "Reading still arriving"}</span>}
       </button>
       {celestial && <p style={{font:`500 13px/1.4 ${UI}`,color:C.ink,textAlign:"center",margin:"10px 0 0"}}>{{Sun:"Your sense of self",Moon:"Your inner weather",Rising:"How you meet the world"}[label]}</p>}
+      {inline && desc && <div id={panelId} className="fw-calm-chart-reading" hidden={!open}>{skyParagraphs(desc).map((text,index)=><p key={index}>{text}</p>)}</div>}
       {!celestial && open && desc ? <p style={{ fontFamily: SERIF, fontSize: 14.5, fontWeight: 500, color: C.ink, lineHeight: 1.55, margin: "10px 2px 0", textAlign: "left" }}>{clean(desc)}</p> : null}
     </div>
   );
@@ -413,15 +416,16 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
 
       {/* III · YOU — chart · goddess bench · red & white moon */}
       <Movement id="you" refs={refs} className={movementClass("identity")}>
-        {celestial ? <SkyMeaning label="your chart" explanation={world ? "In astrology, Sun is your sense of self, Moon your inner weather, and rising how you meet the world. Tap a sign to read yours." : "In astrology, Sun speaks to identity, Moon to your inner world, and rising to how you meet life. Tap a symbol for its reading; these are reflective lenses, not a verdict."}><Eyebrow cw="gold" style={{margin:0}}>Your chart</Eyebrow></SkyMeaning> : <Eyebrow cw="gold">Your chart</Eyebrow>}
+        {celestial && !calmLayout ? <SkyMeaning label="your chart" explanation={world ? "In astrology, Sun is your sense of self, Moon your inner weather, and rising how you meet the world. Tap a sign to read yours." : "In astrology, Sun speaks to identity, Moon to your inner world, and rising to how you meet life. Tap a symbol for its reading; these are reflective lenses, not a verdict."}><Eyebrow cw="gold" style={{margin:0}}>Your chart</Eyebrow></SkyMeaning> : <Eyebrow cw="gold">Your chart</Eyebrow>}
         <Title>Sun, moon &amp; rising</Title>
+        {calmLayout && <p className="fw-calm-chart-intro">In astrology, Sun is your sense of self, Moon your inner weather, and rising how you meet the world. <strong>Tap a sign to read yours.</strong></p>}
         {celestial && !calmLayout && <p className="sky-note" style={{textAlign:"center"}}>{world ? "Your centre. Your inner weather. Your hello." : "Three lenses, one very unrepeatable you. In astrology, each has a different part to play."}</p>}
         <div className={world ? "fw-world-triad" : undefined} style={{ display: "flex", alignItems: "stretch" }}>
-          <TriadColumn world={world} celestial={celestial} expanded={!!triadOpen.sun} onToggle={()=>toggleTriad("sun")} first Icon={Sun} label="Sun" sign={chart.sun ? cap(chart.sun) : null} trait={SIGN_TRAITS[cap(chart.sun)]} desc={reading?.triad_sun_desc} />
-          <TriadColumn world={world} celestial={celestial} expanded={!!triadOpen.moon} onToggle={()=>toggleTriad("moon")} Icon={Moon} label="Moon" sign={chart.moonSign ? cap(chart.moonSign) : null} trait={SIGN_TRAITS[cap(chart.moonSign)]} desc={reading?.triad_moon_desc} locked={!chart.moonSign} onUnlock={() => setSheetOpen(true)} />
-          <TriadColumn world={world} celestial={celestial} expanded={!!triadOpen.rising} onToggle={()=>toggleTriad("rising")} Icon={Sunrise} label="Rising" sign={chart.risingSign ? cap(chart.risingSign) : null} trait={SIGN_TRAITS[cap(chart.risingSign)]} desc={reading?.triad_rising_desc} locked={!chart.risingSign} onUnlock={() => setSheetOpen(true)} />
+          <TriadColumn inline={calmLayout} world={world} celestial={celestial} expanded={!!triadOpen.sun} onToggle={()=>toggleTriad("sun")} first Icon={Sun} label="Sun" sign={chart.sun ? cap(chart.sun) : null} trait={SIGN_TRAITS[cap(chart.sun)]} desc={reading?.triad_sun_desc} />
+          <TriadColumn inline={calmLayout} world={world} celestial={celestial} expanded={!!triadOpen.moon} onToggle={()=>toggleTriad("moon")} Icon={Moon} label="Moon" sign={chart.moonSign ? cap(chart.moonSign) : null} trait={SIGN_TRAITS[cap(chart.moonSign)]} desc={reading?.triad_moon_desc} locked={!chart.moonSign} onUnlock={() => setSheetOpen(true)} />
+          <TriadColumn inline={calmLayout} world={world} celestial={celestial} expanded={!!triadOpen.rising} onToggle={()=>toggleTriad("rising")} Icon={Sunrise} label="Rising" sign={chart.risingSign ? cap(chart.risingSign) : null} trait={SIGN_TRAITS[cap(chart.risingSign)]} desc={reading?.triad_rising_desc} locked={!chart.risingSign} onUnlock={() => setSheetOpen(true)} />
         </div>
-        {celestial && [["sun","Sun",reading?.triad_sun_desc],["moon","Moon",reading?.triad_moon_desc],["rising","Rising",reading?.triad_rising_desc]].map(([key,label,description]) => triadOpen[key] && description ? <div key={key} style={{padding:"16px 0",borderBottom:`1px solid ${C.hair}`}}><p className="sky-kicker">{label} · your reading</p>{(complete ? skyParagraphs(description) : [clean(description)]).map((text,i)=><p key={i} className="sky-note" style={{margin:i ? "10px 0 0" : 0}}>{text}</p>)}</div> : null)}
+        {celestial && !calmLayout && [["sun","Sun",reading?.triad_sun_desc],["moon","Moon",reading?.triad_moon_desc],["rising","Rising",reading?.triad_rising_desc]].map(([key,label,description]) => triadOpen[key] && description ? <div key={key} style={{padding:"16px 0",borderBottom:`1px solid ${C.hair}`}}><p className="sky-kicker">{label} · your reading</p>{(complete ? skyParagraphs(description) : [clean(description)]).map((text,i)=><p key={i} className="sky-note" style={{margin:i ? "10px 0 0" : 0}}>{text}</p>)}</div> : null)}
         <div style={{ fontFamily: UI, fontSize: 11, letterSpacing: ".06em", color: C.faint, textAlign: "center", marginTop: 14 }}>{[chart.element, chart.modality, chart.sunRuler ? `ruled by ${chart.sunRuler}` : null].filter(Boolean).join(" · ")}</div>
         {calmLayout ? <details className="fw-calm-depth"><summary>Mythology & your lunar pattern</summary><GoddessBench complete={complete} signs={asteroids} goddessRead={reading?.goddess_read}/><RedWhiteMoon celestial={celestial} complete={complete} rw={complete ? completion.rw : null} loading={completion.loading} error={completion.cycleError} onRetry={completion.retry}/></details> : <><GoddessBench complete={complete} signs={asteroids} goddessRead={reading?.goddess_read}/><RedWhiteMoon celestial={celestial} complete={complete} rw={complete ? completion.rw : null} loading={completion.loading} error={completion.cycleError} onRetry={completion.retry}/></>}
       </Movement>

@@ -1,8 +1,8 @@
 import { base44 } from "@/api/base44Client";
 import { pickProfile } from "@/utils/userProfile";
 import { parseSavedMeta } from "@/lib/savedItems";
-import { SKY_LESSONS, skyLessonRoute } from "@/components/lifestyle-elite/sky/skyLessons";
-const SKY_ROUTES = new Set(["/Lifestyle", "/LivingLifestyleDemo", "/LivingAtelierDemo", "/LivingReadingRoomDemo", "/SkyWorldsDemo"]);
+import { findSkyPiece, skyLessonRoute } from "@/components/lifestyle-elite/sky/skyLessons";
+const SKY_ROUTES = new Set(["/Lifestyle", "/LivingLifestyleDemo", "/LivingAtelierDemo", "/LivingReadingRoomDemo", "/SkyWorldsDemo", "/FocusedLifestyleDemo", "/CalmLifestyleDemo"]);
 const cleanText = value => String(value || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 
 // Shared by the routed detail and its in-place card. A failed read is never an
@@ -47,7 +47,7 @@ export function savedReturnRoute(row, lifestyleItem) {
   const meta = parseSavedMeta(row) || {};
   if (meta.kind === "sky-lesson") {
     if (!/^[\w-]{1,160}$/.test(String(meta.lessonId || "")) || !/^\d{1,6}$/.test(String(meta.lessonVersion ?? ""))) return null;
-    const lesson = SKY_LESSONS.find(entry => entry.id === meta.lessonId && entry.version === Number(meta.lessonVersion)) || {id:meta.lessonId,version:meta.lessonVersion};
+    const lesson = findSkyPiece(meta.lessonId,meta.lessonVersion) || {id:meta.lessonId,version:meta.lessonVersion};
     try {
       const recorded = new URL(meta.route, "https://femwells.com");
       if (recorded.origin !== "https://femwells.com" || !SKY_ROUTES.has(recorded.pathname)) return null;

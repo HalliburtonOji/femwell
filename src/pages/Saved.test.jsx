@@ -29,7 +29,7 @@ describe("Saved identity and truthful exact returns",()=>{
     const merged=mergeSavedCollections(origin==="record" ? [row()] : [],origin==="profile" ? profile : null,new Map([["find",{error:true}]]));
     expect(merged[0]._href).toBeNull();expect(merged[0]._unavailable).toBe("This find couldn’t load.");
   });
-  it.each(["/LivingLifestyleDemo","/LivingAtelierDemo","/LivingReadingRoomDemo","/SkyWorldsDemo"])("returns the precise saved edition through allowed %s",route=>{
+  it.each(["/LivingLifestyleDemo","/LivingAtelierDemo","/LivingReadingRoomDemo","/SkyWorldsDemo","/FocusedLifestyleDemo","/CalmLifestyleDemo"])("returns the precise saved edition through allowed %s",route=>{
     const saved={...row(),meta_json:JSON.stringify({kind:"sky-lesson",lessonId:"earthshine",lessonVersion:1,route:`${route}?direction=petal-press&lesson=old`})};
     expect(savedReturnRoute(saved)).toBe(`${route}?direction=petal-press&section=sky&lesson=earthshine&lessonVersion=1#daily-sky-lesson`);
   });
@@ -47,6 +47,12 @@ describe("Saved identity and truthful exact returns",()=>{
   });
   it("opens the exact resolved fiction rather than its category or stale metadata URL",()=>{
     expect(savedReturnRoute(row(),{id:"story / 2",content_type:"FICTION"})).toBe("/FictionReader?id=story%20%2F%202");
+  });
+  it.each(['bulletin-group-chat','earthshine'])('opens the exact calm %s keep from the actual full Saved page without a Lifestyle entity lookup',async id=>{
+    const saved={...row('sky-save',`sky-lesson:${id}:v1`),title:'Exact Sky keep',meta_json:JSON.stringify({kind:'sky-lesson',lessonId:id,lessonVersion:1,route:`/CalmLifestyleDemo?direction=petal-press&section=sky&lesson=${id}&lessonVersion=1#daily-sky-lesson`})};
+    mock.saved.mockResolvedValue([saved]);render(<Saved/>);await screen.findByRole('heading',{name:'Exact Sky keep'});
+    expect(screen.getByRole('link',{name:'Open',exact:true})).toHaveAttribute('href',`/CalmLifestyleDemo?direction=petal-press&section=sky&lesson=${id}&lessonVersion=1#daily-sky-lesson`);
+    expect(mock.lifestyle).not.toHaveBeenCalled();
   });
 });
 

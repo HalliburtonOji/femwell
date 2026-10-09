@@ -23,6 +23,12 @@
 .fw-calm-lifestyle .fw-world-triad-column{padding:10px 4px!important}
 .fw-calm-lifestyle .fw-world-triad-column .sky-triad-icon+div{font-size:10px!important;margin-top:5px!important}
 .fw-calm-lifestyle .fw-world-triad-column button>div:last-of-type{font-size:12px!important}
+.fw-calm-chart-intro{font:400 16px/1.5 var(--ff-serif,"Cormorant Garamond",serif);color:#51444e;margin:8px 0 18px}
+.fw-calm-chart-intro strong{font-weight:600}
+.fw-calm-chart-cue{grid-column:2/5;grid-row:3;font:600 12px/1.5 var(--ff-ui,system-ui);color:#51444e;padding:3px 0 1px;text-decoration:underline;text-underline-offset:3px}
+.fw-calm-chart-reading{padding:2px 8px 16px 40px;color:#191510}
+.fw-calm-chart-reading p{font:400 18px/1.5 var(--ff-serif,"Cormorant Garamond",serif);margin:0 0 10px;overflow-wrap:anywhere}
+.fw-calm-chart-reading p:last-child{margin-bottom:0}
 .fw-calm-lifestyle .fw-world-tides{margin-top:22px!important}
 .fw-calm-lifestyle .fw-world-tides>div{padding:18px!important;box-shadow:none!important;background:#fff!important}
 .fw-calm-lifestyle .fw-world-tides svg{width:100px!important;height:100px!important}

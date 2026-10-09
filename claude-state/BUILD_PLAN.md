@@ -2,6 +2,9 @@
 
 Owner: Codex. Halli's staged-delivery instruction, 7 October 2026. Forward queue only: STATUS.md remains authoritative for what actually shipped; critique/STATE.json holds the precise resumable cursor. Revise this plan with evidence and decisions, preserving completed outcomes in STATUS/reports.
 
+## Current manual batch — 9 October, three-photo Sky correction
+
+SB01: visible chart orientation plus unmistakable row action, each full reading inline beneath its selected sign. SB02: Sky Bulletin, seven short original everyday celestial stories and a daily selection of five; preserve historical exact editions and all keep/note/Yours/Saved/lounge source contracts. SB03: self/independent critique must produce bounded improvements and reproof before readiness; Bible/mirror §10.5.26, organised Ideas research and working preview, real 360/390/430 interactions. Claim c908c93; implementation/proof in progress, main promotion held, automation PAUSED. This coherent manual batch precedes the prior review cursor without completing original B01-S03-A05 or the remaining legacy/relevance/cost queue. [Mapped atoms and brainstorm](critique/sky-bulletin-2026-10-09.md).
 ## Latest manual review boundary — 9 October
 
 Working `/FocusedLifestyleDemo?section=good` is first in Ideas. Final source2648db4/bundleindex-BnFyEr9p.js finishes the four-photo batch: one eleven-room popup,3+More joys, one clean joy detail, short/full original Sky and direct full source/readers with actual foundation replacement. Approved headers and capabilities retained; main preview appearance awaits Halli review. Tests/full741/54 first source, deltas25/3 and8/1, independent72+2+10 plus final3pixels remain distinguished. Root native room flow at360/390/430 and source/Back/Close/Sky-cancel prove bounded journeys. Automation remains PAUSED.
