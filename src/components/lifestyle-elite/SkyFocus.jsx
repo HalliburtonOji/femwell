@@ -312,7 +312,7 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
   const exactReadingNote = complete && chartState.exactReading ? <p className="sky-note">{readingDate ? `Saved reading · ${readingDate}. Moon facts, lessons and your chart are current.` : "This link opens a particular saved reading. Your other Sky tools are still here."} <a className="daily-sky-link" href={`${currentSkyUrl.pathname}${currentSkyUrl.search}`}>Open today’s sky</a></p> : null;
 
   const diaryTask = calmLayout && visitedTools.diary && <CalmTaskDialog title="Sky diary" open={tool==="diary"} active={routeActive} onClose={()=>setTool(null)}><PrivateSkyNotes userId={user?.id} moon={moon}/><ObservedSkyDiary human={world} userId={user?.id}/></CalmTaskDialog>;
-  const pairingTask = calmLayout && visitedTools.pairing && <CalmTaskDialog title="You & someone" open={tool==="pairing"} active={routeActive} onClose={()=>setTool(null)}><Compatibility key={`pairing:${user?.id || "signed-out"}`} complete={complete} human={world} celestial={celestial} userId={user?.id}/></CalmTaskDialog>;
+  const pairingTask = calmLayout && visitedTools.pairing && <CalmTaskDialog title="You & someone" open={tool==="pairing"} active={routeActive} onClose={()=>setTool(null)}><Compatibility calmLayout={calmLayout} key={`pairing:${user?.id || "signed-out"}`} complete={complete} human={world} celestial={celestial} userId={user?.id}/></CalmTaskDialog>;
   // ── no chart → the onboarding, in the same language ──
   if (!astro && !(complete && chartState.exactReading && reading)) {
     return (
@@ -374,7 +374,7 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
 
       {artful ? <div className={world ? "fw-world-rule" : "fw-atelier-rule"} aria-hidden="true"/> : <Leaf my={14} />}
 
-      {lessonFirst && <DailySkyLesson human userId={user?.id} moon={moon} direction={direction} previewRoute={lessonRoute}/>}
+      {lessonFirst && <DailySkyLesson calmLayout={calmLayout} human userId={user?.id} moon={moon} direction={direction} previewRoute={lessonRoute}/>}
       {/* II · TODAY — the reading, and what to do with it */}
       <Movement id="today" refs={refs} focusable={continuous} className={world ? "sky-reading fw-world-reading" : artful ? "sky-reading fw-atelier-reading" : celestial ? "sky-reading" : undefined}>
         <Eyebrow cw="crimson">{world ? "Astra, for you" : "Today's weather"}</Eyebrow>
@@ -407,7 +407,7 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
       </Movement>
 
       {artful && !world && <AtelierIncident/>}
-      {dailyLessons && !lessonFirst && <DailySkyLesson human={world} userId={user?.id} moon={moon} direction={direction} previewRoute={lessonRoute}/>}
+      {dailyLessons && !lessonFirst && <DailySkyLesson calmLayout={calmLayout} human={world} userId={user?.id} moon={moon} direction={direction} previewRoute={lessonRoute}/>}
 
       {!artful && <Fleuron my={24} />}
 
@@ -452,8 +452,8 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
       {!calmLayout && <Movement id="ask" refs={refs} className={movementClass("ask")}>
         <Eyebrow cw="lavender">Ask &amp; connect</Eyebrow>
         <Title>{world ? "What’s on your mind?" : "Put a question to it"}</Title>
-        <AskTheSky key={`ask:${complete ? user?.id || "signed-out" : "legacy"}`} complete={complete} human={world} celestial={celestial} userId={user?.id} inputRef={questionRef} />
-        <Compatibility key={`pairing:${complete ? user?.id || "signed-out" : "legacy"}`} complete={complete} human={world} celestial={celestial} userId={user?.id} />
+        <AskTheSky calmLayout={calmLayout} key={`ask:${complete ? user?.id || "signed-out" : "legacy"}`} complete={complete} human={world} celestial={celestial} userId={user?.id} inputRef={questionRef} />
+        <Compatibility calmLayout={calmLayout} key={`pairing:${complete ? user?.id || "signed-out" : "legacy"}`} complete={complete} human={world} celestial={celestial} userId={user?.id} />
       </Movement>}
 
       {!artful && <Fleuron my={24} />}
@@ -474,7 +474,7 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
         <button onClick={()=>openTool("settings")}><span>Sky settings<small>Your preferences &amp; the science</small></span><Moon size={16}/></button>
       </div>
       {diaryTask}
-      {visitedTools.ask && <CalmTaskDialog title="Ask the sky" open={tool==="ask"} active={routeActive} onClose={()=>setTool(null)}><AskTheSky key={`ask:${user?.id || "signed-out"}`} complete={complete} human={world} celestial={celestial} userId={user?.id} inputRef={questionRef}/></CalmTaskDialog>}
+      {visitedTools.ask && <CalmTaskDialog title="Ask the sky" open={tool==="ask"} active={routeActive} onClose={()=>setTool(null)}><AskTheSky calmLayout={calmLayout} key={`ask:${user?.id || "signed-out"}`} complete={complete} human={world} celestial={celestial} userId={user?.id} inputRef={questionRef}/></CalmTaskDialog>}
       {pairingTask}
       {visitedTools.letter && <CalmTaskDialog title="Letters & atelier" open={tool==="letter"} active={routeActive} onClose={()=>setTool(null)}><Atelier complete={complete} celestial={celestial} userId={user?.id} hasAtelier={complete ? completion.unlocked : !!user?.has_atelier} letter={complete ? completion.letter : null} loading={completion.loading} error={completion.letterError} onRetry={completion.retry}/></CalmTaskDialog>}
       {visitedTools.settings && <CalmTaskDialog title="Sky settings" open={tool==="settings"} active={routeActive} onClose={()=>setTool(null)}><YourWay key={user?.id || "signed-out"} complete={complete} celestial={celestial} userId={user?.id}/></CalmTaskDialog>}

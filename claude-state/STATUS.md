@@ -7,6 +7,13 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE - 2026-10-09 - CALMER NATIVE CORRECTIONS READY
+> - First live47d129c/Dix actual390 proves Ask focused popup/draft/Escape/focus and private diary draft retention. Native lesson branch/return defects corrected with extended claim465ab83; calm-only Ask/Pairing repeated headings/card removed. Independent expanded10 + unchanged lesson/FinishSky55 =**65/65**, lint0errors, completed corrective dist **index-oUk4CSqD.js**. Earlier full751/56 remains separately labelled. No main promotion or new backend surfaces; final normalpush/site/native3width reproof next. Automation PAUSED.
+>
+> ### CURRENT STATE - 2026-10-09 - CALMER PREVIEW DEPLOYED
+> - Source **47d129c** pushed normally, completed Vite then site deployment succeed. Dist/public **index-DixTl_EP.js** agree. **751/56** full tests, root exact-source2/2 and unchanged affected24/24; independent7/7 with both arrival repairs re-proved; scoped lint0errors. Working **CalmLifestyleDemo** first in Ideas; main appearance untouched. No changed backend/entity/functions/schema/AI/jobs.
+> - Actual native360/390/430 interactions and independent final pixels now underway. Source/component proof does not certify those. Automation actual TOML **PAUSED**. Review boundary follows this bounded preview; originalA05/1342/destinations/cost items retained.
+>
 > ### CURRENT STATE - 2026-10-09 - CALMER LIFESTYLE STAGED
 > - Halli says the whole page remains too busy. Claim **ddc0318** precedes the mapped C01–C07 implementation: quieter glance, direct title-led secondary reads, compact canonical audio, Sky core reading/lesson/chart and first-use retained task dialogs. Full sources, histories, approved headers, selector, both focused actions and earlier four-photo repairs remain. New **/CalmLifestyleDemo** is Ideas-only; main untouched. Baseline public/live **index-BnFyEr9p.js** verified; no new deployment yet.
 > - Research/brainstorm and full inventory: critique/lifestyle-calm-2026-10-09.md. Bible10.5.25 records the correction in this cycle. Scoped ESLint0errors (existing warnings); meaningful controlled checks/build/mobile/independent review next. No backend/entity/schema/function-name/AI/job change. Automation PAUSED; A05/native1342, other destinations and cost work remain carried.

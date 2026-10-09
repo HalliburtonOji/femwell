@@ -39,6 +39,7 @@
 .fw-calm-dialog .sky-note{font:500 17px/1.5 "Cormorant Garamond",serif;color:#6E6A61}
 .fw-calm-dialog .sky-kicker{font:700 11px/1.4 system-ui;letter-spacing:.12em;color:#A8893F}
 .fw-calm-dialog :is(button,a,summary){min-height:44px}
+.fw-calm-dialog .fw-calm-task-content{padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;border-radius:0!important;overflow:visible!important}
 .fw-calm-lifestyle :is(button,a,summary):focus-visible,.fw-calm-dialog :is(button,a,input,textarea,select,summary):focus-visible{outline:2px solid #51444e;outline-offset:3px}
 .fw-calm-lifestyle .fw-selected-lead,.fw-calm-lifestyle .fw-selected-now,.fw-calm-lifestyle .fw-selected-time{box-shadow:none!important}
 .fw-calm-lifestyle :is(.fw-selected-resume,.fw-selected-fresh,.fw-selected-fiction,.fw-selected-audio,.fw-selected-watch,.fw-selected-collection,.fw-selected-phase,.fw-selected-joys){background:transparent!important;box-shadow:none!important;border:0!important;border-radius:0!important;padding:0!important}

@@ -138,7 +138,7 @@ export function RedWhiteMoon({ rw, celestial = false, complete = false, loading,
 // ── VI · ASK THE SKY — the real askStars function + persisted history ──────────────────────────
 const ASK_CHIPS = ["What should I put my energy into this week?", "Why does this feel harder than it should?", "What am I not seeing?"];
 const ASK_LABELS=["This week","A tough patch","A fresh angle","Work","Friendship"];
-export function AskTheSky({ userId, inputRef, celestial = false, human=false, complete=false }) {
+export function AskTheSky({ userId, inputRef, celestial = false, human=false, complete=false, calmLayout=false }) {
   const [q, setQ] = useState("");
   const [answer, setAnswer] = useState("");
   const [answerStatus,setAnswerStatus]=useState("");
@@ -197,9 +197,9 @@ export function AskTheSky({ userId, inputRef, celestial = false, human=false, co
   };
 
   return (
-    <Card>
-      <Eyebrow cw="lavender" align="left">Ask the sky</Eyebrow>
-      <Title align="left" size={21}>Ask it anything</Title>
+    <Card className={calmLayout ? "fw-calm-task-content" : undefined}>
+      {!calmLayout && <Eyebrow cw="lavender" align="left">Ask the sky</Eyebrow>}
+      {!calmLayout && <Title align="left" size={21}>Ask it anything</Title>}
       {celestial && <p className="sky-note">{human ? "Take a new angle. The deciding vote is still yours." : "A question for the sky. You still get the deciding vote."}</p>}
       {/* notebook-ruled input — the original's signature */}
       <textarea ref={inputRef} aria-label="Your question for the sky" readOnly={complete && asking} maxLength={complete ? 2000 : undefined} value={q} onChange={(e) => setQ(e.target.value)} rows={3} placeholder="What's on your mind?"
@@ -244,7 +244,7 @@ const Bar = ({ label, val,scale=10 }) => {
     <div style={{ height: 4, borderRadius: 99, background: C.hair, overflow: "hidden" }}><div style={{ width: `${Math.max(0, Math.min(scale, value || 0)) * 100/scale}%`, height: "100%", background: C.ink }} /></div>
   </div>
 );};
-export function Compatibility({ userId, celestial = false, human=false, complete=false }) {
+export function Compatibility({ userId, celestial = false, human=false, complete=false, calmLayout=false }) {
   const [name, setName] = useState("");
   const [d, setD] = useState(""); const [m, setM] = useState(""); const [y, setY] = useState("");
   const [reading, setReading] = useState(null);
@@ -300,9 +300,9 @@ export function Compatibility({ userId, celestial = false, human=false, complete
   };
 
   return (
-    <Card style={{ marginTop: 14 }}>
-      <Eyebrow cw="blush" align="left">You &amp; someone</Eyebrow>
-      <Title align="left" size={21}>{human ? "You two, under the stars." : "How you two run"}</Title>
+    <Card className={calmLayout ? "fw-calm-task-content" : undefined} style={{ marginTop: 14 }}>
+      {!calmLayout && <Eyebrow cw="blush" align="left">You &amp; someone</Eyebrow>}
+      {!calmLayout && <Title align="left" size={21}>{human ? "You two, under the stars." : "How you two run"}</Title>}
       {celestial && <p className="sky-note">{complete ? "Two Sun signs, one conversation starter. Chemistry still has to show up." : human ? "Two charts, one conversation starter. Chemistry still has to show up." : "Two charts, plenty to talk about. A conversation starter, never a verdict on someone you love."}</p>}
       <input aria-label="Their name" readOnly={complete && loading} maxLength={complete ? 100 : undefined} value={name} onChange={(e) => setName(e.target.value)} placeholder="Their name" style={{ ...input, marginBottom: 9 }} />
       <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
