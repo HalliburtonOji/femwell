@@ -69,7 +69,7 @@ export default function YoursFocus({ savedCards = [], savedSummary, phaseCards =
       {phaseCards.length ? (
         <YoursCard className="fw-selected-phase" eyebrow={presentation ? "Something new" : "Tuned to your week"} title={presentation ? "A few discoveries" : phaseWord ? `For your ${phaseWord} week` : "For your phase"} accent="sage">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {phaseCards.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />)}
+            {phaseCards.map((it) => calmLayout && !it.audioSrc && !it.youtubeId && !it.videoSrc ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails} label="Open"/> : <CoverCard presentation={presentation} previewText={calmLayout ? "" : undefined} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />)}
           </div>
         </YoursCard>
       ) : null}

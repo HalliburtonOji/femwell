@@ -7,6 +7,10 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE - 2026-10-09 - FINAL CALMER SOURCE READY
+> - Live88c89e7/**index-oUk4CSqD.js** public/dist/native agree; actual3width Sky no overflow/no upfront forms,390 rendered height3905 versus main8977. Native full reading/Moon guide, diary/Ask drafts and close/Escape, exact Tuesday source, canonical audio Play/advancing54s/Pause, chapter index and one rooms popup inspected. Native first-boundary Tab and remaining Yours long discovery previews led to bounded corrections. Final14/2 (disabled fieldset/tabindex, exact wraps, complete source callbacks), earlier22/3, independent65/3 and source closure, lint0errors pass; first751/56 remains separate.
+> - Final build/deploy/mobile repair reproof queued. Preview only; main appearance held, originalA05/1342/dedicated destinations/relevance/cost gaps not erased. Actual automation PAUSED; stop at manual review boundary.
+>
 > ### CURRENT STATE - 2026-10-09 - CALMER NATIVE CORRECTIONS READY
 > - First live47d129c/Dix actual390 proves Ask focused popup/draft/Escape/focus and private diary draft retention. Native lesson branch/return defects corrected with extended claim465ab83; calm-only Ask/Pairing repeated headings/card removed. Independent expanded10 + unchanged lesson/FinishSky55 =**65/65**, lint0errors, completed corrective dist **index-oUk4CSqD.js**. Earlier full751/56 remains separately labelled. No main promotion or new backend surfaces; final normalpush/site/native3width reproof next. Automation PAUSED.
 >

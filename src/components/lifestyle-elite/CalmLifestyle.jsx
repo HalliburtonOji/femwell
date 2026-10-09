@@ -43,6 +43,15 @@ export function CalmTaskDialog({ open, active = true, title, eyebrow = "Your sky
   }, [open, active]);
   useLayoutEffect(() => () => { if (dialog.current?.open) dialog.current.close(); }, []);
   return <dialog ref={dialog} className="fw-calm-dialog fw-clean fw-sheet-safe" aria-label={title}
+    onKeyDown={event => {
+      if (event.key !== "Tab") return;
+      const controls = [...event.currentTarget.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),textarea:not([disabled]),select:not([disabled]),summary,[tabindex]')]
+        .filter(element => element.tabIndex >= 0 && !element.matches(':disabled') && element.getClientRects().length && !element.closest('[inert]'));
+      const first = controls[0], last = controls.at(-1);
+      if (!first) { event.preventDefault(); heading.current?.focus(); }
+      else if (event.shiftKey && (document.activeElement === first || document.activeElement === heading.current)) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    }}
     onCancel={event => { event.preventDefault(); onClose(); }}>
     <header><div><p>{eyebrow}</p><h2 ref={heading} tabIndex={-1}>{title}</h2></div><button aria-label="Close" onClick={onClose}><X size={20}/></button></header>
     <div className="fw-calm-dialog-body">{children}</div>

@@ -32,6 +32,12 @@ Conformance gates: Bible §§2.7,6.7/6.7.8,10.5.22–25,11,17.3,19.7–9. Actual
 
 Done: reality/claims, current inventory, mapped atoms and cited brainstorm. Queued: source, meaningful checks, complete build, normalpush/site deploy, actual mobile and independent proof, final review boundary.
 
+## Final phone findings and bounded fixes
+
+Corrective88c89e7/liveindex-oUk4CSqD.js dist/public/native agree. Root actual3width Sky:3603933px/3903905px/4303761px, no horizontal overflow or visible forms. Baseline main390 was8977px/5visible forms under the same account/date. One rendered state, not satisfaction, performance or universal savings. Native modal true/clean foundation; Close/Escape preserves draft and exact opener. Shift+Tab from first Close moved document focus outside: explicit visible/enabled/non-inert first/last boundary added, with causal component regression. Final native reproof required.
+
+Root390 actual full reading exposes all Power/Pressure/Trouble; Moon guide/full-moon selection/collapse; exact Tuesday source/Close; compact Anastacia Play becomes shared featured, audio readyState4/currentTime54.05 advances, Pause/Close player; complete36chapter/capacity controls expand/collapse; life rooms in one popup; all6section selection/source reads. Playback can update existing test-account progress; no save/plan/Goal/social/generation/purchase performed. Final22/3 covers keyboard boundary, complete discovery callbacks and legacy focused popup; prior first full751/56 and independent65/3 distinct. Yours discoveries still had long previews: final calm-only rows retain all exact sources/Details/media. Main promotion held; further3width section pixels and independent final review pending.
+
 ## Independent source checkpoint
 Independent actual-component7/7 passes after two reproduced P2 arrival repairs: copied compatibility now mounts/opens its canonical form; no-chart diary arrival opens the actual diary rather than consuming an unreachable action. Native dialog boundary alone is simulated in jsdom. Actual Ask/PrivateNotes/ObservedDiary/FirstFold children are used. Histories defer until first use, close/reopen does not refetch them, Ask draft survives close/route suspension and resets for a new account, full glance/Jess stays reachable. Root exact-source Read/Good2/2 and unchanged affected24/24 pass. Initial root fixture body strings were invalid adapter input, corrected to actual arrays with SDK boundary mocked; no product workaround.
 Scoped lint0errors; completed Vite dist index-DixTl_EP.js before mobile deployment. Full suite in progress. New appearance remains Ideas-only. Automation confirmed PAUSED in actual saved TOML. Native modal/trap/pixels/returns still required; no whole-app declaration.
@@ -39,4 +45,7 @@ Scoped lint0errors; completed Vite dist index-DixTl_EP.js before mobile deployme
 
 ## Native correction and bounded reproof
 First native390 actual Ask pill→clean native modal→draft→Close→reopen→Escape/focus and diary draft Close/reopen pass. First release exposed two further P2s: main DailySkyLesson branches missed calmLayout forwarding, and exact lesson adapter omitted the new preview route. Claimextended465ab83 precedes helper edit; root corrected both. Native popup craft prompted calm-only Ask/Pairing duplicate heading/card retirement; fields/actions/history/results/glossary remain. Independent expanded10 plus existing lesson/FinishSky =65/65, source legacy defaults preserve prior output. Scoped lint0errors and completed corrective Vite index-oUk4CSqD.js. Full751/56 remains first release; no second full run implied. Native final3width reproof next.
+
+
+Final source reproof: independent identified inherited-fieldset/explicit-tabindex disabled controls in the new trap. Filter excludes effective :disabled; real component regression covers both and exact wrap/opener. Independent source closure confirms; final14/2 passes, lint0errors. Earlier22/3 and65/3 remain distinct from first751/56. No broad full re-run. Final source build/deploy/native reproof next, then review boundary; do not manufacture another audit or resume recurring builds.
 
