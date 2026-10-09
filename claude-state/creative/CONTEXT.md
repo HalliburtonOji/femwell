@@ -38,3 +38,6 @@ Sky Living page: /FloralDreamDemo?direction=living&section=sky. Approval is reco
 - C:/Users/Halli/femwell-handoff/living-final-demo-390.png and living-{direction}-{section}-{width}.png: rejected visual evidence.
 
 Root owns source edits. Creative, research and craft agents may inspect all relevant records/screens within authorised scope, but no personal data in public design docs. No messages to other users or automatic sharing.
+
+## 9 October — calmer as a whole page
+Halli says Lifestyle still looks too busy. Bible10.5.25: accepted headers stay; reconcile duplicate framing/summaries and put optional context beside its task. Keep frequent actions direct, full sources/collections/drafts/results and all meaningful capability. Ms Atelier/research reconciled current six-section source; mapped C01–C07 live in critique/lifestyle-calm-2026-10-09.md. New CalmLifestyleDemo execution remains Ideas-only. Manual coherent preview then review boundary, automation PAUSED.

@@ -43,6 +43,7 @@ import { skyReadingKey } from "./sky/skyCompletion";
 import useSelectedSkyChart from "./sky/useSelectedSkyChart";
 import { skyParagraphs } from "./sky/skySourceContracts";
 import useCurrentSkyDay from "./sky/useCurrentSkyDay";
+import { CalmTaskDialog } from "./CalmLifestyle";
 
 const cap = (s) => (s ? String(s).charAt(0).toUpperCase() + String(s).slice(1) : s);
 const clean = (s) => String(s || "").replace(/<[^>]+>/g, "").replace(/\*(.+?)\*/g, "$1").replace(/\s+/g, " ").trim();
@@ -203,13 +204,13 @@ function LegacySkyFocus(props) {
   const chartState = useBirthChart(props.userProfile);
   return <SkyFocusBody {...props} chartState={chartState}/>;
 }
-function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onActionState, onActionHandled, onReadingState, portalChart = false, continuous = false, celestial = false, dailyLessons = false, direction, artDirection, cycleContext, contentRoute, focusedPreview = false }) {
+function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onActionState, onActionHandled, onReadingState, portalChart = false, continuous = false, celestial = false, dailyLessons = false, direction, artDirection, cycleContext, contentRoute, focusedPreview = false, calmLayout = false, routeActive = true }) {
   const world = artDirection === "sky-worlds";
   const complete = world && direction === "petal-press";
   const artful = world || ["marginalia","reading-room"].includes(artDirection);
   const lessonFirst = world && ["workbench","light"].includes(direction);
   const movementClass = name => world ? `fw-world-${name}` : artful ? `fw-atelier-${name}` : undefined;
-  const lessonRoute = ["/Lifestyle","/FocusedLifestyleDemo","/SkyWorldsDemo","/LivingLifestyleDemo","/LivingReadingRoomDemo","/LivingAtelierDemo"].includes(contentRoute) ? contentRoute : world ? "/SkyWorldsDemo" : artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artful ? "/LivingAtelierDemo" : undefined;
+  const lessonRoute = ["/Lifestyle","/CalmLifestyleDemo","/FocusedLifestyleDemo","/SkyWorldsDemo","/LivingLifestyleDemo","/LivingReadingRoomDemo","/LivingAtelierDemo"].includes(contentRoute) ? contentRoute : world ? "/SkyWorldsDemo" : artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artful ? "/LivingAtelierDemo" : undefined;
   const { user, astro, reading, userProfile: up, loading, generatingReading, setAstro, error:chartError, refresh } = chartState;
   const completion = useSkyCompletion(user, complete);
   const readingKey = skyReadingKey(user?.id, reading?.user_id === user?.id ? reading : null);
@@ -248,13 +249,22 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
   const toggleTriad = key => setTriadOpen(previous => ({...previous, [key]: !previous[key]}));
   const refs = useRef({});
   const questionRef = useRef(null);
+  const [tool,setTool] = useState(null), [visitedTools,setVisitedTools] = useState({});
+  const openTool = name => {setVisitedTools(previous=>({...previous,[name]:true}));setTool(name);};
+  useEffect(() => {
+    if (calmLayout && !loading && new URLSearchParams(window.location.search).has("compat")) {
+      setVisitedTools(previous => ({ ...previous, pairing: true }));
+      setTool("pairing");
+    }
+  }, [calmLayout, loading]);
   const consumedAction = useRef(null);
   useEffect(() => { onActionState?.({ loading, hasChart: !!astro }); }, [loading, !!astro, onActionState]);
   useEffect(() => {
     if (loading || !actionRequest || consumedAction.current === actionRequest) return;
     consumedAction.current = actionRequest;
     onActionHandled?.(null);
-    if(actionRequest.type === "diary") {
+    if(calmLayout && actionRequest.type === "diary") openTool("diary");
+    else if(actionRequest.type === "diary") {
       const target=refs.current.diary || refs.current.year;
       target?.focus({preventScroll:true});
       target?.scrollIntoView({block:"start",behavior:"auto"});
@@ -262,15 +272,17 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
     else if (actionRequest.type === "reading") {
       refs.current.today?.focus({ preventScroll: true });
       refs.current.today?.scrollIntoView({ block: "start", behavior: "auto" });
+    } else if (calmLayout) {
+      openTool("ask");
     } else {
       questionRef.current?.focus({ preventScroll: true });
       questionRef.current?.scrollIntoView({ block: "center", behavior: "auto" });
     }
-  }, [actionRequest, loading, astro, reading, onActionHandled]);
+  }, [actionRequest, loading, astro, reading, onActionHandled, calmLayout]);
   // The shell's animated ancestor creates a containing block for fixed children.
   // In the review build the chart sheet must belong to the viewport, not the long page.
   const birthSheet = (initial) => {
-    const sheet = <BirthDataSheet open={sheetOpen} onClose={() => setSheetOpen(false)} userId={user?.id} initial={initial} userProfile={prof} onSaved={(saved) => { setAstro(saved); setSheetOpen(false); }} />;
+    const sheet = <BirthDataSheet open={sheetOpen && routeActive} onClose={() => setSheetOpen(false)} userId={user?.id} initial={initial} userProfile={prof} onSaved={(saved) => { setAstro(saved); setSheetOpen(false); }} />;
     return portalChart ? createPortal(<div className="fw-clean" style={{ position: "relative", zIndex: 10020, "--cream": C.surface, "--cream-2": C.sunk }}>{sheet}</div>, document.body) : sheet;
   };
 
@@ -299,6 +311,8 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
   currentSkyUrl.searchParams.delete("reading");currentSkyUrl.searchParams.delete("tab");currentSkyUrl.searchParams.set("section","sky");currentSkyUrl.hash="";
   const exactReadingNote = complete && chartState.exactReading ? <p className="sky-note">{readingDate ? `Saved reading · ${readingDate}. Moon facts, lessons and your chart are current.` : "This link opens a particular saved reading. Your other Sky tools are still here."} <a className="daily-sky-link" href={`${currentSkyUrl.pathname}${currentSkyUrl.search}`}>Open today’s sky</a></p> : null;
 
+  const diaryTask = calmLayout && visitedTools.diary && <CalmTaskDialog title="Sky diary" open={tool==="diary"} active={routeActive} onClose={()=>setTool(null)}><PrivateSkyNotes userId={user?.id} moon={moon}/><ObservedSkyDiary human={world} userId={user?.id}/></CalmTaskDialog>;
+  const pairingTask = calmLayout && visitedTools.pairing && <CalmTaskDialog title="You & someone" open={tool==="pairing"} active={routeActive} onClose={()=>setTool(null)}><Compatibility key={`pairing:${user?.id || "signed-out"}`} complete={complete} human={world} celestial={celestial} userId={user?.id}/></CalmTaskDialog>;
   // ── no chart → the onboarding, in the same language ──
   if (!astro && !(complete && chartState.exactReading && reading)) {
     return (
@@ -315,8 +329,9 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
           <Body size={16} style={{ color: C.slate }}>{celestial ? "Time and place add detail. Don't know the time? Leave it blank; rising and houses need it, and your Moon sign may be uncertain." : "Your birth date is all we need to begin. Birth time and place are optional; they unlock your moon and rising. We never track your location."}</Body>
           <div style={{ marginTop: 6 }}><Cta filled Icon={Sparkles} onClick={() => setSheetOpen(true)}>Set up your sky</Cta></div>
         </section>
-        {dailyLessons ? <><DailySkyLesson human={world} userId={user?.id} moon={moon} direction={direction} previewRoute={lessonRoute}/><PrivateSkyNotes userId={user?.id} moon={moon}/></> : celestial && <MoonLesson moon={moon} />}
-        {complete && <div id="sky-observed-diary" tabIndex={-1} ref={el=>{refs.current.diary=el;}} style={{scrollMarginTop:70}}><ObservedSkyDiary human userId={user?.id}/></div>}
+        {dailyLessons ? <><DailySkyLesson calmLayout={calmLayout} human={world} userId={user?.id} moon={moon} direction={direction} previewRoute={lessonRoute}/>{!calmLayout && <PrivateSkyNotes userId={user?.id} moon={moon}/>}</> : celestial && <MoonLesson moon={moon} />}
+        {complete && (calmLayout ? <button className="fw-focused-button" onClick={()=>openTool("diary")}>Sky diary</button> : <div id="sky-observed-diary" tabIndex={-1} ref={el=>{refs.current.diary=el;}} style={{scrollMarginTop:70}}><ObservedSkyDiary human userId={user?.id}/></div>)}
+        {diaryTask}{pairingTask}
         {birthSheet(null)}
       </div>
     );
@@ -350,7 +365,7 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
         </div>
         <fieldset disabled={exactUnavailable} style={{border:0,padding:0,margin:0,minWidth:0}}><ShareButton iconOnly label={complete && readingDate ? `Share your sky reading from ${readingDate}` : "Share today's sky"} artifact={shareArtifact} /></fieldset>
       </div>
-      <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "6px 12px", fontFamily: UI, fontSize: 12, fontWeight: 600, color: C.slate, letterSpacing: ".04em", margin: "0 0 14px" }}>
+      <div hidden={calmLayout} style={{ display: calmLayout ? "none" : "flex", alignItems: "center", flexWrap: "wrap", gap: "6px 12px", fontFamily: UI, fontSize: 12, fontWeight: 600, color: C.slate, letterSpacing: ".04em", margin: "0 0 14px" }}>
         {stateBits.map((b, i) => (<React.Fragment key={b}>{i ? <span style={{ width: 3, height: 3, borderRadius: 99, background: C.goldHair }} /> : null}<span>{b}</span></React.Fragment>))}
         {generatingReading ? <span style={{ fontStyle: "italic", color: C.faint }}>reading the sky…</span> : null}
       </div>
@@ -400,7 +415,7 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
       <Movement id="you" refs={refs} className={movementClass("identity")}>
         {celestial ? <SkyMeaning label="your chart" explanation={world ? "In astrology, Sun is your sense of self, Moon your inner weather, and rising how you meet the world. Tap a sign to read yours." : "In astrology, Sun speaks to identity, Moon to your inner world, and rising to how you meet life. Tap a symbol for its reading; these are reflective lenses, not a verdict."}><Eyebrow cw="gold" style={{margin:0}}>Your chart</Eyebrow></SkyMeaning> : <Eyebrow cw="gold">Your chart</Eyebrow>}
         <Title>Sun, moon &amp; rising</Title>
-        {celestial && <p className="sky-note" style={{textAlign:"center"}}>{world ? "Your centre. Your inner weather. Your hello." : "Three lenses, one very unrepeatable you. In astrology, each has a different part to play."}</p>}
+        {celestial && !calmLayout && <p className="sky-note" style={{textAlign:"center"}}>{world ? "Your centre. Your inner weather. Your hello." : "Three lenses, one very unrepeatable you. In astrology, each has a different part to play."}</p>}
         <div className={world ? "fw-world-triad" : undefined} style={{ display: "flex", alignItems: "stretch" }}>
           <TriadColumn world={world} celestial={celestial} expanded={!!triadOpen.sun} onToggle={()=>toggleTriad("sun")} first Icon={Sun} label="Sun" sign={chart.sun ? cap(chart.sun) : null} trait={SIGN_TRAITS[cap(chart.sun)]} desc={reading?.triad_sun_desc} />
           <TriadColumn world={world} celestial={celestial} expanded={!!triadOpen.moon} onToggle={()=>toggleTriad("moon")} Icon={Moon} label="Moon" sign={chart.moonSign ? cap(chart.moonSign) : null} trait={SIGN_TRAITS[cap(chart.moonSign)]} desc={reading?.triad_moon_desc} locked={!chart.moonSign} onUnlock={() => setSheetOpen(true)} />
@@ -408,8 +423,7 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
         </div>
         {celestial && [["sun","Sun",reading?.triad_sun_desc],["moon","Moon",reading?.triad_moon_desc],["rising","Rising",reading?.triad_rising_desc]].map(([key,label,description]) => triadOpen[key] && description ? <div key={key} style={{padding:"16px 0",borderBottom:`1px solid ${C.hair}`}}><p className="sky-kicker">{label} · your reading</p>{(complete ? skyParagraphs(description) : [clean(description)]).map((text,i)=><p key={i} className="sky-note" style={{margin:i ? "10px 0 0" : 0}}>{text}</p>)}</div> : null)}
         <div style={{ fontFamily: UI, fontSize: 11, letterSpacing: ".06em", color: C.faint, textAlign: "center", marginTop: 14 }}>{[chart.element, chart.modality, chart.sunRuler ? `ruled by ${chart.sunRuler}` : null].filter(Boolean).join(" · ")}</div>
-        <GoddessBench complete={complete} signs={asteroids} goddessRead={reading?.goddess_read} />
-        <RedWhiteMoon celestial={celestial} complete={complete} rw={complete ? completion.rw : null} loading={completion.loading} error={completion.cycleError} onRetry={completion.retry} />
+        {calmLayout ? <details className="fw-calm-depth"><summary>Mythology & your lunar pattern</summary><GoddessBench complete={complete} signs={asteroids} goddessRead={reading?.goddess_read}/><RedWhiteMoon celestial={celestial} complete={complete} rw={complete ? completion.rw : null} loading={completion.loading} error={completion.cycleError} onRetry={completion.retry}/></details> : <><GoddessBench complete={complete} signs={asteroids} goddessRead={reading?.goddess_read}/><RedWhiteMoon celestial={celestial} complete={complete} rw={complete ? completion.rw : null} loading={completion.loading} error={completion.cycleError} onRetry={completion.retry}/></>}
       </Movement>
 
       {!artful && <Fleuron my={24} />}
@@ -419,7 +433,8 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
         <Card framed wash={cw}>
           {celestial ? <SkyMeaning label="your two tides" explanation={world ? "One ring follows the Moon; the other follows your logged cycle. Side by side, each keeping its own time." : "The outer ring follows the lunar phase; the inner ring uses your logged cycle dates. Side by side does not mean one causes the other—bodies keep their own time."}><Eyebrow cw={cw} style={{margin:0}}>Cycle × moon</Eyebrow></SkyMeaning> : <Eyebrow cw={cw}>Cycle × moon</Eyebrow>}
           <Title>Your two tides</Title>
-          <CycleMoonDial complete={complete} moon={moon} cyclePhase={cyc.phase} cycleDay={cyc.day} cycleLen={cyc.len || 28} body={reading?.cycle_moon_body} />
+          <CycleMoonDial complete={complete} moon={moon} cyclePhase={cyc.phase} cycleDay={cyc.day} cycleLen={cyc.len || 28} body={calmLayout ? null : reading?.cycle_moon_body} />
+          {calmLayout && reading?.cycle_moon_body && <details className="fw-calm-depth"><summary>Read these two tides</summary>{skyParagraphs(reading.cycle_moon_body).map((text,i)=><Body key={i}>{text}</Body>)}</details>}
           {celestial && !dailyLessons && <MoonLesson moon={moon} />}
           {!cyc.phase ? <Quiet onClick={() => window.location.assign(createPageUrl("Health"))}>Add your dates to see both tides ›</Quiet> : null}
         </Card>
@@ -429,27 +444,41 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
 
       {/* V · YOUR YEAR — profections · Saturn letter · the sky diary */}
       {artful && !world && <AtelierIncident kind="growth"/>}
-      <Movement id="year" refs={refs} className={movementClass("year")}><YearMovement complete={complete} celestial={celestial} profections={profections} diary={celestial ? null : diary} />{celestial && <div id="sky-observed-diary" tabIndex={-1} ref={el=>{refs.current.diary=el;}} style={{scrollMarginTop:70}}><ObservedSkyDiary human={world} userId={user?.id} /></div>}{dailyLessons && <PrivateSkyNotes userId={user?.id} moon={moon}/>}</Movement>
+      <Movement id="year" refs={refs} className={calmLayout ? undefined : movementClass("year")}>{calmLayout ? <details className="fw-calm-depth"><summary>Your year{profections?.profection?.house ? ` · House ${profections.profection.house}` : ""}</summary><YearMovement complete={complete} celestial={celestial} profections={profections} diary={celestial ? null : diary}/></details> : <><YearMovement complete={complete} celestial={celestial} profections={profections} diary={celestial ? null : diary}/>{celestial && <div id="sky-observed-diary" tabIndex={-1} ref={el=>{refs.current.diary=el;}} style={{scrollMarginTop:70}}><ObservedSkyDiary human={world} userId={user?.id}/></div>}{dailyLessons && <PrivateSkyNotes userId={user?.id} moon={moon}/>}</>}</Movement>
 
       {!artful && <Fleuron my={24} />}
 
       {/* VI · ASK & CONNECT — ask the sky · compatibility */}
-      <Movement id="ask" refs={refs} className={movementClass("ask")}>
+      {!calmLayout && <Movement id="ask" refs={refs} className={movementClass("ask")}>
         <Eyebrow cw="lavender">Ask &amp; connect</Eyebrow>
         <Title>{world ? "What’s on your mind?" : "Put a question to it"}</Title>
         <AskTheSky key={`ask:${complete ? user?.id || "signed-out" : "legacy"}`} complete={complete} human={world} celestial={celestial} userId={user?.id} inputRef={questionRef} />
         <Compatibility key={`pairing:${complete ? user?.id || "signed-out" : "legacy"}`} complete={complete} human={world} celestial={celestial} userId={user?.id} />
-      </Movement>
+      </Movement>}
 
       {!artful && <Fleuron my={24} />}
 
       {/* VII · THE ATELIER — the letter + the shelf */}
-      <Movement id="atelier" refs={refs} className={movementClass("atelier")}><Atelier complete={complete} celestial={celestial} userId={user?.id} hasAtelier={complete ? completion.unlocked : !!user?.has_atelier} letter={complete ? completion.letter : null} loading={completion.loading} error={completion.letterError} onRetry={completion.retry} /></Movement>
+      {!calmLayout && <Movement id="atelier" refs={refs} className={movementClass("atelier")}><Atelier complete={complete} celestial={celestial} userId={user?.id} hasAtelier={complete ? completion.unlocked : !!user?.has_atelier} letter={complete ? completion.letter : null} loading={completion.loading} error={completion.letterError} onRetry={completion.retry} /></Movement>}
 
       {!artful && <Fleuron my={24} />}
 
       {/* VIII · YOUR SKY, YOUR WAY — quiet mode · science · privacy */}
-      <Movement id="yours" refs={refs} className={movementClass("way")}><YourWay key={complete ? user?.id || "signed-out" : "legacy"} complete={complete} celestial={celestial} userId={user?.id} /></Movement>
+      {!calmLayout && <Movement id="yours" refs={refs} className={movementClass("way")}><YourWay key={complete ? user?.id || "signed-out" : "legacy"} complete={complete} celestial={celestial} userId={user?.id} /></Movement>}
+
+      {calmLayout && <><div className="fw-calm-sky-tools" aria-label="Sky tools">
+        <button onClick={()=>openTool("diary")}><span>Sky diary<small>Earlier skies &amp; your own words</small></span><PenLine size={16}/></button>
+        <button onClick={()=>openTool("pairing")}><span>You &amp; someone<small>A birthday, a new angle</small></span><Sparkles size={16}/></button>
+        <button onClick={()=>openTool("ask")}><span>Ask the sky<small>Your questions &amp; answers</small></span><MessageCircle size={16}/></button>
+        <button onClick={()=>openTool("letter")}><span>Letters &amp; atelier<small>{completion.letter ? "Your monthly letter" : "Monthly letters & longer readings"}</small></span><Pencil size={16}/></button>
+        <button onClick={()=>openTool("settings")}><span>Sky settings<small>Your preferences &amp; the science</small></span><Moon size={16}/></button>
+      </div>
+      {diaryTask}
+      {visitedTools.ask && <CalmTaskDialog title="Ask the sky" open={tool==="ask"} active={routeActive} onClose={()=>setTool(null)}><AskTheSky key={`ask:${user?.id || "signed-out"}`} complete={complete} human={world} celestial={celestial} userId={user?.id} inputRef={questionRef}/></CalmTaskDialog>}
+      {pairingTask}
+      {visitedTools.letter && <CalmTaskDialog title="Letters & atelier" open={tool==="letter"} active={routeActive} onClose={()=>setTool(null)}><Atelier complete={complete} celestial={celestial} userId={user?.id} hasAtelier={complete ? completion.unlocked : !!user?.has_atelier} letter={complete ? completion.letter : null} loading={completion.loading} error={completion.letterError} onRetry={completion.retry}/></CalmTaskDialog>}
+      {visitedTools.settings && <CalmTaskDialog title="Sky settings" open={tool==="settings"} active={routeActive} onClose={()=>setTool(null)}><YourWay key={user?.id || "signed-out"} complete={complete} celestial={celestial} userId={user?.id}/></CalmTaskDialog>}
+      </>}
 
       <Foot>{complete ? "Folklore, your chart and your own judgement." : "Held lightly — folklore and your own chart, never fate or a score."}</Foot>
       {birthSheet(astro)}

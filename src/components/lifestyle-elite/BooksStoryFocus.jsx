@@ -30,6 +30,7 @@ import { createPageUrl } from "@/utils";
 import { SERIF, UI } from "@/components/journal/Editorial";
 import { C } from "@/components/brand/cleanTokens";
 import { Eyebrow, Title, Body, Card, Summary, Cta, Quiet, Foot, Leaf, Fleuron } from "@/components/brand/cleanKit";
+import { CalmOptional } from "./CalmLifestyle";
 import { RestingBook } from "./ReadingRoomHeader";
 
 const clean = (s) => String(s || "").replace(/<[^>]+>/g, "").replace(/\*(.+?)\*/g, "$1").replace(/\s+/g, " ").trim();
@@ -104,7 +105,7 @@ function WayIn({ Icon, title, line, onClick, first }) {
   );
 }
 
-export default function BooksStoryFocus({ chapters = [], story, pick, onRead, continueCards = [], shelfBookCards = [], classicCards = [], onOpenBook, lifeStage, userId, onSchedule, onCorner, artDirection, onChapterDetails, onBookDetails }) {
+export default function BooksStoryFocus({ chapters = [], story, pick, onRead, continueCards = [], shelfBookCards = [], classicCards = [], onOpenBook, lifeStage, userId, onSchedule, onCorner, artDirection, onChapterDetails, onBookDetails, calmLayout = false }) {
   const room = artDirection === "reading-room";
   // Reader exit re-renders this surface with the same source rows; read marks are
   // device state, so derive position afresh rather than memoising only those rows.
@@ -246,7 +247,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
 
   return (
     <div className="fw-books-focus" data-room={room || undefined} style={{ display: "flex", flexDirection: "column" }}>
-      <Summary Icon={Feather} cw="crimson">{summary}</Summary>
+      {!calmLayout && <Summary Icon={Feather} cw="crimson">{summary}</Summary>}
 
       {/* 1 · YOUR NEXT CHAPTER — hers, never the calendar's */}
       {pos && her ? (
@@ -288,6 +289,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
       {pos && !room ? <Leaf my={22} /> : null}
 
       {/* 2 · THE RUN — navigation, not a score */}
+      <CalmOptional enabled={calmLayout} title="Chapters & short reads">
       {pos ? (
         <section className={room ? "fw-room-chapter-index" : undefined}>
           <Eyebrow cw="plum">{pick?.monthName ? `${pick.monthName}'s run` : "The run"} · {total} chapters</Eyebrow>
@@ -336,6 +338,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
       {!room && <Fleuron my={24} />}
 
       {/* 4 · THIS MONTH'S BOOK — singular; the featured one is the product */}
+      </CalmOptional>
       <section className={room ? "fw-room-feature" : undefined}>
         <Eyebrow cw="gold">{set.monthName}'s book</Eyebrow>
         {set.featured ? (

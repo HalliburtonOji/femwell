@@ -10,6 +10,8 @@ import { SERIF } from "@/components/journal/Editorial";
 import { C } from "@/components/brand/cleanTokens";
 import { Eyebrow, Title, Card as CleanCard, Summary, Foot } from "@/components/brand/cleanKit";
 import { SelectedRoomDetail } from "./SelectedLifestyleHeader";
+import { CalmFindRow } from "./CalmLifestyle";
+import { firstSentences } from "./FocusedLifestyleSheet";
 
 
 function ReadCard({ eyebrow, title, accent = "plum", children, style, className }) {
@@ -24,7 +26,7 @@ function ReadCard({ eyebrow, title, accent = "plum", children, style, className 
   );
 }
 
-export default function ReadFocus({ continueCards = [], articleCards = [], storyCards = [], phaseWord, onOpen, onDetails, presentation }) {
+export default function ReadFocus({ continueCards = [], articleCards = [], storyCards = [], phaseWord, onOpen, onDetails, presentation, calmLayout = false }) {
   const hasAny = continueCards.length || articleCards.length || storyCards.length;
   if (!hasAny) {
     return (
@@ -40,13 +42,13 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* 0 · section-specific, stateful summary */}
-      <Summary Icon={BookOpen} cw="plum">{summary}</Summary>
+      {!calmLayout && <Summary Icon={BookOpen} cw="plum">{summary}</Summary>}
 
       {/* 1 · CONTINUE — resume where she left off, in place */}
       {continueCards.length ? (
         <ReadCard className="fw-selected-resume" eyebrow="Pick up where you left off" title="Reading now" accent="plum">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {continueCards.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation ? () => onOpen?.(it) : undefined} consumeLabel={it._continue ? "Continue" : "Read"} />)}
+            {continueCards.map((it) => calmLayout ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails} label="Continue"/> : <CoverCard presentation={presentation} key={it.id} item={it} onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation ? () => onOpen?.(it) : undefined} consumeLabel={it._continue ? "Continue" : "Read"} />)}
           </div>
         </ReadCard>
       ) : null}
@@ -55,7 +57,7 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
       {featured ? (
         <ReadCard className="fw-selected-lead" eyebrow={presentation ? "On the reading desk" : "Chosen for you today"} title="Today's read" accent="crimson">
           {presentation && <SelectedRoomDetail section="read"/>}
-          <CoverCard presentation={presentation} item={featured} onOpen={() => (onDetails || onOpen)?.(featured)} onConsume={presentation ? () => onOpen?.(featured) : undefined} consumeLabel={featured._continue ? "Continue" : "Read"} />
+          <CoverCard presentation={presentation} previewText={calmLayout ? firstSentences(featured.summary || featured.excerpt,1) : undefined} item={featured} onOpen={() => (onDetails || onOpen)?.(featured)} onConsume={presentation ? () => onOpen?.(featured) : undefined} consumeLabel={featured._continue ? "Continue" : "Read"} />
         </ReadCard>
       ) : null}
 
@@ -63,7 +65,7 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
       {restArticles.length ? (
         <ReadCard className="fw-selected-fresh" eyebrow="A fresh page" title="Fresh reads & guides" accent="plum">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {restArticles.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation ? () => onOpen?.(it) : undefined} consumeLabel={it._continue ? "Continue" : "Read"} />)}
+            {restArticles.map((it) => calmLayout ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails}/> : <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation ? () => onOpen?.(it) : undefined} consumeLabel={it._continue ? "Continue" : "Read"} />)}
           </div>
         </ReadCard>
       ) : null}
@@ -72,7 +74,7 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
       {storyCards.length ? (
         <ReadCard className="fw-selected-fiction" eyebrow="Get lost in one" title="Stories & fiction" accent="crimson">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {storyCards.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation ? () => onOpen?.(it) : undefined} consumeLabel={it._continue ? "Continue" : "Read"} />)}
+            {storyCards.map((it) => calmLayout ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails}/> : <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation ? () => onOpen?.(it) : undefined} consumeLabel={it._continue ? "Continue" : "Read"} />)}
           </div>
         </ReadCard>
       ) : null}

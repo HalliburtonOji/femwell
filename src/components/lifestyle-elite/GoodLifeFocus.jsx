@@ -11,6 +11,7 @@ import { cwOf } from "@/components/brand/flora";
 import { C } from "@/components/brand/cleanTokens";
 import { Eyebrow, Title, Card as CleanCard, Summary, Foot } from "@/components/brand/cleanKit";
 import { SelectedRoomDetail } from "./SelectedLifestyleHeader";
+import { CalmFindRow } from "./CalmLifestyle";
 
 // Authored invitations belong to the actual activity. Full prose/tools stay in Details.
 const JOY_HOOKS = {
@@ -70,7 +71,7 @@ function GoodCard({ eyebrow, title, accent = "gold", children, style, className 
   );
 }
 
-export default function GoodLifeFocus({ timeLens, joys = [], onSlip, onPlan, timeOfDay, presentation, onOpenRooms }) {
+export default function GoodLifeFocus({ timeLens, joys = [], onSlip, onPlan, timeOfDay, presentation, onOpenRooms, calmLayout = false }) {
   const [moreJoys,setMoreJoys]=React.useState(false);
   const greet = timeOfDay === "morning" ? "What have you got time for this morning?"
     : timeOfDay === "evening" ? "What have you got time for this evening?"
@@ -78,7 +79,7 @@ export default function GoodLifeFocus({ timeLens, joys = [], onSlip, onPlan, tim
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* 0 · section-specific summary */}
-      <Summary Icon={Clock} cw="gold">{greet}{!presentation && " A small joy — and permission to enjoy it."}</Summary>
+      {!calmLayout && <Summary Icon={Clock} cw="gold">{greet}{!presentation && " A small joy — and permission to enjoy it."}</Summary>}
 
       {/* 1 · TIME — the real picker, filters to what's worth the minutes she has */}
       {timeLens ? (
@@ -92,7 +93,7 @@ export default function GoodLifeFocus({ timeLens, joys = [], onSlip, onPlan, tim
       {joys.length ? (
         <GoodCard className="fw-selected-joys" eyebrow={presentation ? "For the pleasure of it" : "No streaks, nothing owed"} title={presentation ? "Small joys" : "Small joys & permission"} accent="plum">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {(onOpenRooms && !moreJoys ? joys.slice(0,3) : joys).map((it) => <CoverCard presentation={presentation} key={it.id} item={it} previewText={presentation ? (it.type === "quote" ? "" : JOY_HOOKS[it.title] ?? it.subtitle) : undefined} compact onOpen={() => onSlip && onSlip(it)} onConsume={presentation && onPlan ? ()=>onPlan(it) : undefined} consumeLabel="Plan a time" />)}
+            {(onOpenRooms && !moreJoys ? joys.slice(0,3) : joys).map((it) => calmLayout ? <CalmFindRow key={it.id} item={it} onOpen={onPlan} onDetails={onSlip} label="Plan a time"/> : <CoverCard presentation={presentation} key={it.id} item={it} previewText={presentation ? (it.type === "quote" ? "" : JOY_HOOKS[it.title] ?? it.subtitle) : undefined} compact onOpen={() => onSlip && onSlip(it)} onConsume={presentation && onPlan ? ()=>onPlan(it) : undefined} consumeLabel="Plan a time" />)}
             {onOpenRooms && joys.length>3 && <button className="fw-focused-button" onClick={()=>setMoreJoys(value=>!value)}>{moreJoys ? "A few is plenty" : "More small joys"}</button>}
           </div>
         </GoodCard>

@@ -53,10 +53,10 @@ export function SavedSkyLessons({userId,direction,onCount,previewRoute,human=fal
   </Card>;
 }
 
-export default function DailySkyLesson({userId,moon,direction="letter",previewRoute,human=false}) {
-  return <LessonDeck key={userId || "signed-out"} userId={userId} moon={moon} direction={direction} previewRoute={previewRoute} human={human}/>;
+export default function DailySkyLesson({userId,moon,direction="letter",previewRoute,human=false,calmLayout=false}) {
+  return <LessonDeck key={userId || "signed-out"} userId={userId} moon={moon} direction={direction} previewRoute={previewRoute} human={human} calmLayout={calmLayout}/>;
 }
-function LessonDeck({userId,moon,direction,previewRoute,human}) {
+function LessonDeck({userId,moon,direction,previewRoute,human,calmLayout}) {
   const [day,setDay]=useState(()=>localSkyDay());
   const [nextDay,setNextDay]=useState(null);
   const params=useRef(new URLSearchParams(window.location.search));
@@ -156,7 +156,7 @@ function LessonDeck({userId,moon,direction,previewRoute,human}) {
       {nextDay && <><button className="daily-sky-link" disabled={busy || (writing && !!draft.trim())} onClick={()=>{const current=localSkyDay();setNextDay(null);if(current===day)return;setDay(current);setExact(null);params.current.delete("lessonVersion");const url=new URL(window.location.href);url.searchParams.delete("lesson");url.searchParams.delete("lessonVersion");window.history.replaceState(window.history.state,"",url);go(0);}}>Read today’s new lesson</button>{writing && !!draft.trim() && <p className="daily-sky-status">Today can wait. Save or close your note first.</p>}</>}
     </Card>
     {human && <SkyWorldDetails direction={direction}/>}
-    <MoonLesson moon={moon}/>
+    {calmLayout ? <details className="fw-calm-depth"><summary>Moon field guide</summary><MoonLesson moon={moon}/></details> : <MoonLesson moon={moon}/>}
   </section>;
 }
 

@@ -21,8 +21,8 @@ const LITE_NAV = ["ProgramDay", "ProgramDetail"];
 const todayStr = new Date().toISOString().split("T")[0];
 
 export default function Layout({ children, currentPageName }) {
-  const cleanPreview = currentPageName === "FocusedLifestyleDemo";
-  const navPageName = ["SkyWorldsDemo","FocusedLifestyleDemo"].includes(currentPageName) ? "Lifestyle" : currentPageName;
+  const cleanPreview = ["FocusedLifestyleDemo","CalmLifestyleDemo"].includes(currentPageName);
+  const navPageName = ["SkyWorldsDemo","FocusedLifestyleDemo","CalmLifestyleDemo"].includes(currentPageName) ? "Lifestyle" : currentPageName;
   const showNav = !HIDE_NAV.includes(currentPageName) || LITE_NAV.includes(currentPageName);
   const navMode = LITE_NAV.includes(currentPageName) ? "lite" : "full";
 

@@ -5,7 +5,7 @@
 // feed's real ranking (her interests + history + phase). Tap a card → it plays / opens the exact item.
 import React from "react";
 import { Headphones } from "lucide-react";
-import { CoverCard } from "@/components/brand/expandCards";
+import { CoverCard, FloraAudio, resolveCard } from "@/components/brand/expandCards";
 import { SERIF } from "@/components/journal/Editorial";
 import { C } from "@/components/brand/cleanTokens";
 import { Eyebrow, Title, Card as CleanCard, Summary, Foot } from "@/components/brand/cleanKit";
@@ -29,7 +29,7 @@ function ListenCard({ eyebrow, title, accent = "sage", children, style, classNam
   );
 }
 
-export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, presentation }) {
+export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, presentation, calmLayout = false }) {
   const player = usePodcastPlayer();
   const current = presentation ? player?.currentEpisode : null;
   const active = current && (audioCards.find(card=>card.id===current.id) || (current.audio_url ? {
@@ -58,13 +58,13 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* 0 · section-specific, stateful summary */}
-      <Summary Icon={Headphones} cw="sage">{summary}</Summary>
+      {!calmLayout && <Summary Icon={Headphones} cw="sage">{summary}</Summary>}
 
       {/* 1 · NOW — the featured listen, player-forward (plays inline, keeps going) */}
       {featured ? (
         <ListenCard className="fw-selected-now" eyebrow={active ? player?.isPlaying ? "On air" : "Pick up your listen" : "Worth your headphones"} title={presentation && featured.type === "video" ? "Today's watch" : "Today's listen"} accent="sage">
           {presentation && <SelectedRoomDetail section="listen"/>}
-          <CoverCard presentation={presentation} item={featured} onOpen={() => onOpen && onOpen(featured)} />
+          <CoverCard presentation={presentation} previewText={calmLayout ? "" : undefined} item={featured} onOpen={() => onOpen && onOpen(featured)} />
         </ListenCard>
       ) : null}
 
@@ -72,7 +72,7 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, 
       {restAudio.length ? (
         <ListenCard className="fw-selected-audio" eyebrow="For the kettle or the commute" title="Podcasts & shows" accent="sage">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {restAudio.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />)}
+            {restAudio.map((it) => calmLayout && it.audioSrc ? <div key={it.id} className="fw-calm-audio-row"><h4>{resolveCard(it).title}</h4><FloraAudio compact presentation="focused" src={it.audioSrc} label={`Play ${resolveCard(it).title}`} item={it} initialDuration={it.duration || 0}/><button onClick={()=>onOpen?.(it)}>Details &amp; tools</button></div> : <CoverCard presentation={presentation} previewText={calmLayout ? "" : undefined} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />)}
           </div>
         </ListenCard>
       ) : null}
@@ -81,7 +81,7 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, 
       {watches.length ? (
         <ListenCard className="fw-selected-watch" eyebrow="Something worth watching" title="Watch & trending" accent="gold">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {watches.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />)}
+            {watches.map((it) => <CoverCard presentation={presentation} previewText={calmLayout ? "" : undefined} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />)}
           </div>
         </ListenCard>
       ) : null}

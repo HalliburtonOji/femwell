@@ -117,3 +117,6 @@ Keep chat/recurring outputs short, detailed research in optional Ideas depth:
 4. **Blocked / carried forward:** material gaps and independent work continuing; omit when empty.
 
 Current decisions: none new for staged delivery. Earlier reading-nudge and backlog count versus silence remain held; bring them back when an actual stage needs the choice.
+
+## Manual calmer whole-Lifestyle batch — 9 October
+Halli still finds the whole page busy. Claimddc0318 and Bible10.5.25, preserved inventory/mapped C01–C07/re-fetched primary research in critique/lifestyle-calm-2026-10-09.md. Calmer glance, direct title-led reads, compact canonical audio, Sky primary reading/lesson/chart and direct retained task dialogs; chapter index contextual, time choice upfront. Main unchanged; coherent Ideas preview verification/release first. Automation PAUSED. Previous A05/nativeclassic1342, club/pickers/destinations, room fallback and cost retrospective remain open.

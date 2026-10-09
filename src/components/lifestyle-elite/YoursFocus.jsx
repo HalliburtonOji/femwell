@@ -9,6 +9,7 @@ import { SERIF } from "@/components/journal/Editorial";
 import { C } from "@/components/brand/cleanTokens";
 import { Eyebrow, Title, Card as CleanCard, Summary, Foot } from "@/components/brand/cleanKit";
 import { SelectedRoomDetail } from "./SelectedLifestyleHeader";
+import { CalmFindRow } from "./CalmLifestyle";
 
 // kind → collection label + accent, in display order
 const KINDS = [
@@ -31,7 +32,7 @@ function YoursCard({ eyebrow, title, accent = "gold", children, style, className
   );
 }
 
-export default function YoursFocus({ savedCards = [], savedSummary, phaseCards = [], phaseWord, onOpen, onDetails, skySavedCount = 0, presentation }) {
+export default function YoursFocus({ savedCards = [], savedSummary, phaseCards = [], phaseWord, onOpen, onDetails, skySavedCount = 0, presentation, calmLayout = false }) {
   const groups = KINDS.map((k) => ({ ...k, items: savedCards.filter((c) => k.test(String(c.type || ""))) })).filter((g) => g.items.length);
   const other = savedCards.filter(c => !KINDS.some(k => k.test(String(c.type || ""))));
   if (presentation && other.length) groups.push({label:"Other keeps",accent:"gold",items:other});
@@ -52,14 +53,14 @@ export default function YoursFocus({ savedCards = [], savedSummary, phaseCards =
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* 0 · section-specific, stateful summary */}
-      <Summary Icon={Bookmark} cw="gold">{summary}</Summary>
+      {!calmLayout && <Summary Icon={Bookmark} cw="gold">{summary}</Summary>}
 
       {/* 1 · SAVED — auto-grouped collections by kind */}
       {groups.map((g, index) => (
         <YoursCard className="fw-selected-collection" key={g.label} eyebrow="Saved" title={g.label} accent={g.accent}>
           {presentation && index === 0 && <SelectedRoomDetail section="yours"/>}
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {g.items.map((it) => <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation && !it.audioSrc && !it.youtubeId && !it.videoSrc ? ()=>onOpen?.(it) : undefined} consumeLabel={it._keep?._unavailable ? "Retry source" : ["article","daily_story","book"].includes(it.type) ? "Read" : "Open source"} />)}
+            {g.items.map((it) => calmLayout && !it.audioSrc && !it.youtubeId && !it.videoSrc ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails} label={it._keep?._unavailable ? "Retry source" : ["article","daily_story","book"].includes(it.type) ? "Read" : "Open source"}/> : <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation && !it.audioSrc && !it.youtubeId && !it.videoSrc ? ()=>onOpen?.(it) : undefined} consumeLabel={it._keep?._unavailable ? "Retry source" : ["article","daily_story","book"].includes(it.type) ? "Read" : "Open source"} />)}
           </div>
         </YoursCard>
       ))}

@@ -4,6 +4,7 @@ import { MeaningRosette, cwOf } from "@/components/brand/flora";
 import { C } from "@/components/brand/cleanTokens";
 import { JessSheet } from "@/components/brand/GlanceJessRow";
 import "./FirstFold.css";
+import { CalmTaskDialog } from "./CalmLifestyle";
 
 // Review-only composition. Data, navigation and writes remain owned by the shell.
 export function FirstFoldNavigation({ cards, activeIndex, onSelect, phaseLine, focusLabel, onClear }) {
@@ -24,7 +25,7 @@ export function FirstFoldNavigation({ cards, activeIndex, onSelect, phaseLine, f
   </>;
 }
 
-export function FirstFoldSummary({ orderedGlance, jess, sheetSections, jessOpen, onJessOpen, onJessClose }) {
+export function FirstFoldSummary({ orderedGlance, jess, sheetSections, jessOpen, onJessOpen, onJessClose, calmLayout = false, active = true }) {
   const track = useRef(null);
   const jessButton = useRef(null);
   const sheet = useRef(null);
@@ -48,21 +49,22 @@ export function FirstFoldSummary({ orderedGlance, jess, sheetSections, jessOpen,
       if (el) setIndex(Math.round(el.scrollLeft / Math.max(1, el.clientWidth)));
     }}>
       <div className="fw-ff-summary-panel" aria-label="Today at a glance" inert={index !== 0 ? "" : undefined}>
-        {orderedGlance.map(({ Icon, label, text, onClick }) => <button className="fw-ff-glance-row" type="button" key={label} onClick={onClick}>
+        {orderedGlance.slice(0,calmLayout ? 1 : undefined).map(({ Icon, label, text, onClick }) => <button className="fw-ff-glance-row" type="button" key={label} onClick={onClick}>
           <Icon size={17} aria-hidden="true"/>
           <span><span className="fw-ff-row-label">{label}</span><span className="fw-ff-row-text">{text}</span></span>
           <ChevronRight size={15} aria-hidden="true"/>
         </button>)}
+        {calmLayout && orderedGlance.length>1 && <details className="fw-calm-extra-glance"><summary>Elsewhere today</summary>{orderedGlance.slice(1).map(({Icon,label,text,onClick})=><button key={label} className="fw-ff-glance-row" onClick={onClick}><Icon size={17} aria-hidden="true"/><span><span className="fw-ff-row-label">{label}</span><span className="fw-ff-row-text">{text}</span></span><ChevronRight size={15} aria-hidden="true"/></button>)}</details>}
       </div>
       <div className="fw-ff-summary-panel fw-ff-jess" aria-label="Jess's read" inert={index !== 1 ? "" : undefined}>
         <p className="fw-ff-jess-eyebrow">{jess.eyebrow}</p>
         <p className="fw-ff-jess-body">{jess.body}</p>
         <button ref={jessButton} className="fw-ff-jess-open" type="button" onClick={onJessOpen}>Open Jess’s full read <ChevronRight size={15} aria-hidden="true"/></button>
         <div ref={sheet} className="fw-ff-jess-sheet" onKeyDown={event => { if (event.key === "Escape" && jessOpen) { event.stopPropagation(); closeJess(); } }}>
-          <JessSheet open={jessOpen} onClose={closeJess} accent={C.ink} sections={sheetSections}/>
+          {calmLayout ? <CalmTaskDialog open={jessOpen} active={active} title="Jess’s read" eyebrow={jess.eyebrow} onClose={closeJess}>{sheetSections.map(section=><section key={section.label}><h3>{section.label}</h3><p>{section.text}</p></section>)}</CalmTaskDialog> : <JessSheet open={jessOpen} onClose={closeJess} accent={C.ink} sections={sheetSections}/>}
         </div>
       </div>
     </div>
-    <p className="fw-ff-swipe-hint">{index === 0 ? "Swipe for Jess’s read" : "Swipe back to your glance"}</p>
+    {!calmLayout && <p className="fw-ff-swipe-hint">{index === 0 ? "Swipe for Jess’s read" : "Swipe back to your glance"}</p>}
   </section>;
 }
