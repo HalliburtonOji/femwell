@@ -99,7 +99,7 @@ function TriadColumn({ world = false, Icon, label, sign, trait, desc, locked, on
       <button disabled={world && !locked && !desc} onClick={() => { if (locked) return onUnlock && onUnlock(); if (desc) { if (celestial) onToggle?.(); else setOpen((v) => !v); } }} className="fw-elite-press" aria-expanded={open} aria-controls={inline && desc ? panelId : undefined}
         style={{ width: "100%", textAlign: "center", cursor: (desc || locked) ? "pointer" : "default", background: "transparent", border: "none", padding: 0 }}>
         <div className={celestial ? "sky-triad-icon" : undefined} style={{ display: "flex", justifyContent: "center", lineHeight: 1 }}><SignIcon size={26} color={locked ? C.faint : C.ink} strokeWidth={1.4} /></div>
-        <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: C.faint, marginTop: 9 }}>{label}</div>
+        <div style={{ fontFamily: UI, fontSize: 12, fontWeight: inline ? 700 : 800, letterSpacing: ".12em", textTransform: "uppercase", color: C.faint, marginTop: 9 }}>{label}</div>
         <div style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: C.ink, marginTop: 2 }}>{locked ? "—" : (sign || "—")}</div>
         {!locked && trait ? <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: C.slate, marginTop: 3, lineHeight: 1.3 }}>{trait}</div> : null}
         {locked ? <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: C.gold, marginTop: 6 }}>+ add birth time</div>
@@ -177,13 +177,13 @@ function GoddessBench({ signs, goddessRead, complete=false }) {
 }
 
 // ── "carry it with you" — reflect · discuss · ask Jess · mark read (the connectivity keystone) ──
-function CarryItWithYou({ seed, onMarkRead, read, connectedDemo = false, readDisabled = false, readError = "" }) {
+function CarryItWithYou({ seed, onMarkRead, read, connectedDemo = false, readDisabled = false, readError = "", calmLayout = false }) {
   const go = (href) => window.location.assign(href);
-  const act = { display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flex: 1, background: "transparent", border: "none", cursor: "pointer", padding: "10px 4px", fontFamily: UI, fontSize: 12, fontWeight: 700, color: C.slate };
+  const act = { display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flex: 1, background: "transparent", border: "none", cursor: "pointer", padding: "10px 4px", fontFamily: UI, fontSize: calmLayout ? 14 : 12, fontWeight: 700, color: C.slate };
   const s = encodeURIComponent(String(seed || "").slice(0, 180));
   return (
     <div style={{ marginTop: 16, paddingTop: 12, borderTop: `1px solid ${C.hair}` }}>
-      <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color: C.gold, textAlign: "center", marginBottom: 2 }}>Carry it with you</div>
+      <div style={{ fontFamily: UI, fontSize: calmLayout ? 12 : 11, fontWeight: calmLayout ? 700 : 800, letterSpacing: ".14em", textTransform: "uppercase", color: C.gold, textAlign: "center", marginBottom: 2 }}>Carry it with you</div>
       <div style={{ display: "flex", alignItems: "stretch" }}>
         <button className="fw-elite-press" style={act} onClick={() => go(`${createPageUrl("Journal")}?compose=1&type=horoscope&seed=${s}`)}><PenLine size={16} color={C.ink} strokeWidth={1.7} /> Reflect</button>
         <button className="fw-elite-press" style={act} onClick={() => go(`${createPageUrl("Community")}?room=${connectedDemo ? "lounge" : "the-sky"}&seed=${s}`)}><MessageCircle size={16} color={C.ink} strokeWidth={1.7} /> {connectedDemo ? "Lounge" : "Discuss"}</button>
@@ -406,7 +406,7 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
         ) : null}
         {dailyLessons && !focusedPreview && <div className={world ? "fw-world-weather-notes" : artful ? "fw-atelier-weather-notes" : undefined}>{[["Power",reading?.power_title,reading?.power_body],["Pressure",reading?.pressure_title,reading?.pressure_body],["Trouble",reading?.trouble_title,reading?.trouble_body]].map(([label,title,body])=>title || body ? <div key={label} className={world ? `fw-world-weather-entry fw-world-weather-entry--${label.toLowerCase()}` : artful ? `fw-atelier-weather-entry fw-atelier-weather-entry--${label.toLowerCase()}` : undefined} style={artful ? undefined : {borderTop:`1px solid ${C.hair}`,padding:"14px 0 0",marginTop:14}}>{artful ? <span className={world ? "fw-world-note-label" : "fw-atelier-note-label"}>{label}</span> : <Eyebrow cw="gold" align="left">{label}</Eyebrow>}{title && <Title align="left" size={26}>{clean(title)}</Title>}{body && (complete ? skyParagraphs(body).map((text,i)=><Body key={i}>{text}</Body>) : <Body>{clean(body)}</Body>)}</div> : null)}</div>}
         {focusedPreview && reading && <details className="fw-focused-depth"><summary>Read the whole reading</summary><div className="fw-focused-prose">{skyParagraphs(reading.narrative).map((line,i)=><p key={i}><FocusedText text={line}/></p>)}{[[reading.power_title,reading.power_body],[reading.pressure_title,reading.pressure_body],[reading.trouble_title,reading.trouble_body]].filter(([title,body])=>title || body).map(([title,body],i)=><section key={i}><h3><FocusedText text={title}/></h3><p><FocusedText text={body}/></p></section>)}</div></details>}
-        <fieldset disabled={exactUnavailable} style={{border:0,padding:0,margin:0,minWidth:0}}><CarryItWithYou connectedDemo={dailyLessons} seed={headline} read={markedRead} onMarkRead={markReading} readDisabled={complete && (!readingKey || markedRead)} readError={readError} /></fieldset>
+        <fieldset disabled={exactUnavailable} style={{border:0,padding:0,margin:0,minWidth:0}}><CarryItWithYou calmLayout={calmLayout} connectedDemo={dailyLessons} seed={headline} read={markedRead} onMarkRead={markReading} readDisabled={complete && (!readingKey || markedRead)} readError={readError} /></fieldset>
       </Movement>
 
       {artful && !world && <AtelierIncident/>}

@@ -10,9 +10,9 @@
 .fw-calm-lifestyle .fw-ff-summary{margin-top:14px!important}
 .fw-calm-lifestyle .fw-ff-glance-row{padding:10px 0!important}
 .fw-calm-lifestyle .fw-ff-row-text{font-size:16px!important;line-height:1.35!important}
-.fw-calm-lifestyle .fw-ff-row-label{font-size:11px!important;margin-bottom:3px!important}
+.fw-calm-lifestyle .fw-ff-row-label{font-size:12px!important;margin-bottom:3px!important}
 .fw-calm-lifestyle .fw-ff-jess-body{font-size:16px!important}
-.fw-calm-lifestyle .fw-ff-status>span{font-size:11px}
+.fw-calm-lifestyle .fw-ff-status>span{font-size:13px}
 .fw-calm-lifestyle .fw-calm-extra-glance summary,.fw-calm-depth>summary{min-height:44px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font:600 13px/1.4 var(--ff-ui,system-ui);color:#51444e;list-style:none}
 .fw-calm-lifestyle .fw-calm-extra-glance summary:after,.fw-calm-depth>summary:after{content:"+";font-size:20px;font-weight:400;margin-left:12px}
 .fw-calm-lifestyle .fw-calm-extra-glance[open]>summary:after,.fw-calm-depth[open]>summary:after{content:"−"}
@@ -38,7 +38,7 @@
 .fw-calm-dialog::backdrop{background:rgba(25,21,16,.3);backdrop-filter:blur(3px)}
 .fw-calm-dialog>header{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 22px;background:#F5F4F1;border-bottom:1px solid #EAE7E0}
 .fw-calm-dialog>header p{margin:0 0 4px;font:700 12px/1.3 var(--ff-ui);letter-spacing:.14em;text-transform:uppercase;color:#6E6A61}
-.fw-calm-dialog.fw-clean>header h2{font:italic 600 20px/1.2 var(--ff-serif)!important;margin:0;color:#7A1A12;outline:none;text-shadow:none}
+.fw-calm-dialog.fw-clean>header h2,.fw-calm-lifestyle.fw-sky-worlds[data-world] .fw-calm-dialog.fw-clean>header h2{font:italic 600 20px/1.2 var(--ff-serif)!important;margin:0;color:#7A1A12;outline:none;text-shadow:none}
 .fw-calm-dialog>header button{min-width:44px;min-height:44px;display:grid;place-items:center;border:1px solid #EAE7E0;border-radius:50%;background:#fff;color:#191510;cursor:pointer;flex-shrink:0}
 .fw-calm-dialog-body{padding:18px 22px calc(22px + env(safe-area-inset-bottom));font:500 16px/1.55 var(--ff-serif);overflow-wrap:anywhere}
 .fw-calm-dialog-body>section:first-child,.fw-calm-dialog-body>div:first-child{margin-top:0!important}
@@ -121,6 +121,6 @@
 .fw-calm-dialog-body .fw-calm-field-label{font:700 13px/1.4 var(--ff-ui);display:block;margin:0 0 8px;color:#51444e}
 @media(max-width:374px){.fw-calm-lifestyle .fw-world-tides .fw-sky-tide-dial{width:104px!important;height:104px!important}.fw-calm-lifestyle .fw-sky-tide-instrument{gap:10px!important}.fw-calm-dialog>header,.fw-calm-dialog-body{padding-left:18px;padding-right:18px}}
 
-/* The existing layered safe-area utility is !important. Keep its contract class
+/* The existing safe-area utility is !important. Keep its contract class
    but use external viewport/nav clearance for this floating object. */
-@layer components{dialog.fw-calm-dialog.fw-sheet-safe{padding-bottom:0!important}}
+dialog.fw-calm-dialog.fw-sheet-safe{padding-bottom:0!important}
