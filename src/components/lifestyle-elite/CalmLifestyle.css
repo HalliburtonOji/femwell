@@ -124,3 +124,8 @@
 /* The existing safe-area utility is !important. Keep its contract class
    but use external viewport/nav clearance for this floating object. */
 dialog.fw-calm-dialog.fw-sheet-safe{padding-bottom:0!important}
+
+.fw-calm-dialog .sky-ui-label{font:700 12px/1.3 var(--ff-ui)!important;letter-spacing:.14em!important}
+.fw-calm-dialog .sky-ui-meta{font:500 13px/1.4 var(--ff-ui)!important}
+.fw-calm-dialog .sky-atelier-product-title{font:600 18px/1.3 var(--ff-serif)!important}
+.fw-calm-dialog .sky-atelier-product-desc{font:500 15px/1.5 var(--ff-serif)!important}

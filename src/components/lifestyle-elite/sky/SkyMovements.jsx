@@ -79,7 +79,7 @@ export function YearMovement({ profections, diary, celestial = false,complete=fa
           <div style={{ display: "flex", justifyContent: "space-between", fontFamily: UI, fontSize: 10.5, color: C.faint, marginBottom: 12 }}><span>12 cycles ago</span><span>now</span></div>
           {diary.rightNow ? (
             <div style={{ paddingTop: 12, borderTop: `1px solid ${C.hair}` }}>
-              <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color: C.gold, marginBottom: 4 }}>Right now</div>
+              <div className="sky-ui-label" style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color: C.gold, marginBottom: 4 }}>Right now</div>
               <Body size={16} style={{ margin: 0, fontStyle: "italic" }}>{clean(diary.rightNow)}</Body>
             </div>
           ) : null}
@@ -211,14 +211,14 @@ export function AskTheSky({ userId, inputRef, celestial = false, human=false, co
       {error ? <div role={complete ? "alert" : undefined} style={{ fontFamily: UI, fontSize: 12, color: C.crimson, marginTop: 10, textAlign: "center" }}>{error}</div> : null}
       {answer ? (
         <div style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${C.hair}` }}>
-          <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color: C.gold, marginBottom: 5 }}>The sky says</div>
+          <div className="sky-ui-label" style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color: C.gold, marginBottom: 5 }}>The sky says</div>
           {complete ? skyParagraphs(answer).map((paragraph,i)=><Body key={i} size={16.5}>{paragraph}</Body>) : <Body size={16.5} style={{ margin: 0 }}>{clean(answer)}</Body>}
           {complete && answerStatus && <p role="status" className="daily-sky-status">{answerStatus}</p>}
         </div>
       ) : null}
       {history.length ? (
         <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.hair}` }}>
-          <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color: C.faint, marginBottom: 6 }}>You've asked before</div>
+          <div className="sky-ui-label" style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color: C.faint, marginBottom: 6 }}>You've asked before</div>
           {(complete && showHistory ? history : history.slice(0, 3)).map((h) => (
             <button key={h.id} disabled={complete && asking} onClick={() => { setQ(h.question); setAnswer(h.answer);setAnswerStatus(""); }} className="fw-elite-press"
               style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left", background: "transparent", border: "none", padding: "8px 0", cursor: "pointer", fontFamily: SERIF, fontSize: 15, color: C.slate, borderTop: `1px solid ${C.hair}` }}>
@@ -325,7 +325,7 @@ export function Compatibility({ userId, celestial = false, human=false, complete
           <Bar scale={complete ? 100 : 10} label="Trust" val={reading.trust_score} />
           <Bar scale={complete ? 100 : 10} label={complete ? "Growth" : "Time"} val={reading.time_score ?? reading.grow_score} />
           {complete ? skyParagraphs(reading.narrative || reading.summary || reading.body).map((paragraph,i)=><Body key={i} size={16} style={{marginTop:10}}>{paragraph}</Body>) : reading.summary || reading.body ? <Body size={16} style={{ marginTop: 10 }}>{clean(reading.summary || reading.body)}</Body> : null}
-          <div style={{ fontFamily: UI, fontSize: 11, color: C.faint, marginTop: 8 }}>
+          <div className="sky-ui-meta" style={{ fontFamily: UI, fontSize: 11, color: C.faint, marginTop: 8 }}>
             <abbr title="Synastry — comparing two charts to each other, the traditional way of reading a pairing." style={{ textDecoration: "none", borderBottom: `1px dotted ${C.faint}`, cursor: "help" }}>Synastry</abbr>, held lightly — never a verdict on a person.
           </div>
           <Quiet onClick={copyLink}>{copied ? <><Check size={13} style={{ verticalAlign: -2 }} /> Link copied</> : <><Copy size={13} style={{ verticalAlign: -2 }} /> {complete ? "Copy pairing link" : "Copy a link to this reading"}</>}</Quiet>
@@ -368,7 +368,7 @@ export function Atelier({ userId, hasAtelier, letter, celestial = false, complet
       <Eyebrow cw="gold">The atelier</Eyebrow>
       <Title>{complete ? "A letter for the month" : "Written, not generated"}</Title>
       <Card wash="gold">
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: C.gold, marginBottom: 8 }}>
+        <div className="sky-ui-label" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: C.gold, marginBottom: 8 }}>
           <Sparkles size={12} /> {complete ? "Astra · AI-assisted astrology" : "Backed by Astra Cole, MA, FAS"}
         </div>
         {complete && loading ? <p role="status">Opening your monthly letter…</p> : complete && error ? <><p role="alert">{error}</p><Quiet onClick={onRetry}>Try again</Quiet></> : hasAtelier && letter ? (
@@ -394,8 +394,8 @@ export function Atelier({ userId, hasAtelier, letter, celestial = false, complet
         {PRODUCTS.map((p) => (
           <div key={p.key} style={{ display: "flex", alignItems: "center", gap: 12, background: C.surface, borderRadius: 14, padding: "14px 16px", boxShadow: "0 1px 3px rgba(25,21,16,.03)" }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: C.ink }}>{p.title}</div>
-              <div style={{ fontFamily: SERIF, fontSize: 14.5, color: C.slate, lineHeight: 1.4, marginTop: 2 }}>{complete ? ({year_ahead:"Your twelve months, house by house.",chart_atelier:"Your whole chart, in one reading.",choose_the_day:"A date for a move, a launch or a conversation."}[p.key]) : p.line}</div>
+              <div className="sky-atelier-product-title" style={{ fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: C.ink }}>{p.title}</div>
+              <div className="sky-atelier-product-desc" style={{ fontFamily: SERIF, fontSize: 14.5, color: C.slate, lineHeight: 1.4, marginTop: 2 }}>{complete ? ({year_ahead:"Your twelve months, house by house.",chart_atelier:"Your whole chart, in one reading.",choose_the_day:"A date for a move, a launch or a conversation."}[p.key]) : p.line}</div>
             </div>
             <button onClick={() => checkout("createOneShotCheckout", complete ? { product: p.key } : { product_key: p.key })} disabled={!!busy} className="fw-elite-press"
               style={{ flexShrink: 0, background: "transparent", border: `1px solid ${C.ink}`, borderRadius: 999, padding: "8px 14px", fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: C.ink, cursor: "pointer" }}>
@@ -500,7 +500,7 @@ export function YourWay({ userId, celestial = false, complete = false }) {
         {complete && status && <p role="status">{status}</p>}
       </Card>
       <div style={{ marginTop: 16, padding: "14px 16px", border: `1px dashed ${C.hair}`, borderRadius: 14 }}>
-        <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color: C.gold, marginBottom: 6 }}>Where the science sits</div>
+        <div className="sky-ui-label" style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color: C.gold, marginBottom: 6 }}>Where the science sits</div>
         <p style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 500, color: C.ink, lineHeight: 1.55, margin: 0 }}>
           {celestial ? <>Moon phases are astronomy. Chart readings are symbolism. Enjoy the perspective; keep your own judgement. <a href="/sky-review/index.html#research" style={{color:C.ink}}>Read the evidence and its limits.</a></> : <>There is real evidence that the lunar cycle can nudge sleep and, for some women, menstrual timing
           (Helfrich-Förster et al., 2021; Cajochen et al., 2013). Astrology beyond the moon's phase remains
