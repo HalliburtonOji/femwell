@@ -38,7 +38,7 @@
 .fw-calm-dialog::backdrop{background:rgba(25,21,16,.3);backdrop-filter:blur(3px)}
 .fw-calm-dialog>header{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 22px;background:#F5F4F1;border-bottom:1px solid #EAE7E0}
 .fw-calm-dialog>header p{margin:0 0 4px;font:700 12px/1.3 var(--ff-ui);letter-spacing:.14em;text-transform:uppercase;color:#6E6A61}
-.fw-calm-dialog>header h2{font:italic 600 20px/1.2 var(--ff-serif)!important;margin:0;color:#7A1A12;outline:none;text-shadow:none}
+.fw-calm-dialog.fw-clean>header h2{font:italic 600 20px/1.2 var(--ff-serif)!important;margin:0;color:#7A1A12;outline:none;text-shadow:none}
 .fw-calm-dialog>header button{min-width:44px;min-height:44px;display:grid;place-items:center;border:1px solid #EAE7E0;border-radius:50%;background:#fff;color:#191510;cursor:pointer;flex-shrink:0}
 .fw-calm-dialog-body{padding:18px 22px calc(22px + env(safe-area-inset-bottom));font:500 16px/1.55 var(--ff-serif);overflow-wrap:anywhere}
 .fw-calm-dialog-body>section:first-child,.fw-calm-dialog-body>div:first-child{margin-top:0!important}
@@ -61,7 +61,7 @@
 .fw-calm-lifestyle .sky-world-body .fw-world-reading{margin-bottom:26px;padding-top:0!important}
 .fw-calm-lifestyle .sky-world-body .fw-world-reading>p{font:500 17px/1.55 var(--ff-serif)!important;margin-bottom:14px}
 .fw-calm-lifestyle .sky-world-body .fw-world-identity{margin:0 0 26px;padding-top:18px!important;border-top:1px solid #D9C79B}
-.fw-calm-lifestyle .sky-world-body .fw-calm-signature{font:400 clamp(44px,9.5vw,56px)/1.14 Ephesis,cursive!important;color:#7A1A12!important;letter-spacing:0!important;text-align:left;margin:0 0 14px!important;font-synthesis:none}
+.fw-calm-lifestyle.fw-sky-worlds[data-world] .sky-world-body h3.fw-calm-signature{font:400 clamp(44px,9.5vw,56px)/1.14 Ephesis,cursive!important;color:#7A1A12!important;letter-spacing:0!important;text-align:left;margin:0 0 14px!important;font-synthesis:none}
 .fw-calm-lifestyle .fw-calm-chart-intro{font:500 16px/1.55 var(--ff-serif);margin:0 0 18px;color:#51444e}
 .fw-calm-lifestyle .fw-world-triad-column{padding:14px 0!important}
 .fw-calm-lifestyle .fw-world-triad-column button>div:nth-of-type(3){font:600 18px/1.3 var(--ff-serif)!important}
@@ -99,8 +99,8 @@
 .fw-calm-lifestyle .daily-sky-heading .daily-sky-eyebrow{font:400 44px/1.14 Ephesis,cursive;color:#7A1A12;text-transform:none;letter-spacing:0}
 .fw-calm-lifestyle .daily-sky-date,.fw-calm-lifestyle .daily-sky-invitation{font:500 13px/1.4 var(--ff-ui)}
 .fw-calm-lifestyle .daily-sky-invitation{margin:10px 0 18px}
-.fw-calm-lifestyle .sky-world-body .daily-sky-movement .daily-sky-slide h3{font:italic 600 20px/1.2 var(--ff-serif)!important;margin:0 0 14px!important}
-.fw-calm-lifestyle .sky-world-body .daily-sky-movement .daily-sky-slide p{font:500 16px/1.55 var(--ff-serif)!important;margin:0 0 14px!important}
+.fw-calm-lifestyle.fw-sky-worlds[data-world] [data-section=sky] .daily-sky-movement .daily-sky-slide h3{font:italic 600 20px/1.2 var(--ff-serif)!important;margin:0 0 14px!important}
+.fw-calm-lifestyle.fw-sky-worlds[data-world] [data-section=sky] .daily-sky-movement .daily-sky-slide p{font:500 16px/1.55 var(--ff-serif)!important;margin:0 0 14px!important}
 .fw-calm-lifestyle .daily-sky :is(button,a){font:700 14px/1.4 var(--ff-ui);min-height:44px}
 .fw-calm-lifestyle .daily-sky-controls,.fw-calm-lifestyle .daily-sky-status{font:500 13px/1.4 var(--ff-ui)!important}
 .fw-calm-lifestyle .fw-calm-sky-tools{margin-top:22px;gap:0 18px}
@@ -120,3 +120,7 @@
 .fw-calm-dialog-body .sky-kicker{font:700 12px/1.3 var(--ff-ui)!important}
 .fw-calm-dialog-body .fw-calm-field-label{font:700 13px/1.4 var(--ff-ui);display:block;margin:0 0 8px;color:#51444e}
 @media(max-width:374px){.fw-calm-lifestyle .fw-world-tides .fw-sky-tide-dial{width:104px!important;height:104px!important}.fw-calm-lifestyle .fw-sky-tide-instrument{gap:10px!important}.fw-calm-dialog>header,.fw-calm-dialog-body{padding-left:18px;padding-right:18px}}
+
+/* The existing layered safe-area utility is !important. Keep its contract class
+   but use external viewport/nav clearance for this floating object. */
+@layer components{dialog.fw-calm-dialog.fw-sheet-safe{padding-bottom:0!important}}
