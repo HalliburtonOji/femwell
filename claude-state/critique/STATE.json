@@ -42,13 +42,13 @@
     "reason": "Halli stopped recurring builds: usage consumption and endless loop. Tool and automation.toml confirm PAUSED; explicit user restart required."
   },
   "baseline": {
-    "commit": "8bd125d",
-    "liveBundle": "index-CKmMkj_Z.js"
+    "commit": "a16bf8e",
+    "liveBundle": "index-OD-gjaX_.js"
   },
   "current": {
     "section": "Lifestyle / Sky whole-page craft",
-    "atom": "SC01-SC04-MANUAL-SKY-CRAFT",
-    "status": "Implementation in progress under claim65b47d0. Main held, automation PAUSED. OriginalA05 and wider legacy/relevance/cost remain carried."
+    "atom": "MANUAL-SKY-CRAFT-REVIEW",
+    "status": "SC01-SC04 ready in Ideas after bounded self/independent critique, repairs and actual three-width plus desktop reproof. Final source a16bf8e/index-OD-gjaX_.js. Main held, automation PAUSED; claim released at review boundary. OriginalA05 and wider legacy/relevance/cost remain carried."
   },
   "lastCompleted": {
     "run": 5,
@@ -92,7 +92,7 @@
     "Account, auth, settings and Saved"
   ],
   "nextRunNumber": 7,
-  "latestReport": "claude-state/critique/sky-bulletin-2026-10-09.md",
+  "latestReport": "claude-state/critique/sky-craft-2026-10-10.md",
   "latestAutomatedReport": "claude-state/critique/reports/0006-books-opened-states-2026-10-08.md",
   "findings": [
     {
