@@ -304,8 +304,10 @@ export function Compatibility({ userId, celestial = false, human=false, complete
       {!calmLayout && <Eyebrow cw="blush" align="left">You &amp; someone</Eyebrow>}
       {!calmLayout && <Title align="left" size={21}>{human ? "You two, under the stars." : "How you two run"}</Title>}
       {celestial && <p className="sky-note">{complete ? "Two Sun signs, one conversation starter. Chemistry still has to show up." : human ? "Two charts, one conversation starter. Chemistry still has to show up." : "Two charts, plenty to talk about. A conversation starter, never a verdict on someone you love."}</p>}
+      {calmLayout && <span className="fw-calm-field-label">Their name · optional</span>}
       <input aria-label="Their name" readOnly={complete && loading} maxLength={complete ? 100 : undefined} value={name} onChange={(e) => setName(e.target.value)} placeholder="Their name" style={{ ...input, marginBottom: 9 }} />
-      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+      {calmLayout && <span className="fw-calm-field-label">Their birthday</span>}
+      <div role={calmLayout ? "group" : undefined} aria-label={calmLayout ? "Their birthday" : undefined} style={{ display: "flex", gap: 8, marginBottom: 12 }}>
         <input readOnly={complete && loading} value={d} onChange={(e) => setD(e.target.value.replace(/\D/g, "").slice(0, 2))} placeholder="Day" inputMode="numeric" aria-label="Day" style={{ ...input, flex: 1, textAlign: "center" }} />
         <select disabled={complete && loading} value={m} onChange={(e) => setM(e.target.value)} aria-label="Month" style={{ ...input, flex: 1.3, fontFamily: UI, fontSize: 14 }}>
           <option value="">Month</option>

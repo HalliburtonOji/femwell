@@ -14,6 +14,18 @@ import {FirstFoldSummary} from './FirstFold';
 const props={artDirection:'sky-worlds',direction:'petal-press',continuous:true,celestial:true,dailyLessons:true,contentRoute:'/CalmLifestyleDemo',focusedPreview:true,calmLayout:true};
 function roomState(owner='a'){return {user:{id:owner},astro:{id:'chart-'+owner,user_id:owner,birth_date:'1997-06-17',sun_sign:'Gemini',moon_sign:'Libra',rising_sign:'Virgo'},reading:{id:'reading-'+owner,user_id:owner,reading_date:'2026-10-09',headline:'An actual source',narrative:'Full source first paragraph.\n\nSecond source paragraph, never removed.'},userProfile:{user_id:owner},loading:false,generatingReading:false,refreshing:false,exactReading:false,error:'',setAstro:vi.fn(),refresh:data.refresh};}
 function calls(name){return data.filter.mock.calls.filter(call=>call[0]===name);}
+it('opens the complete tides interpretation locally without navigation, requests or source loss',async()=>{
+  data.state=roomState();data.state.reading.cycle_moon_body='First stored tide paragraph.\n\nSecond complete tide paragraph.';
+  render(<SkyFocus {...props}/>);
+  expect(screen.getByText('Moon and cycle, each keeping its own time.')).toBeVisible();
+  const trigger=screen.getByText('Read my tides');const depth=trigger.closest('details');
+  expect(depth).not.toHaveAttribute('open');fireEvent.click(trigger);
+  expect(depth).toHaveAttribute('open');expect(within(depth).getByText('First stored tide paragraph.')).toBeVisible();expect(within(depth).getByText('Second complete tide paragraph.')).toBeVisible();
+  expect(depth.querySelectorAll('.fw-calm-tides-prose p')).toHaveLength(2);
+  fireEvent.click(screen.getByText('Close my tides'));expect(depth).not.toHaveAttribute('open');
+  expect(window.location.pathname).toBe('/CalmLifestyleDemo');expect(data.invoke).not.toHaveBeenCalled();
+  await waitFor(()=>expect(data.filter).toHaveBeenCalled());
+});
 beforeEach(()=>{vi.clearAllMocks();data.filter.mockResolvedValue([]);data.state=roomState();window.history.replaceState({},'','/CalmLifestyleDemo?section=sky');Object.defineProperty(HTMLDialogElement.prototype,'showModal',{configurable:true,value:vi.fn(function(){this.setAttribute('open','');})});Object.defineProperty(HTMLDialogElement.prototype,'close',{configurable:true,value:vi.fn(function(){this.removeAttribute('open');})});Object.defineProperty(HTMLElement.prototype,'scrollIntoView',{configurable:true,value:vi.fn()});});
 afterEach(()=>{expect(data.create).not.toHaveBeenCalled();expect(data.update).not.toHaveBeenCalled();expect(data.invoke).not.toHaveBeenCalled();expect(data.progress).not.toHaveBeenCalled();vi.restoreAllMocks();});
 it('defers optional histories and settings until first use without losing the daily bulletin',async()=>{render(<SkyFocus {...props}/>);await waitFor(()=>expect(calls('SavedItems').length).toBeGreaterThan(0));['AdviceThreads','AdviceMessages','SkyNote','UserPreferences','HoroscopeReading'].forEach(name=>expect(calls(name)).toHaveLength(0));expect(screen.getByRole('button',{name:'Next sky bulletin'})).toBeEnabled();fireEvent.click(screen.getByRole('button',{name:/Sky diary/}));await waitFor(()=>expect(calls('SkyNote')).toHaveLength(1));expect(calls('HoroscopeReading')).toHaveLength(1);expect(calls('AdviceThreads')).toHaveLength(0);fireEvent.click(within(screen.getByRole('dialog',{name:'Sky diary'})).getByRole('button',{name:'Close'}));fireEvent.click(screen.getByRole('button',{name:/Sky diary/}));expect(calls('SkyNote')).toHaveLength(1);expect(calls('HoroscopeReading')).toHaveLength(1);});

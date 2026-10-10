@@ -22,7 +22,7 @@ export function CalmOptional({ enabled, title, children }) {
 
 // Native modal retains its mounted children's drafts/results after first use.
 // Closed dialogs are inaccessible; hidden route owners close without stealing focus.
-export function CalmTaskDialog({ open, active = true, title, eyebrow = "Your sky", onClose, children }) {
+export function CalmTaskDialog({ open, active = true, title, eyebrow = "Your sky", motif, onClose, children }) {
   const dialog = useRef(null), heading = useRef(null), opener = useRef(null), wasOpen = useRef(false);
   useLayoutEffect(() => {
     const element = dialog.current;
@@ -42,7 +42,7 @@ export function CalmTaskDialog({ open, active = true, title, eyebrow = "Your sky
     }
   }, [open, active]);
   useLayoutEffect(() => () => { if (dialog.current?.open) dialog.current.close(); }, []);
-  return <dialog ref={dialog} className="fw-calm-dialog fw-clean fw-sheet-safe" aria-label={title}
+  return <dialog ref={dialog} className="fw-calm-dialog fw-clean fw-sheet-safe" data-motif={motif} aria-label={title}
     onKeyDown={event => {
       if (event.key !== "Tab") return;
       const controls = [...event.currentTarget.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),textarea:not([disabled]),select:not([disabled]),summary,[tabindex]')]

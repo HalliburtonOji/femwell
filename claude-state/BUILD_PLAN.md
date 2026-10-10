@@ -2,6 +2,10 @@
 
 Owner: Codex. Halli's staged-delivery instruction, 7 October 2026. Forward queue only: STATUS.md remains authoritative for what actually shipped; critique/STATE.json holds the precise resumable cursor. Revise this plan with evidence and decisions, preserving completed outcomes in STATUS/reports.
 
+## Current manual batch — Sky craft, 10 October
+
+SC01–SC04: compact all-rounded popup and consistent fields; explicit full tides reading; signature/type/rhythm and coordinated morning-glory tissue through the useful page; independent critique, repair and actual360/390/430 plus desktop proof. Claim65b47d0. Current prior visual acceptance rejected by Halli; approval stays held. [Mapped inventory/research](critique/sky-craft-2026-10-10.md). OriginalA05/legacy/relevance/cost remain carried; automation PAUSED.
+
 ## Latest manual review boundary — Sky Bulletin, 9 October
 
 SB01–SB03 ready in Ideas: finalsource8bd125d/liveindex-CKmMkj_Z.js, independent134/6, root129 affected+39 final component checks, actual Sun/Moon/rising open/close at360/390/430 and twelve final pixels independently accepted. Upfront chart meaning/clear action/local full source; seven original short everyday stories, five manual cards and daily starter rotation. Full Saved route P1 and petal/date P2 repaired and re-proved; native390 draft/keep/Yours/fullSaved/source and old exact astronomy edition verified. Bible/mirror/critic standing closure rule updated. Main promotion awaits Halli; automation PAUSED. Stop at MANUAL-SKY-BULLETIN-REVIEW, no automatic scope restart.
