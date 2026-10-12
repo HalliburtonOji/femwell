@@ -169,6 +169,7 @@ export default function LifestyleDetail() {
   useEffect(()=>{actionScope.current.mounted=true;return()=>{actionScope.current.mounted=false;};},[]);
   const [related, setRelated] = useState([]);
   const [videoFailed, setVideoFailed] = useState(false);
+  const [heroImageFailed, setHeroImageFailed] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [bodyError, setBodyError] = useState("");
   const [retry, setRetry] = useState(0);
@@ -231,6 +232,7 @@ export default function LifestyleDetail() {
       setLoading(!retaining);
       setLoadError("");setBodyError("");if (!retaining) {setFullBody("");setItem(null);setRelated([]);}
       setVideoFailed(false);
+      setHeroImageFailed(false);
       try {
         if (!id) return;
         const user = await base44.auth.me();
@@ -731,7 +733,7 @@ export default function LifestyleDetail() {
                 background: heroBg,
                 overflow: "hidden",
               }}
-              className={calmReader && !hasImage ? "fw-reader-hero fw-reader-hero--floral" : "fw-reader-hero"}
+              className={calmReader && (!hasImage || heroImageFailed) ? "fw-reader-hero fw-reader-hero--floral" : "fw-reader-hero"}
             >
               {hasImage && (
                 <img
@@ -744,7 +746,7 @@ export default function LifestyleDetail() {
                     height: "100%",
                     objectFit: "cover",
                   }}
-                  onError={(e) => attachFallbackOverlay(e, item.category)}
+                  onError={(e) => { if (calmReader) { e.currentTarget.style.display = "none"; setHeroImageFailed(true); } else attachFallbackOverlay(e, item.category); }}
                 />
               )}
               <div style={{
