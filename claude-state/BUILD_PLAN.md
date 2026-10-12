@@ -2,7 +2,11 @@
 
 Owner: Codex. Halli's staged-delivery instruction, 7 October 2026. Forward queue only: STATUS.md remains authoritative for what actually shipped; critique/STATE.json holds the precise resumable cursor. Revise this plan with evidence and decisions, preserving completed outcomes in STATUS/reports.
 
-## Current manual batch — Sky craft, 10 October
+## Current manual batch — remaining Lifestyle rooms, 12 October
+
+Halli authorises continuing Read, Listen, Books, Good life and Yours after Sky, with their individual floral/signature language and every button-opened journey checked for retired burnt styling. [Mapped owner inventory, research and atom board](critique/lifestyle-rooms-2026-10-12.md) precede source `a655607`. LR01–LR06 source is staged for Ideas; main and held social/privacy/notification decisions remain unchanged, scheduler PAUSED. B01-S03-A05/legacy/cost remain carried rather than reset. Next coherent boundary is **LR07 live 360/390/430 room and opened-state proof, self-critique/repair and Ideas publication**; then exact older dedicated destinations, club inner area after a legitimate age-authorised session, reader/Planner returns and backend owner/read-back follow as separate atoms. Never claim every tap or app-wide closure from component code or screenshots alone.
+
+## Prior manual batch — Sky craft, 10 October
 
 SC01–SC04: compact all-rounded popup and consistent fields; explicit full tides reading; signature/type/rhythm and coordinated morning-glory tissue through the useful page; independent critique, repair and actual360/390/430 plus desktop proof. Claim65b47d0. Current prior visual acceptance rejected by Halli; approval stays held. [Mapped inventory/research](critique/sky-craft-2026-10-10.md). OriginalA05/legacy/relevance/cost remain carried; automation PAUSED.
 
