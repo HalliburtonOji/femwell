@@ -48,7 +48,7 @@ import { usePodcastPlayer } from "@/hooks/usePodcastPlayer";
 import { playableEpisode, episodeSourceUrl } from "@/components/lifestyle/listen/episode";
 import ReadingColumn from "@/components/brand/ReadingColumn";
 import FloraCover from "@/components/brand/FloraCover";
-import FocusedLifestyleSheet, { FocusedText } from "@/components/lifestyle-elite/FocusedLifestyleSheet";
+import FocusedLifestyleSheet, { FocusedText, firstSentences } from "@/components/lifestyle-elite/FocusedLifestyleSheet";
 import { ChapterBlock } from "@/utils/chapterProse";
 import { cwOf, Pollinator, floraKeyframes, FlowerGlyph } from "@/components/brand/flora";
 import {
@@ -791,11 +791,12 @@ export function focusedSourceParagraphs(item) {
   return source.filter(value => typeof value === "string").flatMap(value => value.replace(/<[^>]*>/g," ").split(/\n\s*\n+/)).map(value=>value.trim()).filter(Boolean);
 }
 
-export function FocusedCardContents({ item: raw }) {
+export function FocusedCardContents({ item: raw, room }) {
   const item = resolveCard(raw);
   const book = item.type === "book" || !!item.gutenbergId;
   const body = focusedSourceParagraphs(item);
   const synopsis = item.summary || item.subtitle;
+  const visibleSynopsis = room === "books" && synopsis ? firstSentences(synopsis, 2) : synopsis;
   const source = item._raw;
   const warnings = source?.trigger_warnings || source?.content_warnings || [];
   const sourceUrl = source?.content_url || source?.source_url || item.externalUrl;
@@ -807,7 +808,7 @@ export function FocusedCardContents({ item: raw }) {
     {item.author && <p className="fw-focused-note">{item.author}</p>}
     {!item.external && (item.videoSrc || item.youtubeId) && <MediaBlock item={item} accent="#51444e"/>}
     {!item.external && item.audioSrc && <FloraAudio src={item.audioSrc} label={item.title} accent="#51444e" initialDuration={item.duration || 0} item={item} presentation="focused"/>}
-    {book ? synopsis && <p><FocusedText text={synopsis}/></p> : <>
+    {book ? synopsis && <><p><FocusedText text={visibleSynopsis}/></p>{visibleSynopsis !== synopsis && <details className="fw-focused-depth"><summary>The whole blurb</summary><p><FocusedText text={synopsis}/></p></details>}</> : <>
       {item.quote && <blockquote><FocusedText text={typeof item.quote === "string" ? item.quote : item.quote.text}/>{item.quote.attrib && <cite className="fw-focused-note">{item.quote.attrib}</cite>}</blockquote>}
       {body.length ? body.map((text,i)=>/^\s*#{1,6}\s/.test(text) ? <h3 key={i}><FocusedText text={text.replace(/^\s*#{1,6}\s+/,"")}/></h3> : <p key={i}><FocusedText text={text}/></p>) : synopsis && <p><FocusedText text={synopsis}/></p>}
       {item.reading && <section><h3>Your reading</h3>{item.reading.headline && <p><FocusedText text={item.reading.headline}/></p>}{(item.reading.lines || []).map((line,i)=><p key={i}><FocusedText text={line}/></p>)}</section>}
@@ -831,7 +832,7 @@ function FocusedCardDetail({ item, active, onClose, saved, saving, onSave, room 
   const actions = item.actions.filter(action => item.type === "book" || item.external || (!body.length && !media && !readableSource) || !/^(read this|open episode|open full-screen)$/i.test(action.label));
   return <FocusedLifestyleSheet title={item.title} eyebrow={item.kind} active={active} onClose={onClose} room={room}
     footer={<>{item.saveable !== false && <button className="fw-focused-button" onClick={onSave} disabled={saving} aria-busy={saving} aria-pressed={saved}>{saved ? <BookmarkCheck size={16}/> : <Bookmark size={16}/>} {saving ? "Saving…" : saved ? "Saved" : "Save"}</button>}{actions.map(action=><button key={action.label} className={`fw-focused-button${action.primary ? " fw-focused-button--primary" : ""}`} onClick={()=>{onClose();action.onClick?.(item);}}>{action.label}</button>)}</>}>
-    <FocusedCardContents item={item}/>
+    <FocusedCardContents item={item} room={room}/>
     {!body.length && !media && !readableSource && !item.quote && item.type !== "book" && <p className="fw-focused-note">Only a summary is published here so far.</p>}
   </FocusedLifestyleSheet>;
 }

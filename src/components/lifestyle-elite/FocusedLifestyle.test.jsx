@@ -18,6 +18,13 @@ it('preserves the existing structured quote and attribution in focused detail',(
  expect(()=>render(<FocusedCardContents item={{...base,type:'quote',quote:{text:'Take a quiet hour',attrib:'FemWell'}}}/>)).not.toThrow();
  expect(screen.getByText('Take a quiet hour')).toBeVisible();expect(screen.getByText('FemWell')).toBeVisible();
 });
+it('keeps the full book blurb reachable while the first view stays brief',()=>{
+ const blurb='A family meets a stranger. First impressions go badly. The rest of the novel changes everything.';
+ render(<FocusedCardContents room='books' item={{...base,type:'book',summary:blurb}}/>);
+ const more=screen.getByText('The whole blurb').closest('details');
+ expect(more).not.toHaveAttribute('open');expect(more).toHaveTextContent(blurb);
+ fireEvent.click(screen.getByText('The whole blurb'));expect(more).toHaveAttribute('open');
+});
 it('retains full external article access when the inline lede is only an opening',()=>{
  const open=vi.fn();render(<ExpandDetailCard presentation='focused' item={{...base,_raw:{lede:'An opening from this article.',content_url:'https://example.com/full-article'},actions:[{label:'Read this',onClick:open}]}} onClose={()=>{}} saved={false} onSave={()=>{}}/>);
  expect(screen.getByRole('link',{name:/Read at/})).toHaveAttribute('href','https://example.com/full-article');

@@ -48,21 +48,21 @@ const KINDS = [
   { key: "audio", label: "Listen" },
 ];
 
-function Chip({ on, onClick, children, accent }) {
+function Chip({ on, onClick, children, accent, calm = false }) {
   return (
     <button onClick={onClick} className="fw-elite-press"
-      style={{ flexShrink: 0, padding: "8px 14px", borderRadius: 999, cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700,
-        background: on ? accent : T.paperHi, color: on ? "#fff" : T.muted, border: `1px solid ${on ? accent : T.paperDeep}` }}>
+      style={{ flexShrink: 0, padding: calm ? "10px 14px" : "8px 14px", minHeight: calm ? 44 : undefined, borderRadius: 999, cursor: "pointer", fontFamily: calm ? "system-ui" : UI, fontSize: calm ? 14 : 12.5, fontWeight: 700,
+        background: on ? accent : calm ? "#fff" : T.paperHi, color: on ? "#fff" : calm ? "#51444e" : T.muted, border: `1px solid ${on ? accent : calm ? "#dedbd5" : T.paperDeep}` }}>
       {children}
     </button>
   );
 }
 
 // one watch/listen tile — flora poster + real inline player (no YouTube/Unsplash artwork)
-function MediaTile({ item }) {
+function MediaTile({ item, calm = false }) {
   const accent = cwOf(item.kind === "audio" ? "sage" : "gold").petal;
   return (
-    <div style={{ display: "flex", flexDirection: "column", border: `1px solid ${T.paperDeep}`, borderRadius: 16, overflow: "hidden", background: T.paperHi, boxShadow: "0 2px 10px rgba(58,44,26,.07)" }}>
+    <div style={{ display: "flex", flexDirection: "column", border: `1px solid ${calm ? "#e6e3dc" : T.paperDeep}`, borderRadius: calm ? 20 : 16, overflow: "hidden", background: calm ? "#fff" : T.paperHi, boxShadow: calm ? "0 8px 28px rgba(58,46,57,.05)" : "0 2px 10px rgba(58,44,26,.07)" }}>
       {item.kind === "video"
         ? <FloraYouTube videoId={item.youtubeId} item={{ id: item.id, title: item.title, category: item.category, cw: item.kind === "audio" ? "sage" : "gold" }} accent={accent} />
         : <div style={{ padding: 11 }}><FloraAudio src={item.audioSrc} label={item.title} accent={accent} initialDuration={item.seconds} item={{ id: item.id, title: item.title, sourceName: item.source }} /></div>}
@@ -70,7 +70,7 @@ function MediaTile({ item }) {
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: accent }}>
           {item.kind === "audio" ? <Headphones size={11} /> : <Film size={11} />}{item.kind === "audio" ? "Listen" : "Watch"}
         </div>
-        <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 15.5, lineHeight: 1.2, color: OXBLOOD }}>{item.title}</div>
+        <div style={{ fontFamily: calm ? '"FemWell Editorial","Cormorant Garamond",Georgia,serif' : SERIF, fontWeight: 600, fontSize: calm ? 21 : 15.5, lineHeight: 1.2, color: calm ? "#51444e" : OXBLOOD }}>{item.title}</div>
         <div style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 600, color: T.muted, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
           {item.source && <span>{item.source}</span>}
           {item.mins ? <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}><Clock size={11} /> {durLabel(item.mins)}</span> : null}
@@ -81,15 +81,15 @@ function MediaTile({ item }) {
 }
 
 // one external show — flora cover (retires the Unsplash artwork) + platform link-outs
-function ShowTile({ show }) {
+function ShowTile({ show, calm = false }) {
   const accent = cwOf("plum").petal;
   const plat = show.platforms || {};
   return (
-    <div style={{ display: "flex", flexDirection: "column", border: `1px solid ${T.paperDeep}`, borderRadius: 16, overflow: "hidden", background: T.paperHi, boxShadow: "0 2px 10px rgba(58,44,26,.07)" }}>
+    <div style={{ display: "flex", flexDirection: "column", border: `1px solid ${calm ? "#e6e3dc" : T.paperDeep}`, borderRadius: calm ? 20 : 16, overflow: "hidden", background: calm ? "#fff" : T.paperHi, boxShadow: calm ? "0 8px 28px rgba(58,46,57,.05)" : "0 2px 10px rgba(58,44,26,.07)" }}>
       <FloraCover title={show.show} category="listen podcast rest" colorway="plum" seed={show.id} height={128} roundTop showTitle={false} idx={`show-${show.id}`} />
       <div style={{ padding: "11px 13px 13px", display: "flex", flexDirection: "column", gap: 5, flex: 1 }}>
         <div style={{ fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: accent }}>{show.show}</div>
-        <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 15.5, lineHeight: 1.2, color: OXBLOOD }}>{show.title}</div>
+        <div style={{ fontFamily: calm ? '"FemWell Editorial","Cormorant Garamond",Georgia,serif' : SERIF, fontWeight: 600, fontSize: calm ? 21 : 15.5, lineHeight: 1.2, color: calm ? "#51444e" : OXBLOOD }}>{show.title}</div>
         {show.summary && <div style={{ fontFamily: SERIF, fontSize: 13.5, color: T.inkSoft, lineHeight: 1.45, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{show.summary}</div>}
         {show.duration && <div style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 600, color: T.muted, display: "inline-flex", alignItems: "center", gap: 4 }}><Clock size={11} /> {show.duration}</div>}
         <div style={{ display: "flex", gap: 7, marginTop: "auto", paddingTop: 4, flexWrap: "wrap" }}>
@@ -103,8 +103,10 @@ function ShowTile({ show }) {
 const linkBtn = (accent) => ({ display: "inline-flex", alignItems: "center", gap: 4, textDecoration: "none", fontFamily: UI, fontSize: 12, fontWeight: 700, color: accent, background: `${accent}12`, border: `1px solid ${accent}44`, borderRadius: 999, padding: "6px 11px" });
 
 export default function WatchListen() {
+  const calm = new URLSearchParams(window.location.search).get("appearance") === "calm";
   const [tab, setTab] = useState("media");     // "media" | "shows"
   const [length, setLength] = useState("all");
+  const [visibleCount, setVisibleCount] = useState(6);
   const [kind, setKind] = useState(() => {
     const mode = new URLSearchParams(window.location.search).get("mode");
     return mode === "listen" ? "audio" : mode === "watch" ? "video" : "all";
@@ -168,20 +170,21 @@ export default function WatchListen() {
   }, [byKind, lengthApplies, length]);
 
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}>
+    <div className={calm ? "fw-calm-media-directory" : undefined} style={{ ...(calm ? {backgroundColor:"#f5f4f1"} : PAPER_BG), minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}>
+      {calm && <style>{`.fw-calm-media-directory .fw-calm-media-hero{position:relative;overflow:hidden;min-height:220px;padding:105px 8px 24px;border-bottom:1px solid #b9cabe}.fw-calm-media-directory .fw-calm-media-hero:before{content:"";position:absolute;inset:-20px -18px 15px auto;width:270px;background:url('/images/flora-dream/specimen-bluebell-v2.webp') right top/contain no-repeat;opacity:.72;mask-image:linear-gradient(100deg,transparent 3%,#000 54%);pointer-events:none}.fw-calm-media-directory .fw-calm-media-hero>*{position:relative}.fw-calm-media-directory .fw-calm-media-hero h1{font:400 clamp(44px,11vw,58px)/.98 Ephesis,cursive;color:#7a1a12;margin:0 0 12px}.fw-calm-media-directory .fw-calm-media-hero p{font:500 15px/1.4 system-ui;color:#51444e;margin:0;max-width:290px}.fw-calm-media-directory .fw-calm-media-hero small{display:block;font:700 12px/1.3 system-ui;letter-spacing:.13em;text-transform:uppercase;color:#42634c;margin-bottom:10px}.fw-calm-media-directory .fw-wl-filters{flex-wrap:wrap;overflow:visible!important}.fw-calm-media-directory :is(button,a):focus-visible{outline:3px solid #6f8f77;outline-offset:3px}`}</style>}
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "12px 16px 0" }}>
-        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/Lifestyle")} aria-label="Back" className="fw-elite-press"
-          style={{ width: 40, height: 40, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paperHi, color: OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer", marginBottom: 8 }}>
+        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign(calm ? "/CalmLifestyleDemo?section=listen" : "/Lifestyle")} aria-label="Back" className="fw-elite-press"
+          style={{ width: 44, height: 44, borderRadius: 999, border: `1px solid ${calm ? "#e6e3dc" : T.paperDeep}`, background: calm ? "#fff" : T.paperHi, color: calm ? "#51444e" : OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer", marginBottom: 8 }}>
           <ArrowLeft size={18} />
         </button>
-        <FwFloraHero title="Everything to watch & listen" line="Real episodes and short watches, in our own quiet language — no endless feed." colorway="sage" flankL="bluebell" flankR="sunflower" titleColor={OXBLOOD} creature="dragonfly" />
+        {calm ? <header className="fw-calm-media-hero"><small>Lifestyle / Listen</small><h1>Listen & watch</h1><p>Good company for your ears. Something for your eyes.</p></header> : <FwFloraHero title="Everything to watch & listen" line="Real episodes and short watches, in our own quiet language — no endless feed." colorway="sage" flankL="bluebell" flankR="sunflower" titleColor={OXBLOOD} creature="dragonfly" />}
 
         {/* tabs */}
         <div style={{ display: "flex", gap: 8, margin: "14px 0 10px" }}>
           {[["media", "Watch & listen"], ["shows", "Shows to follow"]].map(([k, lbl]) => (
-            <button key={k} onClick={() => setTab(k)} className="fw-elite-press"
-              style={{ flex: 1, padding: "11px", borderRadius: 13, cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 800,
-                background: tab === k ? OXBLOOD : T.paperHi, color: tab === k ? "#fff" : T.muted, border: `1px solid ${tab === k ? OXBLOOD : T.paperDeep}` }}>
+            <button key={k} onClick={() => { setTab(k); setVisibleCount(6); }} className="fw-elite-press"
+              style={{ flex: 1, padding: "11px", borderRadius: calm ? 999 : 13, cursor: "pointer", fontFamily: calm ? "system-ui" : UI, fontSize: calm ? 14 : 13.5, fontWeight: 800,
+                background: tab === k ? (calm ? "#42634c" : OXBLOOD) : calm ? "#fff" : T.paperHi, color: tab === k ? "#fff" : calm ? "#51444e" : T.muted, border: `1px solid ${tab === k ? (calm ? "#42634c" : OXBLOOD) : calm ? "#dedbd5" : T.paperDeep}` }}>
               {lbl}
             </button>
           ))}
@@ -193,11 +196,11 @@ export default function WatchListen() {
             {lengthApplies && (
               <div style={{ display: "flex", gap: 7, overflowX: "auto", padding: "4px 0 6px", scrollbarWidth: "none" }} className="fw-wl-filters">
                 <style>{`.fw-wl-filters::-webkit-scrollbar{display:none}`}</style>
-                {LENGTHS.map((l) => <Chip key={l.key} on={length === l.key} accent={gold} onClick={() => setLength(l.key)}>{l.label}</Chip>)}
+                {LENGTHS.map((l) => <Chip key={l.key} calm={calm} on={length === l.key} accent={gold} onClick={() => {setLength(l.key);setVisibleCount(6);}}>{l.label}</Chip>)}
               </div>
             )}
             <div style={{ display: "flex", gap: 7, padding: "0 0 12px" }}>
-              {KINDS.map((k) => <Chip key={k.key} on={kind === k.key} accent={cwOf("sage").petal} onClick={() => setKind(k.key)}>{k.label}</Chip>)}
+              {KINDS.map((k) => <Chip key={k.key} calm={calm} on={kind === k.key} accent={cwOf("sage").petal} onClick={() => {setKind(k.key);setVisibleCount(6);}}>{k.label}</Chip>)}
             </div>
             {loading ? (
               <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, color: T.muted, textAlign: "center", padding: "30px 0" }}>Gathering what's worth your time…</p>
@@ -206,18 +209,20 @@ export default function WatchListen() {
             ) : (
               <>
                 <div style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.muted, margin: "0 0 10px" }}>{shown.length} to {kind === "audio" ? "hear" : kind === "video" ? "watch" : "watch & hear"}</div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                  {shown.map((it) => <MediaTile key={it.id} item={it} />)}
+                <div style={{ display: "grid", gridTemplateColumns: calm ? "1fr" : "1fr 1fr", gap: calm ? 14 : 12 }}>
+                  {(calm ? shown.slice(0,visibleCount) : shown).map((it) => <MediaTile key={it.id} item={it} calm={calm} />)}
                 </div>
+                {calm && shown.length > visibleCount && <button type="button" onClick={()=>setVisibleCount(n=>n+6)} style={{display:"block",width:"100%",minHeight:48,margin:"18px 0",border:"1px solid #b9cabe",borderRadius:999,background:"#fff",color:"#42634c",font:"700 14px system-ui"}}>{`More ${kind === "video" ? "watches" : kind === "audio" ? "listens" : "to hear & watch"} · ${shown.length-visibleCount}`}</button>}
               </>
             )}
           </>
         ) : (
           <>
             <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "6px 0 14px" }}>Shows worth following, opened in the app you already use.</p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-              {EXTERNAL_PODCASTS.map((s) => <ShowTile key={s.id} show={s} />)}
+            <div style={{ display: "grid", gridTemplateColumns: calm ? "1fr" : "1fr 1fr", gap: calm ? 14 : 12 }}>
+              {(calm ? EXTERNAL_PODCASTS.slice(0,visibleCount) : EXTERNAL_PODCASTS).map((s) => <ShowTile key={s.id} show={s} calm={calm} />)}
             </div>
+            {calm && EXTERNAL_PODCASTS.length > visibleCount && <button type="button" onClick={()=>setVisibleCount(n=>n+6)} style={{display:"block",width:"100%",minHeight:48,margin:"18px 0",border:"1px solid #b9cabe",borderRadius:999,background:"#fff",color:"#42634c",font:"700 14px system-ui"}}>{`More shows · ${EXTERNAL_PODCASTS.length-visibleCount}`}</button>}
           </>
         )}
       </div>

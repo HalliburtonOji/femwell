@@ -2,7 +2,7 @@ import React, { StrictMode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import Saved, { mergeSavedCollections, savedReturnRoute } from "./Saved";
-import SavedItemCard from "@/components/saved/SavedItemCard";
+import SavedItemCard, { calmSavedDestination } from "@/components/saved/SavedItemCard";
 
 const mock=vi.hoisted(()=>({me:vi.fn(),saved:vi.fn(),profiles:vi.fn(),lifestyle:vi.fn(),remove:vi.fn(),update:vi.fn()}));
 vi.mock("@/api/base44Client",()=>({base44:{auth:{me:mock.me},entities:{SavedItems:{filter:mock.saved,delete:mock.remove},UserProfile:{filter:mock.profiles,update:mock.update},LifestyleItems:{filter:mock.lifestyle}}}}));
@@ -102,6 +102,18 @@ describe("Saved collection loading and removal read-back",()=>{
 });
 
 describe("Saved card dates and pending removal",()=>{
+  it("keeps exact saved editions while their Ideas route uses clean room materials",()=>{
+    expect(calmSavedDestination("/LifestyleDetail?id=story-1")).toBe("/LifestyleDetail?id=story-1&appearance=calm");
+    expect(calmSavedDestination("/LivingLifestyleDemo?section=sky&lesson=earthshine&lessonVersion=1#daily-sky-lesson")).toBe("/CalmLifestyleDemo?section=sky&lesson=earthshine&lessonVersion=1&direction=petal-press#daily-sky-lesson");
+    expect(calmSavedDestination("https://example.com/source")).toBe("https://example.com/source");
+  });
+  it("shows a short kept preview while preserving its full original note",()=>{
+    const note="The first small thought. "+"A much longer detail from the original source. ".repeat(8);
+    render(<SavedItemCard calm item={{...row(),preview_text:note}} onRemove={vi.fn()}/>);
+    const disclosure=screen.getByText('Read the full note').closest('details');
+    expect(disclosure).not.toHaveAttribute('open');expect(disclosure.querySelector('p')).toHaveTextContent(note.trim());
+    expect(screen.getByRole('link',{name:'Open An actual keep'})).toHaveAttribute('href','/LifestyleDetail?id=find&appearance=calm');
+  });
   it("uses a valid legacy saved date and keeps the exact destination while removal is blocked",()=>{
     const onRemove=vi.fn();render(<SavedItemCard item={{...row(),created_date:"2026-10-06T12:00:00Z"}} onRemove={onRemove} disabled/>);
     expect(screen.getByText("Saved 06/10/2026")).toBeVisible();fireEvent.click(screen.getByRole("button",{name:"Remove An actual keep"}));expect(onRemove).not.toHaveBeenCalled();
