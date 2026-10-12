@@ -9,7 +9,7 @@ import { SERIF } from "@/components/journal/Editorial";
 import { C } from "@/components/brand/cleanTokens";
 import { Eyebrow, Title, Card as CleanCard, Summary, Foot } from "@/components/brand/cleanKit";
 import { SelectedRoomDetail } from "./SelectedLifestyleHeader";
-import { CalmFindRow } from "./CalmLifestyle";
+import { CalmFindRow, CalmMore } from "./CalmLifestyle";
 
 // kind → collection label + accent, in display order
 const KINDS = [
@@ -59,6 +59,8 @@ export default function YoursFocus({ savedCards = [], savedSummary, phaseCards =
     : hasSaved
     ? `${savedCards.length} saved${savedSummary ? ` · ${savedSummary}` : ""}${phaseCards.length ? ` — and this week's set` : ""}.`
     : `Your keeps will live here. A few discoveries to start you off.`;
+  const renderSaved = it => calmLayout && !it.audioSrc && !it.youtubeId && !it.videoSrc ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails} label={it._keep?._unavailable ? "Retry source" : ["article","daily_story","book"].includes(it.type) ? "Read" : "Open source"}/> : <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation && !it.audioSrc && !it.youtubeId && !it.videoSrc ? ()=>onOpen?.(it) : undefined} consumeLabel={it._keep?._unavailable ? "Retry source" : ["article","daily_story","book"].includes(it.type) ? "Read" : "Open source"} />;
+  const renderDiscovery = it => calmLayout && !it.audioSrc && !it.youtubeId && !it.videoSrc ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails} label="Open" context={discoveryContext(it)}/> : <CoverCard presentation={presentation} previewText={calmLayout ? "" : undefined} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -70,7 +72,8 @@ export default function YoursFocus({ savedCards = [], savedSummary, phaseCards =
         <YoursCard className="fw-selected-collection" key={g.label} eyebrow="Saved" title={g.label} accent={g.accent}>
           {presentation && index === 0 && <SelectedRoomDetail section="yours"/>}
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {g.items.map((it) => calmLayout && !it.audioSrc && !it.youtubeId && !it.videoSrc ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails} label={it._keep?._unavailable ? "Retry source" : ["article","daily_story","book"].includes(it.type) ? "Read" : "Open source"}/> : <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation && !it.audioSrc && !it.youtubeId && !it.videoSrc ? ()=>onOpen?.(it) : undefined} consumeLabel={it._keep?._unavailable ? "Retry source" : ["article","daily_story","book"].includes(it.type) ? "Read" : "Open source"} />)}
+            {g.items.slice(0, calmLayout ? 3 : undefined).map(renderSaved)}
+            <CalmMore enabled={calmLayout && g.items.length > 3} title={`More ${g.label.toLowerCase()} · ${Math.max(0, g.items.length - 3)}`}>{calmLayout && g.items.slice(3).map(renderSaved)}</CalmMore>
           </div>
         </YoursCard>
       ))}
@@ -79,7 +82,8 @@ export default function YoursFocus({ savedCards = [], savedSummary, phaseCards =
       {phaseCards.length ? (
         <YoursCard className="fw-selected-phase" eyebrow={presentation ? "Something new" : "Tuned to your week"} title={presentation ? "A few discoveries" : phaseWord ? `For your ${phaseWord} week` : "For your phase"} accent="sage">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {phaseCards.map((it) => calmLayout && !it.audioSrc && !it.youtubeId && !it.videoSrc ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails} label="Open" context={discoveryContext(it)}/> : <CoverCard presentation={presentation} previewText={calmLayout ? "" : undefined} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />)}
+            {phaseCards.slice(0, calmLayout ? 3 : undefined).map(renderDiscovery)}
+            <CalmMore enabled={calmLayout && phaseCards.length > 3} title={`More discoveries · ${Math.max(0, phaseCards.length - 3)}`}>{calmLayout && phaseCards.slice(3).map(renderDiscovery)}</CalmMore>
           </div>
         </YoursCard>
       ) : null}

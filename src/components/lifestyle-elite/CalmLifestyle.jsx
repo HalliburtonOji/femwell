@@ -20,6 +20,11 @@ export function CalmOptional({ enabled, title, children }) {
   return enabled ? <details className="fw-calm-depth"><summary>{title}</summary>{children}</details> : children;
 }
 
+// Keep the whole source list available without making every item compete on first view.
+export function CalmMore({ enabled, title, children }) {
+  return enabled ? <details className="fw-calm-more"><summary>{title}</summary><div className="fw-calm-more-content">{children}</div></details> : children;
+}
+
 // Native modal retains its mounted children's drafts/results after first use.
 // Closed dialogs are inaccessible; hidden route owners close without stealing focus.
 export function CalmTaskDialog({ open, active = true, title, eyebrow = "Your sky", motif, onClose, children }) {

@@ -19,31 +19,35 @@ import { isAdultConfirmed, confirmAdult } from "./ageAssurance";
 
 export default function AgeGate({ children, surfaceName = "this space", onDecline }) {
   const [ok, setOk] = useState(() => isAdultConfirmed());
+  // An explicit Ideas route previews the clean gate at this owner. Existing
+  // Community and letter routes retain their current appearance until reviewed.
+  const calmPreview = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("appearance") === "calm";
   useScrollLock(!ok);   // lock background scroll while the gate is shown
   if (ok) return children;
 
   return (
-    <div role="dialog" aria-modal="true" aria-label="Adults only — age check" className="fw-sheet-safe" style={{ position: "fixed", inset: 0, zIndex: Z.gate, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", ...PAPER_BG }}>
-      <div style={{ maxWidth: 480, margin: "0 auto", padding: "56px 24px 60px" }}>
-        <Eyebrow mb={12}>Before you go in</Eyebrow>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-          <ShieldCheck size={20} style={{ color: T.gold }} />
-          <Script size={40} style={{ width: "auto" }}>Adults only</Script>
-        </div>
-        <Rule mb={18} />
-        <Hand size={20} color={T.inkSoft} style={{ marginBottom: 10 }}>
-          {surfaceName === "this space" ? "This space" : `${surfaceName.charAt(0).toUpperCase()}${surfaceName.slice(1)}`} is for women — and everyone living a woman{"’"}s health journey. It{"’"}s a candid, grown-up space, so you just need to be 18 or over to come in.
-        </Hand>
-        <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, lineHeight: 1.55, marginBottom: 24 }}>
-          Tapping below confirms you{"’"}re 18 or over. That{"’"}s all we ask — no ID, no photo.
-        </p>
+    <div role="dialog" aria-modal="true" aria-label="Adults only — age check" className="fw-sheet-safe" style={{ position: "fixed", inset: 0, zIndex: Z.gate, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", ...(calmPreview ? { background: "#F5F4F1", backgroundImage: "none", color: "#191510" } : PAPER_BG) }}>
+      <div style={{ maxWidth: 480, margin: "0 auto", padding: calmPreview ? "clamp(44px,10vh,90px) 24px 60px" : "56px 24px 60px" }}>
+        {calmPreview ? <>
+          <p style={{ font: `700 12px/1.4 ${UI}`, letterSpacing: ".14em", textTransform: "uppercase", color: "#6E6A61", margin: "0 0 16px" }}>Before you go in</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, borderBottom: "1px solid #D9C79B", paddingBottom: 14, marginBottom: 22 }}><ShieldCheck size={21} color="#A8893F"/><h2 style={{ font: "400 46px/1.1 Ephesis,cursive", color: "#7A1A12", margin: 0 }}>Adults only</h2></div>
+          <p style={{ font: "italic 600 27px/1.18 'FemWell Editorial','Cormorant Garamond',Georgia,serif", color: "#51444e", margin: "0 0 16px" }}>{surfaceName === "this space" ? "This space" : `${surfaceName.charAt(0).toUpperCase()}${surfaceName.slice(1)}`} is a grown-up space.</p>
+          <p style={{ font: "500 16px/1.55 'FemWell Editorial','Cormorant Garamond',Georgia,serif", margin: "0 0 15px" }}>For women and everyone living a woman’s health journey. Confirm you’re 18 or over to come in.</p>
+          <p style={{ font: `500 13px/1.5 ${UI}`, color: "#6E6A61", margin: "0 0 24px" }}>Your confirmation stays on this device. No ID or photo.</p>
+        </> : <>
+          <Eyebrow mb={12}>Before you go in</Eyebrow>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}><ShieldCheck size={20} style={{ color: T.gold }} /><Script size={40} style={{ width: "auto" }}>Adults only</Script></div>
+          <Rule mb={18} />
+          <Hand size={20} color={T.inkSoft} style={{ marginBottom: 10 }}>{surfaceName === "this space" ? "This space" : `${surfaceName.charAt(0).toUpperCase()}${surfaceName.slice(1)}`} is for women — and everyone living a woman{"’"}s health journey. It{"’"}s a candid, grown-up space, so you just need to be 18 or over to come in.</Hand>
+          <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, lineHeight: 1.55, marginBottom: 24 }}>Tapping below confirms you{"’"}re 18 or over. That{"’"}s all we ask — no ID, no photo.</p>
+        </>}
 
         <button onClick={() => { confirmAdult(); setOk(true); }} style={{
-          width: "100%", background: T.ink, color: T.paperHi, border: "none", borderRadius: 12,
+          width: "100%", background: calmPreview ? "#51444e" : T.ink, color: calmPreview ? "#fff" : T.paperHi, border: "none", borderRadius: calmPreview ? 16 : 12,
           padding: "14px 16px", fontFamily: UI, fontSize: 14, fontWeight: 700, letterSpacing: 0.3, cursor: "pointer", marginBottom: 12,
         }}>I{"’"}m 18 or over — come in</button>
         <button onClick={() => onDecline?.()} style={{
-          width: "100%", background: "transparent", color: T.ink, border: `1px solid ${T.paperDeep}`, borderRadius: 12,
+          width: "100%", background: "transparent", color: calmPreview ? "#191510" : T.ink, border: `1px solid ${calmPreview ? "#EAE7E0" : T.paperDeep}`, borderRadius: calmPreview ? 16 : 12,
           padding: "12px 16px", fontFamily: UI, fontSize: 13, fontWeight: 600, cursor: "pointer",
         }}>Not now</button>
       </div>

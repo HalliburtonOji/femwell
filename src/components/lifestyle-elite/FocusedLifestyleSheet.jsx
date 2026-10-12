@@ -5,12 +5,12 @@ import "./FocusedLifestyle.css";
 
 // One real modal, with the same focus/exit contract for all preview journeys.
 // The clean surface replaces the material here; no inherited PAPER_BG layer.
-export default function FocusedLifestyleSheet({ title, eyebrow, children, onClose, active = true, footer, contentRef }) {
+export default function FocusedLifestyleSheet({ title, eyebrow, children, onClose, active = true, footer, contentRef, room }) {
   const opener = useRef(document.activeElement);
   return <Dialog.Root open={active} onOpenChange={open => { if (!open) onClose(); }}>
     <Dialog.Portal>
       <Dialog.Overlay className="fw-focused-scrim"/>
-      <Dialog.Content ref={contentRef} className="fw-focused-sheet fw-sheet-safe" aria-describedby={undefined}
+      <Dialog.Content ref={contentRef} className="fw-focused-sheet fw-sheet-safe" data-room={room || undefined} aria-describedby={undefined}
         onCloseAutoFocus={event => { event.preventDefault(); if (active && opener.current?.isConnected) opener.current.focus({preventScroll:true}); }}>
         <header className="fw-focused-sheet-head">
           <div><p className="fw-focused-eyebrow"><Leaf size={12} aria-hidden="true"/>{eyebrow}</p><Dialog.Title className="fw-focused-title">{title}</Dialog.Title></div>

@@ -11,6 +11,7 @@ import { C } from "@/components/brand/cleanTokens";
 import { Eyebrow, Title, Card as CleanCard, Summary, Foot } from "@/components/brand/cleanKit";
 import { SelectedRoomDetail } from "./SelectedLifestyleHeader";
 import { usePodcastPlayer } from "@/hooks/usePodcastPlayer";
+import { CalmMore } from "./CalmLifestyle";
 
 const durOf = (it) => {
   const m = (it?.meta || []).find((row) => /min|hr|:/.test(String(row?.[1] || "")));
@@ -54,6 +55,8 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, 
   const summary = presentation ? `${audioCards.length} listen${audioCards.length === 1 ? "" : "s"} · ${videoCards.length} watch${videoCards.length === 1 ? "" : "es"}${fDur ? ` · start with ${fDur}` : ""}.` : featured
     ? `Something to hear — ${featured.title}${fDur ? ` (${fDur})` : ""}. Press play and it keeps going while you wander.`
     : "Something to hear — press play and it keeps going while you wander the app.";
+  const renderAudio = it => calmLayout && it.audioSrc ? <div key={it.id} className="fw-calm-audio-row"><h4>{resolveCard(it).title}</h4><FloraAudio compact presentation="focused" src={it.audioSrc} label={`Play ${resolveCard(it).title}`} item={it} initialDuration={it.duration || 0}/><button onClick={()=>onOpen?.(it)}>Details &amp; tools</button></div> : <CoverCard presentation={presentation} previewText={calmLayout ? "" : undefined} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />;
+  const renderWatch = it => <CoverCard presentation={presentation} previewText={calmLayout ? "" : undefined} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -72,7 +75,8 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, 
       {restAudio.length ? (
         <ListenCard className="fw-selected-audio" eyebrow="For the kettle or the commute" title="Podcasts & shows" accent="sage">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {restAudio.map((it) => calmLayout && it.audioSrc ? <div key={it.id} className="fw-calm-audio-row"><h4>{resolveCard(it).title}</h4><FloraAudio compact presentation="focused" src={it.audioSrc} label={`Play ${resolveCard(it).title}`} item={it} initialDuration={it.duration || 0}/><button onClick={()=>onOpen?.(it)}>Details &amp; tools</button></div> : <CoverCard presentation={presentation} previewText={calmLayout ? "" : undefined} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />)}
+            {restAudio.slice(0, calmLayout ? 3 : undefined).map(renderAudio)}
+            <CalmMore enabled={calmLayout && restAudio.length > 3} title={`More listens · ${Math.max(0, restAudio.length - 3)}`}>{calmLayout && restAudio.slice(3).map(renderAudio)}</CalmMore>
           </div>
         </ListenCard>
       ) : null}
@@ -81,7 +85,8 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, 
       {watches.length ? (
         <ListenCard className="fw-selected-watch" eyebrow="Something worth watching" title="Watch & trending" accent="gold">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {watches.map((it) => <CoverCard presentation={presentation} previewText={calmLayout ? "" : undefined} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />)}
+            {watches.slice(0, calmLayout ? 2 : undefined).map(renderWatch)}
+            <CalmMore enabled={calmLayout && watches.length > 2} title={`More to watch · ${Math.max(0, watches.length - 2)}`}>{calmLayout && watches.slice(2).map(renderWatch)}</CalmMore>
           </div>
         </ListenCard>
       ) : null}

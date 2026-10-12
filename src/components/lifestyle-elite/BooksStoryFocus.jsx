@@ -277,6 +277,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
               style={{ width: 44, height: 44, borderRadius: 12, border: `1px solid ${C.hair}`, background: C.surface, color: C.ink, display: "grid", placeItems: "center", cursor: "pointer", opacity: (!isChapterRead(her.id) || pos.index >= pos.unlockedCount - 1) ? 0.35 : 1, flexShrink: 0 }}><ChevronRight size={18} /></button>
           </div>
           <div style={{ fontFamily: UI, fontSize: 13, color: C.faint, textAlign: "center", margin: "10px 0 0" }}>‹ re-read · › moves on once this one's read</div>
+          {calmLayout && onChapterDetails && <Quiet onClick={onChapterDetails}>Notes &amp; reflection ›</Quiet>}
         </Card>
       ) : (
         <Card className={room ? "fw-room-chapter-leaf" : undefined}>
@@ -405,7 +406,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
             {reached >= nextCp.index ? <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, fontWeight: 500, color: C.slate, lineHeight: 1.5, margin: "6px 0 0" }}>{clean(nextCp.jess_prompt)}</p> : <p style={{fontFamily:UI,fontSize:13,color:C.slate,margin:"8px 0 0"}}>The conversation opens when you reach this part.</p>}
           </div> : <Body size={16}>This book’s checkpoints haven’t been published yet.</Body>}
           <div style={{ fontFamily: UI, fontSize: 13, color: C.faint, textAlign: "center", margin: "10px 0 0", lineHeight: 1.5 }}>Prompts stay tucked away until you reach each part.</div>
-          <div style={{ marginTop: 12 }}><Cta Icon={Users} onClick={() => window.location.assign(createPageUrl("Community?view=bookclub"))}>Open the book club</Cta></div>
+          <div style={{ marginTop: 12 }}><Cta Icon={Users} onClick={() => window.location.assign(createPageUrl(calmLayout ? "Community?view=bookclub&appearance=calm" : "Community?view=bookclub"))}>Open the book club</Cta></div>
           {club.checkpoints.length > 0 && <Quiet onClick={() => onSchedule && onSchedule({ club })}>Plan the club’s checkpoints ›</Quiet>}</>}
         </Card>
       </section>
@@ -447,11 +448,13 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
         </section>
       ) : null}
 
+      <CalmOptional enabled={calmLayout} title="Your shelf & free classics">
       <section id="book-library" className={room ? "fw-room-catalogue fw-room-library" : undefined} style={{marginTop:24,scrollMarginTop:64}}>
         <Eyebrow cw="sky">Your shelf &amp; free classics</Eyebrow>
-        {onChapterDetails && <Quiet onClick={onChapterDetails}>Today’s chapter · notes &amp; reflection ›</Quiet>}
+        {!calmLayout && onChapterDetails && <Quiet onClick={onChapterDetails}>Today’s chapter · notes &amp; reflection ›</Quiet>}
         {[["On the shelf",shelfBookCards],["Free classics",classicCards]].map(([label,items]) => <div key={label} style={{marginTop:16}}><Title size={20}>{label}</Title>{items.length ? items.map(item => <div key={item.id} style={{borderBottom:`1px solid ${C.hair}`,padding:"8px 0"}}><button type="button" className="fw-elite-press" onClick={() => onOpenBook?.(item)} style={{display:"flex",alignItems:"center",gap:12,width:"100%",minHeight:64,textAlign:"left",background:"transparent",border:0,color:C.ink,cursor:"pointer"}}><Cover title={item.title} w={36} h={50} room={room}/><span style={{flex:1,minWidth:0}}><span style={{display:"block",fontFamily:SERIF,fontSize:18}}>{item.title}</span><span style={{display:"block",fontFamily:UI,fontSize:12,color:C.slate}}>{item.subtitle || item.summary}</span></span><ChevronRight size={16}/></button>{onBookDetails && <Quiet onClick={() => onBookDetails(item)}>Details &amp; tools ›</Quiet>}</div>) : <p style={{fontFamily:SERIF,color:C.slate}}>Nothing on this shelf yet.</p>}</div>)}
       </section>
+      </CalmOptional>
 
       {/* 6b · WHAT READING GREW — the garden already counts her reading days (forget-me-not);
               this just shows it back, in her own garden's language. Read-only. */}

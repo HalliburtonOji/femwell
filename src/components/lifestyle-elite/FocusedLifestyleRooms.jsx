@@ -114,7 +114,7 @@ export default function FocusedLifestyleRooms({ active, onClose, user, profile, 
       setGoalStatus("Kept in your garden.");
     }catch(error){setGoalStatus(error.message || "That didn’t stick. Try again.");}finally{setGoalBusy(false);}
   };
-  return <FocusedLifestyleSheet title={item ? item.title : "Life’s rooms"} eyebrow={item ? room : "The rest of your life"} active={active} onClose={onClose} contentRef={sheet}
+  return <FocusedLifestyleSheet title={item ? item.title : "Life’s rooms"} eyebrow={item ? room : "The rest of your life"} room="good" active={active} onClose={onClose} contentRef={sheet}
     footer={item && <><button className="fw-focused-button" onClick={()=>setItem(null)}><ArrowLeft size={16}/>Back to {room}</button><button className="fw-focused-button" onClick={save} disabled={saving} aria-pressed={isSaved(item)}><Bookmark size={16}/>{saving ? "Saving…" : isSaved(item) ? "Saved" : "Save"}</button></>}>
     {item ? <><FocusedCardContents item={item}/>{saveError && <p role="alert" className="fw-focused-note">{saveError}</p>}{!focusedSourceParagraphs(item).length && !item.audioSrc && !item.videoSrc && !item.youtubeId && !item._raw?.content_url && !item._raw?.source_url && item.actions?.map(action=><button key={action.label} className="fw-focused-button" onClick={()=>{onClose();action.onClick?.(item);}}>{action.label}</button>)}</> : <>
       <label className="fw-focused-note" htmlFor="fw-life-room">Room</label><select id="fw-life-room" className="fw-focused-button" style={{width:"100%",margin:"5px 0 20px"}} value={room} onChange={event=>switchRoom(event.target.value)}>{ROOMS.map(([name])=><option key={name}>{name}</option>)}</select>

@@ -15,3 +15,27 @@
 .fw-focused-preview-nav{max-width:600px;margin:0 auto;padding:64px 20px 10px;display:flex;align-items:center;justify-content:space-between;gap:12px;font:500 12px/1.4 "Inter",sans-serif}.fw-focused-preview-nav a{color:#51444e;min-height:44px;display:flex;align-items:center}
 .fw-focused-sheet :focus-visible{outline:2px solid #51444e;outline-offset:3px}
 @media(prefers-reduced-motion:no-preference){.fw-focused-scrim{animation:fwFocusFade .18s ease}.fw-focused-sheet{animation:fwFocusRise .22s ease}@keyframes fwFocusFade{from{opacity:0}to{opacity:1}}@keyframes fwFocusRise{from{opacity:0;transform:translate(-50%,16px)}to{opacity:1;transform:translate(-50%,0)}}}
+
+/* The room-owned focused journeys use the same typography and material as
+   their parent. Unmarked historical/Community uses retain their own design. */
+.fw-focused-sheet[data-room]{--room-tint:#e7deea;--room-ink:#51444e;background:#f5f4f1;background-image:none;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.fw-focused-sheet[data-room=listen]{--room-tint:#dce9df;--room-ink:#42634c}
+.fw-focused-sheet[data-room=books]{--room-tint:#e9e5d6;--room-ink:#665840}
+.fw-focused-sheet[data-room=good]{--room-tint:#f2e3b8;--room-ink:#725c32}
+.fw-focused-sheet[data-room=yours]{--room-tint:#dce8ec;--room-ink:#4e6973}
+.fw-focused-sheet[data-room] .fw-focused-sheet-head{position:relative;background:linear-gradient(115deg,#fff 40%,var(--room-tint));padding:22px 22px 18px;overflow:hidden}
+.fw-focused-sheet[data-room] .fw-focused-sheet-head:after{content:"";position:absolute;right:48px;top:-13px;width:46px;height:72px;background:url('/images/flora-dream/specimen-iris-v2.webp') 50% 18%/105px auto no-repeat;opacity:.22;mask-image:linear-gradient(#000,transparent 85%);pointer-events:none}
+.fw-focused-sheet[data-room=listen] .fw-focused-sheet-head:after{background-image:url('/images/flora-dream/specimen-bluebell-v2.webp')}
+.fw-focused-sheet[data-room=books] .fw-focused-sheet-head:after{background-image:url('/images/flora-dream/specimen-jasmine-v2.webp')}
+.fw-focused-sheet[data-room=good] .fw-focused-sheet-head:after{background-image:url('/images/flora-dream/specimen-marigold-v2.webp')}
+.fw-focused-sheet[data-room=yours] .fw-focused-sheet-head:after{background-image:url('/images/flora-dream/specimen-forget-me-not-v2.webp')}
+.fw-focused-sheet[data-room] .fw-focused-eyebrow{font:700 12px/1.4 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--room-ink);letter-spacing:.12em;margin-bottom:8px}
+.fw-focused-sheet[data-room] .fw-focused-title{font:italic 600 clamp(27px,6.5vw,34px)/1.17 "FemWell Editorial","Cormorant Garamond",Georgia,serif;color:#7a1a12;overflow-wrap:anywhere}
+.fw-focused-sheet[data-room] .fw-focused-prose{font:500 16px/1.6 "FemWell Editorial","Cormorant Garamond",Georgia,serif;color:#191510}
+.fw-focused-sheet[data-room] .fw-focused-prose h3{font:italic 600 20px/1.2 "FemWell Editorial","Cormorant Garamond",Georgia,serif;color:#51444e}
+.fw-focused-sheet[data-room] .fw-focused-note{font:500 13px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#6e6a61}
+.fw-focused-sheet[data-room] .fw-focused-button,.fw-focused-sheet[data-room] .fw-focused-depth summary{font:700 14px/1.4 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.fw-focused-sheet[data-room] .fw-focused-button{border-radius:14px}
+.fw-focused-sheet[data-room] .fw-focused-button--primary{background:var(--room-ink);border-color:var(--room-ink)}
+.fw-focused-sheet[data-room] .fw-focused-room-bar h2{font:italic 600 27px/1.18 "FemWell Editorial","Cormorant Garamond",Georgia,serif;color:var(--room-ink)}
+.fw-focused-sheet[data-room] .fw-focused-room-list button{font:600 18px/1.3 "FemWell Editorial","Cormorant Garamond",Georgia,serif}

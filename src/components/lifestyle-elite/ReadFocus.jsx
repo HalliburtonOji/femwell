@@ -10,7 +10,7 @@ import { SERIF } from "@/components/journal/Editorial";
 import { C } from "@/components/brand/cleanTokens";
 import { Eyebrow, Title, Card as CleanCard, Summary, Foot } from "@/components/brand/cleanKit";
 import { SelectedRoomDetail } from "./SelectedLifestyleHeader";
-import { CalmFindRow } from "./CalmLifestyle";
+import { CalmFindRow, CalmMore } from "./CalmLifestyle";
 import { firstSentences } from "./FocusedLifestyleSheet";
 
 
@@ -65,7 +65,10 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
       {restArticles.length ? (
         <ReadCard className="fw-selected-fresh" eyebrow="A fresh page" title="Fresh reads & guides" accent="plum">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {restArticles.map((it) => calmLayout ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails}/> : <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation ? () => onOpen?.(it) : undefined} consumeLabel={it._continue ? "Continue" : "Read"} />)}
+            {restArticles.slice(0, calmLayout ? 3 : undefined).map((it) => calmLayout ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails}/> : <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation ? () => onOpen?.(it) : undefined} consumeLabel={it._continue ? "Continue" : "Read"} />)}
+            <CalmMore enabled={calmLayout && restArticles.length > 3} title={`More reads & guides · ${Math.max(0, restArticles.length - 3)}`}>
+              {calmLayout && restArticles.slice(3).map(it => <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails}/>)}
+            </CalmMore>
           </div>
         </ReadCard>
       ) : null}
@@ -74,7 +77,10 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
       {storyCards.length ? (
         <ReadCard className="fw-selected-fiction" eyebrow="Get lost in one" title="Stories & fiction" accent="crimson">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {storyCards.map((it) => calmLayout ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails}/> : <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation ? () => onOpen?.(it) : undefined} consumeLabel={it._continue ? "Continue" : "Read"} />)}
+            {storyCards.slice(0, calmLayout ? 2 : undefined).map((it) => calmLayout ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails}/> : <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation ? () => onOpen?.(it) : undefined} consumeLabel={it._continue ? "Continue" : "Read"} />)}
+            <CalmMore enabled={calmLayout && storyCards.length > 2} title={`More stories · ${Math.max(0, storyCards.length - 2)}`}>
+              {calmLayout && storyCards.slice(2).map(it => <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails}/>)}
+            </CalmMore>
           </div>
         </ReadCard>
       ) : null}
