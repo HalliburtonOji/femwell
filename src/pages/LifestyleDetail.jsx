@@ -8,6 +8,7 @@ import { getCategoryGradient, attachFallbackOverlay } from "@/utils/imageFallbac
 import ContentActionBar from "@/components/common/ContentActionBar";
 import ShareButton from "@/components/share/ShareButton";
 import ReadingColumn, { readTimeLabel, countWords } from "@/components/brand/ReadingColumn";
+import "./LifestyleDetailCalm.css";
 
 // Map a content category to the best-fit whole-life Community room (default: the Lounge).
 const CATEGORY_ROOM = {
@@ -147,6 +148,7 @@ export default function LifestyleDetail() {
   const location = useLocation();
   const urlParams = new URLSearchParams(location.search);
   const id = urlParams.get("id");
+  const calmReader = urlParams.get("appearance") === "calm";
 
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -378,7 +380,7 @@ export default function LifestyleDetail() {
   // Loading state — never flash "Article not found" while fetching.
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#ECE7DA" }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: calmReader ? "#f5f4f1" : "#ECE7DA" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <Loader2 style={{ width: 20, height: 20, color: "#E8B4B8", animation: "spin 0.7s linear infinite" }} />
           <span style={{ fontSize: 14, color: "#2E261B", }}>Loading…</span>
@@ -396,7 +398,7 @@ export default function LifestyleDetail() {
   // Genuine not-found, only after a successful array response.
   if (!item) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: "#ECE7DA", padding: 24 }}>
+      <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: calmReader ? "#f5f4f1" : "#ECE7DA", padding: 24 }}>
         <p style={{ fontSize: 18, color: "#0B0805", fontWeight: 500, marginBottom: 8 }}>
           That article isn't here.
         </p>
@@ -482,7 +484,7 @@ export default function LifestyleDetail() {
   }));
 
   return (
-    <div className="min-h-screen pb-10" style={{ backgroundColor: "#ECE7DA" }}>
+    <div className={calmReader ? "min-h-screen pb-10 fw-calm-article" : "min-h-screen pb-10"} style={{ backgroundColor: calmReader ? "#f5f4f1" : "#ECE7DA" }}>
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         .fw-reader-card .fw-dropcap {
@@ -599,7 +601,7 @@ export default function LifestyleDetail() {
 
         {actionError && <div role="alert" style={{color:"#7a1a12",fontSize:15,lineHeight:1.5}}><p>{actionError}</p><button type="button" disabled={actionPending} style={{minHeight:44}} onClick={()=>actionIntent.current ? changeFind(actionIntent.current.field,actionIntent.current.target) : setActionRetry(n=>n+1)}>Retry keeps and likes</button></div>}
         {!actionReady && !actionError && <p role="status">Loading your keeps and likes…</p>}
-        <h1 className="fw-display" style={{ margin: "0 0 16px" }}>Lifestyle</h1>
+        <h1 className={calmReader ? "fw-display fw-calm-article__room" : "fw-display"} style={{ margin: "0 0 16px" }}>{calmReader ? "Read" : "Lifestyle"}</h1>
 
         {/* §6.7.8 — ONE padding owner. At 390px the max-width never binds: PADDING *IS* MEASURE.
             The page gutter (px-4) + a 24px card pad double-framed the text to ~310px. The card
@@ -608,9 +610,9 @@ export default function LifestyleDetail() {
         <div
           className="fw-reader-card px-3 py-6 md:p-10"
           style={{
-            backgroundColor: "#F4EFE3",
-            border: "1px solid #D8CFBC",
-            boxShadow: "var(--shadow-card)",
+            backgroundColor: calmReader ? "#fff" : "#F4EFE3",
+            border: calmReader ? "1px solid #e6e3dc" : "1px solid #D8CFBC",
+            boxShadow: calmReader ? "0 12px 38px rgba(58,46,57,.06)" : "var(--shadow-card)",
             borderRadius: 24,
             overflow: "hidden",
           }}
@@ -729,7 +731,7 @@ export default function LifestyleDetail() {
                 background: heroBg,
                 overflow: "hidden",
               }}
-              className="fw-reader-hero"
+              className={calmReader && !hasImage ? "fw-reader-hero fw-reader-hero--floral" : "fw-reader-hero"}
             >
               {hasImage && (
                 <img
@@ -1038,7 +1040,7 @@ export default function LifestyleDetail() {
                 return (
                   <Link
                     key={r.id}
-                    to={`/LifestyleDetail?id=${encodeURIComponent(r.id)}`}
+                    to={`/LifestyleDetail?id=${encodeURIComponent(r.id)}${calmReader ? "&appearance=calm" : ""}`}
                     className="fw-related-card"
                   >
                     <div style={{

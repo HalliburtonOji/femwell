@@ -1,0 +1,18 @@
+/* Ideas reader: replace the old paper material at the routed owner. Default readers stay unchanged. */
+.fw-calm-article{color:#191510}
+.fw-calm-article>.max-w-2xl{padding-top:28px}
+.fw-calm-article>.max-w-2xl>div:first-child button{background:#fff!important;border:1px solid #e4e0d8!important;border-radius:999px!important;box-shadow:0 4px 14px rgba(58,46,57,.07)!important}
+.fw-calm-article .fw-calm-article__room{font:400 clamp(43px,12vw,60px)/1 Ephesis,cursive!important;color:#7a1a12!important;text-shadow:none!important;margin:3px 0 20px!important}
+.fw-calm-article .fw-reader-card{background:#fff!important;border:1px solid #e6e3dc!important;border-radius:22px!important;box-shadow:0 12px 38px rgba(58,46,57,.06)!important}
+.fw-calm-article .fw-reader-hero{border-radius:20px 20px 0 0}
+.fw-calm-article .fw-reader-hero--floral{background:linear-gradient(145deg,#e5e3e0 0%,#d9d2d8 48%,#50424d 100%)!important}
+.fw-calm-article .fw-reader-hero--floral:before{content:"";position:absolute;inset:-3% -5% 18% 12%;z-index:1;background:url('/images/flora-dream/specimen-iris-v2.webp') 86% 10%/min(90%,390px) auto no-repeat;opacity:.26;mask-image:linear-gradient(90deg,transparent,#000 45%,transparent 98%);pointer-events:none}
+.fw-calm-article .fw-reader-hero>div:last-of-type{z-index:2}
+.fw-calm-article .fw-reader-hero h1{font-family:"FemWell Editorial","Cormorant Garamond",Georgia,serif!important;font-size:clamp(36px,10vw,50px)!important;font-style:italic!important;font-weight:600!important;line-height:1.03!important;text-shadow:none!important}
+.fw-calm-article .fw-reader-card .fw-body-p{color:#191510!important}
+.fw-calm-article .fw-reader-card :is(.fw-h2,.fw-chapter){font-family:"FemWell Editorial","Cormorant Garamond",Georgia,serif!important;color:#51444e!important}
+.fw-calm-article .fw-reader-card .fw-dropcap{font-family:"FemWell Editorial","Cormorant Garamond",Georgia,serif;color:#7a1a12}
+.fw-calm-article .fw-reader-card .fw-ornament{color:#b9a5bd}
+.fw-calm-article .fw-related-rail{scroll-padding-inline:1px}
+.fw-calm-article .fw-related-card:focus-visible,.fw-calm-article button:focus-visible{outline:3px solid #916b8f;outline-offset:3px}
+@media(max-width:600px){.fw-calm-article .fw-reader-card{padding-left:15px!important;padding-right:15px!important}.fw-calm-article .fw-reader-hero{margin:-24px -15px 22px!important;min-height:270px!important}.fw-calm-article .fw-reader-hero>div:last-of-type{left:18px!important;right:18px!important;bottom:22px!important}.fw-calm-article .fw-reader-hero h1{font-size:clamp(34px,9vw,43px)!important}}
