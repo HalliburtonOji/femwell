@@ -12,6 +12,18 @@ const openChooser = (label) => {
 };
 
 describe("FocusedSectionActions — preview interaction contract", () => {
+  it("keeps every deeper calm choice available after a concise first view", async () => {
+    const open = vi.fn();
+    const items = Array.from({length: 5}, (_, i) => ({id: `listen-${i}`, title: `Episode ${i + 1}`}));
+    render(<FocusedSectionActions actions={[{label:"Choose a listen",items,open}]} plum="#402D46" section="listen" calmLayout/>);
+    openChooser("Choose a listen");
+    const dialog = await screen.findByRole("dialog", {name:"Choose a listen"});
+    expect(within(dialog).getByRole("button", {name:"Episode 3"})).toBeVisible();
+    expect(within(dialog).getByRole("button", {name:"Episode 5"}).closest("details")).not.toHaveAttribute("open");
+    fireEvent.click(within(dialog).getByText("More choices · 2"));
+    fireEvent.click(within(dialog).getByRole("button", {name:"Episode 5"}));
+    await waitFor(() => expect(open).toHaveBeenCalledExactlyOnceWith(items[4]));
+  });
   it("suspends a cached chooser without choosing or focusing its hidden origin, then restores its choices", async () => {
     const open = vi.fn(), item = { id: "book", title: "A real book" };
     const actions = [{ label: "Choose a book", items: [item], open }];

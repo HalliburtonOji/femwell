@@ -5,7 +5,7 @@
 .fw-calm-find strong{font:600 20px/1.25 var(--ff-serif,"Cormorant Garamond",serif);display:block;overflow-wrap:anywhere}
 .fw-calm-find small{display:block;font:500 12px/1.4 var(--ff-ui,system-ui);color:#6E6A61;margin-top:5px}
 .fw-calm-find .fw-calm-find-context{font-weight:400;font-size:13px;line-height:1.5;color:#51444e;margin-top:7px}
-.fw-calm-find-action{display:inline-flex;align-items:center;gap:5px;font:600 12px/1.4 var(--ff-ui,system-ui);flex-shrink:0}
+.fw-calm-find-action{display:inline-flex;align-items:center;gap:5px;font:700 14px/1.4 var(--ff-ui,system-ui);flex-shrink:0;background:#fff;border:1px solid #ded8df;border-radius:999px;padding:7px 9px}
 .fw-calm-find-details{border:0;background:transparent;min-height:44px;color:#6E6A61;font:500 12px var(--ff-ui,system-ui);padding:0 0 8px;cursor:pointer}
 .fw-calm-lifestyle .fw-ff-summary{margin-top:14px!important}
 .fw-calm-lifestyle .fw-ff-glance-row{padding:10px 0!important}
@@ -149,16 +149,14 @@ dialog.fw-calm-dialog.fw-sheet-safe{padding-bottom:0!important}
 .fw-calm-lifestyle .fw-selected-room--read .fw-selected-resume{position:relative;border-left:2px solid #9b739c!important;padding-left:16px!important}
 .fw-calm-lifestyle .fw-selected-room--read .fw-selected-resume:before{left:-10px;top:0;width:15px;height:37px;background:#a786ab}
 .fw-calm-lifestyle .fw-selected-room--read .fw-selected-lead{position:relative;border-top:1px solid var(--room-rule)!important;padding:20px 10px 14px 0!important;background:linear-gradient(160deg,#fff 0%,#fff 76%,#f3eef3 100%)!important;border-radius:0 20px 20px 0!important}
-.fw-calm-lifestyle .fw-selected-room--read .fw-selected-lead:after{content:"";position:absolute;right:-8px;bottom:-10px;width:78px;height:78px;background:url('/images/flora-dream/specimen-iris-v2.webp') 50% 30%/138px auto no-repeat;opacity:.22;mask-image:radial-gradient(ellipse at 85% 75%,#000 10%,transparent 68%);pointer-events:none}
-.fw-calm-lifestyle .fw-selected-room--read .fw-selected-lead>h3{font:400 clamp(39px,9vw,48px)/1.1 Ephesis,cursive!important;color:#7a1a12!important}
+.fw-calm-lifestyle.fw-sky-worlds[data-world=petal-press] .fw-selected-room--read .fw-selected-lead>h3{font:400 clamp(39px,9vw,48px)/1.1 Ephesis,cursive!important;color:#7a1a12!important}
 .fw-calm-lifestyle .fw-selected-room--read :is(.fw-selected-fresh,.fw-selected-fiction){border-top:1px solid var(--room-rule)!important;padding:18px 0!important}
 .fw-calm-lifestyle .fw-selected-room--read .fw-selected-fiction{margin-left:12px;border-left:1px solid #b9a5bd!important;padding-left:14px!important}
 
 /* Bluebell: the actual transport sits on a descending programme line. */
 .fw-calm-lifestyle .fw-selected-room--listen{--room-rule:#b9cabe}
 .fw-calm-lifestyle .fw-selected-room--listen .fw-selected-now{position:relative;border-top:1px solid var(--room-rule)!important;padding:20px 0 14px 16px!important;border-left:2px solid #8faa9a!important;background:linear-gradient(110deg,#eef4f0 0%,#fff 58%)!important;border-radius:0 18px 18px 0!important}
-.fw-calm-lifestyle .fw-selected-room--listen .fw-selected-now:after{content:"";position:absolute;right:-7px;top:-20px;width:50px;height:105px;background:url('/images/flora-dream/specimen-bluebell-v2.webp') 52% 16%/110px auto no-repeat;opacity:.2;mask-image:linear-gradient(180deg,transparent,#000 15%,#000 48%,transparent);pointer-events:none}
-.fw-calm-lifestyle .fw-selected-room--listen .fw-selected-now>h3{font:400 clamp(39px,9vw,48px)/1.1 Ephesis,cursive!important;color:#51444e!important}
+.fw-calm-lifestyle.fw-sky-worlds[data-world=petal-press] .fw-selected-room--listen .fw-selected-now>h3{font:400 clamp(39px,9vw,48px)/1.1 Ephesis,cursive!important;color:#51444e!important}
 .fw-calm-lifestyle .fw-selected-room--listen .fw-selected-audio{margin-left:9px;border-left:1px solid var(--room-rule);padding-left:16px!important}
 .fw-calm-lifestyle .fw-selected-room--listen .fw-calm-audio-row{padding:16px 0;border-top:1px solid var(--room-rule)}
 .fw-calm-lifestyle .fw-selected-room--listen .fw-calm-audio-row h4{font:600 18px/1.3 "FemWell Editorial","Cormorant Garamond",Georgia,serif}
@@ -168,22 +166,46 @@ dialog.fw-calm-dialog.fw-sheet-safe{padding-bottom:0!important}
 /* Jasmine: the accepted reading table leads to a climbing chapter margin. */
 .fw-calm-lifestyle .fw-books-focus>section:first-of-type{position:relative;overflow:visible!important;border-left:2px solid #b6b09b!important;border-radius:0 18px 18px 0!important;padding-left:19px!important}
 .fw-calm-lifestyle .fw-books-focus>section:first-of-type:after{content:"";position:absolute;top:-20px;right:-10px;width:76px;height:110px;background:url('/images/flora-dream/specimen-jasmine-v2.webp') 80% 20%/150px auto no-repeat;opacity:.22;mask-image:linear-gradient(180deg,#000,transparent 82%);pointer-events:none}
-.fw-calm-lifestyle .fw-books-focus>section:first-of-type h3{font:400 clamp(39px,9vw,48px)/1.1 Ephesis,cursive!important;color:#7a1a12!important}
+.fw-calm-lifestyle.fw-sky-worlds[data-world=petal-press] .fw-books-focus>section:first-of-type h3{font:400 clamp(39px,9vw,48px)/1.1 Ephesis,cursive!important;color:#7a1a12!important}
 .fw-calm-lifestyle .fw-books-focus>section:not(:first-of-type){border-top:1px solid #d4d0c4;padding-top:20px;margin-top:26px!important}
 .fw-calm-lifestyle .fw-books-focus .fw-room-checkpoint{background:#fff!important;border:1px solid #dfd8cb!important;border-radius:16px!important}
 
 /* Marigold: the picker is the warm centre, then quiet joy slips. */
 .fw-calm-lifestyle .fw-selected-room--good .fw-selected-time{position:relative;background:radial-gradient(circle at 94% 8%,#f9efce 0%,#fff 45%)!important;border-top:1px solid #d6c5a5!important;border-radius:20px!important;padding:22px 16px!important;overflow:hidden!important}
-.fw-calm-lifestyle .fw-selected-room--good .fw-selected-time:after{content:"";position:absolute;right:-25px;top:-25px;width:95px;height:86px;background:url('/images/flora-dream/specimen-marigold-v2.webp') 75% 20%/155px auto no-repeat;opacity:.19;mask-image:radial-gradient(circle at 65% 35%,#000,transparent 70%);pointer-events:none}
 .fw-calm-lifestyle .fw-selected-room--good .fw-selected-joys{border-top:1px solid #d6c5a5!important;padding-top:22px!important}
-.fw-calm-lifestyle .fw-selected-room--good .fw-selected-joys>h3{font:400 clamp(39px,9vw,48px)/1.1 Ephesis,cursive!important;color:#7a1a12!important}
+.fw-calm-lifestyle.fw-sky-worlds[data-world=petal-press] .fw-selected-room--good .fw-selected-joys>h3{font:400 clamp(39px,9vw,48px)/1.1 Ephesis,cursive!important;color:#7a1a12!important}
 .fw-calm-lifestyle .fw-selected-room--good .fw-calm-find{border-color:#e5d8bc}
 
 /* Forget-me-not: an index of real keeps, with stitched collection rules. */
 .fw-calm-lifestyle .fw-selected-room--yours .fw-selected-collection{position:relative;border-top:1px solid #bfccd2!important;border-left:2px dotted #9db3c1!important;padding:20px 0 10px 16px!important;margin-left:8px}
-.fw-calm-lifestyle .fw-selected-room--yours .fw-selected-collection:first-of-type:after{content:"";position:absolute;right:-10px;top:-21px;width:62px;height:65px;background:url('/images/flora-dream/specimen-forget-me-not-v2.webp') 42% 25%/145px auto no-repeat;opacity:.24;mask-image:radial-gradient(circle,#000,transparent 73%);pointer-events:none}
-.fw-calm-lifestyle .fw-selected-room--yours .fw-selected-collection:first-of-type>h3{font:400 clamp(39px,9vw,48px)/1.1 Ephesis,cursive!important;color:#7a1a12!important}
+.fw-calm-lifestyle.fw-sky-worlds[data-world=petal-press] .fw-selected-room--yours .fw-selected-collection:first-of-type>h3{font:400 clamp(39px,9vw,48px)/1.1 Ephesis,cursive!important;color:#7a1a12!important}
 .fw-calm-lifestyle .fw-selected-room--yours .fw-selected-phase{border-top:2px solid #a8bdc9!important;padding-top:22px!important}
 .fw-calm-lifestyle .fw-selected-room--yours .fw-calm-find{border-color:#d8e1e5}
 
 @media(max-width:374px){.fw-calm-lifestyle .fw-selected-room--read .fw-selected-lead,.fw-calm-lifestyle .fw-selected-room--good .fw-selected-time{padding-right:10px!important}.fw-calm-lifestyle .fw-books-focus>section:first-of-type{padding-left:14px!important}}
+
+/* The two focused actions open a real chooser. It belongs to its room and
+   clears the floating nav; older preview/action users are untouched. */
+.fw-calm-chooser{--chooser-rule:#cdbdcf;box-shadow:0 18px 60px #19151029;overscroll-behavior:contain}
+.fw-calm-chooser[data-room=listen]{--chooser-rule:#bbcebf}
+.fw-calm-chooser[data-room=books]{--chooser-rule:#d7d0b8}
+.fw-calm-chooser[data-room=good]{--chooser-rule:#dac9a4}
+.fw-calm-chooser[data-room=yours]{--chooser-rule:#bed0d7}
+.fw-calm-chooser-head{position:relative;padding:23px 62px 16px 22px;background:#fff;border-bottom:1px solid var(--chooser-rule);overflow:hidden}
+.fw-calm-chooser-head:after{content:"";position:absolute;right:46px;top:-16px;width:54px;height:70px;background:url('/images/flora-dream/specimen-iris-v2.webp') 50% 20%/108px auto no-repeat;opacity:.18;mask-image:linear-gradient(#000,transparent 80%);pointer-events:none}
+.fw-calm-chooser[data-room=listen] .fw-calm-chooser-head:after{background-image:url('/images/flora-dream/specimen-bluebell-v2.webp')}
+.fw-calm-chooser[data-room=books] .fw-calm-chooser-head:after{background-image:url('/images/flora-dream/specimen-jasmine-v2.webp')}
+.fw-calm-chooser[data-room=good] .fw-calm-chooser-head:after{background-image:url('/images/flora-dream/specimen-marigold-v2.webp')}
+.fw-calm-chooser[data-room=yours] .fw-calm-chooser-head:after{background-image:url('/images/flora-dream/specimen-forget-me-not-v2.webp')}
+.fw-calm-chooser-head h2{display:block;font:400 clamp(39px,9vw,48px)/1.1 Ephesis,cursive;color:#7a1a12;margin:0}
+.fw-calm-chooser-head p:not(.sr-only){font:500 15px/1.5 "FemWell Editorial","Cormorant Garamond",Georgia,serif;color:#51444e;margin:7px 0 0}
+.fw-calm-chooser>button[aria-label="Close section actions"]{border:1px solid #eae7e0!important;border-radius:50%;background:#fff!important;color:#191510;cursor:pointer}
+.fw-calm-chooser-body{padding:10px 22px 22px}
+.fw-calm-chooser-item{display:block;width:100%;min-height:54px;text-align:left;padding:12px 2px;border:0;border-bottom:1px solid var(--chooser-rule);background:transparent;color:#191510;font:600 18px/1.3 "FemWell Editorial","Cormorant Garamond",Georgia,serif;cursor:pointer;overflow-wrap:anywhere}
+.fw-calm-chooser-item:after{content:"›";float:right;font:500 22px/1 system-ui;margin-left:8px;color:#51444e}
+.fw-calm-chooser .fw-calm-more{margin-top:0;border-bottom:1px solid var(--chooser-rule)}
+.fw-calm-chooser .fw-calm-more>summary{list-style:none;display:flex;justify-content:space-between;align-items:center;min-height:52px;cursor:pointer;font:700 14px/1.4 system-ui;color:#51444e}
+.fw-calm-chooser .fw-calm-more>summary::-webkit-details-marker{display:none}
+.fw-calm-chooser .fw-calm-more>summary:after{content:"+";font:400 22px/1 system-ui}
+.fw-calm-chooser .fw-calm-more[open]>summary:after{content:"−"}
+.fw-calm-chooser :is(button,summary):focus-visible{outline:2px solid #51444e;outline-offset:2px}

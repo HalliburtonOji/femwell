@@ -6,7 +6,7 @@ import { SERIF, UI } from "@/components/journal/Editorial";
 
 // Preview-only action pair. Each action owns a real handler or a real-content chooser.
 const SECTION_ICONS = { sky: [Moon, Settings], read: [BookOpen, Bookmark], listen: [Headphones, Film], books: [Feather, BookOpen], story: [Feather, BookOpen], good: [Clock, Heart], yours: [Bookmark, BookOpen] };
-export default function FocusedSectionActions({ actions, plum, section, routeActive = true }) {
+export default function FocusedSectionActions({ actions, plum, section, routeActive = true, calmLayout = false }) {
   const [active, setActive] = useState(null);
   const [selected, setSelected] = useState(null);
   const opener = useRef(null);
@@ -14,6 +14,8 @@ export default function FocusedSectionActions({ actions, plum, section, routeAct
   routeOwner.current = routeActive;
   const current = active === null ? null : actions[active];
   const afterClose = (run, item) => { setSelected({ run, item }); setActive(null); };
+  const choice = (item, i) => <button key={item.id || i} type="button" className={calmLayout ? "fw-calm-chooser-item" : undefined} onClick={() => afterClose(current.open, item)}
+    style={calmLayout ? undefined : { textAlign: "left", padding: "15px 14px", minHeight: 48, background: "white", border: `1px solid ${C.hair}`, borderRadius: 14, fontSize: 15, lineHeight: 1.4 }}>{item.title || item.name || "Open item"}</button>;
   return <>
     <div aria-label="Section actions" style={{ display: "flex", gap: 10, marginTop: 14 }}>
       {actions.map((action, i) => {
@@ -28,20 +30,20 @@ export default function FocusedSectionActions({ actions, plum, section, routeAct
     <Dialog.Root open={routeActive && active !== null} onOpenChange={(open) => { if (!open) setActive(null); }}>
       <Dialog.Portal>
         <Dialog.Overlay style={{ position: "fixed", inset: 0, background: "rgba(25,20,28,.3)", zIndex: 10000 }} />
-        <Dialog.Content className="fw-clean fw-dialog-cap" onCloseAutoFocus={(event) => {
+        <Dialog.Content className={calmLayout ? "fw-clean fw-dialog-cap fw-calm-chooser" : "fw-clean fw-dialog-cap"} data-room={calmLayout ? section : undefined} onCloseAutoFocus={(event) => {
           event.preventDefault();
           // Leaving a cached page is suspension, not a choice or a focus return.
           if (!routeOwner.current) { setSelected(null); return; }
           opener.current?.focus({ preventScroll: true });
           if (selected) { const next = selected; setSelected(null); next.run(next.item); }
-        }} style={{ position: "fixed", zIndex: 10001, left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: "min(480px, calc(100vw - 24px))", maxHeight: "calc(100dvh - var(--fw-sheet-safe, 100px) - 24px)", overflowY: "auto", background: C.surface, color: C.ink, borderRadius: 24, padding: "26px 20px", fontFamily: UI }}>
-          <Dialog.Title style={{ fontFamily: SERIF, fontSize: 26, paddingRight: 40 }}>{current?.label}</Dialog.Title>
-          <Dialog.Description style={{ fontSize: 14, lineHeight: 1.5, color: C.slate, margin: "10px 0 18px" }}>{current?.description || "Choose something to open here."}</Dialog.Description>
+        }} style={{ position: "fixed", zIndex: 10001, left: "50%", top: calmLayout ? "calc((100dvh - var(--fw-sheet-safe, 100px))/2)" : "50%", transform: "translate(-50%,-50%)", width: "min(480px, calc(100vw - 24px))", maxHeight: calmLayout ? "calc(100dvh - var(--fw-sheet-safe, 100px) - 32px)" : "calc(100dvh - var(--fw-sheet-safe, 100px) - 24px)", overflowY: "auto", background: calmLayout ? "#F5F4F1" : C.surface, color: C.ink, borderRadius: 24, padding: calmLayout ? "0" : "26px 20px", fontFamily: UI }}>
+          <div className={calmLayout ? "fw-calm-chooser-head" : undefined}><Dialog.Title style={calmLayout ? undefined : { fontFamily: SERIF, fontSize: 26, paddingRight: 40 }}>{current?.label}</Dialog.Title>
+          {current?.description || !calmLayout ? <Dialog.Description style={calmLayout ? undefined : { fontSize: 14, lineHeight: 1.5, color: C.slate, margin: "10px 0 18px" }}>{current?.description || "Choose something to open here."}</Dialog.Description> : <Dialog.Description className="sr-only">Choose an item to open.</Dialog.Description>}</div>
           <Dialog.Close aria-label="Close section actions" style={{ position: "absolute", right: 10, top: 10, width: 44, height: 44, display: "grid", placeItems: "center", border: 0, background: "transparent" }}><X size={20} /></Dialog.Close>
-          {(typeof current?.content === "function" ? current.content(afterClose) : current?.content) || (current?.items?.length ? <div style={{ display: "grid", gap: 8 }}>
-            {current.items.map((item, i) => <button key={item.id || i} type="button" onClick={() => afterClose(current.open, item)}
-              style={{ textAlign: "left", padding: "15px 14px", minHeight: 48, background: "white", border: `1px solid ${C.hair}`, borderRadius: 14, fontSize: 15, lineHeight: 1.4 }}>{item.title || item.name || "Open item"}</button>)}
-          </div> : <p role="status" style={{ lineHeight: 1.6 }}>{current?.empty || "There is nothing here yet. Try another section while your collection grows."}</p>)}
+          <div className={calmLayout ? "fw-calm-chooser-body" : undefined}>{(typeof current?.content === "function" ? current.content(afterClose) : current?.content) || (current?.items?.length ? <div style={{ display: "grid", gap: calmLayout ? 0 : 8 }}>
+            {current.items.slice(0, calmLayout ? 3 : undefined).map(choice)}
+            {calmLayout && current.items.length > 3 && <details className="fw-calm-more"><summary>{`More choices · ${current.items.length - 3}`}</summary><div>{current.items.slice(3).map((item, i) => choice(item, i + 3))}</div></details>}
+          </div> : <p role="status" style={{ lineHeight: 1.6 }}>{current?.empty || "There is nothing here yet. Try another section while your collection grows."}</p>)}</div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

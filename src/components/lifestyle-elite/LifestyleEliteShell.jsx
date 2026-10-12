@@ -1400,7 +1400,7 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
   sectionActions.story = sectionActions.books;
   const landingGroups = [{ key: "foryou", label: "For you today", accent: "gold", items: forYouItems, open: setExpanded, sectioned: true }];
   // One action pair, in the review's earlier position OR the original position.
-  const focusedActions = previewActions && clean && focus ? <FocusedSectionActions routeActive={routeActive} key={focusSection} section={focusSection} plum={plum} actions={sectionActions[focusSection]} /> : (
+  const focusedActions = previewActions && clean && focus ? <FocusedSectionActions routeActive={routeActive} key={focusSection} section={focusSection} calmLayout={calmLayout} plum={plum} actions={sectionActions[focusSection]} /> : (
     <div aria-label={foldVariant ? "Section actions" : undefined} style={{ display: "flex", gap: 10, marginTop: 14 }}>
       <button onClick={openTodaysChapter} className="fw-elite-press" style={clean ? { ...focusPill(plum), background: plum, boxShadow: "none", border: "none" } : focusPill(crimson)}><Feather size={16} /> Today's chapter</button>
       <button onClick={() => jumpTo(0)} className="fw-elite-press" style={clean ? { ...focusPill(gold), background: C.gold, boxShadow: "none", border: "none" } : focusPill(plum)}><Clock size={16} /> What do you have time for?</button>
