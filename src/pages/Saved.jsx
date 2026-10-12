@@ -227,7 +227,7 @@ export default function Saved() {
           <h1 className="fw-display">
             Saved
           </h1>
-          <p style={{ fontSize: calm ? 15 : 13, color: calm ? "#51444e" : "var(--mauve)", marginTop: "6px" }}>
+          <p style={{ fontSize: calm ? 15 : 13, fontFamily:calm?"system-ui":undefined,fontWeight:calm?500:undefined, color: calm ? "#51444e" : "var(--mauve)", marginTop: "6px" }}>
             {calm ? "Good things, still here when you want them." : "Advice, lifestyle finds, sessions, and programs."}
           </p>
         </div>

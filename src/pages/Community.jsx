@@ -3373,6 +3373,7 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
 
 export default function Community() {
   const navigate = useNavigate();
+  const calmPreviewReturn = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("appearance") === "calm";
   // LIVE PROMOTION (2026-07-08): /Community renders the 4-shelf REDESIGN home on the
   // canonical §6.8.2 page template + the finished Talk rooms (enhanced) + the calm
   // "safe on the surface" model + inclusive wording + light 18+ gate. It is a strict
@@ -3382,7 +3383,7 @@ export default function Community() {
   // ONE-LINE REVERT: change homeVariant="redesign" back to homeVariant="classic" (or
   // drop the prop) — the classic Home component is kept verbatim below as the fallback.
   return (
-    <AgeGate surfaceName="the Community" onDecline={() => navigate("/Today")}>
+    <AgeGate surfaceName="the Community" onDecline={() => calmPreviewReturn && window.history.length > 1 ? navigate(-1) : navigate("/Today")}>
       <CommunityInner homeVariant="redesign" />
     </AgeGate>
   );

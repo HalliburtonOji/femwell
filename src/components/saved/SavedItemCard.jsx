@@ -27,8 +27,8 @@ export function calmSavedDestination(href) {
 
 function shortPreview(value) {
   const text = String(value || "").trim();
-  if (text.length <= 180) return text;
-  return `${text.slice(0, 170).replace(/\s+\S*$/, "").trim()}…`;
+  if (text.length <= 112) return text;
+  return `${text.slice(0, 105).replace(/\s+\S*$/, "").trim()}…`;
 }
 
 export default function SavedItemCard({ item, onRemove, disabled = false, calm = false }) {
@@ -49,7 +49,7 @@ export default function SavedItemCard({ item, onRemove, disabled = false, calm =
             <BookmarkCheck className="h-3.5 w-3.5" /> {item.item_type.toLowerCase()}
           </div>
           <h3 className="mt-3 text-base font-semibold" style={calm ? {fontFamily:'"FemWell Editorial","Cormorant Garamond",Georgia,serif',fontSize:23,lineHeight:1.18,color:"#51444e"} : { color: "var(--plum)" }}>{item.title}</h3>
-          {item.preview_text && <><p className="mt-2 text-sm leading-relaxed" style={calm ? {fontFamily:'"FemWell Editorial","Cormorant Garamond",Georgia,serif',fontSize:17,lineHeight:1.42,color:"#51444e"} : { color: "var(--mauve)" }}>{preview}</p>{calm && preview !== item.preview_text.trim() && <details style={{marginTop:8,color:"#51444e",fontSize:14}}><summary style={{cursor:"pointer",minHeight:44,alignContent:"center",fontWeight:700}}>Read the full note</summary><p style={{lineHeight:1.55}}>{item.preview_text}</p></details>}</>}
+          {item.preview_text && <><p className="mt-2 text-sm leading-relaxed" style={calm ? {fontFamily:'system-ui',fontSize:14,lineHeight:1.48,color:"#51444e"} : { color: "var(--mauve)" }}>{preview}</p>{calm && preview !== item.preview_text.trim() && <details style={{marginTop:8,color:"#51444e",fontSize:14,fontFamily:"system-ui"}}><summary style={{cursor:"pointer",minHeight:44,alignContent:"center",fontWeight:700}}>Read the full note</summary><p style={{lineHeight:1.55}}>{item.preview_text}</p></details>}</>}
           {validSavedDate && <p className="mt-3 text-xs" style={{ color: "var(--mauve)", opacity: 0.6 }}>Saved {new Date(savedDate).toLocaleDateString("en-GB")}</p>}
         </div>
         <button
