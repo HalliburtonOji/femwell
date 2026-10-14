@@ -43,10 +43,10 @@
   },
   "manualContent": {
     "id": "LIFESTYLE-CONTENT-2026-10-14",
-    "stage": "LC01 Ideas candidate deployed; signed-in mobile proof pending",
-    "nextAtom": "LC02 source-to-ending Read recommendation, then Listen",
-    "proofGate": "Obtain an authorised signed-in 360/390/430 session, tap first and More cards, playback/reader Close and exact return; self-critique before calling LC01 ready.",
-    "carryForward": ["LR09 Saved owner read errors", "B01-S03-A05 reader/secondary returns", "generator publication/cadence decision", "C06 request and paid-unit measurement"],
+    "stage": "LC02 Read/Listen source-to-ending Ideas slice deployed and bounded 360/390/430 proof recorded; full content reset incomplete",
+    "nextAtom": "LC03 editorial source/provenance review and video duration/playback quality, then Books/Good life/Yours/Sky choice logic",
+    "proofGate": "Continue source-by-source editorial audit and exact secondary returns; verify metadata and full runtime before calling a video substantial. Keep Saved LR09 and reader A05 open. Main visual promotion requires Halli's explicit approval.",
+    "carryForward": ["LR09 Saved owner read errors", "B01-S03-A05 reader/secondary returns", "daily generator workflow still invokes no-op", "custom-generation weekly limit enforcement unproved", "C06 request and paid-unit measurement", "YouTube runtime and physical iPhone unproved"],
     "automation": "PAUSED; manual work only"
   },
   "baseline": {
@@ -54,9 +54,9 @@
     "liveBundle": "index-OD-gjaX_.js"
   },
   "current": {
-    "section": "Lifestyle / Saved source read recovery and exact secondary returns",
-    "atom": "MANUAL-ROOMS-LR09-SAVED-OWNER-READ-DIAGNOSIS",
-    "status": "Manual LR01–LR08 Ideas source through 39f9449/public index-CWAUxFER.js. Three-width representative room/pixel/tap checks and final 390 Books Talk/Club preview gate and exact decline returns passed. Full Saved still reports two source-read errors in the authenticated browser after a bounded revisit; actual SDK/network or platform log cause unproved. Next diagnose/recover those reads, then reprove Saved items/links and continue reader A05, Good-life relevance and directory cost review. No age attestation. Main held, automation PAUSED; this is a manual review boundary, not every-tap or whole-app completion."
+    "section": "Lifestyle / Read and Listen content flow",
+    "atom": "LC03-SOURCE-REVIEW-VIDEO-METADATA-AND-EXACT-ENDINGS",
+    "status": "LC02 Ideas-only choice composition, scheduled generator hold and shared reader Close repair deployed on 14 October. Signed-in 360/390/430 representative Read/Listen tap, Browse, source and return paths checked; in-room Yoga iframe mounted and appeared playing, podcast started then was closed. Full video runtime, wider source accuracy, physical iPhone, Saved LR09, reader A05 and C06 remain open. Next LC03 source/provenance and duration gate. Main visual held; four-hour automation PAUSED."
   },
   "lastCompleted": {
     "run": 5,
