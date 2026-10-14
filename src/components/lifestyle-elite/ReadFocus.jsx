@@ -40,13 +40,15 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
   const summary = `${continueCards.length ? `${continueCards.length} on the go · ` : ""}${articleCards.length} fresh read${articleCards.length === 1 ? "" : "s"}${!presentation && phaseWord ? ` tuned to your ${phaseWord} week` : ""}${storyCards.length ? ` · ${storyCards.length} to lose yourself in` : ""}.`;
 
   if (calmLayout) {
-    // A saved place is the strongest honest recommendation we have. A complete
-    // story is the contrasting choice; the full article/history list stays one tap away.
+    // A saved place is the strongest honest recommendation we have. An original
+    // whole-life essay changes the subject from the existing fiction-heavy
+    // archive; the full article/history list stays one tap away.
     const namedResume = continueCards.find(item => !/^Project Gutenberg book \d+$/i.test(item.title || ""));
     const labelledFiction = storyCards.find(item => /fiction/i.test(item._raw?.author_name || item.sourceName || ""));
+    const editorialDraft = articleCards.find(item => item._raw?.editorial_local);
     const primary = namedResume || continueCards[0] || featured || labelledFiction || storyCards[0];
-    const alternate = continueCards.includes(primary) ? labelledFiction || featured
-      : storyCards.includes(primary) ? featured : labelledFiction;
+    const alternate = continueCards.includes(primary) ? editorialDraft || labelledFiction || featured
+      : storyCards.includes(primary) ? editorialDraft || featured : labelledFiction;
     const second = alternate?.id === primary?.id ? null : alternate;
     const used = new Set([primary?.id, second?.id]);
     const remaining = [
@@ -58,11 +60,11 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
     return <ReadCard className="fw-selected-reading-choice" eyebrow="Your next page" title={primaryIsResume ? "Pick up here" : "Start here"} accent="plum">
       {presentation && <SelectedRoomDetail section="read"/>}
       <p style={{ fontFamily: SERIF, color: C.slate, margin: "0 0 12px", lineHeight: 1.45 }}>
-        {primaryIsResume ? "Your place is saved on this device." : storyCards.includes(primary) ? "A story from the current shelf." : "A complete read from today's shelf."}
+        {primaryIsResume ? "Your bookmark did the remembering." : storyCards.includes(primary) ? "A story from the current shelf." : primary?._raw?.editorial_local ? "An original Ideas draft. Read the whole thing; tell us if it belongs." : "A complete read from the shelf."}
       </p>
       <CalmFindRow item={primary} onOpen={onOpen} onDetails={onDetails} label={primaryIsResume ? "Continue" : "Read"}/>
       {second && <div style={{ marginTop: 16 }}>
-        <p style={{ fontFamily: SERIF, color: C.slate, margin: "0 0 6px", lineHeight: 1.4 }}>Or take a different page.</p>
+        <p style={{ fontFamily: SERIF, color: C.slate, margin: "0 0 6px", lineHeight: 1.4 }}>{second?._raw?.editorial_local ? "Or, something from the FemWell desk." : "Or take a different page."}</p>
         <CalmFindRow item={second} onOpen={onOpen} onDetails={onDetails} label="Read"/>
       </div>}
       <CalmMore enabled={remaining.length > 0} title={`Browse all reading · ${remaining.length}`}>

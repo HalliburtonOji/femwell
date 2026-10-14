@@ -18,6 +18,12 @@ const durOf = (it) => {
   return m ? String(m[1]) : null;
 };
 
+// One publisher-checked actual episode, not a show homepage or a keyword guess.
+// The full changing RSS catalogue remains in Browse when this edition drops out.
+const isCheckedRoundtable = card => card?.audioSrc
+  && /how to fail with elizabeth day/i.test(card.sourceName || "")
+  && /mel giedroyc and aj odudu/i.test(card.title || "");
+
 function ListenCard({ eyebrow, title, accent = "sage", children, style, className }) {
   // CLEAN (§2.7): one shared clean surface — white, a single soft lift, a gold eyebrow carrying its
   // colourway meaning-rosette (the per-card floral detail Halli kept). No texture, no rainbow rim.
@@ -43,7 +49,7 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, 
   // two-hour external health lecture in the first slot when the live RSS pool
   // was empty. Keep the active episode first and every external source below.
   const featured = active || (calmLayout
-    ? audioCards.find(card => card.audioSrc) || videoCards[0] || audioCards[0]
+    ? audioCards.find(isCheckedRoundtable) || audioCards.find(card => card.audioSrc) || videoCards[0] || audioCards[0]
     : audioCards[0] || videoCards[0]) || null;
   const restAudio = audioCards.filter(card=>card.id!==featured?.id);
   const watches = presentation && featured === videoCards[0] ? videoCards.slice(1) : videoCards;
@@ -73,11 +79,11 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, 
     const moreAudio = restAudio.filter(item => !used.has(item.id));
     const moreWatches = watches.filter(item => !used.has(item.id));
     const moreCount = moreAudio.length + moreWatches.length;
-    return <ListenCard className="fw-selected-listening-choice" eyebrow={active ? player?.isPlaying ? "On air" : "Pick up your listen" : featured?.type === "video" ? "Watch here" : externalLead ? "Listen elsewhere" : "Worth your headphones"} title={featured?.type === "video" ? "Put this on" : externalLead ? "Choose a show" : "Press play"} accent="sage">
+    return <ListenCard className="fw-selected-listening-choice" eyebrow={active ? player?.isPlaying ? "On air" : "Pick up your listen" : featured?.type === "video" ? "Watch here" : externalLead ? "Listen elsewhere" : isCheckedRoundtable(featured) ? "From the listening desk" : "Worth your headphones"} title={featured?.type === "video" ? "Put this on" : externalLead ? "Choose a show" : "Press play"} accent="sage">
       {presentation && <SelectedRoomDetail section="listen"/>}
       {featured && <>
         <p style={{ fontFamily: SERIF, color: C.slate, margin: "0 0 12px", lineHeight: 1.45 }}>
-          {active ? "Your last listen is ready where you left it." : featured.audioSrc ? "An episode, ready here in the app." : featured.type === "video" ? "A watch, ready here in the app." : "This show opens at its source."}
+          {active ? "Your last listen is ready where you left it." : isCheckedRoundtable(featured) ? "Mel, AJ and Elizabeth on friendship, reinvention and being seen. Forty-five minutes, right here." : featured.audioSrc ? "An episode, ready here in the app." : featured.type === "video" ? "A watch, ready here in the app." : "This show opens at its source."}
         </p>
         <CoverCard presentation={presentation} previewText="" item={featured} onOpen={() => onOpen?.(featured)}/>
       </>}

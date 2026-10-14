@@ -78,6 +78,7 @@ import { buildBookChapters } from "@/components/lifestyle/bookChapters";
 import { getMoonPhase } from "@/utils/astrology";
 import ReadingColumn from "@/components/brand/ReadingColumn";
 import { LIFESTYLE_VIDEOS } from "@/data/lifestyleVideos";
+import { LIFESTYLE_EDITORIAL_DRAFTS } from "@/data/lifestyleEditorialDrafts";
 // the REAL curated shows (12, with Apple/Spotify deep-links) — the rail already owned them;
 // this page had been carrying a 2-item stub instead. Correcting that.
 import { EXTERNAL_PODCASTS } from "@/components/lifestyle/listen/ExternalPodcastsRail";
@@ -658,7 +659,7 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
   // never records the seeded fallback (no raw id). Reuses recordLifestyleAction (existing fn).
   const recordAction = useCallback((rawOrItem, action) => {
     const raw = rawOrItem?.raw || rawOrItem;
-    if (!raw?.id || String(raw.id).startsWith("seed-") || String(raw.id).startsWith("gut-")) return;
+    if (!raw?.id || raw.editorial_local || String(raw.id).startsWith("seed-") || String(raw.id).startsWith("gut-")) return;
     try { base44.functions.invoke("recordLifestyleAction", { item_id: raw.id, action, category: raw.category || "", source_id: raw.source_id || raw.source_name || "" }).catch(() => {}); } catch { /* ignore */ }
   }, []);
 
@@ -971,8 +972,9 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
     sourceName: r.source_name || r.author_name || "FemWell",
     imageUrl: r.image_url || undefined,
     duration: Number(r.duration_seconds) || undefined,
+    ...(r.editorial_local ? { saveable: false } : {}),
     _raw: r,
-    actions: focusedPreview && type !== "book" && !r.lede && !r.chapters_json?.length && !r.content_url && !r.source_url && !r.audio_url && !r.episode_url && !r.video_id ? [] : [{
+    actions: r.editorial_local || (focusedPreview && type !== "book" && !r.lede && !r.chapters_json?.length && !r.content_url && !r.source_url && !r.audio_url && !r.episode_url && !r.video_id) ? [] : [{
       label: type === "video" ? ((r.video_id && r.is_embeddable !== false && !isTikTok(r)) ? "Open full-screen" : "Watch")
         : type === "audio" ? "Open episode" : type === "book" ? "Open reader" : "Read this",
       Icon: type === "video" ? "Film" : type === "audio" ? "Headphones" : type === "book" ? "Book" : "BookOpen",
@@ -991,7 +993,8 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
       for (const row of candidates) (contentBodyOf(row).length ? readable : thin).push(row);
       return [...readable, ...thin];
     })() : candidates;
-    return ordered.slice(0, 6).map((r) => rowCard(r, "article"));
+    const published = ordered.slice(0, 6).map((r) => rowCard(r, "article"));
+    return calmLayout ? [...LIFESTYLE_EDITORIAL_DRAFTS.map((r) => rowCard(r, "article")), ...published] : published;
   }, [grouped, rowCard, selectedPresentation, feed, calmLayout]);
   const storyCards = useMemo(() => (grouped.story || []).slice(0, 6).map((r) => rowCard(r, "daily_story")), [grouped, rowCard]);
   // CONTINUE READING cards — lead the Read board with what she's part-way through. The eyebrow
@@ -1026,13 +1029,13 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
   const audioCards = useMemo(() => {
     const real = (grouped.audio || []).slice(0, 6).map((r) => rowCard(r, "audio"));
     const ext = EXTERNAL_PODCASTS.slice(0, 6).map((pd) => ({
-      id: pd.id, type: "audio", title: pd.title,
-      subtitle: pd.show, category: "listen podcast rest",
+      id: pd.id, type: "audio", title: calmLayout ? pd.show : pd.title,
+      subtitle: calmLayout ? "Choose an episode at the source" : pd.show, category: "listen podcast rest",
       // the show's own blurb — real words, so the card is never thin (6a)
-      summary: pd.summary || "",
-      meta: [["Headphones", pd.show], ["Clock", pd.duration || "A long listen"]],
+      summary: calmLayout ? "A show directory, not a particular episode. Open its source to see the current episodes and their lengths." : pd.summary || "",
+      meta: [["Headphones", pd.show], ["Clock", calmLayout ? "Episode lengths vary" : pd.duration || "A long listen"]],
       chips: ["podcast", "show"],
-      body: pd.summary ? [pd.summary] : [],
+      body: calmLayout ? [] : pd.summary ? [pd.summary] : [],
       // honest: this one lives on Spotify/Apple, so we say so and send her there properly
       external: true,
       actions: [
@@ -1055,7 +1058,7 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
       // hand-picked and verified embeddable → it plays HERE, like everything else
       id: v.id, type: "video", title: v.title, subtitle: v.channel_name, youtubeId: v.video_id,
       summary: v.summary || `${v.channel_name} · watch the full video on YouTube.`,
-      meta: [["Film", durLabel(v) || "A short watch"], ["Play", v.channel_name]], chips: ["watch"],
+      meta: [["Film", calmLayout ? `Creator lists ${durLabel(v) || "an unverified length"}` : durLabel(v) || "A short watch"], ["Play", v.channel_name]], chips: ["watch"],
       body: [],
       actions: [{ label: "Open on YouTube", Icon: "Film", primary: false, onClick: () => openExternal(v.content_url) }],
     }));

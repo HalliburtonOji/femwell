@@ -69,6 +69,18 @@ describe("calmer lists preserve exact source tasks", () => {
     expect(onOpen).toHaveBeenCalledTimes(8);
   });
 
+  it("offers a whole-life editorial draft beside a saved fiction place without hiding the story", () => {
+    const onOpen=vi.fn();
+    const saved={id:"saved",title:"The Shape of Starting Over",type:"book",_continue:{id:"saved"}};
+    const essay={id:"essay",title:"The plans you actually want to keep",type:"article",_raw:{id:"essay",editorial_local:true},saveable:false};
+    const story={id:"story",title:"The Tuesday Decision",type:"daily_story",_raw:{id:"story",author_name:"FemWell Fiction"}};
+    render(<ReadFocus calmLayout presentation="focused" continueCards={[saved]} articleCards={[essay]} storyCards={[story]} onOpen={onOpen}/>);
+    fireEvent.click(screen.getByRole("button",{name:/The plans you actually want to keep.*Read/}));
+    expect(onOpen).toHaveBeenCalledExactlyOnceWith(essay);
+    fireEvent.click(screen.getByText("Browse all reading · 1"));
+    expect(screen.getByRole("button",{name:/The Tuesday Decision.*Read/})).toBeVisible();
+  });
+
   it("keeps one direct watch alternative and the remaining exact media behind Browse", () => {
     const onOpen=vi.fn();
     const audio=[0,1,2].map(i=>({id:`audio-${i}`,type:"audio",title:`Episode ${i}`,audioSrc:`https://example.test/${i}.mp3`,duration:2400,meta:[["Clock","40 min"]],actions:[]}));
@@ -83,6 +95,18 @@ describe("calmer lists preserve exact source tasks", () => {
     expect(screen.getByText("Episode 2")).toBeVisible();
     fireEvent.click(screen.getAllByRole("button",{name:/Film 1/}).at(-1));
     expect(onOpen).toHaveBeenLastCalledWith(videos[1]);
+  });
+
+  it("leads with the checked actual roundtable instead of an unrelated playable episode", () => {
+    const unrelated={id:"other",type:"audio",title:"A lunch room for life",audioSrc:"https://example.test/other.mp3",sourceName:"Elsewhere",meta:[],actions:[]};
+    const checked={id:"roundtable",type:"audio",title:"Mel Giedroyc and AJ Odudu on Body Confidence, Midlife Reinvention and Female Friendship",audioSrc:"https://example.test/roundtable.mp3",sourceName:"How To Fail With Elizabeth Day",meta:[],actions:[]};
+    const watch={id:"watch",type:"video",title:"A different watch",youtubeId:"known-video",meta:[],actions:[]};
+    render(<ListenFocus calmLayout presentation="focused" audioCards={[unrelated,checked]} videoCards={[watch]} onOpen={vi.fn()}/>);
+    expect(screen.getByText("From the listening desk")).toBeVisible();
+    expect(screen.getByText(/Mel, AJ and Elizabeth on friendship/)).toBeVisible();
+    expect(screen.getByText(unrelated.title)).not.toBeVisible();
+    fireEvent.click(screen.getByText("Browse all listens & watches · 1"));
+    expect(screen.getByText(unrelated.title)).toBeVisible();
   });
 
   it("does not feature an external lecture when a watch is the only directly playable choice", () => {
