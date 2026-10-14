@@ -1,5 +1,7 @@
 # Creative context — read alongside the canonical Bible
 
+14 October: Halli requests a ground-up content/flow reset across Lifestyle and asks the design agent to inspect [this X motion stack](https://x.com/skunzu/status/2110097012339200134). The bounded Creative Director review found that better selection and complete consumption journeys outrank new animation. Its section-by-section brief is recorded in `claude-state/critique/lifestyle-content-2026-10-14.md`; library-by-library evaluation is in `claude-state/creative/motion-stack-2026-10-14.md`. Codex can use the same JavaScript libraries; no automatic installation or continuous critic. Existing Framer Motion is the first interaction prototype, only if a measured phone job warrants it. Canon §10.5.29. Main and scheduler remain held.
+
 Halli requested a dedicated Creative agent on 6 October 2026. Role: .claude/agents/creative-director.md. This file records evidence and pointers, not a second brand system.
 
 ## What Halli wants

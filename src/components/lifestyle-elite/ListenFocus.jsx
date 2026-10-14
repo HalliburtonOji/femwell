@@ -75,18 +75,18 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, 
       {restAudio.length ? (
         <ListenCard className="fw-selected-audio" eyebrow="For the kettle or the commute" title="Podcasts & shows" accent="sage">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {restAudio.slice(0, calmLayout ? 3 : undefined).map(renderAudio)}
-            <CalmMore enabled={calmLayout && restAudio.length > 3} title={`More listens · ${Math.max(0, restAudio.length - 3)}`}>{calmLayout && restAudio.slice(3).map(renderAudio)}</CalmMore>
+            {restAudio.slice(0, calmLayout ? 1 : undefined).map(renderAudio)}
+            <CalmMore enabled={calmLayout && restAudio.length > 1} title={`More listens · ${Math.max(0, restAudio.length - 1)}`}>{calmLayout && restAudio.slice(1).map(renderAudio)}</CalmMore>
           </div>
         </ListenCard>
       ) : null}
 
       {/* 3 · WATCH & TRENDING */}
       {watches.length ? (
-        <ListenCard className="fw-selected-watch" eyebrow="Something worth watching" title="Watch & trending" accent="gold">
+        <ListenCard className="fw-selected-watch" eyebrow="A proper watch" title={calmLayout ? "Watch something longer" : "Watch & trending"} accent="gold">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {watches.slice(0, calmLayout ? 2 : undefined).map(renderWatch)}
-            <CalmMore enabled={calmLayout && watches.length > 2} title={`More to watch · ${Math.max(0, watches.length - 2)}`}>{calmLayout && watches.slice(2).map(renderWatch)}</CalmMore>
+            {watches.slice(0, calmLayout ? 1 : undefined).map(renderWatch)}
+            <CalmMore enabled={calmLayout && watches.length > 1} title={`More to watch · ${Math.max(0, watches.length - 1)}`}>{calmLayout && watches.slice(1).map(renderWatch)}</CalmMore>
           </div>
         </ListenCard>
       ) : null}

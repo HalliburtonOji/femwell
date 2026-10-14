@@ -50,6 +50,10 @@ describe("calmer lists preserve exact source tasks", () => {
     const onOpen = vi.fn(), onDetails = vi.fn();
     const rows = Array.from({ length: 7 }, (_, i) => ({ id: `source-${i}`, title: `Complete source ${i}`, type: "article", body: [`Full unshortened source ${i}.`], _raw: { id: `raw-${i}` } }));
     render(<ReadFocus calmLayout presentation="focused" articleCards={rows.slice(0, 4)} storyCards={rows.slice(4)} continueCards={[]} onOpen={onOpen} onDetails={onDetails}/>);
+    expect(screen.getByText(rows[3].title)).not.toBeVisible();
+    expect(screen.getByText(rows[6].title)).not.toBeVisible();
+    fireEvent.click(screen.getByText("More reads & guides · 2"));
+    fireEvent.click(screen.getByText("More stories · 2"));
     for (const row of rows.slice(1)) {
       fireEvent.click(screen.getByRole("button", { name: new RegExp(`^${row.title}.*Read$`) }));
       expect(onOpen).toHaveBeenLastCalledWith(row);

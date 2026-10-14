@@ -982,7 +982,17 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
     };
   }, [openItem, openExternal, openBook,focusedPreview]);
 
-  const articleCards = useMemo(() => rankedReads(selectedPresentation ? (feed || []).filter(r=>["article","guide"].includes(lfTypeOf(r))) : [], [...(grouped.article || []), ...(grouped.guide || [])]).slice(0, 6).map((r) => rowCard(r, "article")), [grouped, rowCard, selectedPresentation, feed]);
+  const articleCards = useMemo(() => {
+    const candidates = rankedReads(selectedPresentation ? (feed || []).filter(r=>["article","guide"].includes(lfTypeOf(r))) : [], [...(grouped.article || []), ...(grouped.guide || [])]);
+    // The Ideas preview gives its lead to an actual readable source, not simply
+    // the highest-engagement teaser. Existing candidate cards keep their actions.
+    const ordered = calmLayout ? (() => {
+      const readable = [], thin = [];
+      for (const row of candidates) (contentBodyOf(row).length ? readable : thin).push(row);
+      return [...readable, ...thin];
+    })() : candidates;
+    return ordered.slice(0, 6).map((r) => rowCard(r, "article"));
+  }, [grouped, rowCard, selectedPresentation, feed, calmLayout]);
   const storyCards = useMemo(() => (grouped.story || []).slice(0, 6).map((r) => rowCard(r, "daily_story")), [grouped, rowCard]);
   // CONTINUE READING cards — lead the Read board with what she's part-way through. The eyebrow
   // says "Continue reading", the meta says where she is, and tapping resumes IN PLACE (the same
@@ -1033,13 +1043,18 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
     return [...real, ...ext];
   }, [grouped, rowCard, openExternal]);
   const videoCards = useMemo(() => {
-    // rotate a fresh handful of real watches each day — bodied ones first (see playableVideos)
-    const real = rotateDaily(playableVideos(grouped.video), 4).map((r) => rowCard(r, "video"));
+    // A long blurb is not proof of a substantial watch. In the Ideas preview,
+    // unknown-length/short clips stay in the full watch directory, not the lead.
+    const candidateVideos = calmLayout
+      ? playableVideos(grouped.video).filter(r=>Number(r.duration_seconds) >= 300 && stripHtml(r.summary || "").length >= 120)
+      : playableVideos(grouped.video);
+    const real = rotateDaily(candidateVideos, 4).map((r) => rowCard(r, "video"));
     // off-platform watches (YouTube/TikTok) are `external` — never fake-embedded, always an honest link-out
-    const curated = real.length ? [] : LIFESTYLE_VIDEOS.slice(0, 4).map((v) => ({
+    const fallbackVideos = calmLayout ? LIFESTYLE_VIDEOS.filter(v=>/^\d+\s*min\b/i.test(v.duration_label || "")) : LIFESTYLE_VIDEOS;
+    const curated = real.length ? [] : fallbackVideos.slice(0, 4).map((v) => ({
       // hand-picked and verified embeddable → it plays HERE, like everything else
       id: v.id, type: "video", title: v.title, subtitle: v.channel_name, youtubeId: v.video_id,
-      summary: v.summary || "A hand-picked watch from a channel we trust — it opens on YouTube, where it lives.",
+      summary: v.summary || `${v.channel_name} · watch the full video on YouTube.`,
       meta: [["Film", durLabel(v) || "A short watch"], ["Play", v.channel_name]], chips: ["watch"],
       body: [],
       actions: [{ label: "Open on YouTube", Icon: "Film", primary: false, onClick: () => openExternal(v.content_url) }],
@@ -1051,8 +1066,8 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
       body: [],
       actions: [{ label: "Open", Icon: "ChevronRight", primary: true, onClick: () => openExternal(t.content_url) }],
     }));
-    return [...curated, ...real, ...tik];
-  }, [grouped, rowCard, openExternal]);
+    return [...curated, ...real, ...(calmLayout ? [] : tik)];
+  }, [grouped, rowCard, openExternal, calmLayout]);
   const shelfBookCards = useMemo(() => {
     const daily = story ? [{
       id: "daily-chapter", type: "daily_story", title: story.series_title || story.title || "Today's chapter",

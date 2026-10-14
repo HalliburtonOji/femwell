@@ -1,0 +1,47 @@
+# Lifestyle content and flow reset — 14 October 2026
+
+Status: mapped and researched; first preview build pending. Main `/Lifestyle` and production automation remain unchanged. This is a manual, Ideas-first batch, not a recurring audit.
+
+## The actual problem
+
+The calmer room design still feeds too much unqualified material. `LifestyleEliteShell.loadContent` asks for 60 top-engagement items, 60 recent podcasts, 24 fiction items and 80 top-engagement videos, plus story/horoscope. It subscribes to all `LifestyleItems` changes and reloads that set. `getLifestyleFeed` adds recency, category interactions and phase to article/guide ranking; it does not prove a piece is useful, complete, sourced or reachable. In the selected shell, a video qualifies as a flagship if it has a 120-character summary, otherwise **any** embeddable `video_id` can fill the slot. `rotateDaily` then rotates four. The watch directory still queries hundreds of rows. These are source findings, not measured user outcomes.
+
+Read-only live sample on 14 October: 45 of the top 60 engagement rows were video, only 15/60 had a body of at least 500 characters, and none of those 60 had known duration. In a separate top-80 video sample, none had `duration_seconds`; nine had a summary of at least 120 characters. This sample does not prove every published row is short or dead. It does show why the existing quality proxy cannot distinguish a substantial watch from a Short. A recent-100 sample was 50 fiction, 22 stories, 21 articles and seven guides, predominantly scheduled FemWell AI; source arrays/URLs were absent in that query. Audit full source text before judging individual factual pieces. Podcast sample: 32/60 had duration; the player and episode links exist. The user has personally encountered a roughly 20-second video and non-destinations; each affected item must be reproduced by ID before a repair is certified.
+
+Preview-only first pass: the featured live-video gate now requires a stored runtime of at least five minutes plus a substantive summary. Since sampled live rows lack runtime, the sparse fallback offers two existing hand-picked videos whose creator titles say 20 and 10 minutes; fresh YouTube oEmbed confirms their current titles/channels, **not** exact playback or runtime. This is a candidate pending real tap/frame proof, not a certified curated library. Full watch browse remains accessible.
+
+The production content workflow `Generate FemWell Content (2x weekly).jsonc` says twice weekly but its cron is daily. The generator publishes AI articles, fiction and first-person essays directly, and asks for a real book quotation without a verified source check. This is a cost, provenance and voice decision for Halli. Do not silently change the job or delete records. Existing article/story reader, podcast player, video directory, keeps, plans and exact returns remain part of the inventory.
+
+## Board and build order
+
+| Atom | User job and visible shape | Producer → action → consumer | Gate |
+|---|---|---|---|
+| C01 · choose well | One *real* suggested item in each room with a short reason tied to an actual signal (saved place, chosen interest, available time or dated editorial choice). No claim of personalisation when absent. | `LifestyleItems`/owned state → Read/Play → exact reader/player → keep/return/Planner/Jess | Source body or playable duration and destination verified; sparse is honest. |
+| C02 · browse by intent | Optional choice beside the lead, not stacked shelves: “A quick read / sink into a story”, “Commute / quiet / move”, “Tonight / weekend”. Keep full libraries in existing directories. | Existing content pools → intent filter → same exact item and return | One or fewer extra taps for frequent actions; no empty filter masquerading as content. |
+| C03 · watch quality | Short clips are not the default Listen recommendation. Show known length and a real reason; unknown-length clips can remain in the full directory with honest label until audited. | Ingestion/YouTube metadata → verified media row → inline player/close | `duration_seconds`, embeddability and playback time measured; no paid per-render lookup. |
+| C04 · editorial trust | Separate source-backed factual reads, original fiction, opinion and real personal testimony. Avoid AI prose pretending to be a person's lived account; retain historical content pending review. | Generator/editorial review → published edition → source/read/keep | Verified facts/quotes and visible provenance. This and schedule changes need Halli's decision. |
+| C05 · full room reach | Every section's lead, More, sheet, help and old destination remains beautiful, direct and functional. | All six sections + eleven Good-life rooms ↔ Today/Planner/Community/Jess/Saved | 360/390/430 real open/action/close/return, then P0/P1/P2 reproof. |
+| C06 · affordable growth | Avoid 224-row eager loads and whole-entity subscription refetches when a room needs only a few candidates. Keep complete history in exact libraries. | Query fan-out, row/byte sizes, frequency, edition reuse → bounded reads | Measure before/after calls, rows, bytes, paid units; no invented £ or user count. |
+
+Read/Listen first, then Books/Good life/Yours/Sky shared content states; cross-room flows after each room. Reconcile LR09 Saved-owner failure and reader A05 as carry-over, not reset. An item may be removed from a *featured slot* after evidence while its full source/history remains accessible; Halli has authorised reducing crowding, not silent loss of meaningful capability.
+
+## Design contract
+
+One compelling suggestion and one alternate decision at first glance. The reason occupies one line: “Pick up page 12”, “Twenty minutes of movement”, or “You kept this topic”; never “Because of your phase” by default. Exact action says Read, Play, Continue or Open source. Duration is shown only when known. On tap, consume in place or open the exact clean owner with a close/return. Full body, notes, saves and older editions live in their actual reader/player, not teaser paragraphs on the board. Empty state tells the truth and offers the existing directory or another room. Do not invent a video, podcast, book or personal testimony to fill a shelf.
+
+The visual grammar stays room-specific: iris reading margin, bluebell player cadence, jasmine book table, marigold time/light, forget-me-not keeps and morning-glory Moon. Motion belongs to an interaction or atmosphere; it must not make selection slower or consume reading space. See `creative/motion-stack-2026-10-14.md` for the X-reference evaluation.
+
+## Decisions for Halli, prepared before dependent changes
+
+1. **Recommend:** pause *automatic publication* of new AI factual articles and purported first-person accounts until an editorial/source gate is ready; preserve existing rows for review. Keep fiction labelled fiction. The job's stated twice-weekly frequency does not match its daily cron. Alternative: continue automation with a narrower reviewed topic/source allowlist. Measure current function/AI bill first. Do not change scheduler or publication path without review.
+2. **Recommend:** make substantial, length-known videos the focused Listen default; keep clips in an explicitly labelled optional browse collection. Alternative: allow short clips as a separate deliberate “quick watch” intent. This is a product choice because no sampled video has stored duration; ingestion metadata work must precede reliable selection.
+3. **Recommend:** author a small, accountable editorial set for each room with a one-line why/where it leads, while retaining the full catalogue behind clear browse controls. Do not buy or generate bulk filler to make rails look full.
+
+## Primary research and source checks
+
+- [YouTube video resource](https://developers.google.com/youtube/v3/docs/videos): `contentDetails.duration` is available for an ingestion-time metadata check; API quota/cost must be checked before implementing. No per-card API call.
+- [W3C accessible media](https://www.w3.org/WAI/media/av/): player, captions and transcript choices need accessible paths; a video URL alone does not prove a good watch.
+- [Nielsen Norman Group recommendation guidance](https://www.nngroup.com/articles/recommendation-guidelines/): prioritised, explainable recommendations aid choice better than an unstructured mass of options. Application to FemWell is a design inference, not evidence of conversion uplift.
+- Existing code, entity schema and read-only production samples above are the direct FemWell evidence. Neither vendor metadata nor repository presence proves live playback, rights, source accuracy or real user satisfaction.
+
+Conformance target: Brand Bible §§2.7, 6.7, 10.5.25–29, 11, 12, 17.3, 19.7–19.9. Proof remains pending until each staged atom has actual pixels/taps and an independent severity catalogue.

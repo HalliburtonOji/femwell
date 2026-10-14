@@ -65,9 +65,9 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
       {restArticles.length ? (
         <ReadCard className="fw-selected-fresh" eyebrow="A fresh page" title="Fresh reads & guides" accent="plum">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {restArticles.slice(0, calmLayout ? 3 : undefined).map((it) => calmLayout ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails}/> : <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation ? () => onOpen?.(it) : undefined} consumeLabel={it._continue ? "Continue" : "Read"} />)}
-            <CalmMore enabled={calmLayout && restArticles.length > 3} title={`More reads & guides · ${Math.max(0, restArticles.length - 3)}`}>
-              {calmLayout && restArticles.slice(3).map(it => <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails}/>)}
+            {restArticles.slice(0, calmLayout ? 1 : undefined).map((it) => calmLayout ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails}/> : <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation ? () => onOpen?.(it) : undefined} consumeLabel={it._continue ? "Continue" : "Read"} />)}
+            <CalmMore enabled={calmLayout && restArticles.length > 1} title={`More reads & guides · ${Math.max(0, restArticles.length - 1)}`}>
+              {calmLayout && restArticles.slice(1).map(it => <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails}/>)}
             </CalmMore>
           </div>
         </ReadCard>
@@ -77,9 +77,9 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
       {storyCards.length ? (
         <ReadCard className="fw-selected-fiction" eyebrow="Get lost in one" title="Stories & fiction" accent="crimson">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {storyCards.slice(0, calmLayout ? 2 : undefined).map((it) => calmLayout ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails}/> : <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation ? () => onOpen?.(it) : undefined} consumeLabel={it._continue ? "Continue" : "Read"} />)}
-            <CalmMore enabled={calmLayout && storyCards.length > 2} title={`More stories · ${Math.max(0, storyCards.length - 2)}`}>
-              {calmLayout && storyCards.slice(2).map(it => <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails}/>)}
+            {storyCards.slice(0, calmLayout ? 1 : undefined).map((it) => calmLayout ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails}/> : <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation ? () => onOpen?.(it) : undefined} consumeLabel={it._continue ? "Continue" : "Read"} />)}
+            <CalmMore enabled={calmLayout && storyCards.length > 1} title={`More stories · ${Math.max(0, storyCards.length - 1)}`}>
+              {calmLayout && storyCards.slice(1).map(it => <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails}/>)}
             </CalmMore>
           </div>
         </ReadCard>
