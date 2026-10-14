@@ -1057,12 +1057,12 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
       : playableVideos(grouped.video);
     const real = rotateDaily(candidateVideos, 4).map((r) => rowCard(r, "video"));
     // off-platform watches (YouTube/TikTok) are `external` — never fake-embedded, always an honest link-out
-    const fallbackVideos = calmLayout ? LIFESTYLE_VIDEOS.filter(v=>/^\d+\s*min\b/i.test(v.duration_label || "")) : LIFESTYLE_VIDEOS;
+    const fallbackVideos = calmLayout ? LIFESTYLE_VIDEOS.filter(v=>Number(v.duration_seconds) >= 300 || /^\d+\s*min\b/i.test(v.duration_label || "")) : LIFESTYLE_VIDEOS;
     const curated = real.length ? [] : fallbackVideos.slice(0, 4).map((v) => ({
       // hand-picked and verified embeddable → it plays HERE, like everything else
       id: v.id, type: "video", title: v.title, subtitle: v.channel_name, youtubeId: v.video_id,
       summary: v.summary || `${v.channel_name} · watch the full video on YouTube.`,
-      meta: [["Film", calmLayout ? `Creator lists ${durLabel(v) || "an unverified length"}` : durLabel(v) || "A short watch"], ["Play", v.channel_name]], chips: ["watch"],
+      meta: [["Film", calmLayout && !v.runtime_verified_at ? `Creator lists ${durLabel(v) || "an unverified length"}` : durLabel(v) || "A short watch"], ["Play", v.channel_name]], chips: ["watch"],
       body: [],
       actions: [{ label: "Open on YouTube", Icon: "Film", primary: false, onClick: () => openExternal(v.content_url) }],
     }));
