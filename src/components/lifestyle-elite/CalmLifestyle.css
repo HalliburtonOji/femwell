@@ -162,6 +162,9 @@ dialog.fw-calm-dialog.fw-sheet-safe{padding-bottom:0!important}
 .fw-calm-lifestyle .fw-selected-room--listen .fw-calm-audio-row{padding:16px 0;border-top:1px solid var(--room-rule)}
 .fw-calm-lifestyle .fw-selected-room--listen .fw-calm-audio-row h4{font:600 18px/1.3 "FemWell Editorial","Cormorant Garamond",Georgia,serif}
 .fw-calm-lifestyle .fw-selected-room--listen .fw-calm-audio-row>button{font:700 14px/1.4 var(--ff-ui,system-ui);text-decoration:underline;text-underline-offset:4px}
+.fw-calm-lifestyle .fw-selected-room--listen .fw-calm-watch-choice{border-top:1px solid var(--room-rule);padding-top:14px}
+.fw-calm-lifestyle .fw-selected-room--listen .fw-calm-watch-choice h4{font:600 18px/1.3 "FemWell Editorial","Cormorant Garamond",Georgia,serif;margin:0 0 10px;color:#51444e}
+.fw-calm-lifestyle .fw-selected-room--listen .fw-calm-watch-choice>button:last-child{min-height:44px;padding:8px 0;font:700 14px/1.4 var(--ff-ui,system-ui);color:#51444e;text-decoration:underline;text-underline-offset:4px}
 .fw-calm-lifestyle .fw-selected-room--listen .fw-selected-watch{border-top:2px solid #93ad9b!important;padding-top:22px!important}
 
 /* Jasmine: the accepted reading table leads to a climbing chapter margin. */

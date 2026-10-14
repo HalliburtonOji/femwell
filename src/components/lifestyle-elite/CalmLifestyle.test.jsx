@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import ReadFocus from "./ReadFocus";
 import ListenFocus from "./ListenFocus";
 import GoodLifeFocus from "./GoodLifeFocus";
@@ -72,14 +72,16 @@ describe("calmer lists preserve exact source tasks", () => {
   it("keeps one direct watch alternative and the remaining exact media behind Browse", () => {
     const onOpen=vi.fn();
     const audio=[0,1,2].map(i=>({id:`audio-${i}`,type:"audio",title:`Episode ${i}`,audioSrc:`https://example.test/${i}.mp3`,duration:2400,meta:[["Clock","40 min"]],actions:[]}));
-    const videos=[0,1].map(i=>({id:`video-${i}`,type:"video",title:`Film ${i}`,external:true,meta:[],actions:[]}));
-    render(<ListenFocus calmLayout presentation="focused" audioCards={audio} videoCards={videos} onOpen={onOpen}/>);
-    fireEvent.click(screen.getByRole("button",{name:/Film 0.*Watch/}));
+    const videos=[0,1].map(i=>({id:`video-${i}`,type:"video",title:`Film ${i}`,youtubeId:`film-${i}`,meta:[],actions:[]}));
+    const {container}=render(<ListenFocus calmLayout presentation="focused" audioCards={audio} videoCards={videos} onOpen={onOpen}/>);
+    fireEvent.click(screen.getByRole("button",{name:"Play Film 0"}));
+    expect(container.querySelector('iframe[title="Film 0"]')).toBeInTheDocument();
+    fireEvent.click(within(container.querySelector(".fw-calm-watch-choice")).getByRole("button",{name:"Details & tools"}));
     expect(onOpen).toHaveBeenLastCalledWith(videos[0]);
     expect(screen.getByText("Episode 2")).not.toBeVisible();
     fireEvent.click(screen.getByText("Browse all listens & watches · 3"));
     expect(screen.getByText("Episode 2")).toBeVisible();
-    fireEvent.click(screen.getByRole("button",{name:/Film 1/}));
+    fireEvent.click(screen.getAllByRole("button",{name:/Film 1/}).at(-1));
     expect(onOpen).toHaveBeenLastCalledWith(videos[1]);
   });
 
@@ -88,12 +90,20 @@ describe("calmer lists preserve exact source tasks", () => {
     const external={id:"long-show",type:"audio",title:"Long external lecture",external:true,meta:[["Clock","2h 14min"]],actions:[]};
     const watch={id:"watch",type:"video",title:"A watch to open",youtubeId:"known-video",meta:[["Clock","20 min"]],actions:[]};
     render(<ListenFocus calmLayout presentation="focused" audioCards={[external]} videoCards={[watch]} onOpen={onOpen}/>);
-    fireEvent.click(screen.getAllByRole("button",{name:/A watch to open/}).at(-1));
-    expect(onOpen).toHaveBeenLastCalledWith(watch);
+    fireEvent.click(screen.getByRole("button",{name:"Play A watch to open"}));
+    expect(screen.getByTitle("A watch to open")).toBeInTheDocument();
     expect(screen.queryByText("Long external lecture")).not.toBeVisible();
     fireEvent.click(screen.getByText("Browse all listens & watches · 1"));
     fireEvent.click(screen.getByRole("button",{name:/Long external lecture/}));
     expect(onOpen).toHaveBeenLastCalledWith(external);
+  });
+
+  it("names an external-only show honestly when there is nothing playable here", () => {
+    const show={id:"show",type:"audio",title:"A source-only show",external:true,meta:[],actions:[]};
+    render(<ListenFocus calmLayout presentation="focused" audioCards={[show]} videoCards={[]} onOpen={vi.fn()}/>);
+    expect(screen.getByText("Listen elsewhere")).toBeVisible();
+    expect(screen.getByText("Choose a show")).toBeVisible();
+    expect(screen.queryByText("Press play")).not.toBeInTheDocument();
   });
 
   it("keeps the complete joy collection and sends the chosen activity directly to its canonical planner", () => {

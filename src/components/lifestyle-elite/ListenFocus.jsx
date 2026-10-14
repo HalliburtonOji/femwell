@@ -5,7 +5,7 @@
 // feed's real ranking (her interests + history + phase). Tap a card → it plays / opens the exact item.
 import React from "react";
 import { Headphones } from "lucide-react";
-import { CoverCard, FloraAudio, resolveCard } from "@/components/brand/expandCards";
+import { CoverCard, FloraAudio, FloraYouTube, resolveCard } from "@/components/brand/expandCards";
 import { SERIF } from "@/components/journal/Editorial";
 import { C } from "@/components/brand/cleanTokens";
 import { Eyebrow, Title, Card as CleanCard, Summary, Foot } from "@/components/brand/cleanKit";
@@ -65,6 +65,7 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, 
   const renderWatch = it => <CoverCard presentation={presentation} previewText={calmLayout ? "" : undefined} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />;
 
   if (calmLayout) {
+    const externalLead = featured?.type === "audio" && featured.external && !featured.audioSrc;
     const alternate = featured?.type === "video"
       ? restAudio.find(card => card.audioSrc) || watches[0]
       : watches[0] || restAudio.find(card => card.audioSrc);
@@ -72,17 +73,21 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, 
     const moreAudio = restAudio.filter(item => !used.has(item.id));
     const moreWatches = watches.filter(item => !used.has(item.id));
     const moreCount = moreAudio.length + moreWatches.length;
-    return <ListenCard className="fw-selected-listening-choice" eyebrow={active ? player?.isPlaying ? "On air" : "Pick up your listen" : featured?.type === "video" ? "Watch here" : "Worth your headphones"} title={featured?.type === "video" ? "Put this on" : "Press play"} accent="sage">
+    return <ListenCard className="fw-selected-listening-choice" eyebrow={active ? player?.isPlaying ? "On air" : "Pick up your listen" : featured?.type === "video" ? "Watch here" : externalLead ? "Listen elsewhere" : "Worth your headphones"} title={featured?.type === "video" ? "Put this on" : externalLead ? "Choose a show" : "Press play"} accent="sage">
       {presentation && <SelectedRoomDetail section="listen"/>}
       {featured && <>
         <p style={{ fontFamily: SERIF, color: C.slate, margin: "0 0 12px", lineHeight: 1.45 }}>
-          {active ? "Your last listen is ready where you left it." : featured.audioSrc ? "An episode, ready here in the app." : featured.type === "video" ? "A watch, ready here in the app." : "A show you can open at its source."}
+          {active ? "Your last listen is ready where you left it." : featured.audioSrc ? "An episode, ready here in the app." : featured.type === "video" ? "A watch, ready here in the app." : "This show opens at its source."}
         </p>
         <CoverCard presentation={presentation} previewText="" item={featured} onOpen={() => onOpen?.(featured)}/>
       </>}
       {alternate && <div style={{ marginTop: 16 }}>
         <p style={{ fontFamily: SERIF, color: C.slate, margin: "0 0 6px", lineHeight: 1.4 }}>Want {alternate.type === "video" ? "something to watch" : "another voice"}?</p>
-        <CalmFindRow item={alternate} onOpen={onOpen} label={alternate.type === "video" ? "Watch" : "Listen"} context={alternate.type === "video" && !alternate.duration ? "Creator video" : durOf(alternate)}/>
+        {alternate.type === "video" && alternate.youtubeId && !alternate.external ? <div className="fw-calm-watch-choice">
+          <h4>{resolveCard(alternate).title}</h4>
+          <FloraYouTube videoId={alternate.youtubeId} item={alternate} accent="#8faa9a"/>
+          <button type="button" onClick={() => onOpen?.(alternate)}>Details &amp; tools</button>
+        </div> : <CalmFindRow item={alternate} onOpen={onOpen} label={alternate.type === "video" ? "Watch at source" : "Listen"} context={alternate.type === "video" && !alternate.duration ? "Creator video" : durOf(alternate)}/>}
       </div>}
       <CalmMore enabled={moreCount > 0} title={`Browse all listens & watches · ${moreCount}`}>
         {moreAudio.map(renderAudio)}
