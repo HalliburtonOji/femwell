@@ -659,7 +659,7 @@ describe("DailyStoryReader — v4 contract", () => {
     expect(root.classList.contains("ds-chrome-visible")).toBe(true);
   });
 
-  it("holds the reader controls visible during pointer or keyboard interaction, then resumes auto-hide", () => {
+  it("keeps reader controls available until a page tap hides them", () => {
     vi.useFakeTimers();
     try {
       const onExit=vi.fn();
@@ -670,8 +670,9 @@ describe("DailyStoryReader — v4 contract", () => {
       expect(root).toHaveClass("ds-chrome-visible");
       fireEvent.pointerLeave(toolbar);
       act(()=>vi.advanceTimersByTime(3100));
+      expect(root).toHaveClass("ds-chrome-visible");
+      fireEvent.click(screen.getByRole("button",{name:"Hide reader chrome"}));
       expect(root).toHaveClass("ds-chrome-hidden");
-      fireEvent.click(screen.getByRole("button",{name:"Show reader chrome"}));
       fireEvent.focus(within(toolbar).getByRole("button",{name:"Close book"}));
       act(()=>vi.advanceTimersByTime(3500));
       expect(root).toHaveClass("ds-chrome-visible");

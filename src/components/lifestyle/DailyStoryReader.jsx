@@ -817,20 +817,12 @@ export default function DailyStoryReader({
   // input in immersive mode. Tap the center of the page to toggle. Any
   // input (touch, click, keypress, slider drag) resets the timer.
   const [chromeVisible, setChromeVisible] = useState(true);
-  const hideTimerRef = useRef(null);
-  const showChrome = useCallback(() => {
-    setChromeVisible(true);
-    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-    hideTimerRef.current = setTimeout(() => setChromeVisible(false), 3000);
-  }, []);
-  const holdChrome = useCallback(() => {
-    setChromeVisible(true);
-    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-  }, []);
+  // Reader controls stay until she hides them with a page tap. A three-second
+  // auto-hide raced the Close gesture on phones and pointer-driven browsers.
+  const showChrome = useCallback(() => setChromeVisible(true), []);
   useEffect(() => {
     if (!active || !immersive) {
       setChromeVisible(true);
-      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
       return;
     }
     showChrome();
@@ -838,19 +830,11 @@ export default function DailyStoryReader({
     window.addEventListener("touchstart", onActivity, { passive: true });
     window.addEventListener("keydown", onActivity);
     return () => {
-      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
       window.removeEventListener("touchstart", onActivity);
       window.removeEventListener("keydown", onActivity);
     };
   }, [active, immersive, showChrome]);
-  const toggleChrome = useCallback(() => {
-    setChromeVisible((v) => {
-      const next = !v;
-      if (next) showChrome(); // restart 3s timer if showing
-      else if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-      return next;
-    });
-  }, [showChrome]);
+  const toggleChrome = useCallback(() => setChromeVisible(v => !v), []);
   // DND tip — show once per immersive session, then auto-dismiss. Anchored to
   // a localStorage seen-flag so we don't badger returning readers.
   const [showDndTip, setShowDndTip] = useState(false);
@@ -1326,13 +1310,12 @@ export default function DailyStoryReader({
             aria-label={chromeVisible ? "Hide reader chrome" : "Show reader chrome"}
             tabIndex={-1}
           />
-          {/* Top floating bar — auto-hides after 3s. The Aa button opens the
+          {/* Top floating bar — stays until a page tap hides it. The Aa button opens the
               settings drawer (v4c). Bookmark is still a visual affordance;
               real bookmarks land in v4d alongside position persistence. */}
           <div className="ds-reader-immersive-bar" role="toolbar" aria-label="Reader controls"
-            onPointerEnter={holdChrome} onPointerDownCapture={holdChrome}
-            onPointerLeave={showChrome} onFocusCapture={holdChrome}
-            onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) showChrome(); }}>
+            onPointerEnter={showChrome} onPointerDownCapture={showChrome}
+            onFocusCapture={showChrome}>
             <button
               type="button"
               className="ds-reader-imm-btn"
