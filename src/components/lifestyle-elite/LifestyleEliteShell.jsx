@@ -1061,6 +1061,9 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
     const curated = real.length ? [] : fallbackVideos.slice(0, 4).map((v) => ({
       // hand-picked and verified embeddable → it plays HERE, like everything else
       id: v.id, type: "video", title: v.title, subtitle: v.channel_name, youtubeId: v.video_id,
+      // Static fallback has no LifestyleItems identity. Saving it as one would create an
+      // unresolved keep in Saved; retain Play/Details/YouTube until it has a real owner.
+      saveable: false,
       summary: v.summary || `${v.channel_name} · watch the full video on YouTube.`,
       meta: [["Film", calmLayout && !v.runtime_verified_at ? `Creator lists ${durLabel(v) || "an unverified length"}` : durLabel(v) || "A short watch"], ["Play", v.channel_name]], chips: ["watch"],
       body: [],
