@@ -659,6 +659,27 @@ describe("DailyStoryReader — v4 contract", () => {
     expect(root.classList.contains("ds-chrome-visible")).toBe(true);
   });
 
+  it("holds the reader controls visible during pointer or keyboard interaction, then resumes auto-hide", () => {
+    vi.useFakeTimers();
+    try {
+      const onExit=vi.fn();
+      render(<DailyStoryReader source={bookSource()} totalCount={2} defaultImmersive onExit={onExit}/>);
+      const root=document.querySelector(".ds-reader-root"), toolbar=screen.getByRole("toolbar",{name:"Reader controls"});
+      fireEvent.pointerEnter(toolbar);
+      act(()=>vi.advanceTimersByTime(3500));
+      expect(root).toHaveClass("ds-chrome-visible");
+      fireEvent.pointerLeave(toolbar);
+      act(()=>vi.advanceTimersByTime(3100));
+      expect(root).toHaveClass("ds-chrome-hidden");
+      fireEvent.click(screen.getByRole("button",{name:"Show reader chrome"}));
+      fireEvent.focus(within(toolbar).getByRole("button",{name:"Close book"}));
+      act(()=>vi.advanceTimersByTime(3500));
+      expect(root).toHaveClass("ds-chrome-visible");
+      fireEvent.click(within(toolbar).getByRole("button",{name:"Close book"}));
+      expect(onExit).toHaveBeenCalledOnce();
+    } finally { vi.useRealTimers(); }
+  });
+
   it("places visible immersive controls above both page-turn zones while settings remain above the controls", () => {
     render(<DailyStoryReader source={bookSource()} bookId="layers" defaultImmersive onExit={vi.fn()} />);
     const toolbar = screen.getByRole("toolbar", { name: "Reader controls" });

@@ -823,6 +823,10 @@ export default function DailyStoryReader({
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     hideTimerRef.current = setTimeout(() => setChromeVisible(false), 3000);
   }, []);
+  const holdChrome = useCallback(() => {
+    setChromeVisible(true);
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+  }, []);
   useEffect(() => {
     if (!active || !immersive) {
       setChromeVisible(true);
@@ -1325,7 +1329,10 @@ export default function DailyStoryReader({
           {/* Top floating bar — auto-hides after 3s. The Aa button opens the
               settings drawer (v4c). Bookmark is still a visual affordance;
               real bookmarks land in v4d alongside position persistence. */}
-          <div className="ds-reader-immersive-bar" role="toolbar" aria-label="Reader controls">
+          <div className="ds-reader-immersive-bar" role="toolbar" aria-label="Reader controls"
+            onPointerEnter={holdChrome} onPointerDownCapture={holdChrome}
+            onPointerLeave={showChrome} onFocusCapture={holdChrome}
+            onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) showChrome(); }}>
             <button
               type="button"
               className="ds-reader-imm-btn"
