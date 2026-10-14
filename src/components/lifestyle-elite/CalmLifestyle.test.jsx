@@ -83,6 +83,19 @@ describe("calmer lists preserve exact source tasks", () => {
     expect(onOpen).toHaveBeenLastCalledWith(videos[1]);
   });
 
+  it("does not feature an external lecture when a watch is the only directly playable choice", () => {
+    const onOpen=vi.fn();
+    const external={id:"long-show",type:"audio",title:"Long external lecture",external:true,meta:[["Clock","2h 14min"]],actions:[]};
+    const watch={id:"watch",type:"video",title:"A watch to open",youtubeId:"known-video",meta:[["Clock","20 min"]],actions:[]};
+    render(<ListenFocus calmLayout presentation="focused" audioCards={[external]} videoCards={[watch]} onOpen={onOpen}/>);
+    fireEvent.click(screen.getAllByRole("button",{name:/A watch to open/}).at(-1));
+    expect(onOpen).toHaveBeenLastCalledWith(watch);
+    expect(screen.queryByText("Long external lecture")).not.toBeVisible();
+    fireEvent.click(screen.getByText("Browse all listens & watches · 1"));
+    fireEvent.click(screen.getByRole("button",{name:/Long external lecture/}));
+    expect(onOpen).toHaveBeenLastCalledWith(external);
+  });
+
   it("keeps the complete joy collection and sends the chosen activity directly to its canonical planner", () => {
     const onPlan = vi.fn(), onSlip = vi.fn(), onOpenRooms = vi.fn();
     const joys = Array.from({ length: 12 }, (_, i) => ({ id: `joy-${i}`, type: "ritual", title: `Joy ${i}`, body: [`The complete activity ${i}.`] }));

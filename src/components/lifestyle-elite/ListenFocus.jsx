@@ -38,7 +38,13 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, 
     sourceName:current.source_name,imageUrl:current.image_url,_raw:current,
     meta:[["Headphones",current.source_name || "Podcast"]],body:[],actions:[],
   } : null));
-  const featured = active || audioCards[0] || videoCards[0] || null;
+  // In the focused preview, a source-only show is still browsable, but must not
+  // displace something the user can actually start here. The old fallback put a
+  // two-hour external health lecture in the first slot when the live RSS pool
+  // was empty. Keep the active episode first and every external source below.
+  const featured = active || (calmLayout
+    ? audioCards.find(card => card.audioSrc) || videoCards[0] || audioCards[0]
+    : audioCards[0] || videoCards[0]) || null;
   const restAudio = audioCards.filter(card=>card.id!==featured?.id);
   const watches = presentation && featured === videoCards[0] ? videoCards.slice(1) : videoCards;
   const hasAny = featured || restAudio.length || videoCards.length;
@@ -59,12 +65,14 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, 
   const renderWatch = it => <CoverCard presentation={presentation} previewText={calmLayout ? "" : undefined} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />;
 
   if (calmLayout) {
-    const alternate = featured?.type === "video" ? restAudio[0] : watches[0] || restAudio[0];
+    const alternate = featured?.type === "video"
+      ? restAudio.find(card => card.audioSrc) || watches[0]
+      : watches[0] || restAudio.find(card => card.audioSrc);
     const used = new Set([featured?.id, alternate?.id]);
     const moreAudio = restAudio.filter(item => !used.has(item.id));
     const moreWatches = watches.filter(item => !used.has(item.id));
     const moreCount = moreAudio.length + moreWatches.length;
-    return <ListenCard className="fw-selected-listening-choice" eyebrow={active ? player?.isPlaying ? "On air" : "Pick up your listen" : "Worth your headphones"} title={featured?.type === "video" ? "A proper watch" : "Press play"} accent="sage">
+    return <ListenCard className="fw-selected-listening-choice" eyebrow={active ? player?.isPlaying ? "On air" : "Pick up your listen" : featured?.type === "video" ? "Watch here" : "Worth your headphones"} title={featured?.type === "video" ? "Put this on" : "Press play"} accent="sage">
       {presentation && <SelectedRoomDetail section="listen"/>}
       {featured && <>
         <p style={{ fontFamily: SERIF, color: C.slate, margin: "0 0 12px", lineHeight: 1.45 }}>
