@@ -41,6 +41,14 @@
     "stoppedAt": "2026-10-08T01:59:57Z",
     "reason": "Halli stopped recurring builds: usage consumption and endless loop. Tool and automation.toml confirm PAUSED; explicit user restart required."
   },
+  "manualContent": {
+    "id": "LIFESTYLE-CONTENT-2026-10-14",
+    "stage": "LC01 Ideas candidate deployed; signed-in mobile proof pending",
+    "nextAtom": "LC02 source-to-ending Read recommendation, then Listen",
+    "proofGate": "Obtain an authorised signed-in 360/390/430 session, tap first and More cards, playback/reader Close and exact return; self-critique before calling LC01 ready.",
+    "carryForward": ["LR09 Saved owner read errors", "B01-S03-A05 reader/secondary returns", "generator publication/cadence decision", "C06 request and paid-unit measurement"],
+    "automation": "PAUSED; manual work only"
+  },
   "baseline": {
     "commit": "a16bf8e",
     "liveBundle": "index-OD-gjaX_.js"

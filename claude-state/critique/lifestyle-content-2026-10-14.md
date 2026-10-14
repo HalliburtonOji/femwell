@@ -45,3 +45,21 @@ The visual grammar stays room-specific: iris reading margin, bluebell player cad
 - Existing code, entity schema and read-only production samples above are the direct FemWell evidence. Neither vendor metadata nor repository presence proves live playback, rights, source accuracy or real user satisfaction.
 
 Conformance target: Brand Bible §§2.7, 6.7, 10.5.25–29, 11, 12, 17.3, 19.7–19.9. Proof remains pending until each staged atom has actual pixels/taps and an independent severity catalogue.
+
+## First Ideas slice and self-critique
+
+Source `82ab214` normal-pushed, site deploy success, public/dist `index-DLgorrCg.js`. The preview sorts readable article sources ahead of teaser-only candidates, reveals one secondary read/story and one secondary listen/watch initially, retains the other existing candidate actions behind native More, and keeps the full watch directory route. Preview-featured live video needs duration ≥300 seconds and a substantive summary; lacking that, only the two existing creator-titled 20/10-minute fallback videos are used provisionally. No production generator, entity, function, new dependency or main `/Lifestyle` change. Design agent's bounded review is integrated above; it completed without a recurring run.
+
+Source checks: 5/5 `CalmLifestyle.test.jsx`, 12/12 independent preview tests pass in isolated single-worker runs; scoped ESLint 0 errors (24 pre-existing warnings in the selected files), Vite build exit 0, skill validator passes. One initial concurrent run timed out on three unrelated Sky tests because of environment load; the affected suite passed 12/12 when rerun alone with a 15-second case timeout. Local and separate live Playwright checks at 360/390/430 rendered sign-in only; zero new cards/taps were observable. CUA browser surfaces were unavailable. **Do not call this mobile-verified.** Static Ideas report returned HTTP 200; bundle hash matched local `dist` after deploy.
+
+Adversarial catalogue at this boundary:
+
+| Severity | Proof | Status |
+|---|---|---|
+| P1 · content quality upstream | Top-80 video sample: 0 stored runtimes; feed selects on engagement/summary; user observed a ~20-second watch. | Preview featured-slot gate staged; live signed-in player/destination and source metadata still need proof. |
+| P1 · publication trust/cost | Scheduled generator description says twice weekly while cron is daily; direct AI publication includes first-person and book quote prompts without an observed editorial gate. | Proposal for Halli; no production job edited. Review actual paid usage before change. |
+| P1 · prior Saved owner reads | 12 October signed-in bounded revisit returned two source-read errors. | Carry LR09 forward; no claim of data loss or recovery. |
+| P2 · still too many visual bands | Read and Listen now show fewer cards, but their original lead, alternate and story/watch containers remain separate. | Real signed-in phone craft critique needed; this first slice is not the ground-up room redesign. |
+| P2 · scalability unmeasured | Initial 60+60+24+80 item requests and subscription reload remain. | C06 query/fan-out measurement queued; no invented cost savings. |
+
+Next exact atom: **LC02 source-to-ending recommendations for Read, then Listen**, preceded by authenticated first-slice pixel/tap/open/close proof if a test session is available. Full documented editorial/scheduler decision is independent; silence does not approve it. Manual review boundary only, scheduler PAUSED. The old B01-S03-A05 and LR09 cursors remain carried.
