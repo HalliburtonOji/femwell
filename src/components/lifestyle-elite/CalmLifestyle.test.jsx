@@ -2,6 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import ReadFocus from "./ReadFocus";
+import ListenFocus from "./ListenFocus";
 import GoodLifeFocus from "./GoodLifeFocus";
 import YoursFocus from "./YoursFocus";
 import { CalmTaskDialog } from "./CalmLifestyle";
@@ -46,21 +47,40 @@ describe("calmer lists preserve exact source tasks", () => {
       expect(onDetails).toHaveBeenLastCalledWith(item);
     }
   });
-  it("keeps all secondary articles and stories, with direct reads and separate full details", () => {
+  it("leads with a named saved place and contrasting story while every other exact read stays reachable", () => {
     const onOpen = vi.fn(), onDetails = vi.fn();
     const rows = Array.from({ length: 7 }, (_, i) => ({ id: `source-${i}`, title: `Complete source ${i}`, type: "article", body: [`Full unshortened source ${i}.`], _raw: { id: `raw-${i}` } }));
-    render(<ReadFocus calmLayout presentation="focused" articleCards={rows.slice(0, 4)} storyCards={rows.slice(4)} continueCards={[]} onOpen={onOpen} onDetails={onDetails}/>);
+    rows[4]._raw.author_name="FemWell Fiction";
+    const resume={id:"saved-place",title:"The Shape of Starting Over",type:"book",_continue:{id:"saved-place"}};
+    render(<ReadFocus calmLayout presentation="focused" articleCards={rows.slice(0, 4)} storyCards={rows.slice(4)} continueCards={[resume]} onOpen={onOpen} onDetails={onDetails}/>);
+    fireEvent.click(screen.getByRole("button",{name:/The Shape of Starting Over.*Continue/}));
+    expect(onOpen).toHaveBeenLastCalledWith(resume);
+    fireEvent.click(screen.getByRole("button",{name:/Complete source 4.*Read/}));
+    expect(onOpen).toHaveBeenLastCalledWith(rows[4]);
     expect(screen.getByText(rows[3].title)).not.toBeVisible();
     expect(screen.getByText(rows[6].title)).not.toBeVisible();
-    fireEvent.click(screen.getByText("More reads & guides · 2"));
-    fireEvent.click(screen.getByText("More stories · 2"));
-    for (const row of rows.slice(1)) {
+    fireEvent.click(screen.getByText("Browse all reading · 6"));
+    for (const row of rows.filter(row=>row!==rows[4])) {
       fireEvent.click(screen.getByRole("button", { name: new RegExp(`^${row.title}.*Read$`) }));
       expect(onOpen).toHaveBeenLastCalledWith(row);
       fireEvent.click(screen.getByRole("button", { name: `Details & tools for ${row.title}` }));
       expect(onDetails).toHaveBeenLastCalledWith(row);
     }
-    expect(onOpen).toHaveBeenCalledTimes(6);
+    expect(onOpen).toHaveBeenCalledTimes(8);
+  });
+
+  it("keeps one direct watch alternative and the remaining exact media behind Browse", () => {
+    const onOpen=vi.fn();
+    const audio=[0,1,2].map(i=>({id:`audio-${i}`,type:"audio",title:`Episode ${i}`,audioSrc:`https://example.test/${i}.mp3`,duration:2400,meta:[["Clock","40 min"]],actions:[]}));
+    const videos=[0,1].map(i=>({id:`video-${i}`,type:"video",title:`Film ${i}`,external:true,meta:[],actions:[]}));
+    render(<ListenFocus calmLayout presentation="focused" audioCards={audio} videoCards={videos} onOpen={onOpen}/>);
+    fireEvent.click(screen.getByRole("button",{name:/Film 0.*Watch/}));
+    expect(onOpen).toHaveBeenLastCalledWith(videos[0]);
+    expect(screen.getByText("Episode 2")).not.toBeVisible();
+    fireEvent.click(screen.getByText("Browse all listens & watches · 3"));
+    expect(screen.getByText("Episode 2")).toBeVisible();
+    fireEvent.click(screen.getByRole("button",{name:/Film 1/}));
+    expect(onOpen).toHaveBeenLastCalledWith(videos[1]);
   });
 
   it("keeps the complete joy collection and sends the chosen activity directly to its canonical planner", () => {

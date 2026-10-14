@@ -72,7 +72,7 @@ function pickForWeek(list, weekIndex, count) {
   return Array.from({ length: count }, (_, i) => list[(offset + i) % list.length]);
 }
 
-async function generateArticle(base44, topic) {
+async function generateArticle(base44, topic, publicationStatus = 'PUBLISHED') {
   const phaseCtx = topic.phase_tags?.length
     ? `Particularly relevant for the ${topic.phase_tags.join(' and ')} phase(s).`
     : 'Relevant across all cycle phases.';
@@ -113,16 +113,16 @@ Return JSON:
     why_it_matters: result.why_it_matters, author_name: result.author_name || 'FemWell Editorial',
     emotional_tag: result.emotional_tag || '', category: topic.category,
     phase_tags: topic.phase_tags || [], content_type: 'ARTICLE', media_type: 'ARTICLE',
-    provider: 'FEMWELL_AI', status: 'PUBLISHED',
-    published_at: now, ingested_at: now, content_url: '',
+    provider: 'FEMWELL_AI', status: publicationStatus,
+    ...(publicationStatus === 'PUBLISHED' ? { published_at: now } : {}), ingested_at: now, content_url: '',
   });
   return { id: saved.id, title: result.title, type: 'article' };
 }
 
-async function generateStory(base44, prompt) {
+async function generateStory(base44, prompt, publicationStatus = 'PUBLISHED') {
   const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
     model: 'gpt_5_mini',
-    prompt: `You are a personal essay editor for FemWell. Write a vivid, honest first-person personal essay on: "${prompt.hint}". 700-900 words. No subheadings. Use "I" voice. Return JSON: title (max 80 chars), lede (hook sentence), summary (2-3 sentences), body (full essay), emotional_tag (Body/Identity/Relationships/Mental Health/Self-Discovery/Motherhood/Career/Grief), author_name "FemWell Stories"`,
+    prompt: `Write an original fictional first-person story for FemWell on: "${prompt.hint}". This is invented fiction, never a real person's lived testimony. 700-900 words. No subheadings. Use "I" voice. Return JSON: title (max 80 chars), lede (hook sentence), summary (2-3 sentences), body (full story), emotional_tag (Body/Identity/Relationships/Mental Health/Self-Discovery/Motherhood/Career/Grief), author_name "FemWell Fiction"`,
     response_json_schema: {
       type: 'object',
       properties: {
@@ -135,16 +135,16 @@ async function generateStory(base44, prompt) {
   const now = new Date().toISOString();
   const saved = await base44.asServiceRole.entities.LifestyleItems.create({
     title: result.title, lede: result.body || result.lede, summary: result.summary,
-    author_name: result.author_name || 'FemWell Stories',
+    author_name: 'FemWell Fiction',
     emotional_tag: result.emotional_tag || '', category: prompt.category,
     phase_tags: [], content_type: 'STORY', media_type: 'ARTICLE',
-    provider: 'FEMWELL_AI', status: 'PUBLISHED',
-    published_at: now, ingested_at: now, content_url: '',
+    provider: 'FEMWELL_AI', status: publicationStatus,
+    ...(publicationStatus === 'PUBLISHED' ? { published_at: now } : {}), ingested_at: now, content_url: '',
   });
   return { id: saved.id, title: result.title, type: 'story' };
 }
 
-async function generateBookSummary(base44, book) {
+async function generateBookSummary(base44, book, publicationStatus = 'PUBLISHED') {
   const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
     model: 'gpt_5_mini',
     prompt: `You are a women's wellness book editor for FemWell. Write a rich, engaging book summary card for "${book.title}" by ${book.author}.
@@ -181,14 +181,14 @@ Return JSON:
     emotional_tag: result.emotional_tag || '',
     category: book.category, phase_tags: [],
     content_type: 'GUIDE', media_type: 'ARTICLE',
-    provider: 'FEMWELL_AI', status: 'PUBLISHED',
-    published_at: now, ingested_at: now, content_url: '',
+    provider: 'FEMWELL_AI', status: publicationStatus,
+    ...(publicationStatus === 'PUBLISHED' ? { published_at: now } : {}), ingested_at: now, content_url: '',
     tags: ['book summary', result.tagline || ''].filter(Boolean),
   });
   return { id: saved.id, title: book.title, type: 'book_summary' };
 }
 
-async function generateFictionRequest(base44, topic, genre, isLong, category, mature) {
+async function generateFictionRequest(base44, topic, genre, isLong, category, mature, publicationStatus = 'PUBLISHED') {
   const wordCount = isLong ? '2800-3500' : '1400-1800';
   const structure = isLong
     ? 'Structure with 4 chapters using plain text headings "Chapter 1", "Chapter 2", etc. No markdown.'
@@ -218,8 +218,8 @@ Return JSON: title (max 70 chars), summary (2-3 sentences), body (full story, pl
     title: result.title, summary: result.summary, lede: result.body,
     duration_label: result.duration_label, emotional_tag: result.emotional_tag || '',
     author_name: 'FemWell Fiction', content_type: 'FICTION', media_type: 'ARTICLE',
-    provider: 'FEMWELL_AI', status: 'PUBLISHED', category: category || 'Lifestyle',
-    published_at: now, ingested_at: now, content_url: '', tags, phase_tags: [],
+    provider: 'FEMWELL_AI', status: publicationStatus, category: category || 'Lifestyle',
+    ...(publicationStatus === 'PUBLISHED' ? { published_at: now } : {}), ingested_at: now, content_url: '', tags, phase_tags: [],
   });
   return { id: saved.id, title: result.title, type: 'fiction' };
 }
@@ -232,21 +232,20 @@ Deno.serve(async (req) => {
 
     // Handle user custom requests (2/week limit)
     if (custom_topic) {
-      try {
-        const user = await base44.auth.me();
-        if (user) {
-          const weekStart = new Date();
-          weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-          const ws = weekStart.toISOString().split('T')[0];
-          const recent = await base44.asServiceRole.entities.LifestyleItems.filter({ created_by: user.email });
-          const thisWeekCount = recent.filter(i =>
-            i.provider === 'FEMWELL_AI_USER_REQUEST' && (i.created_date || '') >= ws
-          ).length;
-          if (thisWeekCount >= 2) {
-            return Response.json({ error: 'Weekly limit reached. You can request 2 custom topics per week.' }, { status: 429 });
-          }
-        }
-      } catch {}
+      const user = await base44.auth.me().catch(() => null);
+      if (!user?.id) return Response.json({ error: 'Sign in to request a read.' }, { status: 401 });
+      const weekStart = new Date();
+      weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+      const ws = weekStart.toISOString().split('T')[0];
+      const recent = await base44.asServiceRole.entities.LifestyleItems.filter({ created_by: user.email })
+        .catch(() => null);
+      if (!recent) return Response.json({ error: 'Could not check your request limit. Please try again.' }, { status: 503 });
+      const thisWeekCount = recent.filter(i =>
+        i.provider === 'FEMWELL_AI_USER_REQUEST' && (i.created_date || '') >= ws
+      ).length;
+      if (thisWeekCount >= 2) {
+        return Response.json({ error: 'Weekly limit reached. You can request 2 custom topics per week.' }, { status: 429 });
+      }
 
       // Generate user custom request
       const type = customType || 'article';
@@ -254,25 +253,41 @@ Deno.serve(async (req) => {
       let generated;
 
       if (type === 'story') {
-        generated = await generateStory(base44, { category: custom_category || "Women's Health", hint: custom_topic });
+        generated = await generateStory(base44, { category: custom_category || "Women's Health", hint: custom_topic }, 'NEEDS_REVIEW');
       } else if (type === 'book') {
-        generated = await generateBookSummary(base44, { title: custom_topic, author: 'Various', category: custom_category || "Women's Health" });
+        generated = await generateBookSummary(base44, { title: custom_topic, author: 'Various', category: custom_category || "Women's Health" }, 'NEEDS_REVIEW');
       } else if (type === 'fiction_short' || type === 'fiction_long') {
-        generated = await generateFictionRequest(base44, custom_topic, genre || 'Contemporary', type === 'fiction_long', custom_category || 'Lifestyle', mature);
+        generated = await generateFictionRequest(base44, custom_topic, genre || 'Contemporary', type === 'fiction_long', custom_category || 'Lifestyle', mature, 'NEEDS_REVIEW');
       } else {
-        generated = await generateArticle(base44, { category: custom_category || "Women's Health", phase_tags: [], hint: custom_topic });
+        generated = await generateArticle(base44, { category: custom_category || "Women's Health", phase_tags: [], hint: custom_topic }, 'NEEDS_REVIEW');
       }
 
-      // Mark as user request
+      // Keep the existing immediate custom-request result, but label its
+      // provenance truthfully rather than dressing generated text as an editor
+      // or a real person's testimony. This reuses the existing update write.
       await base44.asServiceRole.entities.LifestyleItems.update(generated.id, {
         provider: 'FEMWELL_AI_USER_REQUEST',
+        author_name: type === 'story' || type === 'fiction_short' || type === 'fiction_long'
+          ? 'FemWell Fiction · generated for you' : 'Generated for you',
+        status: 'PUBLISHED', published_at: new Date().toISOString(),
       });
 
       return Response.json({ success: true, generated: 1, articles: [generated] });
     }
 
-    // Scheduled run: generate exactly ONE item per invocation to stay well within timeout.
-    // Automation runs daily so content accumulates across the week.
+    // Editorial hold (Halli, 14 October): scheduled AI factual articles,
+    // purported first-person essays and unverified book quotations must not
+    // publish without source and voice review. The existing workflow may still
+    // invoke this function daily; returning before InvokeLLM avoids paid content
+    // generation and preserves all existing published rows. Explicit custom
+    // requests and the manual force_run path remain separate existing features.
+    if (!force_run) {
+      return Response.json({ success: true, generated: 0, articles: [], editorial_review_required: true });
+    }
+    const requester = await base44.auth.me().catch(() => null);
+    if (requester?.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
+
+    // Manual run: generate exactly ONE item per invocation to stay within timeout.
     const weekIdx = getWeekIndex();
     // Spread types: rotate article -> story -> article -> story -> book across days of week
     const dayOfWeek = new Date().getDay();
@@ -286,13 +301,13 @@ Deno.serve(async (req) => {
       let r;
       if (contentType === 'story') {
         const [storyPrompt] = pickForWeek(STORY_PROMPTS, weekIdx + dayOfWeek, 1);
-        r = await generateStory(base44, storyPrompt);
+        r = await generateStory(base44, storyPrompt, 'NEEDS_REVIEW');
       } else if (contentType === 'book') {
         const [bookTopic] = pickForWeek(BOOK_TOPICS, weekIdx, 1);
-        r = await generateBookSummary(base44, bookTopic);
+        r = await generateBookSummary(base44, bookTopic, 'NEEDS_REVIEW');
       } else {
         const [articleTopic] = pickForWeek(ARTICLE_TOPICS, weekIdx + dayOfWeek, 1);
-        r = await generateArticle(base44, articleTopic);
+        r = await generateArticle(base44, articleTopic, 'NEEDS_REVIEW');
       }
       generated.push(r);
       console.log(`Generated (${contentType}): ${r.title}`);

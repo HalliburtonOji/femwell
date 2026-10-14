@@ -39,6 +39,38 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
   const restArticles = featured ? articleCards.slice(1) : articleCards;
   const summary = `${continueCards.length ? `${continueCards.length} on the go · ` : ""}${articleCards.length} fresh read${articleCards.length === 1 ? "" : "s"}${!presentation && phaseWord ? ` tuned to your ${phaseWord} week` : ""}${storyCards.length ? ` · ${storyCards.length} to lose yourself in` : ""}.`;
 
+  if (calmLayout) {
+    // A saved place is the strongest honest recommendation we have. A complete
+    // story is the contrasting choice; the full article/history list stays one tap away.
+    const namedResume = continueCards.find(item => !/^Project Gutenberg book \d+$/i.test(item.title || ""));
+    const labelledFiction = storyCards.find(item => /fiction/i.test(item._raw?.author_name || item.sourceName || ""));
+    const primary = namedResume || continueCards[0] || featured || labelledFiction || storyCards[0];
+    const alternate = continueCards.includes(primary) ? labelledFiction || featured
+      : storyCards.includes(primary) ? featured : labelledFiction;
+    const second = alternate?.id === primary?.id ? null : alternate;
+    const used = new Set([primary?.id, second?.id]);
+    const remaining = [
+      ...continueCards.map(item => ({ item, label: "Continue" })),
+      ...articleCards.map(item => ({ item, label: "Read" })),
+      ...storyCards.map(item => ({ item, label: "Read" })),
+    ].filter(({ item }) => item && !used.has(item.id) && used.add(item.id));
+    const primaryIsResume = continueCards.includes(primary);
+    return <ReadCard className="fw-selected-reading-choice" eyebrow="Your next page" title={primaryIsResume ? "Pick up here" : "Start here"} accent="plum">
+      {presentation && <SelectedRoomDetail section="read"/>}
+      <p style={{ fontFamily: SERIF, color: C.slate, margin: "0 0 12px", lineHeight: 1.45 }}>
+        {primaryIsResume ? "Your place is saved on this device." : storyCards.includes(primary) ? "A story from the current shelf." : "A complete read from today's shelf."}
+      </p>
+      <CalmFindRow item={primary} onOpen={onOpen} onDetails={onDetails} label={primaryIsResume ? "Continue" : "Read"}/>
+      {second && <div style={{ marginTop: 16 }}>
+        <p style={{ fontFamily: SERIF, color: C.slate, margin: "0 0 6px", lineHeight: 1.4 }}>Or take a different page.</p>
+        <CalmFindRow item={second} onOpen={onOpen} onDetails={onDetails} label="Read"/>
+      </div>}
+      <CalmMore enabled={remaining.length > 0} title={`Browse all reading · ${remaining.length}`}>
+        {remaining.map(({ item, label }) => <CalmFindRow key={item.id} item={item} onOpen={onOpen} onDetails={onDetails} label={label}/>)}
+      </CalmMore>
+    </ReadCard>;
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* 0 · section-specific, stateful summary */}

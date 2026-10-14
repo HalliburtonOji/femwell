@@ -11,7 +11,7 @@ import { C } from "@/components/brand/cleanTokens";
 import { Eyebrow, Title, Card as CleanCard, Summary, Foot } from "@/components/brand/cleanKit";
 import { SelectedRoomDetail } from "./SelectedLifestyleHeader";
 import { usePodcastPlayer } from "@/hooks/usePodcastPlayer";
-import { CalmMore } from "./CalmLifestyle";
+import { CalmFindRow, CalmMore } from "./CalmLifestyle";
 
 const durOf = (it) => {
   const m = (it?.meta || []).find((row) => /min|hr|:/.test(String(row?.[1] || "")));
@@ -57,6 +57,31 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, 
     : "Something to hear — press play and it keeps going while you wander the app.";
   const renderAudio = it => calmLayout && it.audioSrc ? <div key={it.id} className="fw-calm-audio-row"><h4>{resolveCard(it).title}</h4><FloraAudio compact presentation="focused" src={it.audioSrc} label={`Play ${resolveCard(it).title}`} item={it} initialDuration={it.duration || 0}/><button onClick={()=>onOpen?.(it)}>Details &amp; tools</button></div> : <CoverCard presentation={presentation} previewText={calmLayout ? "" : undefined} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />;
   const renderWatch = it => <CoverCard presentation={presentation} previewText={calmLayout ? "" : undefined} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />;
+
+  if (calmLayout) {
+    const alternate = featured?.type === "video" ? restAudio[0] : watches[0] || restAudio[0];
+    const used = new Set([featured?.id, alternate?.id]);
+    const moreAudio = restAudio.filter(item => !used.has(item.id));
+    const moreWatches = watches.filter(item => !used.has(item.id));
+    const moreCount = moreAudio.length + moreWatches.length;
+    return <ListenCard className="fw-selected-listening-choice" eyebrow={active ? player?.isPlaying ? "On air" : "Pick up your listen" : "Worth your headphones"} title={featured?.type === "video" ? "A proper watch" : "Press play"} accent="sage">
+      {presentation && <SelectedRoomDetail section="listen"/>}
+      {featured && <>
+        <p style={{ fontFamily: SERIF, color: C.slate, margin: "0 0 12px", lineHeight: 1.45 }}>
+          {active ? "Your last listen is ready where you left it." : featured.audioSrc ? "An episode, ready here in the app." : featured.type === "video" ? "A watch, ready here in the app." : "A show you can open at its source."}
+        </p>
+        <CoverCard presentation={presentation} previewText="" item={featured} onOpen={() => onOpen?.(featured)}/>
+      </>}
+      {alternate && <div style={{ marginTop: 16 }}>
+        <p style={{ fontFamily: SERIF, color: C.slate, margin: "0 0 6px", lineHeight: 1.4 }}>Want {alternate.type === "video" ? "something to watch" : "another voice"}?</p>
+        <CalmFindRow item={alternate} onOpen={onOpen} label={alternate.type === "video" ? "Watch" : "Listen"} context={alternate.type === "video" && !alternate.duration ? "Creator video" : durOf(alternate)}/>
+      </div>}
+      <CalmMore enabled={moreCount > 0} title={`Browse all listens & watches · ${moreCount}`}>
+        {moreAudio.map(renderAudio)}
+        {moreWatches.map(renderWatch)}
+      </CalmMore>
+    </ListenCard>;
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
