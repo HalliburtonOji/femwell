@@ -939,6 +939,9 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
     //   body = the item's OWN full text (chapters / substantial lede), or [] on a content gap.
     const g_body = contentBodyOf(r);
     const g_takes = takeawaysOf(r);
+    const archiveLabel = calmLayout && /^FEMWELL_AI/.test(String(r.provider || ""))
+      ? /FICTION|STORY/.test(String(r.content_type || "")) ? "Generated fiction · archive" : "Archive · source review pending"
+      : null;
     return {
     id: r.id, type,
     title: r.title,
@@ -947,7 +950,7 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
     // Audio (piece #3): a SHORT summary — the flora player IS the content, not a wall of text.
     summary: (type === "audio" ? shortSummary(r.summary || r.lede) : stripHtml(r.summary || r.why_it_matters || "")) || undefined,
     category: r.category || undefined,
-    meta: [...(focusedPreview ? (durLabel(r) ? [["Clock",durLabel(r)]] : []) : [["Clock",durLabel(r) || "Duration unavailable"]]), ["BookOpen", r.source_name || r.author_name || "FemWell Editorial"]],
+    meta: [...(focusedPreview ? (durLabel(r) ? [["Clock",durLabel(r)]] : []) : [["Clock",durLabel(r) || "Duration unavailable"]]), ["BookOpen", archiveLabel || r.source_name || r.author_name || "FemWell Editorial"]],
     chips: [r.category, r.emotional_tag].filter(Boolean).slice(0, 3),
     // audio: no prose body (the player carries it); everything else gets its real body (piece G)
     body: type === "audio" ? [] : g_body,
@@ -969,7 +972,7 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
     ...(r.captions_url ? { captionsSrc: r.captions_url } : {}),
     ...(r.transcript ? { transcript: stripHtml(r.transcript) } : {}),
     // identity for the global player's lock-screen metadata
-    sourceName: r.source_name || r.author_name || "FemWell",
+    sourceName: archiveLabel || r.source_name || r.author_name || "FemWell",
     imageUrl: r.image_url || undefined,
     duration: Number(r.duration_seconds) || undefined,
     ...(r.editorial_local ? { saveable: false } : {}),
@@ -982,7 +985,7 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
       onClick: () => type === "book" ? openBook(r) : (type === "audio" && r.episode_url) ? openExternal(r.episode_url) : focusedPreview && type === "video" && !(r.video_id && r.is_embeddable !== false && !isTikTok(r)) && !playableMedia(r.content_url) ? openExternal(r.content_url || r.source_url) : openItem(r),
     }],
     };
-  }, [openItem, openExternal, openBook,focusedPreview]);
+  }, [openItem, openExternal, openBook,focusedPreview,calmLayout]);
 
   const articleCards = useMemo(() => {
     const candidates = rankedReads(selectedPresentation ? (feed || []).filter(r=>["article","guide"].includes(lfTypeOf(r))) : [], [...(grouped.article || []), ...(grouped.guide || [])]);
@@ -1033,18 +1036,19 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
       subtitle: calmLayout ? "Choose an episode at the source" : pd.show, category: "listen podcast rest",
       // the show's own blurb — real words, so the card is never thin (6a)
       summary: calmLayout ? "A show directory, not a particular episode. Open its source to see the current episodes and their lengths." : pd.summary || "",
-      meta: [["Headphones", pd.show], ["Clock", calmLayout ? "Episode lengths vary" : pd.duration || "A long listen"]],
+      meta: [["Headphones", calmLayout ? "Show directory" : pd.show], ["Clock", calmLayout ? "Episode lengths vary" : pd.duration || "A long listen"]],
       chips: ["podcast", "show"],
       body: calmLayout ? [] : pd.summary ? [pd.summary] : [],
       // honest: this one lives on Spotify/Apple, so we say so and send her there properly
       external: true,
+      ...(calmLayout ? { saveable: false, showDirectory: true } : {}),
       actions: [
         pd.platforms?.spotify && { label: "Spotify", Icon: "Headphones", primary: true, onClick: () => openExternal(pd.platforms.spotify) },
         pd.platforms?.apple && { label: "Apple", Icon: "Play", primary: false, onClick: () => openExternal(pd.platforms.apple) },
       ].filter(Boolean),
     }));
     return [...real, ...ext];
-  }, [grouped, rowCard, openExternal]);
+  }, [grouped, rowCard, openExternal, calmLayout]);
   const videoCards = useMemo(() => {
     // A long blurb is not proof of a substantial watch. In the Ideas preview,
     // unknown-length/short clips stay in the full watch directory, not the lead.

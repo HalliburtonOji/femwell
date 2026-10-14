@@ -5,6 +5,7 @@ import ReadFocus from "./ReadFocus";
 import ListenFocus from "./ListenFocus";
 import GoodLifeFocus from "./GoodLifeFocus";
 import YoursFocus from "./YoursFocus";
+import { ExpandDetailCard } from "@/components/brand/expandCards";
 import { CalmTaskDialog } from "./CalmLifestyle";
 vi.mock("@/api/base44Client", () => ({ base44: { auth: { me: vi.fn() }, entities: {}, functions: { invoke: vi.fn() } } }));
 
@@ -128,6 +129,16 @@ describe("calmer lists preserve exact source tasks", () => {
     expect(screen.getByText("Listen elsewhere")).toBeVisible();
     expect(screen.getByText("Choose a show")).toBeVisible();
     expect(screen.queryByText("Press play")).not.toBeInTheDocument();
+  });
+
+  it("opens a show directory without a fictional episode body or a broken Save", () => {
+    const openSource=vi.fn();
+    render(<ExpandDetailCard presentation="focused" room="listen" active item={{id:"show-directory",type:"audio",title:"A show",external:true,showDirectory:true,saveable:false,summary:"Choose the current episode at its source.",body:[],meta:[["Headphones","Show directory"],["Clock","Episode lengths vary"]],actions:[{label:"Spotify",onClick:openSource}]}} onClose={vi.fn()}/>);
+    expect(screen.getByText("Choose the current episode at its source.")).toBeVisible();
+    expect(screen.queryByText(/Only a summary is published here/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("checkbox",{name:"Save"})).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button",{name:"Spotify"}));
+    expect(openSource).toHaveBeenCalledOnce();
   });
 
   it("keeps the complete joy collection and sends the chosen activity directly to its canonical planner", () => {

@@ -833,7 +833,7 @@ function FocusedCardDetail({ item, active, onClose, saved, saving, onSave, room 
   return <FocusedLifestyleSheet title={item.title} eyebrow={item.kind} active={active} onClose={onClose} room={room}
     footer={<>{item.saveable !== false && <button className="fw-focused-button" onClick={onSave} disabled={saving} aria-busy={saving} aria-pressed={saved}>{saved ? <BookmarkCheck size={16}/> : <Bookmark size={16}/>} {saving ? "Saving…" : saved ? "Saved" : "Save"}</button>}{actions.map(action=><button key={action.label} className={`fw-focused-button${action.primary ? " fw-focused-button--primary" : ""}`} onClick={()=>{onClose();action.onClick?.(item);}}>{action.label}</button>)}</>}>
     <FocusedCardContents item={item} room={room}/>
-    {!body.length && !media && !readableSource && !item.quote && item.type !== "book" && <p className="fw-focused-note">Only a summary is published here so far.</p>}
+    {!body.length && !media && !readableSource && !item.quote && item.type !== "book" && !item.showDirectory && <p className="fw-focused-note">Only a summary is published here so far.</p>}
   </FocusedLifestyleSheet>;
 }
 
