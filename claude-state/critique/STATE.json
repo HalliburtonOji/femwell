@@ -43,8 +43,8 @@
   },
   "manualContent": {
     "id": "LIFESTYLE-CONTENT-2026-10-14",
-    "stage": "LC08 source 25f1c82 staged for Ideas; final 143/143 focused tests, independent source critique, lint/build/diff pass; live three-width proof pending",
-    "nextAtom": "LC08-A04: normal push and Base44 Ideas deploy, then actual signed-in 360/390/430 opened/tapped/closed Books reader and Planner sheet/return, P0/P1/P2 review. Do not write Halli's real plan/reading/social data for proof. Carry full Planner/Garden old-paper redesign, Saved/reader secondary endings and cost measurement into mapped next build. Main and automation held.",
+    "stage": "LC08 Ideas deployed at index-_ejzSQ5W.js; 143 focused tests and bounded signed-in 360/390/430 opens/returns passed, independent source critique complete",
+    "nextAtom": "LC09-MAP: inventory full Planner/Garden secondary states and remove rejected burnt underlay through a complete bespoke Ideas design, preserving every feature/data/action; then Saved-owner errors, reader settings/notes, factual attribution, full-watch proof and measured cost. Research and claim before editing. Main and automation held; live writes and physical iPhone still deferred.",
     "proofGate": "Review exact source quality and opened ownership before each room change; 360/390/430 real taps and secondary returns, P0/P1/P2 self-critique, organised Ideas first. Do not call Yoga full-length playback or captions verified. Keep Saved LR09 and reader A05 open. Main visual promotion requires Halli's explicit approval.",
     "carryForward": ["Clean Ideas reader false-open progress repaired in LC08; canonical main reader still follows its held old reached contract until separate promotion", "Full Planner/Garden old-paper redesign and signed-in exact read-back remain; preview book ref token is only a bounded return repair", "Complete 2701-source and later reader-page proof", "Good life short-time read/play inventory thin in the sampled account", "Listen directory ordering and Sky availability copy; 360 Read action wrap", "Generated factual archive and book attribution source review", "LR09 Saved owner read errors", "B01-S03-A05 remaining reader/secondary returns and unchanged main reader front-matter model", "Legacy MediaLens/TikTok no-op controls", "daily generator workflow still invokes no-op", "custom-generation weekly limit enforcement unproved", "C06 request and paid-unit measurement", "Other video runtimes/captions and physical iPhone unproved"],
     "automation": "PAUSED; manual work only"
@@ -54,9 +54,9 @@
     "liveBundle": "index-OD-gjaX_.js"
   },
   "current": {
-    "section": "Lifestyle / LC08 reading follow-through release (manual)",
-    "atom": "LC08-A04",
-    "status": "LC08 source 25f1c82 staged, local index-_ejzSQ5W.js versus public index-Dc1JCf0P.js. 143 tests/lint/build pass; independent critique CR01/02/03/05 source fixes re-proved. Native three-width release proof pending. Planner/Garden paper appearance CR04 remains open. Main and four-hour automation held."
+    "section": "Lifestyle / LC09 Planner-Garden secondary surface map (manual next)",
+    "atom": "LC09-MAP",
+    "status": "LC08 claims/source 25f1c82 and receipt 83092b7 live in Ideas at index-_ejzSQ5W.js. 143 focused tests/lint/build and root 360/390/430 bounded taps passed; independent source critic completed. CR04 Planner/Garden paper appearance and live write/read-back remain open. Main and four-hour automation held."
   },
   "lastCompleted": {
     "run": 5,
@@ -100,7 +100,7 @@
     "Account, auth, settings and Saved"
   ],
   "nextRunNumber": 7,
-  "latestReport": "claude-state/critique/lifestyle-content-2026-10-14.md",
+  "latestReport": "claude-state/critique/lifestyle-lc08-2026-10-15.md",
   "latestAutomatedReport": "claude-state/critique/reports/0006-books-opened-states-2026-10-08.md",
   "findings": [
     {
