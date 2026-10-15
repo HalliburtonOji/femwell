@@ -43,10 +43,10 @@
   },
   "manualContent": {
     "id": "LIFESTYLE-CONTENT-2026-10-14",
-    "stage": "LC02 Read/Listen source-to-ending Ideas slice deployed and bounded 360/390/430 proof recorded; full content reset incomplete",
-    "nextAtom": "LC03 editorial source/provenance review and video duration/playback quality, then Books/Good life/Yours/Sky choice logic",
-    "proofGate": "Continue source-by-source editorial audit and exact secondary returns; verify metadata and full runtime before calling a video substantial. Keep Saved LR09 and reader A05 open. Main visual promotion requires Halli's explicit approval.",
-    "carryForward": ["LR09 Saved owner read errors", "B01-S03-A05 reader/secondary returns", "daily generator workflow still invokes no-op", "custom-generation weekly limit enforcement unproved", "C06 request and paid-unit measurement", "YouTube runtime and physical iPhone unproved"],
+    "stage": "LC03 first Read/Listen editorial Ideas slice deployed; bounded 360/390/430 representative source-to-return proof recorded; full content reset incomplete",
+    "nextAtom": "LC04 Books source-to-ending content: actual shelf/club/monthly/classics/reader inventory and one reviewed focused choice, then Good life/Yours/Sky",
+    "proofGate": "Review exact source quality and opened ownership before each room change; 360/390/430 real taps and secondary returns, P0/P1/P2 self-critique, organised Ideas first. Do not call Yoga full-length playback or captions verified. Keep Saved LR09 and reader A05 open. Main visual promotion requires Halli's explicit approval.",
+    "carryForward": ["Generated factual archive and book attribution source review", "LR09 Saved owner read errors", "B01-S03-A05 reader/secondary returns", "Legacy MediaLens/TikTok no-op controls", "daily generator workflow still invokes no-op", "custom-generation weekly limit enforcement unproved", "C06 request and paid-unit measurement", "Other video runtimes/captions and physical iPhone unproved"],
     "automation": "PAUSED; manual work only"
   },
   "baseline": {
@@ -54,9 +54,9 @@
     "liveBundle": "index-OD-gjaX_.js"
   },
   "current": {
-    "section": "Lifestyle / Read and Listen content flow",
-    "atom": "LC03-SOURCE-REVIEW-VIDEO-METADATA-AND-EXACT-ENDINGS",
-    "status": "LC02 Ideas-only choice composition, scheduled generator hold and shared reader Close repair deployed on 14 October. Signed-in 360/390/430 representative Read/Listen tap, Browse, source and return paths checked; in-room Yoga iframe mounted and appeared playing, podcast started then was closed. Full video runtime, wider source accuracy, physical iPhone, Saved LR09, reader A05 and C06 remain open. Next LC03 source/provenance and duration gate. Main visual held; four-hour automation PAUSED."
+    "section": "Lifestyle / Books content and source-to-ending flow",
+    "atom": "LC04-BOOKS-REAL-SOURCE-AND-FIRST-CHOICE",
+    "status": "LC03 first Read/Listen Ideas-only content slice is deployed at index-DX6uieDM.js; two original full draft reads, checked roundtable, show-directory/source labels, measured Yoga 23:45 card and static-video Save repair have representative signed-in 360/390/430 source-to-return proof. Main visual held; four-hour automation PAUSED. Next manual LC04 Books actual monthly/shelf/club/classic/reader inventory and focused content choice. Archive provenance, LR09, A05, other media/captions and C06 remain open."
   },
   "lastCompleted": {
     "run": 5,
@@ -100,7 +100,7 @@
     "Account, auth, settings and Saved"
   ],
   "nextRunNumber": 7,
-  "latestReport": "claude-state/critique/lifestyle-rooms-2026-10-12.md",
+  "latestReport": "claude-state/critique/lifestyle-content-2026-10-14.md",
   "latestAutomatedReport": "claude-state/critique/reports/0006-books-opened-states-2026-10-08.md",
   "findings": [
     {
