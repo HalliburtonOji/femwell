@@ -1,5 +1,9 @@
 # Critic learning — append dated evidence
 
+## 15 October — source relevance needs settled data and visible hierarchy
+
+In the signed-in LC07 calm preview, the time picker used the *longest* loaded audio as an evening recommendation, which selected a 2h31m Part 2 despite a complete measured 45-minute episode already in Listen. The small-joy deck's first three were day-long plans despite three short actions behind More. Yours first displayed a factual cycle archive awaiting source review, then self-critique found generated medical-themed fiction and two different same-title stories crowding the first fold. Reorder existing identities only: measured playable and complete source, genuinely short action, two distinct full stories, with all alternate/archive rows under clear disclosures. Verify after the phase feed settles; a transient pre-feed view is not an empty-source diagnosis. This client ordering adds no function/schema/request, but source-level cost is not measured billing or capacity. 360/390/430 sampled taps passed; broad every-tap, billing, physical iPhone and full playback remain open.
+
 ## 8 October — run0006 opened tools own their lifetime and completion
 
 A kept page's display:none does not hide its body portal. Native client-nav Back and independent real Shell readers/chooser prove the distinction; a document-navigation control tears down correctly. Use the exact App owner, not an alias inferred by a child. Retain reader source/paragraph/settings/DOM, suspend global effects and hidden measurement/progress, cancel turns and return without refetch/duplicate reached signals. A hidden portal's absent selector is the wrong final assertion; test its visibility/inert/input/lock and retained return, keeping the original red evidence.
