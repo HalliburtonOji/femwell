@@ -43,10 +43,10 @@
   },
   "manualContent": {
     "id": "LIFESTYLE-CONTENT-2026-10-14",
-    "stage": "LC05 calm Ideas first-fold F01-F03 deployed and bounded signed-in 360/390/430 proof recorded after LC03 Read/Listen and LC04 Books B01/B02; full content reset incomplete",
-    "nextAtom": "LC04-B03 Books personal reading-position mismatch: chapter-9 first card versus chapter-15 first-fold shortcut; preserve daily/latest chapter access, then doorway relevance, shelf/Planner read-back and later reader pages. Next Good life actual time-fit inventory, Yours, Sky and Listen ordering.",
+    "stage": "LC05 calm Ideas first-fold and LC04 Books B03a personal chapter doorway deployed with bounded signed-in 360/390/430 proof after LC03 Read/Listen and Books B01/B02; full content reset incomplete",
+    "nextAtom": "LC04-B03-READER-MARK-SEMANTICS: opening page one advances chapter-read and Garden via onChapterReached; inventory Today/Garden/reader/marks, research completion semantics and stage a bounded Ideas fix if no held product decision. Then B03b Books doorway relevance, shelf/Planner read-back and later reader pages; Good life time-fit inventory, Yours, Sky, Listen ordering.",
     "proofGate": "Review exact source quality and opened ownership before each room change; 360/390/430 real taps and secondary returns, P0/P1/P2 self-critique, organised Ideas first. Do not call Yoga full-length playback or captions verified. Keep Saved LR09 and reader A05 open. Main visual promotion requires Halli's explicit approval.",
-    "carryForward": ["Books calendar chapter 15 shortcut skips this account's held chapter 9; keep latest access while aligning default with readingPosition", "Books doorway choice without meaningful featured effect, shelf/Planner read-back, complete 2701-source and later reader-page proof", "Good life short-time read/play inventory thin in the sampled account", "Listen directory ordering and Sky availability copy; 360 Read action wrap", "Generated factual archive and book attribution source review", "LR09 Saved owner read errors", "B01-S03-A05 remaining reader/secondary returns and unchanged main reader front-matter model", "Legacy MediaLens/TikTok no-op controls", "daily generator workflow still invokes no-op", "custom-generation weekly limit enforcement unproved", "C06 request and paid-unit measurement", "Other video runtimes/captions and physical iPhone unproved"],
+    "carryForward": ["Reader onChapterReached marks chapters read on page-one open and records Garden progress; audit Today and completion semantics before changing", "Books doorway choice without meaningful featured effect, shelf/Planner read-back, complete 2701-source and later reader-page proof", "Good life short-time read/play inventory thin in the sampled account", "Listen directory ordering and Sky availability copy; 360 Read action wrap", "Generated factual archive and book attribution source review", "LR09 Saved owner read errors", "B01-S03-A05 remaining reader/secondary returns and unchanged main reader front-matter model", "Legacy MediaLens/TikTok no-op controls", "daily generator workflow still invokes no-op", "custom-generation weekly limit enforcement unproved", "C06 request and paid-unit measurement", "Other video runtimes/captions and physical iPhone unproved"],
     "automation": "PAUSED; manual work only"
   },
   "baseline": {
@@ -54,9 +54,9 @@
     "liveBundle": "index-OD-gjaX_.js"
   },
   "current": {
-    "section": "Lifestyle / Books content and first-fold source-to-reader (Ideas preview)",
-    "atom": "LC04-B03-PERSONAL-CHAPTER-POSITION",
-    "status": "LC05 F01-F03 source 561a377/60018d5/31cf9fa live index-Cvf745rU.js; signed-in 360/390/430 bounded fold and Good inline-picker taps passed; 390 Books latest chapter 15 opens/closes correctly. P1: held chapter 9 vs first-fold action to latest 15. Next map preserving newest and personal next before editing. Main/automation held; LR09/A05/C06 carried."
+    "section": "Lifestyle / Books reader completion and cross-app progress (Ideas preview)",
+    "atom": "LC04-B03-READER-MARK-SEMANTICS",
+    "status": "LC04 B03a source c387a12/357ce45 live index-DcqwRzSg.js; 360/390/430 Continue opened held chapters and exact Books return, 390 named latest opened chapter 15, 18 focused tests passed. First-page open advanced local read mark and Garden callback via shared onChapterReached. Next audit completion semantics and two-way consumers before edit. Main/automation held; LR09/A05/C06 carried."
   },
   "lastCompleted": {
     "run": 5,
