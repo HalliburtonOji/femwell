@@ -7,6 +7,11 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE - 2026-10-15 - LC06 LARGER IDEAS RELEASE DEPLOYED; OPENED PROOF IN PROGRESS
+>
+> - Claim `964dcb6`, source `960b7a6`, staged record `4ae96ee` normally pushed. Base44 site deploy completed; public/dist both **`index-Bw5-7rFc.js`**, organised Ideas content board HTTP 200. The three related calm-only source atoms below are now reviewable in Ideas. No backend/function/entity deploy, no main visual promotion, and the four-hour automation remains PAUSED.
+> - 87 focused tests, scoped lint 0 errors (23 existing warnings), Vite build/diff and public identity passed. Signed-in 360/390/430 source-to-opened-state proof, shelf/Planner smoke and P0/P1/P2 self-critique are **in progress**, not yet certified. ✅ done this pass: normal push, Ideas site release and bundle/board verification. ⏭ queued: full LC06 mobile tap/return proof and any repair; then later room/cost/Saved work.
+>
 > ### CURRENT STATE - 2026-10-15 - LC06 LARGER BOOKS + GOOD LIFE IDEAS SOURCE STAGED
 >
 > - Claim `964dcb6` preceded source `960b7a6`. **Staged, not live:** public remains `index-DcqwRzSg.js`; local build `index-Bw5-7rFc.js`. In the calm Ideas preview, opening a serial chapter preserves her unread place; deliberate advance past its measured last page uses a new optional finish callback and the existing read/Garden path. Main/club reader reached semantics remain. The Books doorway now promotes a real matching unpassed title to the first book, keeps the stage default and full original set reachable, and can be changed. Good life's short choices reuse Read's two complete labelled three-minute Ideas drafts, with no false Save. Existing chapters, shelf, club, Planner, eleven rooms, all time bands/actions and main `/Lifestyle` remain. Brand Bible §10.5.32/mirror and organised Ideas board updated.
