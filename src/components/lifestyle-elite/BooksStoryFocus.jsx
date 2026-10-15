@@ -435,7 +435,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
               </button>
             ))}
             {set.reveal ? (
-              <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 2px", borderTop: set.alternates.length ? `1px solid ${C.hair}` : "none" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: calmLayout && set.reveal.chapter_start_url ? "wrap" : undefined, padding: "12px 2px", borderTop: set.alternates.length ? `1px solid ${C.hair}` : "none" }}>
                 {revealOpen ? <Cover title={set.reveal.title} w={44} h={62} room={room}/> : (
                   <span style={{ width: 44, height: 62, borderRadius: 8, border: `1px dashed ${C.goldHair}`, display: "grid", placeItems: "center", flexShrink: 0, fontFamily: UI, fontSize: 13, fontWeight: 700, color: C.faint }}>{set.reveal.day}{ord(set.reveal.day)}</span>
                 )}
@@ -444,7 +444,12 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
                   <span style={{ display: "block", fontFamily: UI, fontSize: 13, color: C.slate, margin: "2px 0 3px" }}>{revealOpen ? `${set.reveal.author} · ${DOORWAYS[set.reveal.doorway]?.label}` : `${DOORWAYS[set.reveal.doorway]?.label} · arrives on the ${set.reveal.day}${ord(set.reveal.day)}`}</span>
                   <span style={{ display: "block", fontFamily: SERIF, fontSize: 15, color: C.slate, lineHeight: 1.4 }}>{set.reveal.why}</span>
                 </span>
-                {revealOpen ? (
+                {revealOpen && calmLayout && set.reveal.chapter_start_url ? (
+                  <div style={{display:"flex",gap:8,width:"100%",flexWrap:"wrap"}}>
+                    <a href={set.reveal.chapter_start_url} target="_blank" rel="noopener noreferrer" className="fw-elite-press" style={{...doorBtnStyle(),fontSize:12}}>Start chapter 1 · Gutenberg ↗</a>
+                    <button onClick={() => openBook(set.reveal)} className="fw-elite-press" style={{...doorBtnStyle(),fontSize:12}}>FemWell reader · title pages first</button>
+                  </div>
+                ) : revealOpen ? (
                   <button onClick={() => openBook(set.reveal)} className="fw-elite-press" aria-label={`Open ${set.reveal.title}`} style={{ minWidth:44,minHeight:44,display:"grid",placeItems:"center",background: "transparent", border: "none", cursor: "pointer", padding: 0, flexShrink: 0 }}><ChevronRight size={15} color={C.faint} /></button>
                 ) : null}
               </div>

@@ -58,7 +58,10 @@ const EVERGREEN = {
     B(1260, "Jane Eyre", "Charlotte Brontë", "story", "A small, plain, furious woman who refuses to be managed. It still reads like a page-turner.", "Childhood cruelty, and the confinement of a mentally ill woman"),
   ],
   // the month's last book arrives on a set day — but its synopsis is here from day one
-  reveal: B(2701, "Moby-Dick", "Herman Melville", "words", "A big, strange, very funny book about obsession — nothing like the one people describe."),
+  reveal: { ...B(2701, "Moby-Dick", "Herman Melville", "words", "A big, strange, very funny book about obsession — nothing like the one people describe."),
+    // The FemWell reader includes Melville's long title/contents/extracts before chapter 1.
+    // This verified publisher-source anchor offers a direct story start without changing saved positions.
+    chapter_start_url: "https://www.gutenberg.org/cache/epub/2701/pg2701-images.html#link2HCH0001" },
 };
 
 const MONTHS = {

@@ -58,13 +58,14 @@ it("refuses a stale shelf acknowledgement after changing account", async () => {
   expect(screen.queryByRole("button",{name:"Reading",pressed:true})).not.toBeInTheDocument();
 });
 it("does not promise a monthly drop from evergreen books and keeps the full club note behind a named disclosure", async () => {
-  state.monthSet={monthName:"October",hasMonthlyEdition:false,featured:{title:"Persuasion",author:"Jane Austen",gutenberg_id:"105",why:"A second chance, beautifully told.",doorway:"comfort"},alternates:[],reveal:{title:"Moby-Dick",author:"Herman Melville",gutenberg_id:"2701",doorway:"comfort",why:"A strange, funny book about obsession.",revealed:false,day:25}};
+  state.monthSet={monthName:"October",hasMonthlyEdition:false,featured:{title:"Persuasion",author:"Jane Austen",gutenberg_id:"105",why:"A second chance, beautifully told.",doorway:"comfort"},alternates:[],reveal:{title:"Moby-Dick",author:"Herman Melville",gutenberg_id:"2701",doorway:"comfort",why:"A strange, funny book about obsession.",revealed:false,day:25,chapter_start_url:"https://www.gutenberg.org/cache/epub/2701/pg2701-images.html#link2HCH0001"}};
   state.club.mockResolvedValue({...pick,host_intro:"The complete club invitation stays here.",trigger_warnings:["A difficult family loss"]});
   const openBook=vi.fn(); render(<BooksStoryFocus calmLayout userId="alice" onOpenBook={openBook}/>);
   expect(screen.getByText("A book you can start")).toBeVisible();
   expect(screen.queryByText("October's book")).not.toBeInTheDocument();
   expect(screen.getByText("Moby-Dick")).toBeVisible();
-  fireEvent.click(screen.getByRole("button",{name:"Open Moby-Dick"}));
+  expect(screen.getByRole("link",{name:/Start chapter 1 · Gutenberg/})).toHaveAttribute("href",state.monthSet.reveal.chapter_start_url);
+  fireEvent.click(screen.getByRole("button",{name:/FemWell reader · title pages first/}));
   expect(openBook).toHaveBeenLastCalledWith(expect.objectContaining({_gutenbergId:"2701"}));
   await screen.findByText("Jane Eyre");
   expect(screen.getByRole("button",{name:"Open the book club"})).toBeVisible();
