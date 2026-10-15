@@ -688,6 +688,10 @@ export default function DailyStoryReader({
   // callers only ever act on chapters <= the one reached. The reader never
   // awaits it, so a slow handler can't block a page flip.
   onChapterReached,
+  // Optional completion signal for hosts that distinguish opening a chapter
+  // from finishing it. Fires only on a deliberate turn beyond its measured
+  // final page (including the last chapter's end card), never on mount/jump.
+  onChapterFinished,
   // Two-marks support (BookReader): an external jump request ({ index, nonce })
   // and a callback fired with the live { currentIndex, bookmarks } so the host
   // can render the physical bookmark + smart (schedule) marks bar.
@@ -996,6 +1000,19 @@ export default function DailyStoryReader({
     try { cb(currentIndex, chapters[currentIndex]); } catch { /* never let a handler break the reader */ }
   }, [active, bookId, seriesKey, currentIndex, chapters, positionReady, jumpPending]);
 
+  const onChapterFinishedRef = useRef(onChapterFinished);
+  const finishedThisSessionRef = useRef(new Set());
+  onChapterFinishedRef.current = onChapterFinished;
+  const finishCurrentChapter = useCallback(() => {
+    const chapter = chapters[currentIndex];
+    const cb = onChapterFinishedRef.current;
+    if (!activeRef.current || !chapter?.id || typeof cb !== "function") return;
+    const key = `${bookId || seriesKey}:${chapter.id}`;
+    if (finishedThisSessionRef.current.has(key)) return;
+    finishedThisSessionRef.current.add(key);
+    try { cb(currentIndex, chapter); } catch { /* keep the page turn usable */ }
+  }, [chapters, currentIndex, bookId, seriesKey]);
+
   // v4d — save reading position whenever it changes (after restore).
   useEffect(() => {
     if (!active || !posKey || !positionReady || fetchingChaptersRef.current || jumpPending || pendingAnchorRef.current != null) return;
@@ -1081,11 +1098,13 @@ export default function DailyStoryReader({
       if (noLock) return; // books: no lock screen, stay on last page
       if (reducedMotion) {
         clearRestoreAnchor();
+        finishCurrentChapter();
         setShowLocked(true);
       } else {
         setFlipState({ phase: "flipping", dir: 1 });
         scheduleFlip(() => {
           clearRestoreAnchor();
+          finishCurrentChapter();
           setShowLocked(true);
           setFlipState({ phase: "idle", dir: 0 });
         }, 600);
@@ -1094,16 +1113,18 @@ export default function DailyStoryReader({
     }
     if (reducedMotion) {
       clearRestoreAnchor();
+      finishCurrentChapter();
       setCurrentIndex((i) => Math.min(i + 1, latestRevealed));
     } else {
       setFlipState({ phase: "flipping", dir: 1 });
       scheduleFlip(() => {
         clearRestoreAnchor();
+        finishCurrentChapter();
         setCurrentIndex((i) => Math.min(i + 1, latestRevealed));
         setFlipState({ phase: "idle", dir: 0 });
       }, 600);
     }
-  }, [pageInChapter, currentChapterPages, measuredPages, currentIndex, latestRevealed, reducedMotion, showLocked, noLock, flipState.phase, scheduleFlip, clearRestoreAnchor]);
+  }, [pageInChapter, currentChapterPages, measuredPages, currentIndex, latestRevealed, reducedMotion, showLocked, noLock, flipState.phase, scheduleFlip, clearRestoreAnchor, finishCurrentChapter]);
 
   const flipBackward = useCallback(() => {
     if (!activeRef.current) return;

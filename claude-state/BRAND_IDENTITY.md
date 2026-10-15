@@ -905,6 +905,10 @@ Halli likes the calmer room design but the Read first fold is still too busy. Th
 
 The same hierarchy applies to what a first-fold action opens. If a complete choice is already visible inline, its shortcut should land and focus there rather than open a second copy in a modal. A glance and Jess should not both repeat the artwork caption or a long teaser before the actual content. Preserve the complete choice, full content and exact return behind their own owner; this is a way to remove duplicate presentation, never an excuse to strip a feature.
 
+### 10.5.32 BIGGER BUILDS, ONE COMPLETE JOURNEY — Halli, 15 October 2026
+
+A larger staged release must join related jobs into one useful journey and finish their opened states, not just accumulate more cards or another shallow polish atom. For Books, opening a serial chapter preserves place but does not claim it has been read; a deliberate last-page advance or the existing explicit Mark as read can complete it. A chosen reading doorway must affect the actual lead where a matching real book exists, while every original book remains reachable and the choice can be changed. For Good life, a time choice can reuse a complete, clearly labelled read from another room when it truly fits; never invent a media length, a persistent Save, or a new content shelf to fill a hole. Show the source, action, return and cost in one organised Ideas release, then self-critique and re-prove at phone widths. Main promotion and the four-hour automation stay held.
+
 ### 10.6 CRAFT THAT CARRIES MEANING (format = feeling) — ⏳ PROPOSED (awaiting sign-off)
 - **Wax rose seal + sealed letters:** Health becomes *correspondence* — each letter arrives **sealed with a wax rose** (her signature flower, phase-coloured); opening breaks the seal (once-only lift). Extends to a monthly **"letter from your body,"** a milestone certificate, a sealed **"letter to future you"** in Journal, Jess's notes as folds.
 - **Vines that grow with progress** (a leaf per session, a bloom at the end — growth, not a progress bar).

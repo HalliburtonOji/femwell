@@ -180,7 +180,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
     finally { if (sequence === clubSequence.current) setClubLoading(false); }
   }, []);
   useEffect(() => { refreshClub(); return () => { clubSequence.current++; }; }, [refreshClub]);
-  const set = useMemo(() => monthlySet(new Date(), lifeStage, doorway), [lifeStage, doorway, passTick]);
+  const set = useMemo(() => monthlySet(new Date(), lifeStage, doorway, calmLayout), [lifeStage, doorway, passTick, calmLayout]);
   // The authored MONTHS map may have no edition for this calendar month. In the
   // calm preview, evergreen books are available now, not a fictional monthly drop.
   const revealOpen = !!set.reveal && (set.reveal.revealed || (calmLayout && !set.hasMonthlyEdition));
@@ -346,6 +346,21 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
 
       {/* 4 · THIS MONTH'S BOOK — singular; the featured one is the product */}
       </CalmOptional>
+      {calmLayout && <section className={room ? "fw-room-doorway" : undefined} style={{ marginTop: 20, marginBottom: 12 }}>
+        <details key={doorway || "choose"} open={!doorway}>
+          <summary style={{ cursor: "pointer", fontFamily: UI, fontSize: 14, fontWeight: 700, color: C.ink, minHeight: 44, display: "flex", alignItems: "center" }}>
+            {doorway ? `Books for ${DOORWAYS[doorway]?.label.toLowerCase()} · change` : "What pulls you into a book? Choose one"}
+          </summary>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, margin: "6px 0 10px" }}>
+            {DOORWAY_KEYS.map((key) => <button key={key} type="button" aria-pressed={doorway === key} className="fw-elite-press"
+              onClick={() => { setDoorway(key); setDoor(key); }}
+              style={{ minHeight: 48, textAlign: "left", background: doorway === key ? C.sunk : C.surface, border: `1px solid ${doorway === key ? C.goldHair : C.hair}`, borderRadius: 14, padding: "10px 12px", fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: C.ink, cursor: "pointer" }}>
+              {DOORWAYS[key].label}
+            </button>)}
+          </div>
+          <p style={{ fontFamily: UI, fontSize: 13, color: C.slate, margin: 0 }}>This changes the first book, here on this device. Every book stays in the list.</p>
+        </details>
+      </section>}
       <section className={room ? "fw-room-feature" : undefined}>
         <Eyebrow cw="gold">{calmLayout && !set.hasMonthlyEdition ? "A book you can start" : `${set.monthName}'s book`}</Eyebrow>
         {set.featured ? (
@@ -499,7 +514,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
       ) : null}
 
       {/* 8 · THE DOORWAY — asked once; it orders, it never filters, it profiles nothing */}
-      {!doorway ? (
+      {!calmLayout && !doorway ? (
         <section className={room ? "fw-room-doorway" : undefined} style={{ marginTop: 24 }}>
           <Eyebrow cw="gold">One question, once</Eyebrow>
           <Title size={20}>What draws you into a book?</Title>

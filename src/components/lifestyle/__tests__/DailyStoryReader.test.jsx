@@ -501,6 +501,25 @@ describe("DailyStoryReader — v4 contract", () => {
       expect(JSON.parse(localStorage.getItem("fw_reader_bookmarks_boundary"))).toEqual([expect.objectContaining({ chapterIndex: 0, pageInChapter: 2 })]);
     } finally { vi.useRealTimers(); }
   });
+  it("separates a chapter opened from one deliberately finished, including the final chapter", () => {
+    const source = measuredSource("daily_story");
+    const reached = vi.fn(), finished = vi.fn();
+    render(<DailyStoryReader source={source} onChapterReached={reached} onChapterFinished={finished} />);
+    expect(reached).toHaveBeenCalledWith(0, source.items[0]);
+    expect(finished).not.toHaveBeenCalled();
+    fireEvent.click(footer().getByRole("button", { name: "Next page" }));
+    fireEvent.click(footer().getByRole("button", { name: "Next page" }));
+    expect(finished).not.toHaveBeenCalled();
+    fireEvent.click(footer().getByRole("button", { name: "Next chapter" }));
+    expect(finished).toHaveBeenCalledExactlyOnceWith(0, source.items[0]);
+    expect(reached).toHaveBeenLastCalledWith(1, source.items[1]);
+    fireEvent.click(footer().getByRole("button", { name: "Next chapter" }));
+    expect(finished).toHaveBeenCalledWith(1, source.items[1]);
+    expect(finished).toHaveBeenCalledTimes(2);
+    fireEvent.click(footer().getByRole("button", { name: "Back to chapter" }));
+    fireEvent.click(footer().getByRole("button", { name: "Next chapter" }));
+    expect(finished).toHaveBeenCalledTimes(2);
+  });
   it("consumes backward page intent without a persistence key so the next chapter still opens at its beginning", () => {
     const source = measuredSource(); render(<DailyStoryReader source={source} />);
     fireEvent.click(footer().getByRole("button", { name: "Next page" }));

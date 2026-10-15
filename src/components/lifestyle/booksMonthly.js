@@ -79,7 +79,7 @@ export function revealDay(date = new Date()) {
 
 // The month's set, resolved for HER: life-stage featured pick, her doorway ordering the alternates,
 // anything she's passed on swapped out, and the reveal held until its day (synopsis always shown).
-export function monthlySet(date = new Date(), lifeStage = null, doorway = null) {
+export function monthlySet(date = new Date(), lifeStage = null, doorway = null, preferDoorway = false) {
   const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
   const src = MONTHS[key] || EVERGREEN;
   const passed = new Set(passedIds());
@@ -91,7 +91,16 @@ export function monthlySet(date = new Date(), lifeStage = null, doorway = null) 
   // "Not for me" — promote the first alternate she hasn't passed on; the set quietly shrinks.
   while (featured && passed.has(featured.gutenberg_id) && alternates.length) featured = alternates.shift();
   alternates = alternates.filter((b) => !passed.has(b.gutenberg_id));
-  // her doorway sorts the alternates (it orders, it never filters — nothing is hidden from her)
+  // The calm Ideas room lets the stated taste choose the real lead. Keep the
+  // stage-led book in the remaining catalogue so choosing never deletes it.
+  if (preferDoorway && doorway && featured?.doorway !== doorway) {
+    const match = alternates.find((book) => book.doorway === doorway);
+    if (match) {
+      alternates = [featured, ...alternates.filter((book) => book.gutenberg_id !== match.gutenberg_id)];
+      featured = match;
+    }
+  }
+  // Her doorway also orders the rest; nothing is hidden from the calm room.
   if (doorway) alternates = [...alternates].sort((a, b) => (b.doorway === doorway) - (a.doorway === doorway));
 
   const rv = src.reveal || EVERGREEN.reveal;
@@ -99,7 +108,7 @@ export function monthlySet(date = new Date(), lifeStage = null, doorway = null) 
   const revealed = date.getDate() >= day;
   return {
     featured: passed.has(featured?.gutenberg_id) ? null : featured,
-    alternates: alternates.slice(0, 2),
+    alternates: preferDoorway ? alternates : alternates.slice(0, 2),
     reveal: rv ? { ...rv, revealed, day } : null,
     monthName: date.toLocaleDateString("en-GB", { month: "long" }),
     hasMonthlyEdition: Boolean(MONTHS[key]),

@@ -612,6 +612,11 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
   const storyNext = useMemo(() => nextChapterOf(chapters), [chapters]);
   const storyRead = story ? isChapterRead(story.id) : false;
   const storyReadCount = useMemo(() => readCount(chapters, storyPick), [chapters, storyPick, expanded, readerOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+  const recordStoryCompletion = useCallback((index, chapter) => {
+    if (!chapter?.id) return;
+    markChapterRead(chapter.id);
+    recordProgress(chapter.id, chapter.day_number ?? index, user?.id);
+  }, [user?.id]);
 
   // Track A — the editor pick is now the feed's TOP personalised read (not just the first story).
   const editorialPick = (feed && feed[0]) || grouped.story[0] || grouped.article[0] || items[0] || null;
@@ -919,10 +924,15 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
     const longest = (arr) => [...(arr || [])].sort((a, b) => (b.duration_seconds || 0) - (a.duration_seconds || 0));
     // The new demo's time promise uses measured durations. Longer/unknown items stay in their sections.
     const within = (rows, seconds) => byDur(rows).find(row => Number(row.duration_seconds) > 0 && Number(row.duration_seconds) <= seconds) || null;
+    // Reuse Read's complete, clearly labelled Ideas drafts in Good life. Their
+    // authored three-minute estimate is a ceiling for these time choices, not
+    // a claim that a sparse feed row or external show has been timed.
+    if (calmLayout && bandKey === "few") return { read: LIFESTYLE_EDITORIAL_DRAFTS[0], listen: within([...(grouped.audio || []), ...(grouped.video || [])], 300) };
+    if (calmLayout && bandKey === "fifteen") return { read: LIFESTYLE_EDITORIAL_DRAFTS[1], listen: within(grouped.audio, 900) };
     if (bandKey === "few") return { read: livingDemo ? timeFit([...(grouped.article || []), ...(grouped.guide || [])],300) : byDur(grouped.article)[0] || grouped.guide?.[0] || null, listen: livingDemo ? within([...(grouped.audio || []), ...(grouped.video || [])], 300) : grouped.audio?.[0] || grouped.video?.[0] || null };
     if (bandKey === "fifteen") return { read: livingDemo ? timeFit([...(grouped.article || []), ...(grouped.guide || [])],900) : grouped.article?.[1] || grouped.article?.[0] || null, listen: livingDemo ? within(grouped.audio, 900) : grouped.audio?.[0] || null };
     return { read: grouped.story?.[0] || longest(grouped.article)[0] || null, listen: longest(grouped.audio)[0] || grouped.video?.[0] || null };
-  }, [grouped, livingDemo]);
+  }, [grouped, livingDemo, calmLayout]);
 
   // ── CARD ADAPTERS (§6.7.7) — turn each live source into the shared card item.
   // We pass CONTENT only; `type` supplies the chrome (kind/Icon/colourway/scene/primary).
@@ -1915,11 +1925,8 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
             goToChapter={readerStart ?? (storyPick?.index ?? 0)}
             cleanPreview={focusedPreview} defaultImmersive
             onExit={() => { setReaderOpen(false); loadContinue(); }}
-            onChapterReached={(i, reachedChapter) => {
-              const c = reachedChapter; if (!c?.id) return;
-              markChapterRead(c.id);
-              recordProgress(c.id, c.day_number ?? i, user?.id);
-            }}
+            onChapterReached={calmLayout ? undefined : recordStoryCompletion}
+            onChapterFinished={calmLayout ? recordStoryCompletion : undefined}
           />
         </div>
       )}
@@ -2094,7 +2101,7 @@ function TimePickerLens({ pickFor, isSaved, onSave, onOpen, onTry, presentation,
       ); })}</div>
       <div style={{ ...lbl, marginBottom: 6 }}>For {band.label.toLowerCase()}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {read ? <ContentRow Icon={lfTypeOf(read) === "story" ? Feather : BookOpen} accent={cwOf("plum").petal} title={read.title} meta={`Read · ${metaOf(read)}`} saved={isSaved(read.id)} onSave={() => onSave(read)} onOpen={() => onOpen(read)} /> : !calmLayout && <EmptyLine>{presentation ? "No read fits this time. Try another moment." : "A read lands here as the library fills out."}</EmptyLine>}
+        {read ? <ContentRow Icon={lfTypeOf(read) === "story" ? Feather : BookOpen} accent={cwOf("plum").petal} title={read.title} meta={read.editorial_local ? "Ideas draft · about 3 min" : `Read · ${metaOf(read)}`} saved={isSaved(read.id)} onSave={read.editorial_local ? undefined : () => onSave(read)} onOpen={() => onOpen(read)} cta="Read" /> : !calmLayout && <EmptyLine>{presentation ? "No read fits this time. Try another moment." : "A read lands here as the library fills out."}</EmptyLine>}
         {listen ? (
           // A listen PLAYS IN PLACE here — the last reachable surface that used to route to
           // /LifestyleDetail. Title line for context + the real inline player (LifestyleMedia:
