@@ -796,7 +796,7 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
   // existing entity (no planner dispatcher exists); source+ref let the planner deep-link back.
   const scheduleReading = useCallback(async (arg) => {
     if (!user?.id || !arg) return false;
-    if (selectedPresentation) return startPlan({...arg,source:"books"});
+    if (selectedPresentation) return startPlan({...arg,source:"books",preview:calmLayout});
     const mk = (title, date, ref, notes, time) => base44.entities.PlannerItems.create({
       user_id: user.id, title, date, time: time || "21:00", category: "personal", repeat: "once",
       notes, source: "books", ref, is_completed: false, created_at: nowISO(), updated_at: nowISO(),
@@ -815,7 +815,7 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
         flash("Tonight at 9 — it's in your planner");
       }
     } catch { flash("Couldn't reach your planner just now"); }
-  }, [user, flash, selectedPresentation, startPlan]);
+  }, [user, flash, selectedPresentation, startPlan, calmLayout]);
 
   // ── A day for you → PlannerItems.create (a gentle planned day-off block) ──
   const savePlannerDay = useCallback(async (title) => {

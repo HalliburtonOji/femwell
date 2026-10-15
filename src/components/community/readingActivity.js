@@ -19,12 +19,16 @@ import { withTimeout } from "@/utils/safeEntity";
 export { REVEAL_K_FLOOR };
 
 function todayISO() {
-  try { return new Date().toISOString().slice(0, 10); } catch { return ""; }
+  try {
+    const day = new Date();
+    return `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
+  } catch { return ""; }
 }
 const readKey = (bookId, chapterIndex) => `fw_read_${bookId}_${chapterIndex}`;
 
 // ── 1. Device-local chapter progress (feeds the garden's `reading` day-set) ──────────────────
-// Write a date-stamped key the moment a chapter is reached / a prompt is answered. Idempotent
+// Write a date-stamped key when the caller confirms reading. Match the Garden's local day;
+// historical keys stay untouched. Idempotent
 // per day: only stamps once (keeps the first day this chapter was read, like garden day-sets).
 export function markChapterRead(bookId, chapterIndex) {
   if (bookId == null || chapterIndex == null) return;

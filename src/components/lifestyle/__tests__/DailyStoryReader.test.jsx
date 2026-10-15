@@ -520,6 +520,23 @@ describe("DailyStoryReader — v4 contract", () => {
     fireEvent.click(footer().getByRole("button", { name: "Next chapter" }));
     expect(finished).toHaveBeenCalledTimes(2);
   });
+  it("finishes the final real book chapter on a deliberate last-page advance without a lock screen", () => {
+    const complete = measuredSource("book");
+    const source = { ...complete, items: [complete.items[0]] };
+    const finished = vi.fn();
+    render(<DailyStoryReader source={source} onChapterFinished={finished} />);
+    expect(finished).not.toHaveBeenCalled();
+    fireEvent.click(footer().getByRole("button", { name: "Next page" }));
+    fireEvent.click(footer().getByRole("button", { name: "Next page" }));
+    expect(finished).not.toHaveBeenCalled();
+    const lastPage = visibleProse();
+    fireEvent.click(footer().getByRole("button", { name: "Next chapter" }));
+    expect(finished).toHaveBeenCalledExactlyOnceWith(0, source.items[0]);
+    expect(visibleProse()).toBe(lastPage);
+    expect(screen.queryByRole("button", { name: "Back to chapter" })).toBeNull();
+    fireEvent.click(footer().getByRole("button", { name: "Next chapter" }));
+    expect(finished).toHaveBeenCalledTimes(1);
+  });
   it("consumes backward page intent without a persistence key so the next chapter still opens at its beginning", () => {
     const source = measuredSource(); render(<DailyStoryReader source={source} />);
     fireEvent.click(footer().getByRole("button", { name: "Next page" }));

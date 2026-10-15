@@ -12,7 +12,7 @@ export function plannedRows(request, date, time, minutes, spacing) {
       date:isoDay(day), time, source:request.source || 'lifestyle',
       ref:checkpoints ? `club:${request.club.pick_key}` : request.ref,
       category:checkpoints || request.source === 'books' ? 'personal' : 'wellbeing',
-      notes:`d:${minutes};${checkpoints ? request.club.title : 'From Lifestyle'}${item.label ? ` · ${item.label}` : ''}`,
+      notes:`d:${minutes};${checkpoints ? request.club.title : 'From Lifestyle'}${item.label ? ` · ${item.label}` : ''}${request.preview ? ';view:calm' : ''}`,
       repeat:'once', is_completed:false };
   });
 }

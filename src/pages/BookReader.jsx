@@ -261,13 +261,16 @@ export default function BookReader({ cleanPreview = false } = {}) {
   useEffect(() => { chaptersRealRef.current = chaptersReal; }, [chaptersReal]);
   useEffect(() => { expectedRef.current = expectedChapter; }, [expectedChapter]);
 
-  // Chapter-boundary hook from the reader. Always records progress (garden + cohort). Opens the
+  // Chapter-boundary hook from the reader. The clean Ideas reader records a chapter only
+  // after a deliberate final-page advance; merely opening or entering it is not reading it.
+  // The canonical reader keeps its established progress contract until its own promotion.
+  // Opens the
   // chapter-end reflection ONLY when: chapters are real, a prompt exists, it's not the open-the-
   // book mount, once per chapter per session — AND she is NOT catching up (a rapid binge or a
   // chapter behind today's daily-read schedule defers the prompt; it returns when she's current).
   const onChapterReached = useCallback((chapterIndex) => {
     if (bookId == null || typeof chapterIndex !== "number") return;
-    recordProgress(bookId, chapterIndex, me?.id);   // always: garden + cohort signal
+    if (!cleanPreview) recordProgress(bookId, chapterIndex, me?.id);
 
     // Phase-2 content heads-up — shown the moment a WARNED chapter is REACHED (before its heavy
     // content). Non-blocking; once per chapter per session + once-per-device.
@@ -296,7 +299,12 @@ export default function BookReader({ cleanPreview = false } = {}) {
     setCatchingUp(false);
     shownCardRef.current.add(chapterIndex);
     setCardChapter(chapterIndex);
-  }, [bookId, me?.id]);
+  }, [bookId, me?.id, cleanPreview]);
+
+  const onChapterFinished = useCallback((chapterIndex) => {
+    if (!cleanPreview || bookId == null || !Number.isSafeInteger(chapterIndex) || chapterIndex < 0) return;
+    recordProgress(bookId, chapterIndex, me?.id);
+  }, [cleanPreview, bookId, me?.id]);
 
   useEffect(() => {
     if (!gutenbergId) {
@@ -446,6 +454,7 @@ export default function BookReader({ cleanPreview = false } = {}) {
         totalCount={chapters.length}
         bookId={bookId}
         onChapterReached={onChapterReached}
+        onChapterFinished={cleanPreview ? onChapterFinished : undefined}
         goToChapter={jump}
         onMarks={onMarks}
         onReflect={onReflectNow}

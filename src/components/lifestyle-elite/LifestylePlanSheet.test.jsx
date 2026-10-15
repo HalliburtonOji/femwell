@@ -5,11 +5,18 @@ const api=vi.hoisted(()=>({me:vi.fn(),create:vi.fn(),filter:vi.fn()}));
 vi.mock('@/api/base44Client',()=>({base44:{auth:{me:api.me},entities:{PlannerItems:{create:api.create,filter:api.filter}}}}));
 import LifestylePlanSheet,{plannedRows} from './LifestylePlanSheet';
 import {plannerItemToBlock} from '@/components/planner-v2/plannerItems';
+import {lifestyleReturnLink} from '@/lib/lifestyleReturns';
 beforeEach(()=>{vi.resetAllMocks();api.me.mockResolvedValue({id:'owner'});api.create.mockImplementation(async row=>({...row,id:'new-plan'}));api.filter.mockResolvedValue([]);});
 it('keeps provenance, actual minutes and chosen checkpoint spacing',()=>{
   const rows=plannedRows({source:'books',club:{title:'Book',pick_key:'edition',checkpoints:[{label:'First'},{label:'Second'}]}},'2026-10-06','18:30',15,7);
   expect(rows.map(r=>r.date)).toEqual(['2026-10-06','2026-10-13']);
   expect(rows[1]).toMatchObject({time:'18:30',ref:'club:edition',notes:'d:15;Book · Second',is_completed:false});
+});
+it('returns an Ideas book plan to the same clean reader edition after Planner read-back',()=>{
+  const planned=plannedRows({source:'books',title:'Read Pride and Prejudice',ref:'gutenberg:1342',preview:true},'2026-10-15','19:00',15,7)[0];
+  expect(planned.notes).toContain('view:calm');
+  expect(lifestyleReturnLink(planned)).toEqual({href:'/ReaderMarginDemo?gutenberg_id=1342',label:'Open this book'});
+  expect(lifestyleReturnLink({...planned,notes:'d:15;From Lifestyle'}).href).toBe('/BookReader?gutenberg_id=1342');
 });
 it('keeps a failed chosen-time draft and never writes accepted checkpoint twice',async()=>{
   api.create.mockImplementationOnce(async row=>({...row,id:'one'})).mockRejectedValueOnce(new Error('offline')).mockImplementationOnce(async row=>({...row,id:'two'}));

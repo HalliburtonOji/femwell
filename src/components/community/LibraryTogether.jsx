@@ -24,7 +24,7 @@ import { T, SERIF, UI, Eyebrow, Script, Hand, PAPER_BG, useEditorialFonts } from
 import { CornerSprig, FlowerGlyph, cwOf } from "@/components/brand/flora";
 import { loadBookClubPick, clubReached } from "@/components/community/bookClubConfig";
 import { dailyReadClubKey } from "@/components/community/clubsConfig";
-import { cohortReachedCount, recordProgress } from "@/components/community/readingActivity";
+import { cohortReachedCount } from "@/components/community/readingActivity";
 import { loadShelf, readLocal, bookKey, addBook, setStatus as setShelfStatusRemote, removeBook } from "@/components/community/bookshelf";
 import { communityHash, botanicalAlias } from "@/components/community/communityAnon";
 import { MOOD_SHELVES, readProgress, setReadProgress, progressLabel, joinBuddyRead, buddiesFor, reportBuddy, parseBuddyNote } from "@/components/community/libraryExtras";
@@ -399,9 +399,9 @@ export default function LibraryTogether({ user, onBack, onNav, onOpenCorner }) {
   const onStatus = (key, s) => changeShelf(key, () => setShelfStatusRemote(uid, key, s));
   const onRemove = key => changeShelf(key, () => removeBook(uid, key));
   const readingPick = async () => {
-    if (await onAdded({ title: pick.title, author: pick.author, gutenberg_id: pick.gutenberg_id, status: "reading", source: "pick" })) {
-      recordProgress(pick.gutenberg_id, Math.max(0, clubReached(pick.pick_key)), uid);
-    }
+    // Joining the shelf is an intention; the reader's deliberate chapter finish
+    // is the only event that should nourish a reading day in the Garden.
+    await onAdded({ title: pick.title, author: pick.author, gutenberg_id: pick.gutenberg_id, status: "reading", source: "pick" });
   };
 
   const visibleShelf = shelfScope === uid ? shelf : readLocal(uid);

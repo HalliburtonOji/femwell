@@ -1,5 +1,9 @@
 # Critic learning — append dated evidence
 
+## 15 October — LC08 finish and private acknowledgement
+
+Entering a chapter is not finishing it: the clean Books reader must use the reader's final-page finish callback, including its single-chapter no-lock branch. Keep warned-chapter and reflection entry on reached. A shelf mutation needs an owned exact row/status receipt or owned read-back, fresh account checks around queued writes, and a revision check after the last migration await. Garden's calendar and profile must use the current local day and owner. Source tests prove these bounded contracts; Planner/Garden's rejected old-paper appearance needs a separate full-surface pass and actual mobile proof.
+
 ## 15 October — source relevance needs settled data and visible hierarchy
 
 In the signed-in LC07 calm preview, the time picker used the *longest* loaded audio as an evening recommendation, which selected a 2h31m Part 2 despite a complete measured 45-minute episode already in Listen. The small-joy deck's first three were day-long plans despite three short actions behind More. Yours first displayed a factual cycle archive awaiting source review, then self-critique found generated medical-themed fiction and two different same-title stories crowding the first fold. Reorder existing identities only: measured playable and complete source, genuinely short action, two distinct full stories, with all alternate/archive rows under clear disclosures. Verify after the phase feed settles; a transient pre-feed view is not an empty-source diagnosis. This client ordering adds no function/schema/request, but source-level cost is not measured billing or capacity. 360/390/430 sampled taps passed; broad every-tap, billing, physical iPhone and full playback remain open.

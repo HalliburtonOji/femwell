@@ -8,7 +8,10 @@ export function lifestyleReturnLink(item, route = "/Lifestyle") {
   const ref = String(item?.ref ?? item?._raw?.ref ?? "");
   if (source === "books") {
     const book = /^gutenberg:([1-9]\d*)$/.exec(ref);
-    if (book) return { href: `/BookReader?gutenberg_id=${book[1]}`, label: "Open this book" };
+    if (book) {
+      const cleanPreview = /(?:^|;)view:calm(?:;|$)/.test(String(item?.notes ?? item?._raw?.notes ?? ""));
+      return { href: `/${cleanPreview ? "ReaderMarginDemo" : "BookReader"}?gutenberg_id=${book[1]}`, label: "Open this book" };
+    }
     const club = /^club:([\w-]{1,160})$/.exec(ref);
     if (club) {
       const href = /^daily-?read-/.test(club[1]) ? `/Community?club=${encodeURIComponent(club[1])}` : `/Community?view=bookclub&pick=${encodeURIComponent(club[1])}`;

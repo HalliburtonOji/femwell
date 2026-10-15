@@ -24,6 +24,7 @@ import {
   localChapters, loadGardenChapters, archiveChapter,
 } from "@/components/nurture/garden";
 import { readingDaySet } from "@/components/community/readingActivity";
+import { pickProfile } from "@/utils/userProfile";
 import {
   MILESTONES, milestoneDef, localMilestones, loadMilestones, detectMilestones,
 } from "@/components/nurture/milestones";
@@ -112,13 +113,21 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
         id ? base44.entities.PersonalTasks.filter({ user_id: id }, "-created_date", 120).catch(() => []) : [],
         id ? base44.entities.PlannerItems.filter({ user_id: id }, "-created_date", 120).catch(() => []) : [],
         id ? base44.entities.UserTaskCompletions.filter({ user_id: id }, "-created_date", 150).catch(() => []) : [],
-        base44.entities.UserProfile.filter({}, "-created_date", 1).catch(() => []),
+        id ? base44.entities.UserProfile.filter({ user_id: id }, "-created_date", 50).catch(() => []) : [],
         // Phase 3 — two cheap extra reads ONLY for rare-bloom detection (guarded, fail-open):
         // opened sealed letters + period-starts (a full cycle observed). Both light.
         id ? base44.entities.SealedLetters.filter({ user_id: id }, "-created_date", 60).catch(() => []) : [],
         id ? base44.entities.CycleEvents.filter({ user_id: id }, "-created_date", 40).catch(() => []) : [],
       ]);
       if (!alive) return;
+      // A profile/engagement batch can finish after a different account signs in.
+      // Do not render or archive the previous owner's Garden in that session.
+      const currentOwner = await base44.auth.me().catch(() => null);
+      if (!alive) return;
+      if ((currentOwner?.id || null) !== id) {
+        setUid(null); setProfile(null); setData(null);
+        return;
+      }
       const arr = (x) => (Array.isArray(x) ? x.filter(Boolean) : []);
       const dayOf = (x) => x.day_key || x.date || (x.created_date ? String(x.created_date).slice(0, 10) : (x.created_at ? String(x.created_at).slice(0, 10) : null));
       const daySet = (...xs) => { const s = new Set(); xs.forEach((g) => arr(g).forEach((x) => { const d = dayOf(x); if (d) s.add(d); })); return s; };
@@ -158,7 +167,8 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
       const curKey = currentChapterKey();
       const cur = grouped[curKey] || { activeDays: 0, engagement: 0, topArea: null };
       const comp = id ? getCompanion(id) : null;
-      const lifeStage = (Array.isArray(prof) ? prof[0] : null)?.life_stage || "";
+      const ownProfile = pickProfile(Array.isArray(prof) ? prof.filter(row => row?.user_id === id) : []);
+      const lifeStage = ownProfile?.life_stage || "";
       const pastKeys = Object.keys(grouped).filter((k) => k < curKey);
       if (id && comp) {
         const kept = new Set(localChapters(id).map((c) => c.chapter_key));
@@ -199,7 +209,7 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
       }
 
       setUid(id);
-      setProfile(Array.isArray(prof) ? prof[0] : null);
+      setProfile(ownProfile);
       setData({
         lifetime, tended7, gapDays, areas, todayAreas, weekAreas,
         chapterKey: curKey, chapterLabelText: chapterLabel(curKey),

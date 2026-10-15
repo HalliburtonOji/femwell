@@ -14,7 +14,11 @@ describe("calmer lists preserve exact source tasks", () => {
     const onOpen=vi.fn(),onDetails=vi.fn();
     const rows=[{id:"mara",type:"book",title:"Starting Over",summary:"Mara runs her mother's flower shop."},{id:"lena",type:"book",title:"Starting Over",summary:"Lena makes ceramics while caring for her mother."},{id:"unique",type:"article",title:"Other find",summary:"No repeated preview needed."}];
     render(<YoursFocus calmLayout presentation="focused" phaseCards={rows} onOpen={onOpen} onDetails={onDetails}/>);
-    expect(screen.getByText(rows[0].summary)).toBeVisible();expect(screen.getByText(rows[1].summary)).toBeVisible();expect(screen.queryByText(rows[2].summary)).not.toBeInTheDocument();
+    expect(screen.getByText(rows[0].summary)).toBeVisible();
+    expect(screen.getByText(rows[1].summary)).not.toBeVisible();
+    fireEvent.click(screen.getByText("More discoveries · 1"));
+    expect(screen.getByText(rows[1].summary)).toBeVisible();
+    expect(screen.queryByText(rows[2].summary)).not.toBeInTheDocument();
     const opens=screen.getAllByRole("button",{name:/^Starting Over.*Open$/});const details=screen.getAllByRole("button",{name:"Details & tools for Starting Over"});
     rows.slice(0,2).forEach((row,index)=>{fireEvent.click(opens[index]);expect(onOpen).toHaveBeenLastCalledWith(row);fireEvent.click(details[index]);expect(onDetails).toHaveBeenLastCalledWith(row);});
   });
@@ -146,13 +150,13 @@ describe("calmer lists preserve exact source tasks", () => {
     const joys = Array.from({ length: 12 }, (_, i) => ({ id: `joy-${i}`, type: "ritual", title: `Joy ${i}`, body: [`The complete activity ${i}.`] }));
     render(<GoodLifeFocus calmLayout presentation="focused" joys={joys} onPlan={onPlan} onSlip={onSlip} onOpenRooms={onOpenRooms}/>);
     expect(screen.queryByText("Joy 3")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "More small joys" }));
+    fireEvent.click(screen.getByRole("button", { name: "Day-off ideas & permission" }));
     for (const joy of joys) expect(screen.getByText(joy.title)).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: /^Joy 11.*Plan a time$/ }));
     expect(onPlan).toHaveBeenCalledExactlyOnceWith(joys[11]);
     fireEvent.click(screen.getByRole("button", { name: "Details & tools for Joy 11" }));
     expect(onSlip).toHaveBeenCalledExactlyOnceWith(joys[11]);
-    fireEvent.click(screen.getByRole("button", { name: "A few is plenty" }));
+    fireEvent.click(screen.getByRole("button", { name: "Show just three" }));
     expect(screen.queryByText("Joy 11")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Explore life’s rooms" }));
     expect(onOpenRooms).toHaveBeenCalledOnce();

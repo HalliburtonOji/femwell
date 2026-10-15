@@ -44,6 +44,7 @@ async function ownerRows(userId, key) {
   for (let skip = 0; ; skip += 150) {
     const page = await base44.entities.UserBook.filter({ user_id: userId, ...(key ? { book_key: key } : {}) }, "-created_date", 150, skip);
     if (!Array.isArray(page)) throw new Error("Couldn't read your shelf.");
+    if (page.some(row => !row?.id || row.user_id !== userId || (key && bookKey(row) !== key))) throw new Error("Couldn't confirm which shelf these books belong to.");
     let added = 0;
     page.forEach(row => {
       if (row.user_id !== userId || (key && bookKey(row) !== key) || !row.id || seen.has(row.id)) return;
@@ -51,6 +52,28 @@ async function ownerRows(userId, key) {
     });
     if (page.length < 150) return all;
     if (!added) throw new Error("Couldn't read the rest of your shelf. Try again.");
+  }
+}
+async function assertOwner(userId) {
+  if (!userId) return;
+  const me = await base44.auth.me();
+  if (me?.id !== userId) throw new Error("Your reading account changed. Refresh your shelf.");
+}
+function matchesRow(row, userId, key, status) {
+  return !!row?.id && row.user_id === userId && bookKey(row) === key && (status === undefined || row.status === status);
+}
+async function confirmRow(userId, key, status, id, receipt) {
+  if (receipt?.id === id && matchesRow(receipt, userId, key, status)) return receipt;
+  const rows = await base44.entities.UserBook.filter({ id, user_id: userId }, undefined, 1);
+  const actual = Array.isArray(rows) ? rows.find(row => row?.id === id) : null;
+  if (!matchesRow(actual, userId, key, status)) throw new Error("Couldn't confirm the shelf change. Try again.");
+  return actual;
+}
+async function updateRows(userId, rows, status) {
+  for (const row of rows) {
+    await assertOwner(userId);
+    const receipt = await base44.entities.UserBook.update(row.id, { status, updated_at: nowISO() });
+    await confirmRow(userId, bookKey(row), status, row.id, receipt);
   }
 }
 function cacheBook(item) {
@@ -62,8 +85,11 @@ function cacheBook(item) {
   })();
 }
 async function createRow(userId, item) {
+  await assertOwner(userId);
   const row = await base44.entities.UserBook.create({ user_id: userId, book_key: item.key, title: item.title, author: item.author, gutenberg_id: item.gutenberg_id || undefined, olid: item.olid || undefined, status: item.status, cover_hint: item.cover_hint || undefined, source: item.source, added_at: nowISO(), updated_at: nowISO() });
   if (!row?.id) throw new Error("Couldn't confirm the shelf change. Try again.");
+  await confirmRow(userId, item.key, item.status, row.id, row);
+  await assertOwner(userId);
   cacheBook(item);
   return { ...item, _row: row.id, _sync: "confirmed" };
 }
@@ -90,9 +116,11 @@ export async function loadShelf(userId, { strict = false } = {}) {
         return existing.length ? dedup(existing)[0] : await createRow(userId, current);
       } catch { syncError = "Some books are on this device only. Try syncing your shelf again."; return item; }
     })));
-    // A newer acknowledged write owns the mirror; an older fetch cannot rewind it.
-    if ((revisions.get(userId) || 0) !== revision) return readLocal(userId);
     const merged = [...server, ...migrated.filter(Boolean)];
+    if (localOnly.length) await assertOwner(userId);
+    // Keep this check after the last await. A mutation can finish while an older
+    // migration is waiting on auth, and must retain authority over the mirror.
+    if ((revisions.get(userId) || 0) !== revision) return readLocal(userId);
     writeLocal(userId, merged);
     if (syncError) merged.syncError = syncError;
     return merged;
@@ -109,12 +137,14 @@ export function addBook(userId, book) {
   return serial(userId, item.key, async () => {
     let confirmed = item;
     if (userId) {
+      await assertOwner(userId);
       const existing = await ownerRows(userId, item.key);
       if (existing.length) {
         // Preserve physical duplicate records; update their shared status.
-        await Promise.all(existing.map(row => base44.entities.UserBook.update(row.id, { status: item.status, updated_at: nowISO() })));
+        await updateRows(userId, existing, item.status);
         confirmed = { ...norm(existing[0]), status: item.status, _row: existing[0].id, _sync: "confirmed" };
       } else confirmed = await createRow(userId, item);
+      await assertOwner(userId);
     }
     const list = [confirmed, ...readLocal(userId).filter(row => row.key !== item.key)];
     if (!writeLocal(userId, list) && !userId) throw new Error("Couldn't keep your shelf on this device.");
@@ -126,15 +156,17 @@ export function setStatus(userId, key, status) {
   return serial(userId, key, async () => {
     let confirmed;
     if (userId) {
+      await assertOwner(userId);
       const existing = await ownerRows(userId, key);
       if (!existing.length) {
         const local = readLocal(userId).find(row => row.key === key);
         if (!local) throw new Error("That book couldn't be found. Refresh your shelf.");
         confirmed = await createRow(userId, { ...local, status });
       } else {
-        await Promise.all(existing.map(row => base44.entities.UserBook.update(row.id, { status, updated_at: nowISO() })));
+        await updateRows(userId, existing, status);
         confirmed = { ...norm(existing[0]), status, _row: existing[0].id, _sync: "confirmed" };
       }
+      await assertOwner(userId);
     } else {
       const local = readLocal(userId).find(row => row.key === key);
       if (!local) throw new Error("That book couldn't be found. Refresh your shelf.");
@@ -148,8 +180,16 @@ export function setStatus(userId, key, status) {
 export function removeBook(userId, key) {
   return serial(userId, key, async () => {
     if (userId) {
+      await assertOwner(userId);
       const rows = await ownerRows(userId, key);
-      await Promise.all(rows.map(row => base44.entities.UserBook.delete(row.id)));
+      for (const row of rows) {
+        await assertOwner(userId);
+        await base44.entities.UserBook.delete(row.id);
+        const remaining = await base44.entities.UserBook.filter({ id: row.id, user_id: userId }, undefined, 1);
+        if (!Array.isArray(remaining) || remaining.some(item => item?.id === row.id)) throw new Error("Couldn't confirm the shelf removal. Try again.");
+      }
+      await assertOwner(userId);
+      if ((await ownerRows(userId, key)).length) throw new Error("Couldn't confirm the shelf removal. Try again.");
     }
     const list = readLocal(userId).filter(row => row.key !== key);
     if (!writeLocal(userId, list) && !userId) throw new Error("Couldn't remove the book on this device.");

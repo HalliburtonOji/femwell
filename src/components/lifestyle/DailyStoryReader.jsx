@@ -1095,7 +1095,7 @@ export default function DailyStoryReader({
     if (measuredPages === undefined) return;
     // At end of chapter — go to next chapter (or lock).
     if (currentIndex >= latestRevealed) {
-      if (noLock) return; // books: no lock screen, stay on last page
+      if (noLock) { finishCurrentChapter(); return; } // books: finish deliberately, no lock screen, stay on last page
       if (reducedMotion) {
         clearRestoreAnchor();
         finishCurrentChapter();

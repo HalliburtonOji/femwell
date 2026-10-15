@@ -2,6 +2,7 @@ import React from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 const state = vi.hoisted(() => ({ load: vi.fn(), local: vi.fn(), add: vi.fn(), status: vi.fn(), club: vi.fn(), reached: vi.fn(), pos: null, monthSet: null }));
+vi.mock("@/lib/app-params", () => ({ appParams: { appId: null, token: null, fromUrl: "" } }));
 vi.mock("@/components/community/bookshelf", () => ({ loadShelf: state.load, readLocal: state.local, addBook: state.add, setStatus: state.status }));
 vi.mock("@/components/community/bookClubConfig", () => ({ loadBookClubPick: state.club, clubReached: state.reached }));
 vi.mock("@/components/lifestyle/dailyStory", () => ({ readingPosition: () => state.pos, isChapterRead: () => false }));

@@ -17,6 +17,7 @@ vi.mock("@/components/lifestyle/DailyStoryReader", async (importOriginal) => ({ 
     {props.source.items.map(item => <section key={item.id}><h3>{item.heading}</h3><p>{item.body}</p><small>{item.attribution}</small></section>)}
     <button onClick={() => props.onChapterReached(0)}>Reach first chapter</button>
     <button onClick={() => props.onChapterReached(1)}>Reach second chapter</button>
+    {props.onChapterFinished && <button onClick={() => props.onChapterFinished(0)}>Finish first chapter</button>}
     <button onClick={() => props.onMarks({ currentIndex: 1, bookmarks: [{ chapterIndex: 0, ts: 1 }] })}>Mark second chapter</button>
     <button onClick={props.onReflect}>Reflect on where you are</button>
     <output aria-label="Requested chapter">{props.goToChapter?.index}</output>
@@ -94,6 +95,15 @@ describe("daily marks at British summer-time midnight", () => {
 });
 
 describe("Ideas-only reader margin preview", () => {
+  it("does not turn opening or entering a classic chapter into Garden progress", async () => {
+    open(1342, false, true);
+    await screen.findByRole("article", { name: "Controlled book reader" });
+    fireEvent.click(screen.getByRole("button", { name: "Reach first chapter" }));
+    fireEvent.click(screen.getByRole("button", { name: "Reach second chapter" }));
+    expect(api.progress).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Finish first chapter" }));
+    expect(api.progress).toHaveBeenCalledExactlyOnceWith("1342", 0, undefined);
+  });
   it("starts chapter one at the story while preserving the complete title pages in a named disclosure", async () => {
     const text = "TITLE PAGE\nA complete preface.\n\nCHAPTER I\nThe first true scene.\n\nCHAPTER II\nThe second scene.";
     api.invoke.mockResolvedValueOnce({ data: { title: "A complete book", author: "An author", text } });
