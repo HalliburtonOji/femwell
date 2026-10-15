@@ -7,6 +7,10 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE - 2026-10-15 - LC06 IDEAS BOARD DEPLOY RECEIPT
+>
+> - Review/plan commit `49951e3` pushed normally. Refreshed `public/lifestyle-content/index.html`, ran a fresh Vite build and Base44 site deploy, then verified the public Ideas board contains the LC06 proof and LC07 plan. The deterministic frontend bundle remains **`index-Bw5-7rFc.js`**. Main promotion and paused automation unchanged. ✅ done: reviewable larger Ideas release record. ⏭ next manual LC07 map and build; outstanding P2 proof remains explicit below.
+>
 > ### CURRENT STATE - 2026-10-15 - LC06 LARGER IDEAS RELEASE REVIEWED; LC07 LARGER BATCH MAPPED NEXT
 >
 > - Claim `964dcb6`, source `960b7a6`, release receipt `dd5936e`; live Ideas/dist **`index-Bw5-7rFc.js`**. LC06 joins truthful serial completion semantics, a Books taste that changes the real featured source, and complete short Good life reads. Main `/Lifestyle`, backend/schema/functions and the PAUSED four-hour automation are unchanged. The organised Ideas board includes the review and LC07 direction. Brand Bible §10.5.32/mirror and [LC06 evidence](critique/lifestyle-lc06-2026-10-15.md) are current.
