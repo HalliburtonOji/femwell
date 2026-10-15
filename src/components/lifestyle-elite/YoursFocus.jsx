@@ -63,7 +63,8 @@ export default function YoursFocus({ savedCards = [], savedSummary, phaseCards =
   const renderSaved = it => calmLayout && !it.audioSrc && !it.youtubeId && !it.videoSrc ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails} label={it._keep?._unavailable ? "Retry source" : ["article","daily_story","book"].includes(it.type) ? "Read" : "Open source"}/> : <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation && !it.audioSrc && !it.youtubeId && !it.videoSrc ? ()=>onOpen?.(it) : undefined} consumeLabel={it._keep?._unavailable ? "Retry source" : ["article","daily_story","book"].includes(it.type) ? "Read" : "Open source"} />;
   const renderDiscovery = it => calmLayout && !it.audioSrc && !it.youtubeId && !it.videoSrc ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails} label="Open" context={discoveryContext(it)}/> : <CoverCard presentation={presentation} previewText={calmLayout ? "" : undefined} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />;
   const discoveries = calmLayout ? reviewedDiscoveriesFirst(phaseCards) : phaseCards;
-  const readyDiscoveries = calmLayout ? discoveries.filter(it => it.sourceName !== "Archive · source review pending") : discoveries;
+  const readyDiscoveries = calmLayout ? discoveries.filter(it => !["Archive · source review pending", "Generated fiction · archive"].includes(it.sourceName)) : discoveries;
+  const moreDiscoveries = calmLayout ? [...readyDiscoveries.slice(3), ...discoveries.filter(it => it.sourceName === "Generated fiction · archive")] : [];
   const pendingDiscoveries = calmLayout ? discoveries.filter(it => it.sourceName === "Archive · source review pending") : [];
 
   return (
@@ -88,7 +89,7 @@ export default function YoursFocus({ savedCards = [], savedSummary, phaseCards =
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {readyDiscoveries.slice(0, calmLayout ? 3 : undefined).map(renderDiscovery)}
             {calmLayout && !readyDiscoveries.length && <p>These finds need a source check before we lead with them.</p>}
-            <CalmMore enabled={calmLayout && readyDiscoveries.length > 3} title={`More discoveries · ${Math.max(0, readyDiscoveries.length - 3)}`}>{calmLayout && readyDiscoveries.slice(3).map(renderDiscovery)}</CalmMore>
+            <CalmMore enabled={calmLayout && moreDiscoveries.length > 0} title={`More discoveries · ${moreDiscoveries.length}`}>{calmLayout && moreDiscoveries.map(renderDiscovery)}</CalmMore>
             <CalmMore enabled={calmLayout && pendingDiscoveries.length > 0} title={`Archive · source review pending · ${pendingDiscoveries.length}`}>{calmLayout && pendingDiscoveries.map(renderDiscovery)}</CalmMore>
           </div>
         </YoursCard>
