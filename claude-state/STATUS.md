@@ -7,6 +7,10 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE - 2026-10-15 - LC04 BOOKS IDEAS READER UNDERLAY REPROVED CLEAN
+>
+> - Late self-critique repair source `28e3ec0`/`6673f79` pushed normally and Base44 site deployed; public/dist **`index-ub0v4b0c.js`**. The actual animated reader parent and route background now compute `background-image: none` with the clean reader colour; redundant layout bottom padding is gone only on the Ideas preview reader. Signed-in **360/390/430px** lower-viewport screenshots show the real Moby chapter line, reachable controls and no retired burnt texture; final 430px Back returned exact Books. Reader 29/29 tests, Vite build/diff pass; organised Ideas board is being refreshed with final proof. No main-reader or other route background, source, bookmark, backend, social action or automation changed. LC04-B03 Books first-fold relevance and source endings, then Good life/Yours/Sky remain; full overhaul is not done.
+>
 > ### CURRENT STATE - 2026-10-15 - READER UNDERLAY CLEAN; DOUBLE BOTTOM GAP TRIM STAGED
 >
 > - Source `28e3ec0` pushed and Base44 site deployed; live **`index-DXozjoQS.js`**. Signed-in 390px computed styles now show `background-image: none` and the same clean `rgb(245,244,241)` on both actual ancestor wrappers. The end-of-first-page screenshot no longer shows retired mottled paper, but self-critique found a redundant ~144px layout padding below the preview's own floating-nav reserve. A scoped `main:has(.fw-book-preview)` rule removes only that duplicate padding; local build `index-ub0v4b0c.js`, reader 29/29 and diff/build pass. Normal push/deploy then 360/390/430 bottom-pixel and exact Back reproof gate closure. Main and automation unchanged.
