@@ -10,6 +10,10 @@ main.pb-36 > div:has(> .fw-book-preview) {
   background-image: none !important;
   background-color: #f5f4f1 !important;
 }
+main.pb-36:has(.fw-book-preview) {
+  /* The preview already reserves the floating-nav clearance below. */
+  padding-bottom: 0 !important;
+}
 .fw-book-preview .fw-book-folio,
 .fw-book-preview .fw-book-preview-body {
   max-width: 700px;
