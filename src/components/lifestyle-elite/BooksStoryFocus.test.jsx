@@ -25,6 +25,25 @@ it("keeps the complete chapter run, real actions and locked chapters in approved
   fireEvent.click(screen.getByRole("button",{name:/Read straight through/})); expect(read).toHaveBeenLastCalledWith(0);
   await screen.findByText("Jane Eyre");
 });
+it("keeps today's open chapter directly reachable when her held place is earlier", () => {
+  const pool=Array.from({length:30},(_,i)=>({id:`chapter-${i+1}`,day_number:i+1,title:`Chapter ${i+1}`,segment_text:"The author's complete chapter."}));
+  state.pos={pool,chapter:pool[8],index:8,total:30,unlockedCount:15,waiting:7,caughtUp:false};
+  const read=vi.fn();
+  render(<BooksStoryFocus calmLayout artDirection="reading-room" chapters={pool} pick={{index:14,chapter:pool[14],monthName:"October"}} onRead={read}/>);
+  fireEvent.click(screen.getByText("Chapters & short reads"));
+  fireEvent.click(screen.getByRole("button",{name:/Today's open chapter · 15/}));
+  expect(read).toHaveBeenCalledWith(14);
+  fireEvent.click(screen.getByRole("button",{name:"Chapter 9",exact:true}));
+  expect(read).toHaveBeenLastCalledWith(8);
+});
+it("does not duplicate a latest-chapter link when her place is already current", () => {
+  const pool=Array.from({length:15},(_,i)=>({id:`chapter-${i+1}`,day_number:i+1,title:`Chapter ${i+1}`,segment_text:"The author's complete chapter."}));
+  state.pos={pool,chapter:pool[14],index:14,total:15,unlockedCount:15,waiting:0,caughtUp:true};
+  render(<BooksStoryFocus calmLayout chapters={pool} pick={{index:14,chapter:pool[14],monthName:"October"}}/>);
+  fireEvent.click(screen.getByText("Chapters & short reads"));
+  expect(screen.queryByRole("button",{name:/Today's open chapter/})).not.toBeInTheDocument();
+  expect(screen.getByRole("button",{name:"Chapter 15",exact:true})).toBeVisible();
+});
 it("uses the actual club edition in scheduling and withholds unreached prompts", async () => {
   const schedule=vi.fn(); render(<BooksStoryFocus userId="alice" onSchedule={schedule}/>);
   await screen.findByText("Jane Eyre"); expect(screen.getByText(/Gutenberg 1260/)).toBeVisible(); expect(screen.queryByText("SECRET QUESTION")).not.toBeInTheDocument();

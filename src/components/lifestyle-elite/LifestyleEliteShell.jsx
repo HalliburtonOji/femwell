@@ -70,7 +70,7 @@ import { useLifestyleKeepAcknowledgements } from "./useLifestyleKeepAcknowledgem
 import { CoverCard, ExpandDetailCard } from "@/components/brand/expandCards";
 import FaceOverlay from "@/components/brand/FaceOverlay";
 // the Daily Story — ONE gating contract + the real immersive reader (component #5)
-import { DAILY_STORY_SERIES, isoDay, loadStoryChapters, chapterForDay, nextChapterOf, chapterLabel, framingLine, markChapterRead, isChapterRead, readCount } from "@/components/lifestyle/dailyStory";
+import { DAILY_STORY_SERIES, isoDay, loadStoryChapters, chapterForDay, nextChapterOf, chapterLabel, framingLine, markChapterRead, isChapterRead, readCount, readingPosition } from "@/components/lifestyle/dailyStory";
 import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
 import { buildBookChapters } from "@/components/lifestyle/bookChapters";
 // the sky (component #6) — the REAL horoscope reader (15 sections + birth-chart onboarding),
@@ -1421,10 +1421,17 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
     picker.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
     picker.querySelector("button")?.focus({ preventScroll: true });
   };
+  const calmBookPosition = calmLayout && focusSection === "books" ? readingPosition(chapters, storyPick) : null;
+  const openPersonalChapter = () => {
+    const position = readingPosition(chapters, storyPick);
+    if (!selectedPresentation || !position?.chapter) { openTodaysChapter(); return; }
+    setReaderStart(position.index);
+    setReaderOpen(true);
+  };
   const sectionActions = {
     read: [continueCards[0] ? {label:"Continue reading",run:()=>openReadCard(continueCards[0])} : choose("Choose a read", [...articleCards, ...storyCards], openReadCard), choose("Saved reads", actionSavedCards.filter((i) => ["article", "daily_story"].includes(i.type)), openReadCard, "No saved reads yet. Save a piece you enjoy and it will appear here.")],
     listen: [choose("Choose a listen", audioCards), choose("Choose a watch", videoCards)],
-    books: [{ label: "Today's chapter", run: openTodaysChapter }, choose("Choose a book", calmLayout ? [...classicCards, ...shelfBookCards] : [...shelfBookCards, ...classicCards])],
+    books: [{ label: calmBookPosition && !calmBookPosition.caughtUp ? "Continue story" : "Today's chapter", run: calmBookPosition && !calmBookPosition.caughtUp ? openPersonalChapter : openTodaysChapter }, choose("Choose a book", calmLayout ? [...classicCards, ...shelfBookCards] : [...shelfBookCards, ...classicCards])],
     good: [calmLayout ? { label: "Time for yourself", run: focusGoodTime } : { label: "Time for yourself", description: "A read, a listen, or a little doing.", content: (afterClose) => <TimePickerLens presentation={selectedPresentation} calmLayout={calmLayout} pickFor={pickFor} isSaved={isSaved} onSave={(it) => afterClose(toggleSave, it)} onOpen={(it) => afterClose(openItem, it)} onTry={(title) => afterClose(saveTryThis, title)} /> }, choose("A small joy", [...ritualCards, ...permissionCards], openJoy)],
     yours: [livingDemo ? {label:"Open your saves",run:()=>window.location.assign(`/Saved?tab=LIFESTYLE${calmLayout ? "&appearance=calm" : ""}`)} : choose("Open your saves", actionSavedCards), choose("Continue reading", continueCards, openReadCard, "No reading in progress yet. Start a book and your place will appear here.")],
     sky: [skyActionState.hasChart ? { label: "Ask the sky", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "ask" }) } : { label: "Set up your sky", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "chart" }) }, skyActionState.hasChart ? { label: "Edit your chart", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "chart" }) } : { label: "What you'll need", description: "Your birth date starts your sky. Add time and place only if you know them; do not guess. Unknown birth time limits what can be calculated.", content: <p style={{ lineHeight: 1.6 }}>Use Set up your sky when you are ready. You can review your details in the chart sheet before saving.</p> }],
@@ -1559,7 +1566,7 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
             jess.eyebrow = "Jess · " + (FOCUS_MAP[focusSection]?.label || "Lifestyle"); jess.body = lines[focusSection] || jess.body;
           }
           const glanceRows = [
-            { Icon: Feather, label: "Today's chapter", text: story ? (calmLayout && focusSection === "books" ? `${story.series_title || story.title || "Today's chapter"}${story.day_number ? ` · chapter ${story.day_number}` : ""}` : `${story.series_title || story.title || "Today's chapter"}${story.cliffhanger ? ` — "${story.cliffhanger}"` : ""}`) : "Today's chapter is on its way — tap to open the Daily Story.", onClick: openTodaysChapter },
+            { Icon: Feather, label: calmBookPosition && !calmBookPosition.caughtUp ? "Your next chapter" : "Today's chapter", text: calmBookPosition && !calmBookPosition.caughtUp ? `${calmBookPosition.chapter.series_title || calmBookPosition.chapter.title || "Your story"} · chapter ${calmBookPosition.chapter.day_number || calmBookPosition.index + 1}` : story ? (calmLayout && focusSection === "books" ? `${story.series_title || story.title || "Today's chapter"}${story.day_number ? ` · chapter ${story.day_number}` : ""}` : `${story.series_title || story.title || "Today's chapter"}${story.cliffhanger ? ` — "${story.cliffhanger}"` : ""}`) : "Today's chapter is on its way — tap to open the Daily Story.", onClick: calmBookPosition && !calmBookPosition.caughtUp ? openPersonalChapter : openTodaysChapter },
             { Icon: BookOpen, label: "Your reading",
               text: continueCards.length ? `${continueCards.length} on the go · ${grouped.article.length} fresh reads`
                 : savedItems.length ? `${savedItems.length} saved to come back to · ${grouped.article.length} fresh reads`
@@ -1574,7 +1581,7 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
           if(livingDemo && focusSection === "listen")glanceRows.unshift({Icon:Headphones,label:"Listen & watch",text:`${audioCards.length} listens · ${videoCards.length} watches in this selection`,onClick:()=>audioCards[0] || videoCards[0] ? setExpanded(audioCards[0] || videoCards[0]) : window.location.assign(calmLayout ? "/WatchListen?appearance=calm" : "/WatchListen")});
           if(livingDemo && focusSection === "good")glanceRows.unshift({Icon:Coffee,label:"A small joy",text:ritualCards[0]?.title || permissionCards[0]?.title || "A little time to yourself",onClick:()=>openJoy(ritualCards[0] || permissionCards[0])});
           if(livingDemo && focusSection === "yours")glanceRows.unshift({Icon:Bookmark,label:"Your kept things",text:skySavedCount ? `${skySavedCount} Sky ${skySavedCount===1 ? "lesson" : "lessons"}${savedItems.length ? ` · ${savedItems.length} Lifestyle ${savedItems.length===1 ? "find" : "finds"}` : " kept for another day"}` : savedItems.length ? `${savedItems.length} Lifestyle ${savedItems.length===1 ? "find" : "finds"} · your Sky keepsakes below` : "Your saved things, with room for more",onClick:()=>window.location.assign(`/Saved?tab=LIFESTYLE${calmLayout ? "&appearance=calm" : ""}`)});
-          const focusRowLabel = { read: "Your reading", books: "Today's chapter", story: "Today's chapter", sky: "Your sky", ...(livingDemo ? {listen:"Listen & watch",good:"A small joy",yours:"Your kept things"} : {}) }[focusSection] || null;
+          const focusRowLabel = { read: "Your reading", books: calmBookPosition && !calmBookPosition.caughtUp ? "Your next chapter" : "Today's chapter", story: "Today's chapter", sky: "Your sky", ...(livingDemo ? {listen:"Listen & watch",good:"A small joy",yours:"Your kept things"} : {}) }[focusSection] || null;
           const orderedGlance = focusRowLabel
             ? [...glanceRows].sort((a, b) => (b.label === focusRowLabel) - (a.label === focusRowLabel))
             : glanceRows;

@@ -6,7 +6,7 @@ import { describe, it, expect, vi } from "vitest";
 // the gate itself is pure — stub the SDK so importing the module doesn't boot the app client
 vi.mock("@/api/base44Client", () => ({ base44: { entities: { DailyStory: { filter: async () => [] } } } }));
 
-const { chapterForDay, framingLine, chapterLabel } = await import("@/components/lifestyle/dailyStory");
+const { chapterForDay, framingLine, chapterLabel, readingPosition, readKeyOf } = await import("@/components/lifestyle/dailyStory");
 
 const mk = (series_key, series_title, day_number, published_date) => ({
   id: `${series_key}-${day_number}`, series_key, series_title, day_number, published_date,
@@ -90,4 +90,22 @@ describe("chapterForDay — the one gating contract", () => {
     expect(pick.index).toBe(readable.length - 1);
     expect(pick.index).toBeLessThan(readable.length);
   });
+});
+
+it("keeps a personal next chapter behind the calendar's later open chapter", () => {
+  const marks=new Set(SMALL_MENDS.slice(0,8).map(c=>readKeyOf(c.id)));
+  vi.stubGlobal("localStorage", {getItem:key=>marks.has(key)?"read":null});
+  try {
+    const date=on("2026-10-15");
+    const calendar=chapterForDay(SMALL_MENDS,date);
+    expect(calendar.chapter.day_number).toBe(15);
+    const held=readingPosition(SMALL_MENDS,calendar,date);
+    expect(held.chapter.day_number).toBe(9);
+    expect(held.index).toBe(8);
+    expect(held.waiting).toBe(7);
+    SMALL_MENDS.slice(8,15).forEach(c=>marks.add(readKeyOf(c.id)));
+    const current=readingPosition(SMALL_MENDS,calendar,date);
+    expect(current.caughtUp).toBe(true);
+    expect(current.chapter.day_number).toBe(15);
+  } finally { vi.unstubAllGlobals(); }
 });

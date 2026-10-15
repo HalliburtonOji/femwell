@@ -194,6 +194,8 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
   const total = pos?.total ?? chapters.length;
   const waiting = pos?.waiting || 0;
   const caughtUp = !!pos?.caughtUp;
+  const latestIndex = pos && Number.isInteger(pick?.index) && pick.index >= 0 && pick.index < pos.unlockedCount ? pick.index : -1;
+  const latest = latestIndex >= 0 ? pos.pool[latestIndex] : null;
   const series = story?.series_title || her?.series_title || "the serial";
   const openBook = (b, extra) => onOpenBook && onOpenBook({ _gutenbergId: b.gutenberg_id, _book: "gutenberg", title: b.title, ...extra });
 
@@ -299,6 +301,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
           <Eyebrow cw="plum">{pick?.monthName ? `${pick.monthName}'s run` : "The run"} · {total} chapters</Eyebrow>
           <RunStrip room={room} pool={pos.pool} unlockedCount={pos.unlockedCount} nextIndex={pos.index} onOpen={(i) => onRead && onRead(i)} />
           <Legend />
+          {calmLayout && latest && latestIndex !== pos.index && <Quiet style={{minHeight:44,padding:"10px 4px"}} onClick={() => onRead && onRead(latestIndex)}>Today's open chapter · {latest.day_number || latestIndex + 1} ›</Quiet>}
           <div style={{ display: "flex", flexDirection: "column" }}>
             {pos.pool.slice(pos.index + 1, pos.index + 3).map((c, i) => {
               const n = c.day_number || pos.index + 2 + i;
