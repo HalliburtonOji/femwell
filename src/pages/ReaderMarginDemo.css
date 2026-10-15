@@ -2,6 +2,14 @@
   padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
   color: #191510;
 }
+/* The preview reader sits inside textured legacy layout wrappers. Its own
+   clean background ends before layout padding; clear the actual parent layers
+   only while this preview route is mounted so no retired paper leaks below. */
+div.min-h-screen:has(.fw-book-preview),
+main.pb-36 > div:has(> .fw-book-preview) {
+  background-image: none !important;
+  background-color: #f5f4f1 !important;
+}
 .fw-book-preview .fw-book-folio,
 .fw-book-preview .fw-book-preview-body {
   max-width: 700px;

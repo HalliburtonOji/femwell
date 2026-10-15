@@ -7,6 +7,10 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE - 2026-10-15 - LC04 LATE READER UNDERLAY P1 STAGED
+>
+> - A final signed-in 390px Moby reader screenshot exposed the retired mottled-paper wrapper below the clean reading pane. Browser computed styles traced the old image on the immediate animated parent and route-wide `.min-h-screen`, which extend past the child into layout padding. A claimed, mapped Ideas-only CSS repair clears those **actual ancestor images** only when `.fw-book-preview` is mounted, matching the child's clean background; main reader and other routes are unchanged. Source `src/pages/ReaderMarginDemo.css` staged; 29/29 reader tests, diff and Vite build pass; local `index-DXozjoQS.js`, live remains `index-ibds4OU3.js` until normal push/deploy and 360/390/430 lower-viewport computed-style/pixel reproof. The Ideas board and claim closure follow proof. Existing complete text, marks and all actions stay. Scheduler and main promotion held.
+>
 > ### CURRENT STATE - 2026-10-15 - LC04 BOOKS READER AND SOURCE REPAIRS LIVE IN IDEAS
 >
 > - Source `935ba1d` pushed normally; Base44 site deploy succeeded. Live/dist **`index-ibds4OU3.js`**. The Books Ideas room keeps all chapter, shelf, club, Planner, Garden and notes actions; evergreen books no longer claim a new October edition or withhold Moby-Dick, and the complete club intro/warnings are disclosed on demand. The preview reader's real first page begins at the first verified chapter while all title/preface text remains under a named disclosure; chapter IDs/bookmarks/club prompts and the main reader model are unchanged. Brand Bible §10.5.30 and mirror updated; organised Ideas content board live.
