@@ -94,6 +94,31 @@ describe("daily marks at British summer-time midnight", () => {
 });
 
 describe("Ideas-only reader margin preview", () => {
+  it("starts chapter one at the story while preserving the complete title pages in a named disclosure", async () => {
+    const text = "TITLE PAGE\nA complete preface.\n\nCHAPTER I\nThe first true scene.\n\nCHAPTER II\nThe second scene.";
+    api.invoke.mockResolvedValueOnce({ data: { title: "A complete book", author: "An author", text } });
+    open(1342, false, true);
+    const reader = await screen.findByRole("article", { name: "Controlled book reader" });
+    expect(within(reader).getByText("The first true scene.")).toBeVisible();
+    expect(within(reader).queryByText(/TITLE PAGE/)).toBeNull();
+    const toggle = screen.getByRole("button", { name: "Title pages & preface" });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByText(/TITLE PAGE\s+A complete preface/)).toBeVisible();
+    fireEvent.click(toggle);
+    expect(screen.queryByText(/TITLE PAGE\s+A complete preface/)).toBeNull();
+    expect(api.invoke).toHaveBeenCalledTimes(1);
+  });
+
+  it("leaves the main reader's original first-chapter source model unchanged", async () => {
+    api.invoke.mockResolvedValueOnce({ data: { title: "A complete book", text: "TITLE PAGE\n\nCHAPTER I\nThe first true scene.\n\nCHAPTER II\nThe second scene." } });
+    open(1342, false, false);
+    const reader = await screen.findByRole("article", { name: "Controlled book reader" });
+    expect(within(reader).getByText(/TITLE PAGE.*The first true scene/s)).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Title pages & preface" })).toBeNull();
+  });
+
   it("keeps the exact long-title book, chapter context and full prose through note save and close without another download", async () => {
     const title = "Little Women; Or, Meg, Jo, Beth, and Amy";
     api.invoke.mockResolvedValueOnce({ data: { title, author: "Louisa May Alcott", text: fullText, source_url: "https://www.gutenberg.org/ebooks/37106" } });
@@ -196,6 +221,20 @@ describe("actual Gutenberg chapter structure and complete source preservation", 
     expect(result.chapters[0].body).toContain("An author's preface, to be kept.");
     expect(result.chapters[1]).toMatchObject({ id: "ch-2", day_number: 2, body: "One brief but complete chapter." });
     expect(normalText(result.chapters.map(ch => ch.body).join("\n"))).toBe(normalText(source.replace(/^CHAPTER [IVX]+$/gm, "")));
+  });
+
+  it("separates the actual 1342 edition's preface without losing a word or shifting a chapter", () => {
+    const source = editionText(1342), result = splitChapters(source, { separateFrontMatter: true });
+    expect(result.real).toBe(true);
+    expect(result.chapters).toHaveLength(61);
+    expect(result.chapters[0].id).toBe("ch-1");
+    expect(result.chapters[60].id).toBe("ch-61");
+    expect(result.chapters[0].frontMatter.length).toBeGreaterThan(100);
+    expect(result.chapters[0].body).not.toContain(result.chapters[0].frontMatter.slice(0, 100));
+    expect(result.chapters[0].body).toMatch(/^It is a truth universally acknowledged/);
+    const complete = [result.chapters[0].frontMatter, ...result.chapters.map(ch => ch.body)].join("\n");
+    const withoutHeadings = source.replace(/^Chapter [IVXLCDM]+\.?\]?[ \t]*\r?$/gim, "");
+    expect(normalText(complete)).toBe(normalText(withoutHeadings));
   });
 
   it("does not turn a contents label and a transcriber sentence into chapters", () => {

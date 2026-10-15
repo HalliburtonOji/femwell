@@ -47,7 +47,7 @@ function chapterNumber(label) {
   return [...token].reduce((sum, letter, i) => sum + (roman[letter] < (roman[token[i + 1]] || 0) ? -roman[letter] : roman[letter]), 0);
 }
 
-export function splitChapters(text) {
+export function splitChapters(text, { separateFrontMatter = false } = {}) {
   if (!text?.trim()) return { chapters: [], real: false };
   const families = { prefixed: [], roman: [], words: [] };
   for (const line of text.matchAll(/^.*$/gm)) {
@@ -97,9 +97,12 @@ export function splitChapters(text) {
         id: `ch-${i + 1}`,
         day_number: i + 1,
         heading: /^chapter\b/i.test(heading.label) ? heading.label.replace(/[.:;]+$/, "") : `Chapter ${i + 1}`,
-        // Keep all front matter with chapter one, rather than inserting a new index
-        // that would shift authored prompts, warnings and existing chapter bookmarks.
-        body: ((i === 0 ? text.slice(0, heading.index) : "") + text.slice(heading.end, headings[i + 1]?.index ?? text.length)).trim(),
+        // The Ideas reader exposes this preface separately so the first page
+        // begins at the real chapter. The canonical reader keeps its old model;
+        // neither route inserts an index that would shift marks or club prompts.
+        ...(i === 0 && separateFrontMatter && text.slice(0, heading.index).trim()
+          ? { frontMatter: text.slice(0, heading.index).trim() } : {}),
+        body: ((i === 0 && !separateFrontMatter ? text.slice(0, heading.index) : "") + text.slice(heading.end, headings[i + 1]?.index ?? text.length)).trim(),
       })),
     };
   }
@@ -165,6 +168,7 @@ export default function BookReader({ cleanPreview = false } = {}) {
   const [book, setBook] = useState(null);
   const [chapters, setChapters] = useState([]);
   const [chaptersReal, setChaptersReal] = useState(false);   // true only when real chapter headings were found
+  const [frontMatterOpen, setFrontMatterOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingMsg, setLoadingMsg] = useState("Loading the book…");
   const [error, setError] = useState("");
@@ -312,13 +316,14 @@ export default function BookReader({ cleanPreview = false } = {}) {
           if (cancelled) return;
           const data = res?.data || res || {};
           if (data.error) { setError(data.error); setLoading(false); return; }   // structured error — real, no retry
-          const { chapters: ch, real } = splitChapters(data.text || "");
+          const { chapters: ch, real } = splitChapters(data.text || "", { separateFrontMatter: cleanPreview });
           const sourceUrl = data.source_url || `https://www.gutenberg.org/ebooks/${gutenbergId}`;
           const attribution = `From Project Gutenberg · ${sourceUrl}`;
           const withAttr = ch.map((c) => ({ ...c, attribution, series_title: data.title || "Public-domain book", cliffhanger: "" }));
           setBook({ title: data.title || "", author: data.author || "", source_url: sourceUrl });
           setChapters(withAttr);
           setChaptersReal(real);
+          setFrontMatterOpen(false);
           setLoading(false);
           return;   // success
         } catch (err) {
@@ -339,7 +344,7 @@ export default function BookReader({ cleanPreview = false } = {}) {
       }
     })();
     return () => { cancelled = true; };
-  }, [gutenbergId, retryTick]);
+  }, [gutenbergId, retryTick, cleanPreview]);
 
   const onMarks = useCallback(({ currentIndex, bookmarks }) => {
     if (typeof currentIndex === "number") { setLiveCurrent(currentIndex); setMarksReady(true); }
@@ -408,6 +413,15 @@ export default function BookReader({ cleanPreview = false } = {}) {
         setClubRetryTick((tick) => tick + 1);
       }}
     >
+      {cleanPreview && chapters[0]?.frontMatter && (
+        <section className="fw-book-front" aria-label="Title pages and preface">
+          <button type="button" className="fw-book-front-toggle" aria-expanded={frontMatterOpen}
+            aria-controls="fw-book-front-text" onClick={() => setFrontMatterOpen((open) => !open)}>
+            Title pages &amp; preface <span aria-hidden="true">{frontMatterOpen ? "−" : "+"}</span>
+          </button>
+          {frontMatterOpen && <div id="fw-book-front-text" className="fw-book-front-text">{chapters[0].frontMatter}</div>}
+        </section>
+      )}
       {/* Two marks — your physical bookmark + the smart (daily-read schedule) mark. */}
       {chaptersReal && (
         <MarksBar

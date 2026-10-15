@@ -65,7 +65,7 @@ it("does not promise a monthly drop from evergreen books and keeps the full club
   expect(screen.queryByText("October's book")).not.toBeInTheDocument();
   expect(screen.getByText("Moby-Dick")).toBeVisible();
   expect(screen.getByRole("link",{name:/Start chapter 1 · Gutenberg/})).toHaveAttribute("href",state.monthSet.reveal.chapter_start_url);
-  fireEvent.click(screen.getByRole("button",{name:/FemWell reader · title pages first/}));
+  fireEvent.click(screen.getByRole("button",{name:/Read here · chapter 1/}));
   expect(openBook).toHaveBeenLastCalledWith(expect.objectContaining({_gutenbergId:"2701"}));
   await screen.findByText("Jane Eyre");
   expect(screen.getByRole("button",{name:"Open the book club"})).toBeVisible();

@@ -61,6 +61,36 @@
   line-height: 1.55;
 }
 .fw-book-preview .fw-book-discussion svg { color: #6e796b !important; margin-top: 3px; flex-shrink: 0; }
+.fw-book-preview .fw-book-front {
+  max-width: 700px;
+  margin: 0 auto 16px;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+.fw-book-preview .fw-book-front-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 0;
+  border: 0;
+  border-top: 1px solid #dedbd5;
+  border-bottom: 1px solid #dedbd5;
+  border-radius: 0;
+  background: transparent;
+  color: #4f4655;
+  font: 600 13px/1.5 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+.fw-book-preview .fw-book-front-text {
+  padding: 20px 0 28px;
+  color: #3d3340;
+  font: 17px/1.6 'Cormorant Garamond', Georgia, serif;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 .fw-book-preview .fw-book-marks { margin: 0 20px 20px !important; }
 .fw-book-preview .fw-book-empty {
   margin: 16px 20px;

@@ -447,7 +447,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
                 {revealOpen && calmLayout && set.reveal.chapter_start_url ? (
                   <div style={{display:"flex",gap:8,width:"100%",flexWrap:"wrap"}}>
                     <a href={set.reveal.chapter_start_url} target="_blank" rel="noopener noreferrer" className="fw-elite-press" style={{...doorBtnStyle(),fontSize:12}}>Start chapter 1 · Gutenberg ↗</a>
-                    <button onClick={() => openBook(set.reveal)} className="fw-elite-press" style={{...doorBtnStyle(),fontSize:12}}>FemWell reader · title pages first</button>
+                    <button onClick={() => openBook(set.reveal)} className="fw-elite-press" style={{...doorBtnStyle(),fontSize:12}}>Read here · chapter 1</button>
                   </div>
                 ) : revealOpen ? (
                   <button onClick={() => openBook(set.reveal)} className="fw-elite-press" aria-label={`Open ${set.reveal.title}`} style={{ minWidth:44,minHeight:44,display:"grid",placeItems:"center",background: "transparent", border: "none", cursor: "pointer", padding: 0, flexShrink: 0 }}><ChevronRight size={15} color={C.faint} /></button>
