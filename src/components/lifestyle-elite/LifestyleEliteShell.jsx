@@ -1475,6 +1475,8 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
               {foldVariant ? <FirstFoldNavigation cards={heroCards} activeIndex={selectedPresentation && !focus ? -1 : heroCard}
                 onSelect={(card, index) => selectRoom(card.id, index)}
                 phaseLine={phaseKey ? `${phaseLabel(phaseKey)}${cycleDay ? ` · Day ${cycleDay}` : ""} · ${ph.day}` : "A few good things today"}
+                compactPhaseLine={phaseKey ? `${phaseLabel(phaseKey)}${cycleDay ? ` · day ${cycleDay}` : ""}` : "A few good things today"}
+                phaseDetail={phaseKey ? ph.day : undefined} calmLayout={calmLayout}
                 focusLabel={focus?.label} onClear={() => selectRoom(null)} /> : <>
               <div className="fw-hero-ctl" style={clean ? { display: "flex", gap: 7, padding: "14px 0 0" } : { display: "flex", gap: 8, overflowX: "auto", padding: "12px 2px 2px", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 22px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 22px), transparent 100%)" }}>
                 <style>{`.fw-hero-ctl{scrollbar-width:none}.fw-hero-ctl::-webkit-scrollbar{display:none}`}</style>

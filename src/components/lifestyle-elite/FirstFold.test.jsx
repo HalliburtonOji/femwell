@@ -32,6 +32,17 @@ describe("First fold navigation and complete summaries", () => {
     expect(clear).toHaveBeenCalledTimes(1);
   });
 
+  it("keeps all calm room controls while giving cycle context one quiet visible line", () => {
+    const cards = ["Read", "Listen", "Books", "Sky", "Good life", "Yours"].map((label, index)=>({ id: String(index), label, Icon, cw: "plum" }));
+    const clear = vi.fn();
+    const { container } = render(<FirstFoldNavigation cards={cards} activeIndex={0} onSelect={vi.fn()} phaseLine="Ovulatory · Day 14 · an open, sociable kind of day" compactPhaseLine="Ovulatory · day 14" phaseDetail="an open, sociable kind of day" focusLabel="Read" onClear={clear} calmLayout/>);
+    expect(within(screen.getByRole("navigation", { name: "Lifestyle sections" })).getAllByRole("button")).toHaveLength(6);
+    expect(container.querySelector(".fw-ff-status--calm")).toHaveTextContent("Ovulatory · day 14 · an open, sociable kind of day");
+    expect(container.querySelector(".fw-ff-status--calm")).not.toHaveTextContent("· Read");
+    fireEvent.click(screen.getByRole("button", { name: "Everything" }));
+    expect(clear).toHaveBeenCalledTimes(1);
+  });
+
   it("should render all three full glance rows and invoke only the matching row action", () => {
     const rows = ["Sky", "Read", "Books"].map(label=>({ Icon, label, text: `${label}: an intentionally long complete summary, with context and the final invitation still present.`, onClick: vi.fn() }));
     render(<SummaryHarness rows={rows}/>);

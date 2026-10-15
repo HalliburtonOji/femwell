@@ -7,7 +7,7 @@ import "./FirstFold.css";
 import { CalmTaskDialog } from "./CalmLifestyle";
 
 // Review-only composition. Data, navigation and writes remain owned by the shell.
-export function FirstFoldNavigation({ cards, activeIndex, onSelect, phaseLine, focusLabel, onClear }) {
+export function FirstFoldNavigation({ cards, activeIndex, onSelect, phaseLine, compactPhaseLine, phaseDetail, focusLabel, onClear, calmLayout = false }) {
   return <>
     <nav className="fw-ff-sections" aria-label="Lifestyle sections">
       {cards.map((card, index) => {
@@ -18,9 +18,9 @@ export function FirstFoldNavigation({ cards, activeIndex, onSelect, phaseLine, f
         </button>;
       })}
     </nav>
-    <div className="fw-ff-status">
-      <span>{phaseLine}{focusLabel ? <><span aria-hidden="true"> · </span>{focusLabel}</> : null}</span>
-      {focusLabel && <button type="button" onClick={onClear}><X size={13} aria-hidden="true"/> Everything</button>}
+    <div className={`fw-ff-status${calmLayout ? " fw-ff-status--calm" : ""}`}>
+      <span>{calmLayout ? <><span aria-hidden="true" className="fw-ff-phase-dot"/>{compactPhaseLine || phaseLine}{phaseDetail && <span className="sr-only"> · {phaseDetail}</span>}</> : <>{phaseLine}{focusLabel ? <><span aria-hidden="true"> · </span>{focusLabel}</> : null}</>}</span>
+      {focusLabel && <button type="button" onClick={onClear} title="Show all Lifestyle rooms"><X size={13} aria-hidden="true"/> Everything</button>}
     </div>
   </>;
 }

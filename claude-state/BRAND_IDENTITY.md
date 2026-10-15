@@ -897,6 +897,10 @@ Halli likes the calmer Lifestyle rooms, but their contents and flows need a full
 
 **Opened reader continuity:** when an edition has substantial title pages, contents or preface before its first verified chapter, a “Start reading” action must land on the actual first chapter body. Keep the complete preceding source accessible in a clearly named reader disclosure, and leave chapter IDs, saved marks and club prompts stable. Prove the opened text and exact return at mobile widths; a source link alone is an interim fallback, not a finished in-app reader. Apply this first to the Ideas preview; main reader changes still require the normal promotion gate.
 
+### 10.5.31 ONE JOB PER FIRST-FOLD LINE — Halli, 15 October 2026
+
+Halli likes the calmer room design but the Read first fold is still too busy. The artwork caption gives the room its voice; the six visible selectors give direct room choice; the status line gives only concise live cycle/day context; the contextual actions give the next tap. Do not repeat the selected room after the selectors or let a long phase description form another paragraph before the content. Keep the longer phase meaning accessible, the Everything reset plainly labelled and easy to tap, the About/Replay controls and both focused actions working, and the glance/Jess row present. This is composition, not feature removal or a new subnavigation. Audit the whole first fold at real phone widths and actual taps before using the rule elsewhere. Stage any revised arrangement in Ideas; main visual approval remains separate, and the four-hour automation stays paused.
+
 ### 10.6 CRAFT THAT CARRIES MEANING (format = feeling) — ⏳ PROPOSED (awaiting sign-off)
 - **Wax rose seal + sealed letters:** Health becomes *correspondence* — each letter arrives **sealed with a wax rose** (her signature flower, phase-coloured); opening breaks the seal (once-only lift). Extends to a monthly **"letter from your body,"** a milestone certificate, a sealed **"letter to future you"** in Journal, Jess's notes as folds.
 - **Vines that grow with progress** (a leaf per session, a bloom at the end — growth, not a progress bar).
