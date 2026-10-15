@@ -1414,11 +1414,18 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
   };
   const choose = (label, items, open = setExpanded, empty) => ({ label, items, open, empty });
   const actionSavedCards = savedItems.map((item) => rowCard(item, CARD_TYPE_OF(item)));
+  const focusGoodTime = () => {
+    const picker = [...document.querySelectorAll(".fw-calm-lifestyle .fw-selected-room--good .fw-selected-time")]
+      .find(element => element.getClientRects().length > 0);
+    if (!picker) { flash("The time picker is still opening"); return; }
+    picker.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    picker.querySelector("button")?.focus({ preventScroll: true });
+  };
   const sectionActions = {
     read: [continueCards[0] ? {label:"Continue reading",run:()=>openReadCard(continueCards[0])} : choose("Choose a read", [...articleCards, ...storyCards], openReadCard), choose("Saved reads", actionSavedCards.filter((i) => ["article", "daily_story"].includes(i.type)), openReadCard, "No saved reads yet. Save a piece you enjoy and it will appear here.")],
     listen: [choose("Choose a listen", audioCards), choose("Choose a watch", videoCards)],
     books: [{ label: "Today's chapter", run: openTodaysChapter }, choose("Choose a book", calmLayout ? [...classicCards, ...shelfBookCards] : [...shelfBookCards, ...classicCards])],
-    good: [{ label: "Time for yourself", description: "A read, a listen, or a little doing.", content: (afterClose) => <TimePickerLens presentation={selectedPresentation} calmLayout={calmLayout} pickFor={pickFor} isSaved={isSaved} onSave={(it) => afterClose(toggleSave, it)} onOpen={(it) => afterClose(openItem, it)} onTry={(title) => afterClose(saveTryThis, title)} /> }, choose("A small joy", [...ritualCards, ...permissionCards], openJoy)],
+    good: [calmLayout ? { label: "Time for yourself", run: focusGoodTime } : { label: "Time for yourself", description: "A read, a listen, or a little doing.", content: (afterClose) => <TimePickerLens presentation={selectedPresentation} calmLayout={calmLayout} pickFor={pickFor} isSaved={isSaved} onSave={(it) => afterClose(toggleSave, it)} onOpen={(it) => afterClose(openItem, it)} onTry={(title) => afterClose(saveTryThis, title)} /> }, choose("A small joy", [...ritualCards, ...permissionCards], openJoy)],
     yours: [livingDemo ? {label:"Open your saves",run:()=>window.location.assign(`/Saved?tab=LIFESTYLE${calmLayout ? "&appearance=calm" : ""}`)} : choose("Open your saves", actionSavedCards), choose("Continue reading", continueCards, openReadCard, "No reading in progress yet. Start a book and your place will appear here.")],
     sky: [skyActionState.hasChart ? { label: "Ask the sky", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "ask" }) } : { label: "Set up your sky", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "chart" }) }, skyActionState.hasChart ? { label: "Edit your chart", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "chart" }) } : { label: "What you'll need", description: "Your birth date starts your sky. Add time and place only if you know them; do not guess. Unknown birth time limits what can be calculated.", content: <p style={{ lineHeight: 1.6 }}>Use Set up your sky when you are ready. You can review your details in the chart sheet before saving.</p> }],
   };
@@ -1548,11 +1555,11 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
             moon: moonToday?.name, phaseKey, listens: (grouped.audio || []).length, watches: playableVideos(grouped.video).length,
           });
           if (selectedPresentation && focusSection && focusSection !== "sky") {
-            const lines = {read:continueCards[0] ? `Your place in ${continueCards[0].title} is waiting. One good read beats twelve open tabs.` : "One good read beats twelve open tabs.",listen:"Let someone else do the talking. Your headphones have earned an outing.",books:"One chapter. Then we’ll see.",good:"A little room in your day. No productivity hat required.",yours:"Your excellent taste, filed loosely."};
+            const lines = {read:continueCards[0] ? `Your place in ${continueCards[0].title} is waiting. One good read beats twelve open tabs.` : "One good read beats twelve open tabs.",listen:"Let someone else do the talking. Your headphones have earned an outing.",books:calmLayout ? (story ? `${cleanTitle(story.series_title || story.title || "The story")} has a chapter for you. Your shelf can wait.` : "The shelf is here when you want it. Pick the company you fancy.") : "One chapter. Then we’ll see.",good:"A little room in your day. No productivity hat required.",yours:"Your excellent taste, filed loosely."};
             jess.eyebrow = "Jess · " + (FOCUS_MAP[focusSection]?.label || "Lifestyle"); jess.body = lines[focusSection] || jess.body;
           }
           const glanceRows = [
-            { Icon: Feather, label: "Today's chapter", text: story ? `${story.series_title || story.title || "Today's chapter"}${story.cliffhanger ? ` — "${story.cliffhanger}"` : ""}` : "Today's chapter is on its way — tap to open the Daily Story.", onClick: openTodaysChapter },
+            { Icon: Feather, label: "Today's chapter", text: story ? (calmLayout && focusSection === "books" ? `${story.series_title || story.title || "Today's chapter"}${story.day_number ? ` · chapter ${story.day_number}` : ""}` : `${story.series_title || story.title || "Today's chapter"}${story.cliffhanger ? ` — "${story.cliffhanger}"` : ""}`) : "Today's chapter is on its way — tap to open the Daily Story.", onClick: openTodaysChapter },
             { Icon: BookOpen, label: "Your reading",
               text: continueCards.length ? `${continueCards.length} on the go · ${grouped.article.length} fresh reads`
                 : savedItems.length ? `${savedItems.length} saved to come back to · ${grouped.article.length} fresh reads`
