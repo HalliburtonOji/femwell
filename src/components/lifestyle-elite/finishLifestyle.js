@@ -10,6 +10,25 @@ export function timeFit(rows, seconds) {
     .sort((a, b) => Number(a.duration_seconds) - Number(b.duration_seconds))[0] || null;
 }
 
+// Prefer a known complete, playable episode for a real evening. An unknown
+// runtime, multipart episode or show directory remains available in Listen.
+export function eveningListen(rows) {
+  const playable = (rows || []).filter(row => row?.audio_url &&
+    Number(row.duration_seconds) >= 1200 && Number(row.duration_seconds) <= 5400 &&
+    !/\b(?:part|episode|ep\.?|pt\.?)\s*2\b/i.test(row.title || ''));
+  return playable.find(row => /how to fail with elizabeth day/i.test(row.source_name || '') &&
+    /mel giedroyc and aj odudu/i.test(row.title || '')) ||
+    [...playable].sort((a, b) => Number(a.duration_seconds) - Number(b.duration_seconds))[0] || null;
+}
+
+export function smallJoysFirst(rows) {
+  return [...(rows || [])].sort((a, b) => Number(b?.doable?.kind === 'try') - Number(a?.doable?.kind === 'try'));
+}
+
+export function reviewedDiscoveriesFirst(rows) {
+  return [...(rows || [])].sort((a, b) => Number(b?.sourceName !== 'Archive · source review pending') - Number(a?.sourceName !== 'Archive · source review pending'));
+}
+
 export function gutenbergReaderHref(item) {
   const raw=item?._raw || item;
   const id=item?._gutenbergId || item?.gutenbergId || raw?._gutenbergId || raw?.gutenbergId;

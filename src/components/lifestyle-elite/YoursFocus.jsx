@@ -10,6 +10,7 @@ import { C } from "@/components/brand/cleanTokens";
 import { Eyebrow, Title, Card as CleanCard, Summary, Foot } from "@/components/brand/cleanKit";
 import { SelectedRoomDetail } from "./SelectedLifestyleHeader";
 import { CalmFindRow, CalmMore } from "./CalmLifestyle";
+import { reviewedDiscoveriesFirst } from "./finishLifestyle";
 
 // kind → collection label + accent, in display order
 const KINDS = [
@@ -61,6 +62,9 @@ export default function YoursFocus({ savedCards = [], savedSummary, phaseCards =
     : `Your keeps will live here. A few discoveries to start you off.`;
   const renderSaved = it => calmLayout && !it.audioSrc && !it.youtubeId && !it.videoSrc ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails} label={it._keep?._unavailable ? "Retry source" : ["article","daily_story","book"].includes(it.type) ? "Read" : "Open source"}/> : <CoverCard presentation={presentation} key={it.id} item={it} compact onOpen={() => (onDetails || onOpen)?.(it)} onConsume={presentation && !it.audioSrc && !it.youtubeId && !it.videoSrc ? ()=>onOpen?.(it) : undefined} consumeLabel={it._keep?._unavailable ? "Retry source" : ["article","daily_story","book"].includes(it.type) ? "Read" : "Open source"} />;
   const renderDiscovery = it => calmLayout && !it.audioSrc && !it.youtubeId && !it.videoSrc ? <CalmFindRow key={it.id} item={it} onOpen={onOpen} onDetails={onDetails} label="Open" context={discoveryContext(it)}/> : <CoverCard presentation={presentation} previewText={calmLayout ? "" : undefined} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />;
+  const discoveries = calmLayout ? reviewedDiscoveriesFirst(phaseCards) : phaseCards;
+  const readyDiscoveries = calmLayout ? discoveries.filter(it => it.sourceName !== "Archive · source review pending") : discoveries;
+  const pendingDiscoveries = calmLayout ? discoveries.filter(it => it.sourceName === "Archive · source review pending") : [];
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -82,8 +86,10 @@ export default function YoursFocus({ savedCards = [], savedSummary, phaseCards =
       {phaseCards.length ? (
         <YoursCard className="fw-selected-phase" eyebrow={presentation ? "Something new" : "Tuned to your week"} title={presentation ? "A few discoveries" : phaseWord ? `For your ${phaseWord} week` : "For your phase"} accent="sage">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {phaseCards.slice(0, calmLayout ? 3 : undefined).map(renderDiscovery)}
-            <CalmMore enabled={calmLayout && phaseCards.length > 3} title={`More discoveries · ${Math.max(0, phaseCards.length - 3)}`}>{calmLayout && phaseCards.slice(3).map(renderDiscovery)}</CalmMore>
+            {readyDiscoveries.slice(0, calmLayout ? 3 : undefined).map(renderDiscovery)}
+            {calmLayout && !readyDiscoveries.length && <p>These finds need a source check before we lead with them.</p>}
+            <CalmMore enabled={calmLayout && readyDiscoveries.length > 3} title={`More discoveries · ${Math.max(0, readyDiscoveries.length - 3)}`}>{calmLayout && readyDiscoveries.slice(3).map(renderDiscovery)}</CalmMore>
+            <CalmMore enabled={calmLayout && pendingDiscoveries.length > 0} title={`Archive · source review pending · ${pendingDiscoveries.length}`}>{calmLayout && pendingDiscoveries.map(renderDiscovery)}</CalmMore>
           </div>
         </YoursCard>
       ) : null}

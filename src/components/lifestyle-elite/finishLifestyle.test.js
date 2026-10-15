@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { authoredJoyId, timeFit, rankedReads, continuePositions, gutenbergReaderHref, newestOwnedReading, classicContinuation, isLifestylePosition } from './finishLifestyle';
+import { authoredJoyId, timeFit, rankedReads, continuePositions, gutenbergReaderHref, newestOwnedReading, classicContinuation, isLifestylePosition, eveningListen, smallJoysFirst, reviewedDiscoveriesFirst } from './finishLifestyle';
 describe('actual Lifestyle source contracts', () => {
   it('sorts missing and damaged timestamps last without losing otherwise valid legacy places', () => {
     const values={
@@ -99,6 +99,24 @@ describe('actual Lifestyle source contracts', () => {
     const rows=[{id:'negative',duration_seconds:-3},{id:'unknown',duration_seconds:null},{id:'long',duration_seconds:901},{id:'fifteen',duration_seconds:'900'}];
     expect(timeFit(rows,300)).toBeNull();
     expect(timeFit(rows,900)?.id).toBe('fifteen');
+  });
+  it('offers a complete checked evening episode without hiding longer or multipart listens',()=>{
+    const rows=[
+      {id:'part-two',title:'The JFK Assassination Part 2',audio_url:'https://media.example/part.mp3',duration_seconds:9060},
+      {id:'checked',title:'Mel Giedroyc and AJ Odudu',source_name:'How To Fail With Elizabeth Day',audio_url:'https://media.example/checked.mp3',duration_seconds:2700},
+      {id:'unknown',title:'A show',audio_url:'https://media.example/unknown.mp3'},
+    ];
+    expect(eveningListen(rows)?.id).toBe('checked');
+    expect(rows).toHaveLength(3);
+    expect(eveningListen(rows.filter(row=>row.id!=='checked'))).toBeNull();
+  });
+  it('leads small and source-ready choices while retaining every original identity',()=>{
+    const joys=[{id:'day1',doable:{kind:'day'}},{id:'try1',doable:{kind:'try'}},{id:'day2',doable:{kind:'day'}},{id:'try2',doable:{kind:'try'}}];
+    expect(smallJoysFirst(joys).map(row=>row.id)).toEqual(['try1','try2','day1','day2']);
+    expect(joys.map(row=>row.id)).toEqual(['day1','try1','day2','try2']);
+    const finds=[{id:'pending',sourceName:'Archive · source review pending'},{id:'story',sourceName:'Generated fiction · archive'}];
+    expect(reviewedDiscoveriesFirst(finds).map(row=>row.id)).toEqual(['story','pending']);
+    expect(finds.map(row=>row.id)).toEqual(['pending','story']);
   });
   it('keeps the same authored joy identity when it moves between different daily deck positions',()=>{
     const title='Tea, without multitasking';

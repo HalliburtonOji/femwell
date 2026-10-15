@@ -94,7 +94,7 @@ export default function GoodLifeFocus({ timeLens, joys = [], onSlip, onPlan, tim
         <GoodCard className="fw-selected-joys" eyebrow={presentation ? "For the pleasure of it" : "No streaks, nothing owed"} title={presentation ? "Small joys" : "Small joys & permission"} accent="plum">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {(onOpenRooms && !moreJoys ? joys.slice(0,3) : joys).map((it) => calmLayout ? <CalmFindRow key={it.id} item={it} onOpen={onPlan} onDetails={onSlip} label="Plan a time"/> : <CoverCard presentation={presentation} key={it.id} item={it} previewText={presentation ? (it.type === "quote" ? "" : JOY_HOOKS[it.title] ?? it.subtitle) : undefined} compact onOpen={() => onSlip && onSlip(it)} onConsume={presentation && onPlan ? ()=>onPlan(it) : undefined} consumeLabel="Plan a time" />)}
-            {onOpenRooms && joys.length>3 && <button className="fw-focused-button" onClick={()=>setMoreJoys(value=>!value)}>{moreJoys ? "A few is plenty" : "More small joys"}</button>}
+            {onOpenRooms && joys.length>3 && <button className="fw-focused-button" onClick={()=>setMoreJoys(value=>!value)} aria-expanded={moreJoys}>{moreJoys ? "Show just three" : calmLayout ? "Day-off ideas & permission" : "More small joys"}</button>}
           </div>
         </GoodCard>
       ) : null}
