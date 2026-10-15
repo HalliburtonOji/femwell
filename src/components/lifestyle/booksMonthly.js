@@ -99,5 +99,6 @@ export function monthlySet(date = new Date(), lifeStage = null, doorway = null) 
     alternates: alternates.slice(0, 2),
     reveal: rv ? { ...rv, revealed, day } : null,
     monthName: date.toLocaleDateString("en-GB", { month: "long" }),
+    hasMonthlyEdition: Boolean(MONTHS[key]),
   };
 }

@@ -181,6 +181,9 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
   }, []);
   useEffect(() => { refreshClub(); return () => { clubSequence.current++; }; }, [refreshClub]);
   const set = useMemo(() => monthlySet(new Date(), lifeStage, doorway), [lifeStage, doorway, passTick]);
+  // The authored MONTHS map may have no edition for this calendar month. In the
+  // calm preview, evergreen books are available now, not a fictional monthly drop.
+  const revealOpen = !!set.reveal && (set.reveal.revealed || (calmLayout && !set.hasMonthlyEdition));
 
   const contBooks = (continueCards || []).filter(isBook);
   const her = pos?.chapter || story || null;
@@ -341,7 +344,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
       {/* 4 · THIS MONTH'S BOOK — singular; the featured one is the product */}
       </CalmOptional>
       <section className={room ? "fw-room-feature" : undefined}>
-        <Eyebrow cw="gold">{set.monthName}'s book</Eyebrow>
+        <Eyebrow cw="gold">{calmLayout && !set.hasMonthlyEdition ? "A book you can start" : `${set.monthName}'s book`}</Eyebrow>
         {set.featured ? (
           <Card className={room ? "fw-room-feature-leaf" : undefined}>
             <div style={{ display: "flex", gap: 14 }}>
@@ -383,7 +386,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
             <Quiet onClick={() => { passBook(set.featured.gutenberg_id); setPassTick((t) => t + 1); }}>Not for me — show me another ›</Quiet>
           </Card>
         ) : (
-          <Card><Body style={{ textAlign: "center", color: C.slate, margin: 0 }}>You've passed on this month's picks — nothing owed. The whole library is a tap away, and a new set arrives on the 1st.</Body></Card>
+          <Card><Body style={{ textAlign: "center", color: C.slate, margin: 0 }}>{calmLayout && !set.hasMonthlyEdition ? "You've passed on these picks — nothing owed. The whole library is still here." : "You've passed on this month's picks — nothing owed. The whole library is a tap away, and a new set arrives on the 1st."}</Body></Card>
         )}
       </section>
 
@@ -396,10 +399,13 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
           {clubError && <div role="alert"><p>{clubError}</p><button onClick={refreshClub} style={doorBtnStyle()}>Try again</button></div>}
           {club && <><div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
             <span style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: C.ink }}>{club.title}</span>
-            <span style={{ fontFamily: UI, fontSize: 13, color: C.slate }}>{[club.author,club.cadence,club.gutenberg_id ? `Gutenberg ${club.gutenberg_id}` : null].filter(Boolean).join(" · ")}</span>
+            <span style={{ fontFamily: UI, fontSize: 13, color: C.slate }}>{[club.author,club.cadence,!calmLayout && club.gutenberg_id ? `Gutenberg ${club.gutenberg_id}` : null].filter(Boolean).join(" · ")}</span>
           </div>
+          {calmLayout && <Body size={16} style={{ margin: "0 0 9px", color: C.slate }}>Four sisters, one house, plenty to talk about. Read at your pace; lurking counts.</Body>}
+          <CalmOptional enabled={calmLayout} title="About the read & content notes">
           <Body size={16} style={{ margin: "0 0 12px", color: C.slate }}>{clean(club.host_intro)}</Body>
           {club.trigger_warnings?.length > 0 && <div style={{fontFamily:UI,fontSize:13,color:C.slate,marginBottom:12}}><strong>Worth knowing</strong>{club.trigger_warnings.map(line => <p key={line}>{line}</p>)}</div>}
+          </CalmOptional>
           {nextCp ? <div className={room ? "fw-room-checkpoint" : undefined} style={{ background: C.sunk, border: `1px solid ${C.hair}`, borderRadius: 13, padding: "12px 14px" }}>
             <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, letterSpacing: ".16em", textTransform: "uppercase", color: C.gold, marginBottom: 4 }}>{reached < 0 ? "It starts at" : "Your next checkpoint"}</div>
             <div style={{ fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: C.ink, lineHeight: 1.3 }}>{nextCp?.label}</div>
@@ -414,7 +420,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
       {/* 6 · ALSO THIS MONTH — quiet alternates + the mature reveal (synopsis now, book on the day) */}
       {(set.alternates.length || set.reveal) ? (
         <section className={room ? "fw-room-catalogue" : undefined} style={{ marginTop: 24 }}>
-          <Eyebrow cw="sky">Also this month</Eyebrow>
+          <Eyebrow cw="sky">{calmLayout && !set.hasMonthlyEdition ? "Other ways in" : "Also this month"}</Eyebrow>
           <div style={{ display: "flex", flexDirection: "column" }}>
             {set.alternates.map((b, i) => (
               <button key={b.gutenberg_id} onClick={() => openBook(b)} className="fw-elite-press"
@@ -430,15 +436,15 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
             ))}
             {set.reveal ? (
               <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 2px", borderTop: set.alternates.length ? `1px solid ${C.hair}` : "none" }}>
-                {set.reveal.revealed ? <Cover title={set.reveal.title} w={44} h={62} room={room}/> : (
+                {revealOpen ? <Cover title={set.reveal.title} w={44} h={62} room={room}/> : (
                   <span style={{ width: 44, height: 62, borderRadius: 8, border: `1px dashed ${C.goldHair}`, display: "grid", placeItems: "center", flexShrink: 0, fontFamily: UI, fontSize: 13, fontWeight: 700, color: C.faint }}>{set.reveal.day}{ord(set.reveal.day)}</span>
                 )}
                 <span style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ display: "block", fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: set.reveal.revealed ? C.ink : C.slate, lineHeight: 1.2 }}>{set.reveal.revealed ? set.reveal.title : "The last one of the month"}</span>
-                  <span style={{ display: "block", fontFamily: UI, fontSize: 13, color: C.slate, margin: "2px 0 3px" }}>{set.reveal.revealed ? `${set.reveal.author} · ${DOORWAYS[set.reveal.doorway]?.label}` : `${DOORWAYS[set.reveal.doorway]?.label} · arrives on the ${set.reveal.day}${ord(set.reveal.day)}`}</span>
+                  <span style={{ display: "block", fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: revealOpen ? C.ink : C.slate, lineHeight: 1.2 }}>{revealOpen ? set.reveal.title : "The last one of the month"}</span>
+                  <span style={{ display: "block", fontFamily: UI, fontSize: 13, color: C.slate, margin: "2px 0 3px" }}>{revealOpen ? `${set.reveal.author} · ${DOORWAYS[set.reveal.doorway]?.label}` : `${DOORWAYS[set.reveal.doorway]?.label} · arrives on the ${set.reveal.day}${ord(set.reveal.day)}`}</span>
                   <span style={{ display: "block", fontFamily: SERIF, fontSize: 15, color: C.slate, lineHeight: 1.4 }}>{set.reveal.why}</span>
                 </span>
-                {set.reveal.revealed ? (
+                {revealOpen ? (
                   <button onClick={() => openBook(set.reveal)} className="fw-elite-press" aria-label={`Open ${set.reveal.title}`} style={{ minWidth:44,minHeight:44,display:"grid",placeItems:"center",background: "transparent", border: "none", cursor: "pointer", padding: 0, flexShrink: 0 }}><ChevronRight size={15} color={C.faint} /></button>
                 ) : null}
               </div>

@@ -1,19 +1,19 @@
 import React from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-const state = vi.hoisted(() => ({ load: vi.fn(), local: vi.fn(), add: vi.fn(), status: vi.fn(), club: vi.fn(), reached: vi.fn(), pos: null }));
+const state = vi.hoisted(() => ({ load: vi.fn(), local: vi.fn(), add: vi.fn(), status: vi.fn(), club: vi.fn(), reached: vi.fn(), pos: null, monthSet: null }));
 vi.mock("@/components/community/bookshelf", () => ({ loadShelf: state.load, readLocal: state.local, addBook: state.add, setStatus: state.status }));
 vi.mock("@/components/community/bookClubConfig", () => ({ loadBookClubPick: state.club, clubReached: state.reached }));
 vi.mock("@/components/lifestyle/dailyStory", () => ({ readingPosition: () => state.pos, isChapterRead: () => false }));
 vi.mock("@/components/community/readingActivity", () => ({ readingDaySet: () => new Set() }));
 vi.mock("./ReadingRoomHeader", () => ({ RestingBook: () => <div aria-hidden="true"/> }));
-vi.mock("@/components/lifestyle/booksMonthly", () => ({ monthlySet: () => ({ monthName:"October",featured:{title:"Persuasion",author:"Jane Austen",gutenberg_id:"105",why:"A second chance, beautifully told.",doorway:"comfort"},alternates:[],reveal:null }), DOORWAYS:{comfort:{label:"Comfort"}}, DOORWAY_KEYS:[],getDoorway:()=>"comfort",setDoorway:vi.fn(),passBook:vi.fn() }));
+vi.mock("@/components/lifestyle/booksMonthly", () => ({ monthlySet: () => state.monthSet || ({ monthName:"October",featured:{title:"Persuasion",author:"Jane Austen",gutenberg_id:"105",why:"A second chance, beautifully told.",doorway:"comfort"},alternates:[],reveal:null }), DOORWAYS:{comfort:{label:"Comfort"}}, DOORWAY_KEYS:[],getDoorway:()=>"comfort",setDoorway:vi.fn(),passBook:vi.fn() }));
 import BooksStoryFocus from "./BooksStoryFocus";
 const pick = { pick_key:"actual",title:"Jane Eyre",author:"Charlotte Brontë",gutenberg_id:"1260",host_intro:"Our current read.",checkpoints:[{index:0,label:"First part",jess_prompt:"SECRET QUESTION"}] };
 const shelf = [{key:"g:105",gutenberg_id:"105",title:"Persuasion",status:"want"}];
 const deferred = () => { let resolve,reject; const promise = new Promise((a,b)=>{resolve=a;reject=b;}); return {promise,resolve,reject}; };
 const storage = () => { const entries=new Map(); return {get length(){return entries.size;},key:index=>[...entries.keys()][index] ?? null,getItem:key=>entries.get(String(key)) ?? null,setItem:(key,value)=>entries.set(String(key),String(value)),removeItem:key=>entries.delete(String(key)),clear:()=>entries.clear()}; };
-beforeEach(() => { vi.stubGlobal("localStorage", storage()); vi.clearAllMocks(); state.pos=null; state.load.mockResolvedValue(shelf); state.local.mockReturnValue(shelf); state.club.mockResolvedValue(pick); state.reached.mockReturnValue(-1); state.status.mockResolvedValue([{...shelf[0],status:"reading"}]); state.add.mockResolvedValue(shelf); });
+beforeEach(() => { vi.stubGlobal("localStorage", storage()); vi.clearAllMocks(); state.pos=null; state.monthSet=null; state.load.mockResolvedValue(shelf); state.local.mockReturnValue(shelf); state.club.mockResolvedValue(pick); state.reached.mockReturnValue(-1); state.status.mockResolvedValue([{...shelf[0],status:"reading"}]); state.add.mockResolvedValue(shelf); });
 afterEach(() => vi.unstubAllGlobals());
 it("keeps the complete chapter run, real actions and locked chapters in approved table mode", async () => {
   const pool=Array.from({length:30},(_,i)=>({id:`chapter-${i}`,day_number:i+1,title:`Chapter ${i+1}`,segment_text:"The author’s actual opening."}));
@@ -56,4 +56,20 @@ it("refuses a stale shelf acknowledgement after changing account", async () => {
   await waitFor(()=>expect(screen.getByRole("button",{name:"Add to shelf"})).not.toBeDisabled());
   gate.resolve([{...shelf[0],status:"reading"}]); await waitFor(()=>expect(screen.getByRole("button",{name:"Add to shelf"})).toBeVisible());
   expect(screen.queryByRole("button",{name:"Reading",pressed:true})).not.toBeInTheDocument();
+});
+it("does not promise a monthly drop from evergreen books and keeps the full club note behind a named disclosure", async () => {
+  state.monthSet={monthName:"October",hasMonthlyEdition:false,featured:{title:"Persuasion",author:"Jane Austen",gutenberg_id:"105",why:"A second chance, beautifully told.",doorway:"comfort"},alternates:[],reveal:{title:"Moby-Dick",author:"Herman Melville",gutenberg_id:"2701",doorway:"comfort",why:"A strange, funny book about obsession.",revealed:false,day:25}};
+  state.club.mockResolvedValue({...pick,host_intro:"The complete club invitation stays here.",trigger_warnings:["A difficult family loss"]});
+  const openBook=vi.fn(); render(<BooksStoryFocus calmLayout userId="alice" onOpenBook={openBook}/>);
+  expect(screen.getByText("A book you can start")).toBeVisible();
+  expect(screen.queryByText("October's book")).not.toBeInTheDocument();
+  expect(screen.getByText("Moby-Dick")).toBeVisible();
+  fireEvent.click(screen.getByRole("button",{name:"Open Moby-Dick"}));
+  expect(openBook).toHaveBeenLastCalledWith(expect.objectContaining({_gutenbergId:"2701"}));
+  await screen.findByText("Jane Eyre");
+  expect(screen.getByRole("button",{name:"Open the book club"})).toBeVisible();
+  expect(screen.getByText("The complete club invitation stays here.")).not.toBeVisible();
+  fireEvent.click(screen.getByText("About the read & content notes"));
+  expect(screen.getByText("The complete club invitation stays here.")).toBeVisible();
+  expect(screen.getByText("A difficult family loss")).toBeVisible();
 });
