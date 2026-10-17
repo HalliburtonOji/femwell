@@ -26,9 +26,10 @@ function ReadCard({ eyebrow, title, accent = "plum", children, style, className 
   );
 }
 
-export default function ReadFocus({ continueCards = [], articleCards = [], storyCards = [], phaseWord, onOpen, onDetails, presentation, calmLayout = false }) {
+export default function ReadFocus({ continueCards = [], articleCards = [], storyCards = [], phaseWord, onOpen, onDetails, presentation, calmLayout = false, segment = "all" }) {
   const hasAny = continueCards.length || articleCards.length || storyCards.length;
   if (!hasAny) {
+    if (segment === "rest") return null;
     return (
       <ReadCard eyebrow="Something to read" title="Fresh reads land here">
         <p style={{ fontFamily: SERIF, fontSize: 16, color: C.ink, lineHeight: 1.6, margin: 0 }}>{presentation ? "The reading desk is quiet today. New essays and stories will land here." : "Essays, guides and stories will appear here as they're published — chosen for where you are, a chapter or an article at a time. No streaks, nothing owed."}</p>
@@ -57,19 +58,28 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
       ...storyCards.map(item => ({ item, label: "Read" })),
     ].filter(({ item }) => item && !used.has(item.id) && used.add(item.id));
     const primaryIsResume = continueCards.includes(primary);
-    return <ReadCard className="fw-selected-reading-choice" eyebrow="Your next page" title={primaryIsResume ? "Pick up here" : "Start here"} accent="plum">
+    const lead = <ReadCard className="fw-selected-reading-choice fw-selected-lead" eyebrow={primaryIsResume ? "Your saved place" : "Your next page"} accent="plum">
       {presentation && <SelectedRoomDetail section="read"/>}
-      <p style={{ fontFamily: SERIF, color: C.slate, margin: "0 0 12px", lineHeight: 1.45 }}>
-        {primaryIsResume ? "Your bookmark did the remembering." : storyCards.includes(primary) ? "A story from the current shelf." : primary?._raw?.editorial_local ? "An original Ideas draft. Read the whole thing; tell us if it belongs." : "A complete read from the shelf."}
-      </p>
       <CalmFindRow item={primary} onOpen={onOpen} onDetails={onDetails} label={primaryIsResume ? "Continue" : "Read"}/>
-      {second && <div style={{ marginTop: 16 }}>
+    </ReadCard>;
+    const more = <>
+      {second && <div style={segment === "all" ? { marginTop: 16 } : undefined}>
         <p style={{ fontFamily: SERIF, color: C.slate, margin: "0 0 6px", lineHeight: 1.4 }}>{second?._raw?.editorial_local ? "Or, something from the FemWell desk." : "Or take a different page."}</p>
         <CalmFindRow item={second} onOpen={onOpen} onDetails={onDetails} label="Read"/>
       </div>}
       <CalmMore enabled={remaining.length > 0} title={`Browse all reading · ${remaining.length}`}>
         {remaining.map(({ item, label }) => <CalmFindRow key={item.id} item={item} onOpen={onOpen} onDetails={onDetails} label={label}/>)}
       </CalmMore>
+    </>;
+    if (segment === "lead") return lead;
+    if (segment === "rest") return second || remaining.length ? <ReadCard className="fw-selected-reading-rest" eyebrow="More at the reading desk" accent="plum">{more}</ReadCard> : null;
+    return <ReadCard className="fw-selected-reading-choice" eyebrow="Your next page" title={primaryIsResume ? "Pick up here" : "Start here"} accent="plum">
+      {presentation && <SelectedRoomDetail section="read"/>}
+      <p style={{ fontFamily: SERIF, color: C.slate, margin: "0 0 12px", lineHeight: 1.45 }}>
+        {primaryIsResume ? "Your bookmark did the remembering." : storyCards.includes(primary) ? "A story from the current shelf." : primary?._raw?.editorial_local ? "An original Ideas draft. Read the whole thing; tell us if it belongs." : "A complete read from the shelf."}
+      </p>
+      <CalmFindRow item={primary} onOpen={onOpen} onDetails={onDetails} label={primaryIsResume ? "Continue" : "Read"}/>
+      {more}
     </ReadCard>;
   }
 

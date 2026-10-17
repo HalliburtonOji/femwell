@@ -9,6 +9,21 @@ vi.mock('@/components/lifestyle/DailyStoryReader',()=>({default:({goToChapter,on
 vi.mock('./SelectedLifestyleHeader',()=>({default:({active})=><h1>{active.title}</h1>,SelectedRoomDetail:()=>null}));
 beforeEach(()=>{mock.empty.mockResolvedValue([]);mock.chapters.mockResolvedValue([]);mock.readings.mockResolvedValue([]);vi.spyOn(globalThis,'fetch').mockResolvedValue({ok:true,json:async()=>({results:[]})});window.history.replaceState({},'', '/Lifestyle');});
 describe('approved main Lifestyle parity',()=>{
+  it('puts one exact Read source before the glance without duplicating it below',async()=>{
+    window.history.replaceState({},'', '/Lifestyle?section=read');
+    const {container}=render(<Lifestyle/>);
+    const glance=await screen.findByRole('region',{name:"Your glance and Jess's read"});
+    const lead=container.querySelector('.fw-selected-read-lead');
+    const rest=container.querySelector('.fw-selected-reading-rest');
+    expect(lead).toBeInTheDocument();
+    expect(lead.compareDocumentPosition(glance)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(lead).getByRole('button',{name:/The plans you actually want to keep.*Read/})).toBeVisible();
+    expect(within(lead).getAllByText('The plans you actually want to keep')).toHaveLength(1);
+    expect(rest).toBeInTheDocument();
+    expect(rest.compareDocumentPosition(glance)&Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
+    expect(within(rest).queryByText('The plans you actually want to keep')).not.toBeInTheDocument();
+    expect(within(glance).getByRole('button',{name:'Jess’s read'})).toBeVisible();
+  });
   it('describes the actual complete Ideas reads shown when the remote Read catalogue is empty',async()=>{
     render(<Lifestyle/>);
     const glance=await screen.findByRole('region',{name:"Your glance and Jess's read"});
