@@ -2,12 +2,13 @@ import React from "react";
 import { beforeEach, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
-const api = vi.hoisted(() => ({ me: vi.fn(), items: vi.fn(), profiles: vi.fn(), saved: vi.fn(), createProfile: vi.fn(), updateProfile: vi.fn(), remove: vi.fn(), stories: vi.fn(), readings: vi.fn() }));
+const api = vi.hoisted(() => ({ me: vi.fn(), items: vi.fn(), profiles: vi.fn(), saved: vi.fn(), createProfile: vi.fn(), updateProfile: vi.fn(), remove: vi.fn(), stories: vi.fn(), readings: vi.fn(), goals: vi.fn(), createGoal: vi.fn() }));
 vi.mock("@/api/base44Client", () => ({ base44: {
   auth: { me: api.me },
   entities: {
     LifestyleItems: { filter: api.items }, UserProfile: { filter: api.profiles, create: api.createProfile, update: api.updateProfile },
     SavedItems: { filter: api.saved, delete: api.remove }, DailyStory: { filter: api.stories }, HoroscopeReading: { filter: api.readings },
+    Goal: { filter: api.goals, create: api.createGoal },
   },
 } }));
 vi.mock("@/hooks/usePodcastPlayer", () => ({ usePodcastPlayer: () => null }));
@@ -19,6 +20,10 @@ import Curious from "./Curious";
 import Delight from "./Delight";
 import Nest from "./Nest";
 import Tonight from "./Tonight";
+import Make from "./Make";
+import Outside from "./Outside";
+import Money from "./Money";
+import { isoDay } from "@/components/lifestyle/dailyStory";
 
 const mirrorRead = { id: "mirror-read", status: "PUBLISHED", category: "Fashion", media_type: "ARTICLE", title: "Colour in your wardrobe", summary: "An honest style idea.", lede: "A real first paragraph.\n\nA useful second paragraph.", content_url: "https://publisher.example/style", source_name: "Style Journal" };
 const moveRead = { id: "move-read", status: "PUBLISHED", category: "Fitness", media_type: "ARTICLE", title: "Dance for the pleasure of it", summary: "Movement without a target.", lede: "Start with a song.\n\nStop whenever you like.", content_url: "https://publisher.example/move", source_name: "Movement Journal" };
@@ -35,6 +40,8 @@ beforeEach(() => {
   api.remove.mockResolvedValue(undefined);
   api.stories.mockResolvedValue([]);
   api.readings.mockResolvedValue([]);
+  api.goals.mockResolvedValue([]);
+  api.createGoal.mockResolvedValue({ id: "goal-one", user_id: "reader-a" });
 });
 
 it.each([
@@ -226,4 +233,184 @@ it("never shows another account's nightly horoscope in Tonight", async () => {
   await waitFor(() => expect(api.readings).toHaveBeenCalledWith({ user_id: "reader-a" }, "-reading_date", 1));
   expect(screen.queryByText("Another woman's reading")).toBeNull();
   expect(screen.queryByText("The night sky")).toBeNull();
+});
+
+it("opens Tonight's complete chapter in a clean sheet and keeps the sky owner scoped", async () => {
+  api.stories.mockResolvedValue([{ id: "story-tonight", is_active: true, series_title: "The night garden", day_number: 8, segment_text: "The real first paragraph.\n\nThe real last paragraph." }]);
+  api.readings.mockResolvedValue([{ id: "sky-a", user_id: "reader-a", reading_date: isoDay(), moon_phase: "Waxing", power_title: "Your own sky", power_body: "Your private reading." }]);
+  render(<Tonight />);
+  expect(document.querySelector(".fw-tonight-clean .fw-tonight-hero")).not.toBeNull();
+  expect(document.querySelector(".fw-tonight-one")).not.toBeNull();
+  const chapter = await screen.findByRole("button", { name: /Tonight's chapter/ });
+  fireEvent.click(chapter);
+  expect(await screen.findByText("The real first paragraph.")).toBeVisible();
+  expect(screen.getByText("The real last paragraph.")).toBeVisible();
+  expect(screen.queryByRole("button", { name: "Save", exact: true })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Close" }));
+  fireEvent.click(await screen.findByRole("button", { name: /Your sky tonight/ }));
+  expect(await screen.findByText("Your private reading.")).toBeVisible();
+  expect(api.readings).toHaveBeenCalledWith({ user_id: "reader-a" }, "-reading_date", 1);
+});
+
+it("does not offer a future chapter or an archived sky as tonight's", async () => {
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+  api.stories.mockResolvedValue([
+    { id: "readable", is_active: true, series_key: "garden", day_number: 1, segment_text: "The readable chapter.", published_date: isoDay() },
+    { id: "future", is_active: true, series_key: "garden", day_number: 2, segment_text: "The future spoiler.", published_date: isoDay(tomorrow) },
+  ]);
+  api.readings.mockResolvedValue([{ id: "old-sky", user_id: "reader-a", reading_date: "2020-01-01", moon_phase: "Full", power_title: "An older sky" }]);
+  render(<Tonight />);
+  fireEvent.click(await screen.findByRole("button", { name: /Tonight's chapter/ }));
+  expect(await screen.findByText("The readable chapter.")).toBeVisible();
+  expect(screen.queryByText("The future spoiler.")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Close" }));
+  expect(screen.queryByText("An older sky")).toBeNull();
+  expect(screen.getByRole("link", { name: /Open Sky/ })).toHaveAttribute("href", "/Lifestyle?section=sky");
+});
+
+it("pairs Tonight's two-tides heading with its own body", async () => {
+  api.readings.mockResolvedValue([{ id: "sky-pair", user_id: "reader-a", reading_date: isoDay(), moon_phase: "Waxing", cycle_moon_headline: "These two tides", cycle_moon_body: "Your own tide paragraph.", power_title: "Another power heading", power_body: "A different power paragraph." }]);
+  render(<Tonight />);
+  fireEvent.click(await screen.findByRole("button", { name: /Your sky tonight/ }));
+  expect(await screen.findByRole("dialog", { name: /These two tides/ })).toBeVisible();
+  expect(screen.getByText("Your own tide paragraph.")).toBeVisible();
+  expect(screen.queryByText("A different power paragraph.")).toBeNull();
+});
+
+it("keeps Tonight's calm source and genuine audio in named depth", async () => {
+  api.items.mockResolvedValue([{ id: "calm-a", status: "PUBLISHED", category: "Mindfulness", media_type: "PODCAST", title: "A gentle meditation", summary: "Settle for a moment.", lede: "The complete voice-led introduction.", audio_url: "https://media.example/calm.mp3", episode_url: "https://publisher.example/calm", source_name: "Calm Radio" }]);
+  render(<Tonight />);
+  fireEvent.click(screen.getByText(/More ways to wind down/));
+  await waitFor(() => expect(document.querySelector(".fw-tonight-shelf .fw-folio-card__open")).not.toBeNull());
+  fireEvent.click(document.querySelector(".fw-tonight-shelf .fw-folio-card__open"));
+  expect(await screen.findByText("The complete voice-led introduction.")).toBeVisible();
+  expect(screen.getByRole("link", { name: "Listen at Calm Radio" })).toHaveAttribute("href", "https://publisher.example/calm");
+  expect(document.querySelector("audio")?.getAttribute("src")).toBe("https://media.example/calm.mp3");
+});
+
+it("separates Tonight's failed calm read from an empty shelf and offers Retry", async () => {
+  api.items.mockRejectedValueOnce(new Error("failed")).mockResolvedValue([]);
+  render(<Tonight />);
+  fireEvent.click(screen.getByText(/More ways to wind down/));
+  expect(await screen.findByRole("alert")).toHaveTextContent("The calm reads didn't arrive.");
+  fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+  await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
+});
+
+it("makes Make direct without losing its other ideas and exits", async () => {
+  render(<Make />);
+  expect(document.querySelector(".fw-make-clean .fw-make-hero")).not.toBeNull();
+  expect(document.querySelector(".fw-make-first")).not.toBeNull();
+  expect(screen.getByRole("link", { name: /Meet the Community/ })).toHaveAttribute("href", "/Community");
+  fireEvent.click(screen.getByText("Three more things to try"));
+  expect(document.querySelectorAll(".fw-make-more p")).toHaveLength(3);
+  fireEvent.click(screen.getByText(/Make it elsewhere/));
+  expect(screen.getByRole("link", { name: /Write something/ })).toHaveAttribute("href", "/Journal");
+  expect(screen.getByRole("link", { name: /Ask Jess for an idea/ })).toHaveAttribute("href", "/Jess");
+  expect(screen.getByRole("link", { name: /Look at Events/ })).toHaveAttribute("href", "/Events");
+});
+
+it("keeps Outside's access-first action, real source and all exits", async () => {
+  const read = { id: "outside-read", status: "PUBLISHED", category: "Nature", media_type: "ARTICLE", title: "A city garden", summary: "The corner plot.", lede: "The complete garden paragraph.", content_url: "https://publisher.example/garden", source_name: "Green Review" };
+  api.items.mockResolvedValue([read]);
+  render(<Outside />);
+  expect(document.querySelector(".fw-outside-clean .fw-outside-one")).not.toBeNull();
+  expect(screen.getByRole("link", { name: /See what's on in Events/ })).toHaveAttribute("href", "/Events");
+  fireEvent.click(screen.getByText(/More outside/));
+  await waitFor(() => expect(document.querySelector(".fw-outside-shelf .fw-folio-card__open")).not.toBeNull());
+  fireEvent.click(document.querySelector(".fw-outside-shelf .fw-folio-card__open"));
+  expect(await screen.findByText("The complete garden paragraph.")).toBeVisible();
+  expect(screen.getByRole("link", { name: "Read at Green Review" })).toHaveAttribute("href", read.content_url);
+  fireEvent.click(screen.getByRole("button", { name: "Close" }));
+  fireEvent.click(screen.getByText(/Carry it on · Planner/));
+  expect(screen.getByRole("link", { name: /Visit Community|Notice it together/ })).toHaveAttribute("href", "/Community");
+});
+
+it("shows Outside's failed read separately and retries", async () => {
+  api.items.mockRejectedValueOnce(new Error("offline")).mockResolvedValue([]);
+  render(<Outside />);
+  fireEvent.click(screen.getByText(/More outside/));
+  expect(await screen.findByRole("alert")).toHaveTextContent("The reads didn't arrive.");
+  fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+  await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
+});
+
+it("keeps a Money intention only after current-owner acknowledgement and exact read-back", async () => {
+  const rows = [];
+  api.goals.mockImplementation(async () => [...rows]);
+  api.createGoal.mockImplementation(async data => { const row = { id: "goal-one", ...data }; rows.push(row); return row; });
+  render(<Money />);
+  const keep = await screen.findByRole("button", { name: /Build a tiny buffer/ });
+  fireEvent.click(keep);
+  await waitFor(() => expect(keep).toHaveAttribute("aria-pressed", "true"));
+  expect(api.createGoal).toHaveBeenCalledTimes(1);
+  expect(api.createGoal).toHaveBeenCalledWith(expect.objectContaining({ user_id: "reader-a", domain: "Money", title: expect.stringContaining("Build a tiny buffer") }));
+  fireEvent.click(screen.getByText(/More gentle ideas/));
+  expect(document.querySelectorAll(".fw-money-intentions button")).toHaveLength(5);
+  fireEvent.click(screen.getByText(/Elsewhere · Jess/));
+  expect(screen.getByRole("link", { name: /See Deals/ })).toHaveAttribute("href", "/Deals");
+});
+
+it("does not invent a kept Money goal or duplicate an uncertain create", async () => {
+  api.createGoal.mockRejectedValueOnce(new Error("unknown create outcome"));
+  render(<Money />);
+  const keep = await screen.findByRole("button", { name: /Build a tiny buffer/ });
+  fireEvent.click(keep);
+  expect(await screen.findByRole("alert")).toHaveTextContent("isn't confirmed yet");
+  expect(keep).toHaveAttribute("aria-pressed", "false");
+  fireEvent.click(keep);
+  await waitFor(() => expect(api.goals).toHaveBeenCalledTimes(4));
+  expect(api.createGoal).toHaveBeenCalledTimes(1);
+});
+
+it("does not create an earlier owner's Money goal after an account switch during lookup", async () => {
+  let active = "reader-a", release;
+  api.me.mockImplementation(async () => ({ id: active, email: `${active}@example.test` }));
+  api.goals.mockResolvedValueOnce([]).mockImplementationOnce(() => new Promise(resolve => { release = resolve; }));
+  render(<Money />);
+  await waitFor(() => expect(api.goals).toHaveBeenCalledTimes(1));
+  const keep = screen.getByRole("button", { name: /Build a tiny buffer/ });
+  fireEvent.click(keep);
+  await waitFor(() => expect(release).toBeTypeOf("function"));
+  active = "reader-b";
+  release([]);
+  await waitFor(() => expect(screen.getByRole("button", { name: /Build a tiny buffer/ })).not.toBeDisabled());
+  expect(api.createGoal).not.toHaveBeenCalled();
+  expect(keep).toHaveAttribute("aria-pressed", "false");
+});
+
+it("waits for Money account authority without holding the first ritual behind the content shelf", async () => {
+  let release;
+  api.me.mockImplementationOnce(() => new Promise(resolve => { release = resolve; }));
+  render(<Money />);
+  expect(document.querySelector(".fw-money-one")).not.toBeNull();
+  const keep = screen.getByRole("button", { name: /Build a tiny buffer/ });
+  expect(keep).toBeDisabled();
+  expect(keep).toHaveTextContent("Checking account…");
+  fireEvent.click(keep);
+  expect(api.createGoal).not.toHaveBeenCalled();
+  release({ id: "reader-a", email: "reader@example.test" });
+  await waitFor(() => expect(keep).not.toBeDisabled());
+});
+
+it("keeps Money account failure distinct from a guest and retries without rereading all content", async () => {
+  api.me.mockRejectedValueOnce(new Error("auth transport failed"));
+  render(<Money />);
+  expect(await screen.findByRole("alert")).toHaveTextContent("Your kept intentions couldn't be checked.");
+  expect(screen.getByRole("button", { name: /Build a tiny buffer/ })).toBeDisabled();
+  const contentReads = api.items.mock.calls.length;
+  fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+  await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
+  expect(api.items).toHaveBeenCalledTimes(contentReads);
+  expect(screen.getByRole("button", { name: /Build a tiny buffer/ })).not.toBeDisabled();
+});
+
+it("treats a confirmed unauthenticated Money response as a sign-in path", async () => {
+  api.me.mockRejectedValueOnce({ status: 401 });
+  render(<Money />);
+  const keep = screen.getByRole("button", { name: /Build a tiny buffer/ });
+  await waitFor(() => expect(keep).not.toBeDisabled());
+  expect(keep).toHaveTextContent("Keep this");
+  expect(screen.queryByRole("alert")).toBeNull();
+  expect(api.createGoal).not.toHaveBeenCalled();
 });

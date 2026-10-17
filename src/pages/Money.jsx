@@ -11,15 +11,14 @@
 // Content MEASURED thin (~10 genuine gentle-finance items; the rest is business/shopping/cycle-
 // work pollution) → LEAN like Nest: an editorial money-ritual spine + a small real shelf + a
 // Deals deep-link. No new function.
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, Wallet, PiggyBank, Coins, HeartHandshake, Sparkles, MessageCircle, Feather, Tag, Check } from "lucide-react";
-import { T, SERIF, UI, PAPER_BG } from "@/components/journal/Editorial";
-import { OXBLOOD } from "@/components/brand/SliderKit";
-import { FwFloraHero } from "@/components/brand/PageTop";
-import { SummaryCard } from "@/components/brand/Card";
-import { CoverCard, ExpandDetailCard, decodeEntities } from "@/components/brand/expandCards";
+import { ArrowLeft, Wallet, PiggyBank, Coins, HeartHandshake, Sparkles, MessageCircle, Feather, Tag } from "lucide-react";
+import { ExpandDetailCard, decodeEntities } from "@/components/brand/expandCards";
 import { cwOf } from "@/components/brand/flora";
+import { GoodLifeSection as Section, GoodLifeShelf as Shelf } from "./GoodLifeRoomParts";
+import { useGoodLifeKeep } from "@/components/lifestyle-elite/useGoodLifeKeep";
+import "./GoodLifeRoomsClean.css";
 import { pickProfile } from "@/utils/userProfile";
 import { createPageUrl } from "@/utils";
 import { fmtDuration } from "@/utils/duration";
@@ -51,7 +50,7 @@ const RITUALS = [
   "Write one money worry down, then shut the notebook. It'll keep till you're ready.",
   "Notice one lovely thing today that money couldn't buy.",
   "A no-spend hour — not a no-spend life. Just an hour of not buying a thing.",
-  "Say the number out loud, the one you avoid. It's usually smaller than the dread around it.",
+  "If there's a number you've been avoiding, look when you're ready. No verdict attached.",
   "Thank past-you for anything she put by, however small.",
   "Name one kind thing you'll spend on this week without a scrap of guilt.",
   "Check one bill you've been avoiding. Just the one. Then stop for today.",
@@ -81,161 +80,153 @@ export default function Money() {
   const [userId, setUserId] = useState(null);
   const [kept, setKept] = useState(() => new Set());
   const [expanded, setExpanded] = useState(null);
+  const [itemsStatus, setItemsStatus] = useState("loading");
+  const [goalStatus, setGoalStatus] = useState("loading");
+  const [itemsRetryKey, setItemsRetryKey] = useState(0);
+  const [goalRetryKey, setGoalRetryKey] = useState(0);
+  const [keeping, setKeeping] = useState("");
+  const [keepError, setKeepError] = useState("");
+  const uncertain = useRef(new Set());
+  const pending = useRef(new Set());
+  const ownerRef = useRef(userId);
+  useEffect(() => { ownerRef.current = userId; }, [userId]);
+  const { saved, saveError, onSave } = useGoodLifeKeep(userId, expanded);
   const sage = cwOf("sage").petal;
 
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
-        const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500).catch(() => []);
-        if (alive) setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r)));
-      } catch { /* graceful */ }
+        const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500);
+        if (alive) { setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r))); setItemsStatus("ready"); }
+      } catch { if (alive) setItemsStatus("error"); }
+    })();
+    return () => { alive = false; };
+  }, [itemsRetryKey]);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
       try {
-        const u = await base44.auth.me().catch(() => null);
+        const u = await base44.auth.me();
         if (u?.id && alive) {
+          if (ownerRef.current !== u.id) { ownerRef.current = u.id; setKept(new Set()); uncertain.current.clear(); }
           setUserId(u.id);
           const profs = await base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []);
           const p = pickProfile(profs);
           const nm = String(p?.display_name || u.full_name || "").trim().split(/\s+/)[0] || "";
           if (nm && !/\d/.test(nm) && nm.length <= 16) setFirstName(nm[0].toUpperCase() + nm.slice(1));
           // which money intentions has she already kept? (so we show "kept", not offer duplicates)
-          const gs = await base44.entities.Goal.filter({ user_id: u.id, domain: "Money" }).catch(() => []);
-          if (alive && Array.isArray(gs)) setKept(new Set(gs.map((g) => (g.title || "").trim())));
+          try {
+            const gs = await base44.entities.Goal.filter({ user_id: u.id, domain: "Money" });
+            if (alive && ownerRef.current === u.id && Array.isArray(gs)) { setKept(new Set(gs.filter(g => g?.user_id === u.id).map(g => (g.title || "").trim()))); setGoalStatus("ready"); }
+          } catch { if (alive) setGoalStatus("error"); }
+        } else if (alive) setGoalStatus("ready");
+      } catch (error) {
+        if (alive) {
+          const guest = [401, 403].includes(Number(error?.status || error?.response?.status));
+          if (guest) { ownerRef.current = null; setUserId(null); setKept(new Set()); uncertain.current.clear(); }
+          setGoalStatus(guest ? "ready" : "error");
         }
-      } catch { /* anon — the board still works, just can't keep intentions */ }
+      }
     })();
     return () => { alive = false; };
-  }, []);
+  }, [goalRetryKey]);
 
   // keep a gentle money intention → a Goal(domain:"Money"), reusing existing fields only.
   const keepIntention = useCallback(async (title) => {
     if (!userId) { window.location.assign(createPageUrl("Profile")); return; }
-    setKept((s) => new Set(s).add(title.trim())); // optimistic
+    const exact = title.trim();
+    const owner = userId, key = `${owner}:${exact}`;
+    if (pending.current.has(key)) return;
+    pending.current.add(key);
+    setKeeping(exact); setKeepError("");
+    const assertOwner = async () => {
+      if (ownerRef.current !== owner) throw new Error("Account changed");
+      const current = await base44.auth.me();
+      if (current?.id !== owner) {
+        ownerRef.current = current?.id || null;
+        setUserId(current?.id || null); setKept(new Set()); setKeeping(""); setKeepError(""); setGoalStatus("loading");
+        setGoalRetryKey(x => x + 1); // re-read the new owner's qualitative intentions
+        throw new Error("Account changed");
+      }
+      if (ownerRef.current !== owner) throw new Error("Account changed");
+    };
     try {
-      await base44.entities.Goal.create({ user_id: userId, title: title.trim(), type: "short", domain: "Money", stage: "seed", status: "active", flower: "sunflower", accent: sage, next_action: "" });
-    } catch { setKept((s) => { const n = new Set(s); n.delete(title.trim()); return n; }); }
+      await assertOwner();
+      const before = await base44.entities.Goal.filter({ user_id: owner, domain: "Money" });
+      await assertOwner();
+      const existing = (Array.isArray(before) ? before : []).find(row => row?.user_id === owner && row?.title?.trim() === exact);
+      let expectedId = existing?.id;
+      if (!expectedId && !uncertain.current.has(key)) {
+        await assertOwner();
+        uncertain.current.add(key); // a lost create receipt must not trigger a duplicate on Retry
+        const created = await base44.entities.Goal.create({ user_id: owner, title: exact, type: "short", domain: "Money", stage: "seed", status: "active", flower: "sunflower", accent: sage, next_action: "" });
+        await assertOwner();
+        if (!created?.id || (created.user_id && created.user_id !== owner)) throw new Error("Wrong goal acknowledgement");
+        expectedId = created.id;
+      }
+      await assertOwner();
+      const after = await base44.entities.Goal.filter({ user_id: owner, domain: "Money" });
+      await assertOwner();
+      const confirmed = (Array.isArray(after) ? after : []).find(row => row?.user_id === owner && row?.title?.trim() === exact && (!expectedId || row.id === expectedId));
+      if (!confirmed?.id) throw new Error("Goal not confirmed");
+      uncertain.current.delete(key);
+      setKept(s => new Set(s).add(exact));
+    } catch { if (ownerRef.current === owner) setKeepError("That intention isn't confirmed yet. Check again before making another."); }
+    finally { pending.current.delete(key); if (ownerRef.current === owner) setKeeping(""); }
   }, [userId, sage]);
 
-  const moneyCards = useMemo(() => rotateDaily(items.filter((r) => !isFiction(r) && !hasAny(r, NOT) && hasAny(r, MONEY)), 8).map((r) => ({
-    id: r.id, title: decodeEntities(r.title || ""), subtitle: r.source_name || r.channel_name || r.subtitle || "",
-    summary: (r.summary || r.excerpt || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
-    category: r.category || "Career & Money", cw: "sage", Icon: "Wallet", kind: "Read · Money",
-    meta: [["Clock", fmtDuration(r) || "a calm few minutes"]],
-  })), [items]);
+  const moneyCards = useMemo(() => rotateDaily(items.filter((r) => !isFiction(r) && !hasAny(r, NOT) && hasAny(r, MONEY)), 8).map((r) => {
+    const mt = String(r.media_type || "").toUpperCase();
+    const isVid = mt === "VIDEO" && r.video_id && r.is_embeddable !== false;
+    const isAudio = mt === "PODCAST" && r.audio_url;
+    return {
+      id: r.id, type: isVid ? "video" : isAudio ? "audio" : "article", _raw: { ...r, source_url: r.source_url || r.episode_url }, sourceName: r.source_name || r.channel_name || "FemWell", actions: [],
+      title: decodeEntities(r.title || ""), subtitle: r.source_name || r.channel_name || r.subtitle || "",
+      summary: (r.summary || r.excerpt || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
+      category: r.category || "Career & Money", cw: "sage", Icon: isVid ? "Film" : isAudio ? "Headphones" : "Wallet", kind: isVid ? "Watch · Money" : isAudio ? "Listen · Money" : "Read · Money",
+      meta: [["Clock", fmtDuration(r) || "a calm few minutes"]],
+      ...(isVid ? { youtubeId: r.video_id } : {}), ...(isAudio ? { audioSrc: r.audio_url, playerLabel: decodeEntities(r.title || "") } : {}),
+    };
+  }), [items]);
   const rituals = useMemo(() => rotateDaily(RITUALS, 4), []);
-
-  const summaryRows = useMemo(() => [
-    { Icon: Wallet, label: "Today", text: firstName ? `${firstName}, money is one of the most emotional things there is — so this is the gentle corner for it. No shame, no lectures, no spreadsheets required.` : "Money is one of the most emotional things there is — so this is the gentle corner for it. No shame, no lectures, no spreadsheets required." },
-    { Icon: HeartHandshake, label: "How this works here", text: "You won't be told off, lectured, or made to feel behind. Money is emotional, not just mathematical — and being kind to yourself about it is allowed, whatever the number." },
-    { Icon: PiggyBank, label: "A little is a lot", text: "A tiny buffer, a small kindness to yourself, one worry looked at gently — that's the whole game here. Not wealth, not optimising. Just a bit more peace around it." },
-  ], [firstName]);
-
-  const Section = ({ Icon, title, sub, accent, children }) => (
-    <section style={{ marginTop: 26 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 2px 4px" }}>
-        <span style={{ width: 30, height: 30, borderRadius: 9, background: `${accent}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><Icon size={16} color={accent} /></span>
-        <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, fontWeight: 600, color: OXBLOOD }}>{title}</div>
-      </div>
-      {sub && <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 2px 12px" }}>{sub}</p>}
-      {children}
-    </section>
-  );
-
+  const intentionButton = (intent) => {
+    const exact = intent.trim(), on = kept.has(exact), busy = keeping === exact, check = uncertain.current.has(`${userId}:${exact}`);
+    const checkingAccount = goalStatus === "loading" || goalStatus === "error";
+    return <button key={intent} type="button" onClick={() => !on && keepIntention(intent)} disabled={on || busy || checkingAccount} aria-pressed={on} className="fw-money-intention"><span>{intent}</span><strong>{on ? "Kept" : busy ? "Checking…" : goalStatus === "error" ? "Account check needed" : goalStatus === "loading" ? "Checking account…" : check ? "Check again" : "Keep this"}</strong></button>;
+  };
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
+    <div className="fw-good-clean fw-money-clean" style={{ minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "12px 16px 0" }}>
-        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/Lifestyle")} aria-label="Back" className="fw-elite-press"
-          style={{ width: 40, height: 40, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paperHi, color: OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer" }}><ArrowLeft size={19} /></button>
+        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/Lifestyle?section=good")} aria-label="Back to Good life" className="fw-elite-press fw-good-back"><ArrowLeft size={19}/></button>
+        <header className="fw-good-hero fw-money-hero"><span className="fw-good-path">GOOD LIFE / MONEY</span><span className="fw-money-ledger" aria-hidden="true"/><span className="fw-money-bloom" aria-hidden="true"/><span className="fw-money-ring" aria-hidden="true"/><h1>Money</h1><p>Gently, and at your pace. No maths lecture.</p></header>
+        <details className="fw-good-context"><summary>A note before you begin <span aria-hidden="true">+</span></summary><div className="fw-good-context-body">
+          <div className="fw-good-context-row"><HeartHandshake size={16}/><div><strong>No verdict here</strong><p>{firstName ? `${firstName}, ` : ""}money can feel complicated. One small look is enough.</p></div></div>
+          <div className="fw-good-context-row"><PiggyBank size={16}/><div><strong>Qualitative only</strong><p>No balance, target, score or investment recommendation. These intentions are yours to change.</p></div></div>
+        </div></details>
 
-        <FwFloraHero title="Money, gently" line="A calm, kind corner for the most emotional subject there is. No shame, no lectures, no sums you'll dread."
-          colorway="sage" bloom="cosmos" flankL="clover" flankR="daisy" titleColor={OXBLOOD} creature="bee" />
-
-        <div style={{ marginTop: 6 }}><SummaryCard eyebrow="Money, gently" accent={sage} rows={summaryRows} /></div>
-
-        {/* A · A GENTLE MONEY THING — the ritual spine */}
-        <Section Icon={Coins} title="A gentle money thing today" accent={sage}
-          sub="Small, low-stakes, no maths. Pick one if it helps — every single one is optional, and 'not today' is a perfectly good answer.">
-          <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-            {rituals.map((r, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${sage}`, borderRadius: 13, padding: "12px 14px" }}>
-                <span style={{ width: 30, height: 30, borderRadius: 9, background: `${sage}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><Coins size={15} color={sage} /></span>
-                <span style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.5 }}>{r}</span>
-              </div>
-            ))}
-          </div>
+        <Section Icon={Coins} title="One small money thing" accent={sage}><div className="fw-money-one"><Coins size={22}/><p>{rituals[0]}</p></div></Section>
+        <Section Icon={PiggyBank} title="Keep a gentle intention" accent={cwOf("gold").petal} sub="A direction, not a target. It appears in your goals garden.">
+          {intentionButton(INTENTIONS[0])}
+          {keepError && <p role="alert" className="fw-money-error">{keepError}</p>}
+          {goalStatus === "error" && <div role="alert" className="fw-good-load-error">Your kept intentions couldn't be checked. <button type="button" onClick={() => { setGoalStatus("loading"); setGoalRetryKey(x => x + 1); }}>Try again</button></div>}
         </Section>
 
-        {/* B · KEEP A GENTLE INTENTION — reuses the Goal entity (domain:"Money"); grows in her garden */}
-        <Section Icon={PiggyBank} title="A gentle money intention" accent={cwOf("gold").petal}
-          sub="Not a target, not a number — a soft direction to hold. Keep one and it grows quietly in your goals garden. Change your mind any time.">
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {INTENTIONS.map((intent) => {
-              const on = kept.has(intent.trim());
-              return (
-                <button key={intent} onClick={() => !on && keepIntention(intent)} disabled={on} className="fw-elite-press"
-                  style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", textAlign: "left", background: on ? `${cwOf("gold").petal}12` : T.paperHi, border: `1px solid ${on ? cwOf("gold").petal : T.paperDeep}`, borderRadius: 13, padding: "12px 14px", cursor: on ? "default" : "pointer" }}>
-                  <span style={{ width: 30, height: 30, borderRadius: 9, background: `${cwOf("gold").petal}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}>{on ? <Check size={15} color={cwOf("gold").petal} /> : <PiggyBank size={15} color={cwOf("gold").petal} />}</span>
-                  <span style={{ flex: 1, minWidth: 0, fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.4 }}>{intent}</span>
-                  <span style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: cwOf("gold").petal, flexShrink: 0 }}>{on ? "kept" : "keep it"}</span>
-                </button>
-              );
-            })}
-          </div>
-        </Section>
-
-        {/* C · WORTH A READ — the small real content shelf */}
-        <Section Icon={Wallet} title="Worth a read" accent={cwOf("plum").petal}
-          sub="A few honest, un-preachy pieces on money and life — including the ones about what it actually costs to be a woman.">
-          {moneyCards.length ? (
-            <div className="fw-mon-shelf" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 0 8px 16px", margin: "0 -16px", scrollbarWidth: "none", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)" }}>
-              <style>{`.fw-mon-shelf::-webkit-scrollbar{display:none}`}</style>
-              {moneyCards.map((it) => <div key={it.id} style={{ flex: "0 0 89vw", maxWidth: 400, height: 366 }}><CoverCard item={it} compact onOpen={() => setExpanded(it)} /></div>)}
-            </div>
-          ) : <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "0 2px" }}>Money reads land here as the library fills out.</p>}
-        </Section>
-
-        {/* D · SMALL SAVINGS — Deals deep-link (gentle, not consumerist) */}
-        <Section Icon={Tag} title="A little going further" accent={cwOf("crimson").petal}
-          sub="If you're going to spend anyway, spend a bit less — the members' offers and discounts live in Deals. No pressure to buy a thing.">
-          <a href={createPageUrl("Deals")} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 12, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${cwOf("crimson").petal}`, borderRadius: 14, padding: "14px 16px", cursor: "pointer", textDecoration: "none" }}>
-            <span style={{ width: 40, height: 40, borderRadius: 11, background: `${cwOf("crimson").petal}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><Tag size={20} color={cwOf("crimson").petal} /></span>
-            <span style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: T.ink, display: "block", lineHeight: 1.2 }}>See what's in Deals</span>
-              <span style={{ fontFamily: UI, fontSize: 12.5, color: T.muted }}>Discounts and offers, for the things you were buying anyway.</span>
-            </span>
-          </a>
-        </Section>
-
-        {/* E · CARRY IT ON */}
-        <Section Icon={Sparkles} title="Carry it on" accent={sage} sub="Money's easier when it's not a secret.">
-          <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-            {[
-              { Icon: Sparkles, cw: "sage", label: "\"Help me look at my money without panicking\"", sub: "Jess can sit with you through the scary bit — no judgement, no jargon, no selling you anything.", href: createPageUrl("Jess") },
-              { Icon: MessageCircle, cw: "plum", label: "Talk money in Community", sub: "The taboo that costs us most is not talking about it. Vent, ask, share — anonymously.", href: createPageUrl("Community") },
-              { Icon: Feather, cw: "crimson", label: "Put a money worry down in your Journal", sub: "Half its power is in not being looked at. Get it out of your head and onto the page.", href: createPageUrl("Journal") },
-            ].map((r) => {
-              const c = cwOf(r.cw).petal;
-              return (
-                <a key={r.label} href={r.href} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", textAlign: "left", background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${c}`, borderRadius: 13, padding: "11px 13px", cursor: "pointer", textDecoration: "none" }}>
-                  <span style={{ width: 34, height: 34, borderRadius: 10, background: `${c}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><r.Icon size={16} color={c} /></span>
-                  <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink, display: "block", lineHeight: 1.2 }}>{r.label}</span>
-                    <span style={{ fontFamily: UI, fontSize: 12.5, color: T.muted }}>{r.sub}</span>
-                  </span>
-                </a>
-              );
-            })}
-          </div>
-        </Section>
-
-        <div style={{ textAlign: "center", margin: "28px 0 0" }}>
-          <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, maxWidth: 340, lineHeight: 1.55, margin: "0 auto" }}>
-            You are not behind, not bad with money, not a failure at this. You're a person with a complicated relationship to a hard thing — and you're allowed to be gentle about it.
-          </p>
-        </div>
+        <details className="fw-good-library"><summary>More gentle ideas · intentions and reads <span aria-hidden="true">+</span></summary>
+          <Section Icon={Coins} title="Three more small things" accent={sage}><div className="fw-money-more">{rituals.slice(1).map((r,i)=><p key={i}>{r}</p>)}</div></Section>
+          <Section Icon={PiggyBank} title="Other intentions" accent={cwOf("gold").petal}><div className="fw-money-intentions">{INTENTIONS.slice(1).map(intentionButton)}</div></Section>
+          <Section Icon={Wallet} title="Worth a read" accent={cwOf("plum").petal}><Shelf room="money" cards={moneyCards} onOpen={setExpanded} empty={itemsStatus === "loading" ? "Finding money reads…" : itemsStatus === "error" ? "" : "No money read just now."}/></Section>
+          {itemsStatus === "error" && <div role="alert" className="fw-good-load-error">The reads didn't arrive. <button type="button" onClick={() => { setItemsStatus("loading"); setItemsRetryKey(x => x + 1); }}>Try again</button></div>}
+        </details>
+        <details className="fw-good-library"><summary>Elsewhere · Jess, Community, Journal, Deals <span aria-hidden="true">+</span></summary><div className="fw-good-door-list">
+          <a href={createPageUrl("Jess")}><Sparkles size={18}/><span>Talk it through with Jess<small>Start with what feels awkward</small></span><span aria-hidden="true">→</span></a>
+          <a href={createPageUrl("Community")}><MessageCircle size={18}/><span>Visit Community<small>Ask or share only if you want to</small></span><span aria-hidden="true">→</span></a>
+          <a href={createPageUrl("Journal")}><Feather size={18}/><span>Put the worry into words<small>A private page, no numbers required</small></span><span aria-hidden="true">→</span></a>
+          <a href={createPageUrl("Deals")}><Tag size={18}/><span>See Deals<small>Offers, only for things you already need</small></span><span aria-hidden="true">→</span></a>
+        </div></details>
       </div>
-
-      {expanded && <ExpandDetailCard item={expanded} onClose={() => setExpanded(null)} />}
+      {expanded && <ExpandDetailCard item={expanded} onClose={() => setExpanded(null)} presentation="focused" room="good" saved={saved} onSave={onSave} error={saveError}/>}
     </div>
   );
 }

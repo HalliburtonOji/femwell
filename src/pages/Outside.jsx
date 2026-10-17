@@ -19,12 +19,11 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Trees, Leaf, Sprout, CalendarHeart, MessageCircle, Feather, Sparkles, Bird } from "lucide-react";
-import { T, SERIF, UI, PAPER_BG } from "@/components/journal/Editorial";
-import { OXBLOOD } from "@/components/brand/SliderKit";
-import { FwFloraHero } from "@/components/brand/PageTop";
-import { SummaryCard } from "@/components/brand/Card";
-import { CoverCard, ExpandDetailCard, decodeEntities } from "@/components/brand/expandCards";
+import { ExpandDetailCard, decodeEntities } from "@/components/brand/expandCards";
 import { cwOf } from "@/components/brand/flora";
+import { GoodLifeSection as Section, GoodLifeShelf as Shelf } from "./GoodLifeRoomParts";
+import { useGoodLifeKeep } from "@/components/lifestyle-elite/useGoodLifeKeep";
+import "./GoodLifeRoomsClean.css";
 import { pickProfile } from "@/utils/userProfile";
 import { createPageUrl } from "@/utils";
 import { fmtDuration } from "@/utils/duration";
@@ -78,18 +77,23 @@ export default function Outside() {
   const [items, setItems] = useState([]);
   const [firstName, setFirstName] = useState("");
   const [expanded, setExpanded] = useState(null);
+  const [ownerId, setOwnerId] = useState(null);
+  const [itemsStatus, setItemsStatus] = useState("loading");
+  const [retryKey, setRetryKey] = useState(0);
+  const { saved, saveError, onSave } = useGoodLifeKeep(ownerId, expanded);
   const sage = cwOf("sage").petal;
 
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
-        const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500).catch(() => []);
-        if (alive) setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r)));
-      } catch { /* graceful */ }
+        const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500);
+        if (alive) { setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r))); setItemsStatus("ready"); }
+      } catch { if (alive) setItemsStatus("error"); }
       try {
         const u = await base44.auth.me().catch(() => null);
         if (u?.id) {
+          if (alive) setOwnerId(u.id);
           const profs = await base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []);
           const p = pickProfile(profs);
           const nm = String(p?.display_name || u.full_name || "").trim().split(/\s+/)[0] || "";
@@ -98,14 +102,15 @@ export default function Outside() {
       } catch { /* anon */ }
     })();
     return () => { alive = false; };
-  }, []);
+  }, [retryKey]);
 
   const toCard = useCallback((r, cw) => {
     const mt = String(r.media_type || "").toUpperCase();
     const isVid = mt === "VIDEO" && r.video_id && r.is_embeddable !== false;
     const isAudio = mt === "PODCAST" && r.audio_url;
     return {
-      id: r.id, title: decodeEntities(r.title || ""), subtitle: r.source_name || r.channel_name || r.subtitle || "",
+      id: r.id, type: isVid ? "video" : isAudio ? "audio" : "article", _raw: { ...r, source_url: r.source_url || r.episode_url }, sourceName: r.source_name || r.channel_name || "FemWell", actions: [],
+      title: decodeEntities(r.title || ""), subtitle: r.source_name || r.channel_name || r.subtitle || "",
       summary: (r.summary || r.excerpt || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
       category: r.category || "Lifestyle", cw, Icon: isVid ? "Film" : isAudio ? "Headphones" : "Leaf",
       kind: isVid ? "Watch · Outside" : isAudio ? "Listen · Outside" : "Read · Outside",
@@ -117,110 +122,33 @@ export default function Outside() {
   const prompts = useMemo(() => rotateDaily(PROMPTS, 4), []);
   const greenCards = useMemo(() => rotateDaily(items.filter((r) => !isFiction(r) && !hasAny(r, NOT) && hasAny(r, NATURE)), 8).map((r) => toCard(r, "sage")), [items, toCard]);
 
-  const summaryRows = useMemo(() => [
-    { Icon: Trees, label: "Today", text: firstName ? `${firstName}, get a bit of outside in — a window, a tree, five minutes of air. It all counts, and none of it needs a garden or a car.` : "Get a bit of outside in — a window, a tree, five minutes of air. It all counts, and none of it needs a garden or a car." },
-    { Icon: Leaf, label: "Why it helps", text: "Time in green space genuinely lifts mood and eases stress — and the research found several short visits count as much as one long one. So a five-minute go is not second best. It's the whole point." },
-    { Icon: Bird, label: "Nature is yours too", text: "No garden, no car, a city flat? A street tree, a window box, a patch of sky — that IS nature, and it's as much yours as anyone's. No gear, no gatekeeping, no mountain required." },
-  ], [firstName]);
-
-  const Section = ({ Icon, title, sub, accent, children }) => (
-    <section style={{ marginTop: 26 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 2px 4px" }}>
-        <span style={{ width: 30, height: 30, borderRadius: 9, background: `${accent}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><Icon size={16} color={accent} /></span>
-        <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, fontWeight: 600, color: OXBLOOD }}>{title}</div>
-      </div>
-      {sub && <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 2px 12px" }}>{sub}</p>}
-      {children}
-    </section>
-  );
-
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
+    <div className="fw-good-clean fw-outside-clean" style={{ minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "12px 16px 0" }}>
-        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/Lifestyle")} aria-label="Back" className="fw-elite-press"
-          style={{ width: 40, height: 40, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paperHi, color: OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer" }}><ArrowLeft size={19} /></button>
+        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/Lifestyle?section=good")} aria-label="Back to Good life" className="fw-elite-press fw-good-back"><ArrowLeft size={19}/></button>
+        <header className="fw-good-hero fw-outside-hero"><span className="fw-good-path">GOOD LIFE / OUTSIDE</span><span className="fw-outside-window" aria-hidden="true"/><span className="fw-outside-tree" aria-hidden="true"/><h1>Outside</h1><p>A little air. No grand expedition required.</p></header>
+        <details className="fw-good-context"><summary>A note from outside <span aria-hidden="true">+</span></summary><div className="fw-good-context-body">
+          <div className="fw-good-context-row"><Leaf size={16}/><div><strong>Start nearby</strong><p>{firstName ? `${firstName}, ` : ""}a window, street tree or patch of sky is enough to begin.</p></div></div>
+          <div className="fw-good-context-row"><Bird size={16}/><div><strong>Evidence, lightly</strong><p>A large study linked time in nature with wellbeing. It did not test what a five-minute visit does for you.</p></div></div>
+        </div></details>
 
-        <FwFloraHero title="Outside" line="A bit of green, a breath of air — nature as it actually is for you. A window, a street tree, a park bench all count."
-          colorway="sage" bloom="cosmos" flankL="daisy" flankR="cornflower" titleColor={OXBLOOD} creature="bee" />
+        <Section Icon={Leaf} title="One little outside thing" accent={sage}><div className="fw-outside-one"><Sprout size={22} aria-hidden="true"/><p>{prompts[0]}</p></div></Section>
+        <a href={createPageUrl("Events")} className="fw-outside-event"><CalendarHeart size={20}/><span><strong>See what's on in Events</strong><small>Walks and outdoor gatherings, when listed</small></span><span aria-hidden="true">→</span></a>
 
-        <div style={{ marginTop: 6 }}><SummaryCard eyebrow="Fresh air today" accent={sage} rows={summaryRows} /></div>
-
-        {/* A · GET OUTSIDE TODAY — the access-first prompt spine (the lean hook) */}
-        <Section Icon={Leaf} title="Get outside today" accent={sage}
-          sub="Tiny, doable, no kit required. Pick one if it suits — a window and a minute is a completely valid amount of nature.">
-          <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-            {prompts.map((p, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${sage}`, borderRadius: 13, padding: "12px 14px" }}>
-                <span style={{ width: 30, height: 30, borderRadius: 9, background: `${sage}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><Sprout size={15} color={sage} /></span>
-                <span style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.5 }}>{p}</span>
-              </div>
-            ))}
-          </div>
-        </Section>
-
-        {/* B · INTO THE GREEN — the real nature/garden content */}
-        <Section Icon={Trees} title="Into the green" accent={cwOf("gold").petal}
-          sub="Reads on being outside, growing things, and the small wildness of gardens, balconies and city parks.">
-          {greenCards.length ? (
-            <div className="fw-out-shelf" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 0 8px 16px", margin: "0 -16px", scrollbarWidth: "none", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)" }}>
-              <style>{`.fw-out-shelf::-webkit-scrollbar{display:none}`}</style>
-              {greenCards.map((it) => <div key={it.id} style={{ flex: "0 0 89vw", maxWidth: 400, height: 366 }}><CoverCard item={it} compact onOpen={() => setExpanded(it)} /></div>)}
-            </div>
-          ) : <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "0 2px" }}>Nature reads land here as the library fills out.</p>}
-        </Section>
-
-        {/* C · NO GARDEN CORNER — the anti-gatekeeping promise made concrete */}
-        <Section Icon={Sprout} title="No garden? Nature's still yours" accent={cwOf("sage").petal}
-          sub="For flats, rentals and windowsills — the whole point is that you don't need land to grow something or feel the season turn.">
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 12, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${cwOf("sage").petal}`, borderRadius: 14, padding: "14px 16px" }}>
-            <span style={{ width: 34, height: 34, borderRadius: 10, background: `${cwOf("sage").petal}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><Leaf size={17} color={cwOf("sage").petal} /></span>
-            <span style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.5 }}>One pot of herbs on the sill. A supermarket basil plant, kept alive out of spite. A window box, a hanging spider plant, a jam jar of cuttings on the draining board. That's a garden. Ask Jess "I've no outdoor space — what can I actually grow?" and start with one green thing.</span>
-          </div>
-        </Section>
-
-        {/* D · OUTSIDE, WITH OTHERS — the one live lever (Events deep-link) */}
-        <Section Icon={CalendarHeart} title="Outside, with others" accent={cwOf("crimson").petal}
-          sub="Walks, gardens, a bit of fresh air with company — real ones happen over in Events when they're on.">
-          <a href={createPageUrl("Events")} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 12, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${cwOf("crimson").petal}`, borderRadius: 14, padding: "14px 16px", cursor: "pointer", textDecoration: "none" }}>
-            <span style={{ width: 40, height: 40, borderRadius: 11, background: `${cwOf("crimson").petal}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><CalendarHeart size={20} color={cwOf("crimson").petal} /></span>
-            <span style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: T.ink, display: "block", lineHeight: 1.2 }}>See what's on in Events</span>
-              <span style={{ fontFamily: UI, fontSize: 12.5, color: T.muted }}>Outdoor meetups and walks, if any are running near you — no pressure to go.</span>
-            </span>
-          </a>
-        </Section>
-
-        {/* E · CARRY IT ON */}
-        <Section Icon={Sparkles} title="Carry it on" accent={cwOf("gold").petal} sub="Outside doesn't end here.">
-          <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-            {[
-              { Icon: CalendarHeart, cw: "gold", label: "Book a walk into your day", sub: "Ten minutes, no agenda — put it in the Planner so it actually happens.", href: createPageUrl("Planner") },
-              { Icon: Sparkles, cw: "sage", label: "\"Talk me into a five-minute walk\"", sub: "Tell Jess you can't be bothered. She's good at the gentle nudge out the door.", href: createPageUrl("Jess") },
-              { Icon: MessageCircle, cw: "plum", label: "\"What did you see?\" in Community", sub: "Share the fox, the sunset, the first snowdrop — small wonders, noticed together.", href: createPageUrl("Community") },
-              { Icon: Feather, cw: "crimson", label: "Note it in your Journal", sub: "The walk that shifted your mood, the tree you always pass — worth keeping.", href: createPageUrl("Journal") },
-            ].map((r) => {
-              const c = cwOf(r.cw).petal;
-              return (
-                <a key={r.label} href={r.href} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", textAlign: "left", background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${c}`, borderRadius: 13, padding: "11px 13px", cursor: "pointer", textDecoration: "none" }}>
-                  <span style={{ width: 34, height: 34, borderRadius: 10, background: `${c}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><r.Icon size={16} color={c} /></span>
-                  <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink, display: "block", lineHeight: 1.2 }}>{r.label}</span>
-                    <span style={{ fontFamily: UI, fontSize: 12.5, color: T.muted }}>{r.sub}</span>
-                  </span>
-                </a>
-              );
-            })}
-          </div>
-        </Section>
-
-        <div style={{ textAlign: "center", margin: "28px 0 0" }}>
-          <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, maxWidth: 340, lineHeight: 1.55, margin: "0 auto" }}>
-            You don't have to earn the outside, or do it properly, or go far. A minute of sky, a single leaf, a breath of cold air — it was always yours.
-          </p>
-        </div>
+        <details className="fw-good-library"><summary>More outside · small ideas and real reads <span aria-hidden="true">+</span></summary>
+          <Section Icon={Trees} title="Three more little invitations" accent={sage}><div className="fw-outside-prompts">{prompts.slice(1).map((p,i)=><p key={i}>{p}</p>)}</div></Section>
+          <Section Icon={Sprout} title="No garden?" accent={sage}><p className="fw-outside-no-garden">One pot of herbs on a sill, a jam jar of cuttings, a sky through the window. The season is still yours.</p></Section>
+          <Section Icon={Trees} title="Into the green" accent={cwOf("gold").petal}><Shelf room="outside" cards={greenCards} onOpen={setExpanded} empty={itemsStatus === "loading" ? "Finding outside reads…" : itemsStatus === "error" ? "" : "No outside read just now."}/></Section>
+          {itemsStatus === "error" && <div role="alert" className="fw-good-load-error">The reads didn't arrive. <button type="button" onClick={() => { setItemsStatus("loading"); setRetryKey(x => x + 1); }}>Try again</button></div>}
+        </details>
+        <details className="fw-good-library"><summary>Carry it on · Planner, Jess, Community, Journal <span aria-hidden="true">+</span></summary><div className="fw-good-door-list">
+          <a href={createPageUrl("Planner")}><CalendarHeart size={18}/><span>Make room for a walk<small>No target, just some air</small></span><span aria-hidden="true">→</span></a>
+          <a href={createPageUrl("Jess")}><Sparkles size={18}/><span>Ask Jess for an idea<small>Even if all you have is a window</small></span><span aria-hidden="true">→</span></a>
+          <a href={createPageUrl("Community")}><MessageCircle size={18}/><span>Notice it together<small>Share what caught your eye, if you want</small></span><span aria-hidden="true">→</span></a>
+          <a href={createPageUrl("Journal")}><Feather size={18}/><span>Keep a little sighting<small>The first leaf, the fox, the sky</small></span><span aria-hidden="true">→</span></a>
+        </div></details>
       </div>
-
-      {expanded && <ExpandDetailCard item={expanded} onClose={() => setExpanded(null)} />}
+      {expanded && <ExpandDetailCard item={expanded} onClose={() => setExpanded(null)} presentation="focused" room="good" saved={saved} onSave={onSave} error={saveError}/>}
     </div>
   );
 }
