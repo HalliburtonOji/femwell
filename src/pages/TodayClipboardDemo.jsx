@@ -281,7 +281,7 @@ function buildProgramsInsight(prog) {
   return { hook: clip(title, 38), line: (len ? `Day ${day} of ${len} · ` : `Day ${day} · `) + clip(prog.prog?.daily_activities_summary || prog.prog?.summary || "Tonight: a 10-minute body-scan to settle.", 64), inset: null };
 }
 
-export default function TodayClipboardDemo() {
+export default function TodayClipboardDemo({ routeActive = true }) {
   useEditorialFonts();
   const [tod] = useState(() => { try { const h = new Date().getHours(); return h < 11 ? "morning" : h < 17 ? "afternoon" : "evening"; } catch { return "afternoon"; } });
   const [first] = useState(false);                    // the empty/first-day state (set by the first-open ceremony)
@@ -457,14 +457,14 @@ export default function TodayClipboardDemo() {
 
   // first-open ceremony animation: grow the bloom 0→4, then mark seen + dismiss.
   useEffect(() => {
-    if (!ceremony) return;
+    if (!ceremony || !routeActive) return;
     try { localStorage.setItem(SEEN_KEY, "1"); } catch { /* ignore */ }
     if (reduceMotion()) { setGrowStage(4); const t = setTimeout(() => setCeremony(false), 1600); return () => clearTimeout(t); }
     let s = 0; setGrowStage(0);
     const iv = setInterval(() => { s += 1; setGrowStage(Math.min(4, s)); if (s >= 4) clearInterval(iv); }, 480);
     const done = setTimeout(() => setCeremony(false), 3000);
     return () => { clearInterval(iv); clearTimeout(done); };
-  }, [ceremony]);
+  }, [ceremony, routeActive]);
 
   // persisted checklist
   useEffect(() => {
@@ -974,7 +974,7 @@ export default function TodayClipboardDemo() {
       {sheet && <ActionSheet sheetKey={sheet} uid={uid} cycle={cycle} onClose={() => setSheet(null)} onSaved={feedGarden} />}
       {jumpOpen && <JumpSheet items={JUMP_ITEMS} onPick={onJump} onClose={() => setJumpOpen(false)} />}
       {calOpen && <TodayCalendarSheet profile={profile} cycle={cycle} uid={uid} onClose={() => setCalOpen(false)} />}
-      {ceremony && <FirstOpenCeremony cForm={cForm} cAccent={cAccent} cName={cName} growStage={growStage} onSkip={() => setCeremony(false)} />}
+      {ceremony && routeActive && <FirstOpenCeremony cForm={cForm} cAccent={cAccent} cName={cName} growStage={growStage} onSkip={() => setCeremony(false)} />}
     </div>
   );
 }

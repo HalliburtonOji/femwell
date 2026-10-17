@@ -29,7 +29,7 @@ import { X } from "lucide-react";
 import JessDemoPanel from "./JessDemoPanel";
 import { useScrollLock } from "@/utils/useScrollLock";
 
-export default function AssistantOverlay({ open, onClose, initialPrompt }) {
+export default function AssistantOverlay({ open, onClose, initialPrompt, initialDraft }) {
   // initialPrompt threads an Ask-Jess seed (the reading context from a
   // Health letter, a pattern nudge, etc.) straight into JessDemoPanel,
   // which auto-sends it as the user's first turn so the answer appears
@@ -112,7 +112,7 @@ export default function AssistantOverlay({ open, onClose, initialPrompt }) {
         {/* The actual Jess UI — JessDemoPanel renders edge-to-edge
             inside the rounded container. */}
         <div style={{ flex: 1, minHeight: 0 }}>
-          <JessDemoPanel initialPrompt={initialPrompt} />
+          <JessDemoPanel initialPrompt={initialPrompt} initialDraft={initialDraft} />
         </div>
       </div>
     </>

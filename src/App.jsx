@@ -54,8 +54,8 @@ const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 // during idle after first paint so even the first tap is instant. Everything
 // else routes normally (mount/unmount) through the animated swap below.
 const KEEP_ALIVE = ["Today", "Lifestyle", "Profile"];
-// Lifestyle owns body portals as well as its cached page. Give it the exact
-// visibility owner; the other cached pages still receive stable props.
+// Cached pages may own first-open overlays and scroll locks. Give each its
+// exact visibility owner even while the page stays mounted for fast returns.
 const KeepAlivePage = memo(function KeepAlivePage({ Comp, routeActive }) {
   return <Comp routeActive={routeActive} />;
 });
@@ -252,7 +252,7 @@ const AuthenticatedApp = () => {
             aria-hidden={active ? undefined : true}
             style={{ display: active ? "block" : "none" }}
           >
-            <KeepAlivePage Comp={PageComp} routeActive={name === "Lifestyle" ? active : undefined} />
+            <KeepAlivePage Comp={PageComp} routeActive={active} />
           </div>
         );
       })}

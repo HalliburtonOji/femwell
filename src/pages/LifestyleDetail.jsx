@@ -150,11 +150,12 @@ export default function LifestyleDetail() {
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(location.search);
   const id = urlParams.get("id");
-  const calmReader = urlParams.get("appearance") === "calm";
+  // Every current Lifestyle article now opens in the same clean reading room.
+  const calmReader = true;
   const fromLifestyleMain = urlParams.get("from") === "lifestyle-main";
   const originSection = urlParams.get("return_section") === "yours" ? "yours" : "read";
-  const backTo = fromLifestyleMain ? `/Lifestyle?section=${originSection}` : calmReader ? "/CalmLifestyleDemo?section=read" : "/Lifestyle?section=read";
-  const goBack = () => fromLifestyleMain && originSection === "yours" ? navigate(backTo) : window.history.length > 1 ? window.history.back() : window.location.assign(backTo);
+  const backTo = fromLifestyleMain ? `/Lifestyle?section=${originSection}` : "/Lifestyle?section=read";
+  const goBack = () => fromLifestyleMain ? navigate(backTo) : window.history.length > 1 ? window.history.back() : window.location.assign(backTo);
 
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -163,6 +164,8 @@ export default function LifestyleDetail() {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [viewer,setViewer]=useState(null);
+  const [identityState,setIdentityState]=useState("checking");
+  const [identityRetry,setIdentityRetry]=useState(0);
   const [actionPending,setActionPending]=useState(false);
   const [actionReady,setActionReady]=useState(false);
   const [actionError,setActionError]=useState("");
@@ -233,7 +236,6 @@ export default function LifestyleDetail() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      setLoading(true);
       const retaining = retry > 0 && item?.id === id;
       setLoading(!retaining);
       setLoadError("");setBodyError("");if (!retaining) {setFullBody("");setItem(null);setRelated([]);}
@@ -241,9 +243,6 @@ export default function LifestyleDetail() {
       setHeroImageFailed(false);
       try {
         if (!id) return;
-        const user = await base44.auth.me();
-        if(cancelled)return;
-        setViewer(user);
         const items = await base44.entities.LifestyleItems.filter({ id });
         if (cancelled) return;
         if (!Array.isArray(items)) throw new Error("Article lookup unavailable");
@@ -283,20 +282,6 @@ export default function LifestyleDetail() {
             if (!cancelled) setFullBody(stripHtml(lede || fetched.summary || ""));
           }
 
-          // Related items — same category, exclude self.
-          try {
-            const relatedRows = await base44.entities.LifestyleItems
-              .filter({ category: fetched.category })
-              .catch(() => []);
-            if (!cancelled) {
-              const filtered = (relatedRows || [])
-                .filter((r) => r.id !== fetched.id)
-                .slice(0, 6);
-              setRelated(filtered);
-            }
-          } catch {
-            if (!cancelled) setRelated([]);
-          }
         }
       } catch (err) {
         console.error("LifestyleDetail init failed:", err);
@@ -307,6 +292,27 @@ export default function LifestyleDetail() {
     })();
     return () => { cancelled = true; };
   }, [id,retry]);
+
+  // Reader identity and neighbouring reads are secondary. Neither may hold the source hostage.
+  useEffect(() => {
+    let cancelled = false;
+    setViewer(null);
+    setIdentityState("checking");
+    if (id) base44.auth.me().then(user => {
+      if (!cancelled) { setViewer(user?.id ? user : null); setIdentityState(user?.id ? "ready" : "guest"); }
+    }).catch(() => { if (!cancelled) { setViewer(null); setIdentityState("error"); } });
+    return () => { cancelled = true; };
+  }, [id,identityRetry]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setRelated([]);
+    if (!item?.id || !item.category) return () => { cancelled = true; };
+    base44.entities.LifestyleItems.filter({ category: item.category }, "-created_date", 7).then(rows => {
+      if (!cancelled && Array.isArray(rows)) setRelated(rows.filter(row => row.id !== item.id).slice(0, 6));
+    }).catch(() => { if (!cancelled) setRelated([]); });
+    return () => { cancelled = true; };
+  }, [item?.id, item?.category]);
 
   // Independent of content expansion: failed authority reads cannot become empty saves.
   useEffect(()=>{
@@ -602,6 +608,9 @@ export default function LifestyleDetail() {
           <button aria-label="Back" onClick={goBack} className="w-11 h-11 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid #D8CFBC" }}>
             <ArrowLeft className="w-4 h-4" style={{ color: "#0B0805" }} />
           </button>
+        </div>
+        <div className="fw-calm-article__heading-row">
+          <h1 className="fw-display fw-calm-article__room" style={{ margin: "0 0 16px" }}>Read</h1>
           <div className="flex items-center gap-2">
             <button onClick={toggleLiked} disabled={actionPending || !actionReady} aria-label={liked ? "Unlike this find" : "Like this find"} className="w-11 h-11 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid #D8CFBC" }}>
               {liked ? <Heart className="w-4 h-4" style={{ color: "#E8B4B8", fill: "#E8B4B8" }} /> : <HeartOff className="w-4 h-4" style={{ color: "#2E261B" }} />}
@@ -613,9 +622,8 @@ export default function LifestyleDetail() {
         </div>
 
         {actionError && <div role="alert" style={{color:"#7a1a12",fontSize:15,lineHeight:1.5}}><p>{actionError}</p><button type="button" disabled={actionPending} style={{minHeight:44}} onClick={()=>actionIntent.current ? changeFind(actionIntent.current.field,actionIntent.current.target) : setActionRetry(n=>n+1)}>Retry keeps and likes</button></div>}
-        {!actionReady && !actionError && <p role="status">Loading your keeps and likes…</p>}
-        <h1 className={calmReader ? "fw-display fw-calm-article__room" : "fw-display"} style={{ margin: "0 0 16px" }}>{calmReader ? "Read" : "Lifestyle"}</h1>
-
+        {!actionReady && !actionError && identityState === "checking" && <p role="status">Loading your keeps and likes…</p>}
+        {!actionReady && !actionError && identityState !== "checking" && identityState !== "ready" && <div role="status" className="fw-calm-article__account-status"><span>{identityState === "guest" ? "Sign in to keep or like this read." : "Your keeps aren’t available just now."}</span><button type="button" onClick={()=>setIdentityRetry(n=>n+1)}>Try account again</button></div>}
         {/* §6.7.8 — ONE padding owner. At 390px the max-width never binds: PADDING *IS* MEASURE.
             The page gutter (px-4) + a 24px card pad double-framed the text to ~310px. The card
             keeps a slim mobile gutter so the column can breathe (~334px ≈ 39 CPL at 17px —
@@ -1032,6 +1040,7 @@ export default function LifestyleDetail() {
         </div>
 
         {/* Connectivity keystone — thread this read into the doing-surfaces */}
+        <div className="fw-calm-article__actions">
         <ContentActionBar
           reflect={{ seed: `On reading "${decodedTitle}" — `, type: "reflection" }}
           discuss={{ room: roomForCategory(item.category), seed: `Been reading about ${decodedTitle.toLowerCase()} — has anyone else?` }}
@@ -1047,6 +1056,7 @@ export default function LifestyleDetail() {
             }} />
           </div>
         )}
+        </div>
 
         {/* More like this rail */}
         {relatedDecorated.length >= 2 && (

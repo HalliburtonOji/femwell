@@ -126,6 +126,11 @@ describe('complete article and last-place recovery',()=>{
     expect(screen.getByText(podcast.transcript)).toBeVisible();
     expect(api.expand).not.toHaveBeenCalled();
   });
+  it('uses the clean reading room for direct article links with no appearance flag',async()=>{
+    const {container}=open();await screen.findByRole('heading',{name:article.title});
+    expect(container.querySelector('.fw-calm-article')).toBeInTheDocument();
+    expect(container.querySelector('.fw-reader-card')).toHaveStyle({backgroundColor:'#fff'});
+  });
   it('returns a direct main Yours source to Yours and retains that origin in related reads',async()=>{
     api.items.mockImplementation(async q=>q.id ? [article] : [{...article,id:'next',title:'Next read'},{...article,id:'other',title:'Another read'}]);
     function Path(){const location=useLocation();return <output data-testid="path">{location.pathname+location.search}</output>;}
@@ -135,6 +140,13 @@ describe('complete article and last-place recovery',()=>{
     expect(related.getAttribute('href')).toBe('/LifestyleDetail?id=next&appearance=calm&from=lifestyle-main&return_section=yours');
     fireEvent.click(screen.getByRole('button',{name:'Back'}));
     expect(screen.getByTestId('path')).toHaveTextContent('/Lifestyle?section=yours');
+  });
+  it('returns an explicit main Read source to Read even with unrelated browser history',async()=>{
+    function Path(){const location=useLocation();return <output data-testid="path">{location.pathname+location.search}</output>;}
+    render(<MemoryRouter initialEntries={['/Unrelated','/LifestyleDetail?id=article&appearance=calm&from=lifestyle-main']} initialIndex={1}><Path/><LifestyleDetail/></MemoryRouter>);
+    await screen.findByRole('heading',{name:article.title});
+    fireEvent.click(screen.getByRole('button',{name:'Back'}));
+    expect(screen.getByTestId('path')).toHaveTextContent('/Lifestyle?section=read');
   });
   it('shows all available external source prose when its summary is only a teaser',async()=>{
     api.items.mockImplementation(async q=>q.id ? [{...article,provider:'PARTNER',summary:'A short teaser.',lede:'The whole opening.\n\nThe complete ending stays here.'}] : []);
@@ -188,17 +200,27 @@ describe('complete article and last-place recovery',()=>{
     expect(saved.scrollY).toBe(690);expect(saved.ts).toBeGreaterThan(0);
     expect(continuePositions(localStorage)[0]).toMatchObject({bookId:'article',kind:'article',scrollY:690});
   });
-  it('restores only after the full article replaces the short loading view',async()=>{
+  it('opens and restores the full source while optional related reads are still pending',async()=>{
     let finishRelated;
     const related=new Promise(resolve=>{finishRelated=resolve;});
     api.items.mockImplementation(async q=>q.id ? [article] : related);
     localStorage.setItem('fw_article_pos_article',JSON.stringify({scrollY:833,ts:10}));
     open();await act(async()=>{});await act(async()=>new Promise(window.requestAnimationFrame));
-    expect(screen.queryByRole('heading',{name:article.title})).not.toBeInTheDocument();
-    expect(window.scrollTo).not.toHaveBeenCalled();
-    await act(async()=>finishRelated([]));await screen.findByRole('heading',{name:article.title});
+    expect(await screen.findByRole('heading',{name:article.title})).toBeVisible();
+    expect(screen.getByText('Third paragraph & its full ending.')).toBeVisible();
     await act(async()=>new Promise(window.requestAnimationFrame));
     expect(window.scrollTo).toHaveBeenCalledWith(0,833);
+    await act(async()=>finishRelated([]));
+  });
+  it('opens the public source when viewer identity is unavailable and leaves owned controls locked',async()=>{
+    api.me.mockRejectedValue(new Error('identity offline'));open();
+    expect(await screen.findByRole('heading',{name:article.title})).toBeVisible();
+    expect(screen.getByText('Third paragraph & its full ending.')).toBeVisible();
+    expect(screen.getByRole('button',{name:'Keep this find'})).toBeDisabled();
+    expect(await screen.findByRole('button',{name:'Try account again'})).toBeVisible();
+    api.me.mockResolvedValue({id:'reader'});fireEvent.click(screen.getByRole('button',{name:'Try account again'}));await ready();
+    expect(api.items).toHaveBeenCalledTimes(2);
+    expect(api.create).not.toHaveBeenCalled();
   });
   it('preserves legacy numeric places and sorts new article places by actual recency',()=>{
     localStorage.setItem('fw_article_pos_legacy','120');

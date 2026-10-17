@@ -769,7 +769,7 @@ export default function JessDemoPanel(props) {
 // the first invocation per page load — subsequent renders are silent.
 let _jessPanelLoggedOnce = false;
 
-function JessDemoPanelInner({ initialPrompt = null } = {}) {
+function JessDemoPanelInner({ initialPrompt = null, initialDraft = null } = {}) {
   if (!_jessPanelLoggedOnce) {
     _jessPanelLoggedOnce = true;
     try { console.log("[jess-mount] JessDemoPanelInner entered render"); } catch {}
@@ -807,7 +807,8 @@ function JessDemoPanelInner({ initialPrompt = null } = {}) {
   // is rock-solid: streaming never touches it, and FeedbackRow gets a
   // stable, predictable prop.
   const [feedbackByMsgId, setFeedbackByMsgId] = useState({});
-  const [input, setInput] = useState("");
+  // Contextual content handoffs fill an editable draft; only explicit Send starts a Jess turn.
+  const [input, setInput] = useState(() => initialDraft || "");
   const [assistantTyping, setAssistantTyping] = useState(false);
   const [listeningVoice, setListeningVoice] = useState(false);
   const [followUpFired, setFollowUpFired] = useState(false);

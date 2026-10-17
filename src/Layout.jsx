@@ -21,7 +21,7 @@ const LITE_NAV = ["ProgramDay", "ProgramDetail"];
 const todayStr = new Date().toISOString().split("T")[0];
 
 export default function Layout({ children, currentPageName }) {
-  const cleanPreview = ["Lifestyle", "LifestyleElite", "FocusedLifestyleDemo","CalmLifestyleDemo", "Becoming", "Mirror", "Move", "Kindred", "Curious", "Delight", "Nest", "Tonight", "Make", "Outside", "Money"].includes(currentPageName)
+  const cleanPreview = ["Lifestyle", "LifestyleElite", "LifestyleDetail", "FocusedLifestyleDemo","CalmLifestyleDemo", "Becoming", "Mirror", "Move", "Kindred", "Curious", "Delight", "Nest", "Tonight", "Make", "Outside", "Money"].includes(currentPageName)
     || (["LifestyleDetail", "Saved", "WatchListen", "FictionReader"].includes(currentPageName)
       && new URLSearchParams(window.location.search).get("appearance") === "calm");
   const navPageName = ["SkyWorldsDemo","FocusedLifestyleDemo","CalmLifestyleDemo"].includes(currentPageName) ? "Lifestyle" : currentPageName;
@@ -32,6 +32,7 @@ export default function Layout({ children, currentPageName }) {
   const [quickLogTab, setQuickLogTab] = useState("cycle");
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [assistantPrompt, setAssistantPrompt] = useState(null);
+  const [assistantDraft, setAssistantDraft] = useState(null);
 
   useEffect(() => {
     const openHandler = (e) => {
@@ -39,6 +40,8 @@ export default function Layout({ children, currentPageName }) {
       // or `initialPrompt` (Health letter, JessPatternNudge, etc.) — accept
       // both so the user's question actually reaches Jess.
       setAssistantPrompt(e.detail?.prompt || e.detail?.initialPrompt || null);
+      const context = typeof e.detail?.context === "string" ? e.detail.context.trim() : "";
+      setAssistantDraft(context ? `Can we talk about “${context}”?` : null);
       setAssistantOpen(true);
     };
     const closeHandler = () => setAssistantOpen(false);
@@ -161,6 +164,7 @@ export default function Layout({ children, currentPageName }) {
           window.dispatchEvent(new CustomEvent("fw_close_assistant"));
         }}
         initialPrompt={assistantPrompt}
+        initialDraft={assistantDraft}
       />
       <MilestoneEventListener />
       {showQuickLog && (
