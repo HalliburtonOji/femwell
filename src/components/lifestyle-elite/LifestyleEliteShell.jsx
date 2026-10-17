@@ -640,7 +640,6 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
   }, [user?.id]);
 
   // Track A — the editor pick is now the feed's TOP personalised read (not just the first story).
-  const editorialPick = (feed && feed[0]) || grouped.story[0] || grouped.article[0] || items[0] || null;
   const morePicks = useMemo(() => [grouped.article[0], grouped.video[0], grouped.audio[0]].filter(Boolean).slice(0, 2), [grouped]);
   const savedItems = useMemo(() => {
     const pool = selectedPresentation ? [...resolvedKeeps, ...(items || [])] : (items || []);
@@ -1619,7 +1618,9 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
             { Icon: BookOpen, label: "Your reading",
               text: continueCards.length ? `${continueCards.length} on the go · ${grouped.article.length} fresh reads`
                 : savedItems.length ? `${savedItems.length} saved to come back to · ${grouped.article.length} fresh reads`
-                : (editorialPick ? editorialPick.title : "Fresh reads land here as they're published."),
+                : articleCards.some(card => !card._raw?.editorial_local) ? articleCards.find(card => !card._raw?.editorial_local).title
+                : articleCards.length ? `${articleCards.length} complete Ideas ${articleCards.length === 1 ? "read" : "reads"} to try.`
+                : storyCards.length ? "A story is here when you fancy one." : "No reads here just now.",
               onClick: () => jumpTo(1) },
             { Icon: Moon, label: "Your sky", text: horoscope ? cleanTitle(horoscope.headline || horoscope.narrative || "Today's reading is ready.") : "Add your birth details to read today's sky.", onClick: () => continuousSky && focusSection === "sky" ? setSkyActionRequest({ type: "reading" }) : setReadingOpen(true) },
           ];
@@ -1635,7 +1636,10 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
             ? [...glanceRows].sort((a, b) => (b.label === focusRowLabel) - (a.label === focusRowLabel))
             : glanceRows;
           // the deep read — only sections we genuinely have signal for, never padded
-          const readWhatOn = continueCards.length ? "Your reading place is saved. Come back mid-sentence." : grouped.article.length ? "Fresh reads are here. Follow the one that catches your eye." : "Read is taking a breath today. Books is next door if you fancy a chapter.";
+          const readWhatOn = continueCards.length ? "Your reading place is saved. Come back mid-sentence."
+            : articleCards.some(card => !card._raw?.editorial_local) ? "A read is here. Follow the one that catches your eye."
+            : articleCards.length ? `${articleCards.length} complete Ideas ${articleCards.length === 1 ? "read is" : "reads are"} here. Try one.`
+            : storyCards.length ? "A story is here. Open it when you fancy a page." : "Read is taking a breath today. Books is next door if you fancy a chapter.";
           const jessWhatOn = {
             read: readWhatOn,
             listen: audioCards.length || videoCards.length ? "A listen or watch is here. Pick the one that fits your day." : "Listen is quiet today. Silence can have a turn too.",
@@ -1650,7 +1654,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
             moonToday ? { label: "Your sky", text: `Tonight's moon: ${moonToday.name.toLowerCase()}, ${moonToday.illumination}% lit${phaseKey ? `. Your cycle: ${phaseLabel(phaseKey).toLowerCase()}` : ""}. Two rhythms, no instructions.` } : null,
           ].filter(Boolean);
           if (foldVariant) return <FirstFoldSummary calmLayout={calmLayout} active={routeActive} orderedGlance={orderedGlance} jess={jess} sheetSections={sheetSections}
-            jessOpen={jessOpen} onJessOpen={() => setJessOpen(true)} onJessClose={() => setJessOpen(false)} />;
+            focusLabel={focus?.label} onClear={() => selectRoom(null)} jessOpen={jessOpen} onJessOpen={() => setJessOpen(true)} onJessClose={() => setJessOpen(false)} />;
           return (
             <div style={{ marginTop: 14 }}>
               <GlanceJessSwipe accent={gold}

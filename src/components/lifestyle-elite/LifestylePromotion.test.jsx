@@ -9,6 +9,13 @@ vi.mock('@/components/lifestyle/DailyStoryReader',()=>({default:({goToChapter,on
 vi.mock('./SelectedLifestyleHeader',()=>({default:({active})=><h1>{active.title}</h1>,SelectedRoomDetail:()=>null}));
 beforeEach(()=>{mock.empty.mockResolvedValue([]);mock.chapters.mockResolvedValue([]);mock.readings.mockResolvedValue([]);vi.spyOn(globalThis,'fetch').mockResolvedValue({ok:true,json:async()=>({results:[]})});window.history.replaceState({},'', '/Lifestyle');});
 describe('approved main Lifestyle parity',()=>{
+  it('describes the actual complete Ideas reads shown when the remote Read catalogue is empty',async()=>{
+    render(<Lifestyle/>);
+    const glance=await screen.findByRole('region',{name:"Your glance and Jess's read"});
+    expect(within(glance).getByText('2 complete Ideas reads to try.')).toBeVisible();
+    expect(await screen.findByText('The plans you actually want to keep')).toBeVisible();
+    expect(screen.queryByText('Fresh reads land here as they’re published.')).not.toBeInTheDocument();
+  });
   it('keeps the Everything Sky detail honest and opens the selected Sky room',async()=>{
     render(<Lifestyle/>);
     const nav=await screen.findByRole('navigation',{name:'Lifestyle sections'});

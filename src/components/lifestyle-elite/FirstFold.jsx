@@ -18,14 +18,14 @@ export function FirstFoldNavigation({ cards, activeIndex, onSelect, phaseLine, c
         </button>;
       })}
     </nav>
-    {(phaseLine || focusLabel) && <div className={`fw-ff-status${calmLayout ? " fw-ff-status--calm" : ""}${!phaseLine ? " fw-ff-status--focus-only" : ""}`}>
+    {(phaseLine || (!calmLayout && focusLabel)) && <div className={`fw-ff-status${calmLayout ? " fw-ff-status--calm" : ""}${!phaseLine ? " fw-ff-status--focus-only" : ""}`}>
       <span>{phaseLine && <><span aria-hidden="true" className="fw-ff-phase-dot"/>{compactPhaseLine || phaseLine}{phaseDetail && <span className="sr-only"> · {phaseDetail}</span>}</>}{focusLabel && <span className={phaseLine || calmLayout ? "sr-only" : undefined}>{phaseLine ? ` · Showing ${focusLabel}` : `Showing ${focusLabel}`}</span>}</span>
-      {focusLabel && <button type="button" onClick={onClear} title="Show all Lifestyle rooms"><X size={13} aria-hidden="true"/> Everything</button>}
+      {!calmLayout && focusLabel && <button type="button" onClick={onClear} title="Show all Lifestyle rooms"><X size={13} aria-hidden="true"/> Everything</button>}
     </div>}
   </>;
 }
 
-export function FirstFoldSummary({ orderedGlance, jess, sheetSections, jessOpen, onJessOpen, onJessClose, calmLayout = false, active = true }) {
+export function FirstFoldSummary({ orderedGlance, jess, sheetSections, jessOpen, onJessOpen, onJessClose, focusLabel, onClear, calmLayout = false, active = true }) {
   const track = useRef(null);
   const jessButton = useRef(null);
   const sheet = useRef(null);
@@ -40,9 +40,10 @@ export function FirstFoldSummary({ orderedGlance, jess, sheetSections, jessOpen,
   };
   const closeJess = () => { onJessClose(); jessButton.current?.focus({ preventScroll: true }); };
   return <section className="fw-ff-summary" aria-label="Your glance and Jess's read">
-    <div className="fw-ff-summary-nav" aria-label="Summary panels">
+    <div className="fw-ff-summary-nav" aria-label="Glance and room controls">
       <button type="button" aria-pressed={index === 0} onClick={() => go(0)}>At a glance</button>
       <button type="button" aria-pressed={index === 1} onClick={() => go(1)}>Jess’s read <ChevronRight size={13} aria-hidden="true"/></button>
+      {calmLayout && focusLabel && <button type="button" className="fw-ff-everything" onClick={onClear} title="Show all Lifestyle rooms"><X size={13} aria-hidden="true"/> Everything</button>}
     </div>
     <div className="fw-ff-summary-track" ref={track} onScroll={() => {
       const el = track.current;

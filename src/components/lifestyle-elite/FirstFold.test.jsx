@@ -35,10 +35,11 @@ describe("First fold navigation and complete summaries", () => {
   it("keeps all calm room controls while giving cycle context one quiet visible line", () => {
     const cards = ["Read", "Listen", "Books", "Sky", "Good life", "Yours"].map((label, index)=>({ id: String(index), label, Icon, cw: "plum" }));
     const clear = vi.fn();
-    const { container } = render(<FirstFoldNavigation cards={cards} activeIndex={0} onSelect={vi.fn()} phaseLine="Ovulatory · Day 14 · an open, sociable kind of day" compactPhaseLine="Ovulatory · day 14" phaseDetail="an open, sociable kind of day" focusLabel="Read" onClear={clear} calmLayout/>);
+    const { container } = render(<><FirstFoldNavigation cards={cards} activeIndex={0} onSelect={vi.fn()} phaseLine="Ovulatory · Day 14 · an open, sociable kind of day" compactPhaseLine="Ovulatory · day 14" phaseDetail="an open, sociable kind of day" focusLabel="Read" onClear={clear} calmLayout/><FirstFoldSummary orderedGlance={[]} jess={{eyebrow:"Jess",body:"A word"}} sheetSections={[]} jessOpen={false} onJessOpen={()=>{}} onJessClose={()=>{}} focusLabel="Read" onClear={clear} calmLayout/></>);
     expect(within(screen.getByRole("navigation", { name: "Lifestyle sections" })).getAllByRole("button")).toHaveLength(6);
     expect(container.querySelector(".fw-ff-status--calm")).toHaveTextContent("Ovulatory · day 14 · an open, sociable kind of day");
     expect(container.querySelector(".fw-ff-status--calm")).not.toHaveTextContent("· Read");
+    expect(container.querySelector(".fw-ff-status--calm").querySelector("button")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Everything" }));
     expect(clear).toHaveBeenCalledTimes(1);
   });
@@ -46,9 +47,8 @@ describe("First fold navigation and complete summaries", () => {
     const cards = ["Read", "Listen", "Books", "Sky", "Good life", "Yours"].map((label, index)=>({ id: String(index), label, Icon, cw: "plum" }));
     const {container,rerender}=render(<FirstFoldNavigation cards={cards} activeIndex={0} onSelect={vi.fn()} phaseLine="" calmLayout/>);
     expect(container.querySelector('.fw-ff-status')).not.toBeInTheDocument();
-    rerender(<FirstFoldNavigation cards={cards} activeIndex={0} onSelect={vi.fn()} phaseLine="" focusLabel="Read" onClear={vi.fn()} calmLayout/>);
-    expect(container.querySelector('.fw-ff-status--focus-only')).toHaveTextContent('Showing Read');
-    expect(screen.getByText('Showing Read')).toHaveClass('sr-only');
+    rerender(<><FirstFoldNavigation cards={cards} activeIndex={0} onSelect={vi.fn()} phaseLine="" focusLabel="Read" onClear={vi.fn()} calmLayout/><FirstFoldSummary orderedGlance={[]} jess={{eyebrow:"Jess",body:"A word"}} sheetSections={[]} jessOpen={false} onJessOpen={()=>{}} onJessClose={()=>{}} focusLabel="Read" onClear={vi.fn()} calmLayout/></>);
+    expect(container.querySelector('.fw-ff-status')).not.toBeInTheDocument();
     expect(screen.getByRole('button',{name:'Everything'})).toBeVisible();
   });
 
