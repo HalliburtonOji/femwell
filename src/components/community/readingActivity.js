@@ -71,7 +71,10 @@ function markPredicted(bookId, chapterIndex) {
 export function recordProgress(bookId, chapterIndex, userId) {
   const firstTime = !hasReadLocally(bookId, chapterIndex);
   markChapterRead(bookId, chapterIndex); // local, synchronous, idempotent
-  if (!firstTime || !userId) return;     // only emit one anonymous progress row, ever
+  // If device storage refused the mark, do not claim a Garden day or send a
+  // progress row that cannot be deduplicated on the next tap.
+  if (!hasReadLocally(bookId, chapterIndex)) return false;
+  if (!firstTime || !userId) return true; // only emit one anonymous progress row, ever
   (async () => {
     try {
       const wh = await communityHash(userId);
@@ -85,6 +88,7 @@ export function recordProgress(bookId, chapterIndex, userId) {
       }).catch(() => null);
     } catch { /* fail-open — the local read-key already nourishes the garden */ }
   })();
+  return true; // local Garden acknowledgement; the anonymous aggregate is best-effort
 }
 
 // ── 2b. Prediction — "guess the next chapter" (anonymous, aggregate-only) ─────────────────────

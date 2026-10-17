@@ -64,6 +64,7 @@ import ListenFocus from "@/components/lifestyle-elite/ListenFocus";
 import ReadFocus from "@/components/lifestyle-elite/ReadFocus";
 import GoodLifeFocus from "@/components/lifestyle-elite/GoodLifeFocus";
 import FocusedLifestyleRooms from "./FocusedLifestyleRooms";
+import FocusedLifestyleSheet from "./FocusedLifestyleSheet";
 import FocusedReadingSheet from "./FocusedReadingSheet";
 import YoursFocus from "@/components/lifestyle-elite/YoursFocus";
 import { useLifestyleKeepAcknowledgements } from "./useLifestyleKeepAcknowledgements";
@@ -540,6 +541,7 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
   // overlays
   const [calOpen, setCalOpen] = useState(false);
   const [jumpOpen, setJumpOpen] = useState(false);
+  const jumpReturnRef = useRef(null);
   const [chapterOpen, setChapterOpen] = useState(false);
   const [readingOpen, setReadingOpen] = useState(false);
   const [expanded, setExpanded] = useState(null);   // the tap-to-expand card item (§6.7.7)
@@ -1479,7 +1481,7 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
     // `layout`, so it keeps PAPER_BG byte-for-byte until its surfaces migrate.
     <div className={clean ? `fw-clean${foldVariant ? " fw-lifestyle-fold" : ""}` : undefined} data-fold={foldVariant || undefined} data-art-direction={artDirection || undefined} data-section={selectedPresentation && !focus ? "all" : heroCards[heroCard]?.id} style={{ ...((layout || clean) ? CLEAN_BG : PAPER_BG), minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
       <style>{floraKeyframes}{ELITE_MOTION}{clean ? CLEAN_CSS + CLEAN_PAGE_CSS : ""}</style>
-      <TopChrome onJump={() => setJumpOpen(true)} onCalendar={() => setCalOpen(true)} />
+      <TopChrome onJump={event => { jumpReturnRef.current = event.currentTarget; setJumpOpen(true); }} onCalendar={() => setCalOpen(true)} />
 
       <div style={{ maxWidth: 430, margin: "0 auto", padding: "16px 16px 0" }} className="fw-elite-in">
         {/* ══ THE CONTROLLER-HERO (§6.8.2 band 1 · the Nutrition "Your plate" pattern) ══════
@@ -1868,7 +1870,9 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
         <p style={{ textAlign: "center", fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: clean ? C.faint : T.muted, margin: "6px auto 0", maxWidth: 300, lineHeight: 1.55 }}>A little to read, a little to feel — whenever the moment's yours.</p>
       </div>
 
-      {jumpOpen && <JumpSheet boards={selectedPresentation ? heroCards.map(card => ({t:card.label,sub:card.line})) : BOARDS} onClose={() => setJumpOpen(false)} onJump={selectedPresentation ? index => {setJumpOpen(false);selectRoom(heroCards[index].id,index);window.scrollTo?.({top:0,behavior:"smooth"});} : jumpTo} />}
+      {jumpOpen && (focusedPreview
+        ? <LifestyleRoomPicker active={routeActive} boards={heroCards} onClose={() => { setJumpOpen(false); queueMicrotask(() => jumpReturnRef.current?.focus({preventScroll:true})); }} onJump={index => {setJumpOpen(false);selectRoom(heroCards[index].id,index);window.scrollTo?.({top:0,behavior:"smooth"});}} />
+        : <JumpSheet boards={selectedPresentation ? heroCards.map(card => ({t:card.label,sub:card.line})) : BOARDS} onClose={() => setJumpOpen(false)} onJump={selectedPresentation ? index => {setJumpOpen(false);selectRoom(heroCards[index].id,index);window.scrollTo?.({top:0,behavior:"smooth"});} : jumpTo} />)}
       {calOpen && <CalendarOverlay user={user} profile={profile} onClose={() => setCalOpen(false)} />}
       {/* tap-to-expand — the shared card language's full-screen detail (§6.7.7).
           Save is CONTROLLED → real persistence + the feed's learning loop. */}
@@ -1883,11 +1887,16 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
           pick={storyPick}
           nextPick={storyNext}
           readSoFar={storyReadCount}
+          focusedPreview={focusedPreview}
+          active={routeActive}
           onImmersive={() => { setChapterOpen(false); setReaderStart(storyPick?.index ?? 0); setReaderOpen(true); }}
           onClose={() => setChapterOpen(false)}
           onMarkRead={() => {
+            if (!story?.id) return;
             markChapterRead(story?.id);
-            recordProgress(story?.id || story?.series_title || "daily-story", story?.day_number ?? 0, user?.id);
+            const chapterKept = isChapterRead(story.id);
+            const gardenKept = chapterKept && recordProgress(story.id, story.day_number ?? 0, user?.id);
+            if (!chapterKept || !gardenKept) { flash("Couldn't keep that reading on this device. Try again."); return; }
             flash("Marked as read — it counts in your garden");
             setChapterOpen(false);
           }}
@@ -1908,7 +1917,7 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
               style={{ width: 40, height: 40, borderRadius: 999, background: C.surface, border: `1px solid ${C.hair}`, color: C.ink, display: "grid", placeItems: "center", cursor: "pointer" }}>
               <ChevronLeft size={19} />
             </button>
-            <button onClick={() => { recordProgress("your-sky", 0, user?.id); flash("Marked as read — it counts in your garden"); }}
+            <button onClick={() => { flash(recordProgress("your-sky", 0, user?.id) ? "Marked as read — it counts in your garden" : "Couldn't keep that reading on this device. Try again."); }}
               className="fw-elite-press" style={{ ...focusPill(cwOf("sky").petal), flex: "0 0 auto", padding: "10px 14px" }}>
               <Check size={15} /> Mark as read
             </button>
@@ -2375,7 +2384,19 @@ function SkyDiaryLens({ notes, onNote }) {
 }
 
 // ── sheets ──
-function ChapterSheet({ story, pick, nextPick, readSoFar = 0, onImmersive, onClose, onMarkRead, onReflect }) {
+function LifestyleRoomPicker({ boards, onClose, onJump, active }) {
+  return <FocusedLifestyleSheet title="Choose a room" eyebrow="Lifestyle" room="read" onClose={onClose} active={active}>
+    <div className="fw-lifestyle-room-picker">
+      {boards.map((board, index) => <button key={board.id} type="button" onClick={() => onJump(index)}>
+        <span className="fw-lifestyle-room-picker-number">{String(index + 1).padStart(2, "0")}</span>
+        <span><strong>{board.label}</strong><small>{board.line}</small></span>
+        <ChevronRight size={18} aria-hidden="true" />
+      </button>)}
+    </div>
+  </FocusedLifestyleSheet>;
+}
+
+function ChapterSheet({ story, pick, nextPick, readSoFar = 0, onImmersive, onClose, onMarkRead, onReflect, focusedPreview = false, active = true }) {
   const title = story?.series_title || story?.title || "Today's chapter";
   const cliff = story?.cliffhanger || "";
   // strip HTML tags but KEEP newlines — stripHtml() collapses \n\n (it's \s+→" "), which is
@@ -2387,8 +2408,8 @@ function ChapterSheet({ story, pick, nextPick, readSoFar = 0, onImmersive, onClo
   // HONEST framing — "Chapter 7 of 30", and we say plainly it's a finished story served a
   // chapter a day. Never "fresh today" unless it genuinely is.
   const label = pick ? chapterLabel(pick) : "today";
-  return (
-    <SheetShell title={title} eyebrowText={`Daily Story · ${label}`} accent={crimsonC} onClose={onClose}>
+  const tomorrowIsNew = nextPick?.chapter?.id && nextPick.chapter.id !== story?.id;
+  const chapterContent = <>
       <p style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, margin: "0 0 12px", lineHeight: 1.45 }}>{framingLine(pick)}</p>
       {/* §6.7.8 — today's chapter is FICTION: it reads through the shared column with the
           indent variant (indent, no paragraph gaps). The sheet already owns the gutter. */}
@@ -2399,19 +2420,29 @@ function ChapterSheet({ story, pick, nextPick, readSoFar = 0, onImmersive, onClo
       </ReadingColumn>
       {cliff && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, color: crimsonC, margin: "0 0 16px" }}>"{cliff}"</p>}
       {/* the kind return model: where she's up to + a gentle tease. No streak, no scold. */}
-      {(readSoFar > 0 || nextPick) && (
+      {(readSoFar > 0 || tomorrowIsNew) && (
         <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: T.muted, margin: "0 0 14px", lineHeight: 1.5 }}>
           {readSoFar > 0 ? `You've read ${readSoFar} of ${pick?.total ?? 30} so far. ` : ""}
-          {nextPick ? `Tomorrow: ${chapterLabel(nextPick).toLowerCase()}.` : ""}
+          {tomorrowIsNew ? `Tomorrow: ${chapterLabel(nextPick).toLowerCase()}.` : ""}
         </p>
       )}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-        <Pill cw="crimson" filled onClick={onMarkRead || onClose}>Mark as read</Pill>
-        {onImmersive && <Pill Icon={BookOpen} cw="plum" onClick={onImmersive}>Read straight through</Pill>}
-        <Pill cw="sage" onClick={onReflect || onClose}>Reflect on it</Pill>
-      </div>
-    </SheetShell>
-  );
+    </>;
+  if (focusedPreview) return <FocusedLifestyleSheet title={title} eyebrow={`Daily Story · ${label}`} room="books" active={active} onClose={onClose}
+    footer={<>
+      {story?.id && <button type="button" className="fw-focused-button fw-focused-button--primary" onClick={onMarkRead}>Mark as read</button>}
+      {story?.id && onImmersive && <button type="button" className="fw-focused-button" onClick={onImmersive}><BookOpen size={17}/>Read straight through</button>}
+      <button type="button" className="fw-focused-button" onClick={onReflect || onClose}>Reflect on it</button>
+    </>}>
+      <div className="fw-chapter-focused">{chapterContent}</div>
+    </FocusedLifestyleSheet>;
+  return <SheetShell title={title} eyebrowText={`Daily Story · ${label}`} accent={crimsonC} onClose={onClose}>
+    {chapterContent}
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+      <Pill cw="crimson" filled onClick={onMarkRead || onClose}>Mark as read</Pill>
+      {onImmersive && <Pill Icon={BookOpen} cw="plum" onClick={onImmersive}>Read straight through</Pill>}
+      <Pill cw="sage" onClick={onReflect || onClose}>Reflect on it</Pill>
+    </div>
+  </SheetShell>;
 }
 function ReadingSheet({ reading, phaseKey, onClose, onSaveReading, onSkyDiary, focusedPreview, active }) {
   if (focusedPreview) return <FocusedReadingSheet reading={reading} onClose={onClose} onSaveReading={onSaveReading} onSkyDiary={onSkyDiary} active={active}/>;

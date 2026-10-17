@@ -50,6 +50,48 @@ describe('approved main Lifestyle parity',()=>{
     expect(screen.getByRole('button',{name:/Mark.*read/})).toBeVisible();
     expect(screen.getByRole('button',{name:/Reflect/})).toBeVisible();
   });
+  it('opens complete chapter notes in the clean Lifestyle sheet and keeps all three actions',async()=>{
+    mock.chapters.mockResolvedValue([{id:'chapter-one',series_key:'real-run',day_number:1,segment_text:'## Chapter 1 — Arrival\n\nThe actual first paragraph.\n\nThe actual second paragraph.',published_date:'2020-01-01'}]);
+    window.history.replaceState({},'', '/Lifestyle?section=books');render(<Lifestyle/>);
+    fireEvent.click(await screen.findByRole('button',{name:/Notes & reflection/}));
+    const sheet=screen.getByRole('dialog',{name:/real-run|chapter/i});
+    expect(sheet).toHaveClass('fw-focused-sheet');
+    expect(sheet).toHaveAttribute('data-room','books');
+    expect(within(sheet).getByText(/The actual first paragraph/)).toBeVisible();
+    expect(within(sheet).getByText(/The actual second paragraph/)).toBeVisible();
+    expect(sheet).not.toHaveTextContent('Tomorrow: chapter 1 of 1');
+    expect(within(sheet).getByRole('button',{name:'Mark as read'})).toBeVisible();
+    expect(within(sheet).getByRole('button',{name:'Read straight through'})).toBeVisible();
+    expect(within(sheet).getByRole('button',{name:'Reflect on it'})).toBeVisible();
+    fireEvent.click(within(sheet).getByRole('button',{name:'Read straight through'}));
+    expect(screen.getByRole('dialog',{name:'Actual chapter reader'})).toHaveTextContent('Chapter index: 0');
+  });
+  it('keeps the chapter detail open and tells the truth when local reading cannot be kept',async()=>{
+    mock.chapters.mockResolvedValue([{id:'storage-test-chapter',series_key:'real-run',day_number:1,segment_text:'The full chapter remains here.',published_date:'2020-01-01'}]);
+    window.history.replaceState({},'', '/Lifestyle?section=books');render(<Lifestyle/>);
+    fireEvent.click(await screen.findByRole('button',{name:/Notes & reflection/}));
+    const sheet=screen.getByRole('dialog',{name:/real-run|chapter/i});
+    vi.stubGlobal('localStorage',{getItem:()=>null,setItem:()=>{throw new Error('storage denied');}});
+    try {
+      fireEvent.click(within(sheet).getByRole('button',{name:'Mark as read'}));
+      expect(sheet).toBeVisible();
+      expect(screen.getByText(/Couldn't keep that reading on this device/)).toBeVisible();
+    } finally {vi.unstubAllGlobals();}
+  });
+  it('opens the clean room picker, selects the exact room and restores focus after close',async()=>{
+    render(<Lifestyle/>);
+    const trigger=await screen.findByRole('button',{name:'Jump to an area'});
+    fireEvent.click(trigger);
+    const picker=screen.getByRole('dialog',{name:'Choose a room'});
+    expect(picker).toHaveClass('fw-focused-sheet');
+    expect(within(picker).getAllByRole('button')).toHaveLength(7);
+    fireEvent.click(within(picker).getByRole('button',{name:'Close'}));
+    await waitFor(()=>expect(trigger).toHaveFocus());
+    fireEvent.click(trigger);
+    fireEvent.click(within(screen.getByRole('dialog',{name:'Choose a room'})).getByRole('button',{name:/Sky/}));
+    const nav=screen.getByRole('navigation',{name:'Lifestyle sections'});
+    expect(within(nav).getByRole('button',{name:'Sky',exact:true})).toHaveAttribute('aria-pressed','true');
+  });
   it('opens a real section by default, keeps all six controls and all eleven whole-life doors',async()=>{
     render(<Lifestyle/>);
     const nav=await screen.findByRole('navigation',{name:'Lifestyle sections'});

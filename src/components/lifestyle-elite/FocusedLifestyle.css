@@ -43,3 +43,15 @@
    rounded bottom visible instead of appending a blank nav-height paper strip. */
 .fw-focused-sheet.fw-sheet-safe:is([data-room=read],[data-room=listen],[data-room=books],[data-room=good],[data-room=yours]){bottom:calc(var(--fw-sheet-safe,100px) + 8px);padding-bottom:0!important;max-height:calc(100dvh - var(--fw-sheet-safe,100px) - 24px);border-radius:24px}
 .fw-focused-sheet:is([data-room=read],[data-room=listen],[data-room=books],[data-room=good],[data-room=yours]) .fw-focused-sheet-foot{padding-bottom:16px;border-radius:0 0 24px 24px}
+
+.fw-lifestyle-room-picker{display:grid;gap:0;margin:-4px 0 6px}
+.fw-lifestyle-room-picker button{width:100%;min-height:64px;display:flex;align-items:center;gap:14px;padding:12px 2px;border:0;border-bottom:1px solid #dcd8d3;background:transparent;color:#191510;text-align:left;cursor:pointer}
+.fw-lifestyle-room-picker button:last-child{border-bottom:0}
+.fw-lifestyle-room-picker button>span:nth-child(2){flex:1;min-width:0}
+.fw-lifestyle-room-picker-number{font:700 12px/1.2 ui-sans-serif,system-ui,sans-serif;letter-spacing:.12em;color:#8c7849}
+.fw-lifestyle-room-picker strong{display:block;font:italic 600 23px/1.15 "FemWell Editorial","Cormorant Garamond",Georgia,serif;color:#7a1a12}
+.fw-lifestyle-room-picker small{display:block;font:500 12px/1.4 ui-sans-serif,system-ui,sans-serif;color:#655d61;margin-top:3px}
+.fw-lifestyle-room-picker svg{color:#6d6070;flex:none}
+.fw-chapter-focused>p:first-child{font:600 13px/1.5 ui-sans-serif,system-ui,sans-serif!important;color:#655d61!important;border-bottom:1px solid #ded8cd;padding-bottom:15px;margin-bottom:20px!important}
+.fw-chapter-focused .fw-read{color:#191510!important}
+.fw-focused-sheet[data-room=books]:has(.fw-chapter-focused) .fw-focused-sheet-foot{position:sticky;bottom:0;z-index:2}
