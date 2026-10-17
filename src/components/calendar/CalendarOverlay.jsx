@@ -1348,6 +1348,13 @@ function fallbackRotaEntries() {
 // the render branch is unchanged.)
 // ════════════════════════════════════════════════════════════════════════════════
 function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
+  const PHOTO = {paper: "#fff", paperHi: "#f7f9f7", paperDeep: "#dfe6e1", muted: "#51444e", ink: "#51444e"};
+  const photoInset = {...inset, background: PHOTO.paperHi, borderColor: PHOTO.paperDeep, borderRadius: 16};
+  const photoSolidBtn = {...solidBtn, borderRadius: 14, color: "#fff"};
+  const photoGhostBtn = {...ghostBtn, color: PHOTO.ink, background: PHOTO.paper, borderColor: PHOTO.paperDeep, borderRadius: 14};
+  const photoPill = {...pill, color: PHOTO.ink, background: PHOTO.paperHi, borderColor: PHOTO.paperDeep};
+  const photoEyebrow = {...eyebrow, color: "#58765f"};
+  const photoMiniField = {...miniField, background: PHOTO.paper, borderColor: PHOTO.paperDeep, color: PHOTO.ink};
   const [stage, setStage] = useState("pick"); // pick|intent|reading|guard|followups|review|schedule_review|error
   const [imageUrl, setImageUrl] = useState(null);
   const [sampleKind, setSampleKind] = useState(null);
@@ -1367,28 +1374,57 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
   // week, or does it change?"). repeatWeeks applies only when fixed.
   const [scheduleKind, setScheduleKind] = useState("flexible"); // 'fixed' | 'flexible'
   const [repeatWeeks, setRepeatWeeks] = useState(4);
+  const [fileError, setFileError] = useState("");
   const fileRef = useRef(null);
+  const photoGeneration = useRef(0);
+  useEffect(() => () => { photoGeneration.current++; }, []);
+  const leavePhoto = () => { photoGeneration.current++; if (stage === "pick") onBack(); else setStage("pick"); };
+  const closePhoto = () => { photoGeneration.current++; onClose(); };
 
-  const pick = (url, kind) => { setImageUrl(url); setSampleKind(kind || null); setStage("intent"); };
-  const onFile = (e) => { const f = e.target.files?.[0]; if (!f) return; const r = new FileReader(); r.onload = () => pick(r.result, null); r.readAsDataURL(f); };
+  const pick = (url, kind) => {
+    photoGeneration.current++;
+    setFileError(""); setImageUrl(url); setSampleKind(kind || null);
+    setIntentText(""); setCls(null); setGuard(null); setAnswer("");
+    setCustomOn(false); setCustomText(""); setTitleEdit(""); setRows([]);
+    setDegraded(false); setStage("intent");
+  };
+  const onFile = (e) => {
+    const f = e.target.files?.[0]; if (!f) return;
+    e.target.value = "";
+    if (!f.type.startsWith("image/")) { setFileError("Choose an image to continue."); return; }
+    const generation = ++photoGeneration.current;
+    setFileError("");
+    const r = new FileReader();
+    r.onload = () => { if (generation === photoGeneration.current) pick(r.result, null); };
+    r.onerror = () => { if (generation === photoGeneration.current) setFileError("That photo didn’t open. Try another image."); };
+    r.readAsDataURL(f);
+  };
 
   // The photo read must NEVER hang. Race the vision call against an 8s timeout; on ANY
   // timeout / error / 503 / unusable payload, fall back to the word classifier and advance.
   // A `finally`-guaranteed route means we always leave the "reading" spinner.
   async function classify() {
+    const generation = ++photoGeneration.current;
     setStage("reading");
     setDegraded(false);
+    if (sampleKind) {
+      const example = classifyByText(intentText, sampleKind);
+      setCls(example); routeFrom(example); return;
+    }
     let c = null, ok = false;
     try {
       const small = await downscaleDataUrl(imageUrl);
+      if (generation !== photoGeneration.current) return;
       const res = await withTimeout(base44.functions.invoke("analyzeMealPhoto", {
         mode: "intent", reference_date: TODAY_STR, intent_text: intentText,
         time_of_day: new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening",
         image_base64: small,
       }), VISION_TIMEOUT_MS);
+      if (generation !== photoGeneration.current) return;
       const d = res?.data || res;
       if (d && d.kind === "intent" && !d.analysis_unavailable && d.detected) { c = d; ok = true; }
     } catch { /* timeout / network / auth — fall through to the words */ }
+    if (generation !== photoGeneration.current) return;
     if (!c) c = { ...classifyByText(intentText, sampleKind), notes: "" }; // resilient: user's words drive it
     setDegraded(!ok);
     setCls(c);
@@ -1421,8 +1457,9 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
   }
 
   async function proceed(c, t) {
+    setCls(c);
     setTarget(t);
-    if (c.detected === "schedule") { await loadSchedule(); return; }
+    if (c.detected === "schedule") { await loadSchedule(photoGeneration.current); return; }
     // set up the follow-up with the most-probable answer pre-selected
     const fu = FOLLOWUPS[c.detected];
     if (fu) {
@@ -1433,12 +1470,15 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
     setStage(fu ? "followups" : "review");
   }
 
-  async function loadSchedule() {
+  async function loadSchedule(generation) {
     setStage("reading");
     let entries = null, loc = null;
-    try {
+    if (sampleKind === "rota") { entries = fallbackRotaEntries(); loc = ROTA_LOCATION; }
+    else try {
       const small = await downscaleDataUrl(imageUrl);
+      if (generation !== photoGeneration.current) return;
       const res = await withTimeout(base44.functions.invoke("analyzeMealPhoto", { mode: "schedule", reference_date: TODAY_STR, image_base64: small }), VISION_TIMEOUT_MS);
+      if (generation !== photoGeneration.current) return;
       const d = res?.data || res;
       if (Array.isArray(d?.entries) && d.entries.length && !d.analysis_unavailable) {
         loc = d.location || null;
@@ -1453,7 +1493,7 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
         }));
       }
     } catch { /* timeout / network / auth — fall through */ }
-    if (!entries && sampleKind === "rota") { entries = fallbackRotaEntries(); loc = ROTA_LOCATION; }
+    if (generation !== photoGeneration.current) return;
     if (!entries) { setStage("error"); return; }
     // derive a shared location if every row carries the same one
     if (!loc) { const locs = [...new Set(entries.map((e) => e.location).filter(Boolean))]; if (locs.length === 1) loc = locs[0]; }
@@ -1471,6 +1511,7 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
   const finalAnswer = customOn && customText.trim() ? customText.trim() : answer;
 
   const saveSingle = () => {
+    if (sampleKind) return;
     const route = INTENT_ROUTES[cls.detected] || INTENT_ROUTES.other;
     const title = titleEdit.trim();
     const text = [title, intentText.trim()].filter(Boolean).join(" — ");
@@ -1488,6 +1529,7 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
   const savedCount = scheduleKind === "fixed" ? includedWithDate * repeatWeeks : includedWithDate;
   const evt = (r, date) => ({ date, type: "event", plan: true, title: r.title || "Work shift", time: r.start || null, notes: [schedLocation, r.end ? `until ${r.end}${r.end_next_day ? " (+1 day)" : ""}` : ""].filter(Boolean).join(" · ") });
   const saveSchedule = () => {
+    if (sampleKind) return;
     let list = [];
     if (scheduleKind === "fixed") {
       for (const r of selectedRows) for (let w = 0; w < repeatWeeks; w++) list.push(evt(r, iso(addDays(parseISO(r.date), w * 7))));
@@ -1503,71 +1545,71 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
     <>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <button onClick={stage === "pick" ? onBack : () => setStage("pick")} style={iconBtn} aria-label="Back"><ArrowLeft size={15} /></button>
-          <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, color: OX }}>Add a photo</span>
+          <button onClick={leavePhoto} style={iconBtn} aria-label="Back"><ArrowLeft size={15} /></button>
+          <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, color: PHOTO.ink }}>Add a photo</span>
         </div>
-        <button onClick={onClose} style={iconBtn} aria-label="Close"><X size={15} /></button>
+        <button onClick={closePhoto} style={iconBtn} aria-label="Close"><X size={15} /></button>
       </div>
 
       <input ref={fileRef} type="file" accept="image/*" onChange={onFile} style={{ display: "none" }} />
+      {fileError && <p role="alert" style={{fontFamily:UI,fontSize:13,color:T.crimson}}>{fileError}</p>}
 
       {stage === "pick" && (
         <>
-          <p style={{ fontFamily: SERIF, fontSize: 15, color: T.muted, lineHeight: 1.5, marginTop: 0 }}>
-            A photo of <b>anything</b> — a meal or receipt, a work rota, a symptom, a moment. You tell it what it is; it reads the picture and helps you log or plan it.
+          <p style={{ fontFamily: SERIF, fontSize: 15, color: PHOTO.muted, lineHeight: 1.5, marginTop: 0 }}>
+            A meal, a rota or a moment? Choose a photo, then tell us what matters.
           </p>
-          <button onClick={() => fileRef.current?.click()} style={{ ...solidBtn, marginBottom: 8 }}>
+          <button onClick={() => fileRef.current?.click()} style={{ ...photoSolidBtn, marginBottom: 8 }}>
             <ImageIcon size={15} style={{ marginRight: 7, verticalAlign: -2 }} />Choose a photo from library
           </button>
-          <div style={{ ...eyebrow, marginTop: 12, marginBottom: 6 }}>Or try a sample</div>
+          <div style={{ ...photoEyebrow, marginTop: 12, marginBottom: 6 }}>Or try a sample</div>
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={() => pick(renderSampleReceipt(), "receipt")} style={{ ...ghostBtn, flex: 1, borderColor: T.gold, color: OX }}><Utensils size={13} style={{ marginRight: 6, verticalAlign: -2 }} />Receipt</button>
-            <button onClick={() => pick(renderSampleRota(), "rota")} style={{ ...ghostBtn, flex: 1, borderColor: T.gold, color: OX }}><CalendarClock size={13} style={{ marginRight: 6, verticalAlign: -2 }} />Work rota</button>
+            <button onClick={() => pick(renderSampleReceipt(), "receipt")} style={{ ...photoGhostBtn, flex: 1, borderColor: T.gold, color: PHOTO.ink }}><Utensils size={13} style={{ marginRight: 6, verticalAlign: -2 }} />Receipt</button>
+            <button onClick={() => pick(renderSampleRota(), "rota")} style={{ ...photoGhostBtn, flex: 1, borderColor: T.gold, color: PHOTO.ink }}><CalendarClock size={13} style={{ marginRight: 6, verticalAlign: -2 }} />Work rota</button>
           </div>
-          <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 10, lineHeight: 1.5 }}>
-            We'll suggest what the picture says. Check it before anything is saved.
-          </div>
+          <div style={{ fontFamily: UI, fontSize: 12, color: PHOTO.muted, marginTop: 10, lineHeight: 1.5 }}>Examples are for exploring; only your own photo can be saved.</div>
         </>
       )}
 
       {stage === "intent" && (
         <>
-          {imageUrl && <img src={imageUrl} alt="" style={{ width: "100%", maxHeight: 190, objectFit: "contain", borderRadius: 12, border: `1px solid ${T.paperDeep}`, background: "#fff", marginBottom: 10 }} />}
-          <div style={{ ...eyebrow, marginBottom: 6 }}>What's this? — your words</div>
+          {sampleKind && <p role="status" style={{fontFamily:UI,fontSize:12,color:PHOTO.muted,margin:"0 0 8px"}}>Sample only · nothing will be saved</p>}
+          {imageUrl && <img src={imageUrl} alt="" style={{ width: "100%", maxHeight: 190, objectFit: "contain", borderRadius: 12, border: `1px solid ${PHOTO.paperDeep}`, background: "#fff", marginBottom: 10 }} />}
+          <div style={{ ...photoEyebrow, marginBottom: 6 }}>What's this? — your words</div>
           <textarea value={intentText} onChange={(e) => setIntentText(e.target.value)} rows={2} autoFocus
             placeholder="e.g. this is what I had for lunch just now"
-            style={{ width: "100%", boxSizing: "border-box", padding: "11px 12px", borderRadius: 10, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: SERIF, fontSize: 15, outline: "none", resize: "vertical", marginBottom: 8 }} />
+            style={{ width: "100%", boxSizing: "border-box", padding: "11px 12px", borderRadius: 10, border: `1px solid ${PHOTO.paperDeep}`, background: PHOTO.paper, color: PHOTO.ink, fontFamily: SERIF, fontSize: 15, outline: "none", resize: "vertical", marginBottom: 8 }} />
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
             {[["Food I had", "this is what I had to eat"], ["My schedule", "this is my work rota"], ["A symptom", "logging a symptom"], ["A moment", "a moment to remember"]].map(([lab, val]) => (
-              <button key={lab} onClick={() => setIntentText(val)} style={{ ...pill, cursor: "pointer", background: T.paperHi, borderColor: T.paperDeep, color: T.muted }}>{lab}</button>
+              <button key={lab} onClick={() => setIntentText(val)} style={{ ...photoPill, cursor: "pointer", background: PHOTO.paperHi, borderColor: PHOTO.paperDeep, color: PHOTO.muted }}>{lab}</button>
             ))}
           </div>
-          <button onClick={classify} style={solidBtn}><WandSparkles size={15} style={{ marginRight: 7, verticalAlign: -2 }} />Continue</button>
+          <button onClick={classify} style={photoSolidBtn}><WandSparkles size={15} style={{ marginRight: 7, verticalAlign: -2 }} />Continue</button>
         </>
       )}
 
       {stage === "reading" && (
-        <div style={{ ...inset, padding: 22, textAlign: "center" }}>
+        <div style={{ ...photoInset, padding: 22, textAlign: "center" }}>
           <Loader2 size={26} color={T.crimson} className="animate-spin" style={{ margin: "0 auto 10px", display: "block" }} />
-          <div style={{ fontFamily: SERIF, fontSize: 15, color: T.ink }}>Reading your photo…</div>
-          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted }}>Working out what you mean.</div>
+          <div style={{ fontFamily: SERIF, fontSize: 15, color: PHOTO.ink }}>Reading your photo…</div>
+          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: PHOTO.muted }}>Working out what you mean.</div>
         </div>
       )}
 
       {stage === "guard" && guard && (
-        <div style={{ ...inset, padding: 16, borderColor: T.gold }}>
+        <div style={{ ...photoInset, padding: 16, borderColor: T.gold }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.6, color: "#8a6e23", marginBottom: 8 }}><CalendarClock size={13} /> QUICK CHECK</div>
-          <div style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.45, marginBottom: 14 }}>{guard.msg}</div>
+          <div style={{ fontFamily: SERIF, fontSize: 16, color: PHOTO.ink, lineHeight: 1.45, marginBottom: 14 }}>{guard.msg}</div>
           <div style={{ display: "flex", gap: 8 }}>
             {guard.kind === "retro_on_future" ? (
               <>
-                <button onClick={() => resolveGuard("today")} style={{ ...solidBtn, flex: 1 }}>Log for today</button>
-                <button onClick={() => resolveGuard("keep")} style={{ ...ghostBtn, flex: 1 }}>Keep for that day</button>
+                <button onClick={() => resolveGuard("today")} style={{ ...photoSolidBtn, flex: 1 }}>Log for today</button>
+                <button onClick={() => resolveGuard("keep")} style={{ ...photoGhostBtn, flex: 1 }}>Keep for that day</button>
               </>
             ) : (
               <>
-                <button onClick={() => resolveGuard("plan")} style={{ ...solidBtn, flex: 1, background: "#A6862B", color: T.ink }}>Yes, plan these</button>
-                <button onClick={() => resolveGuard("note")} style={{ ...ghostBtn, flex: 1 }}>Just note today</button>
+                <button onClick={() => resolveGuard("plan")} style={{ ...photoSolidBtn, flex: 1, background: "#A6862B", color: PHOTO.ink }}>Yes, plan these</button>
+                <button onClick={() => resolveGuard("note")} style={{ ...photoGhostBtn, flex: 1 }}>Just note today</button>
               </>
             )}
           </div>
@@ -1576,69 +1618,70 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
 
       {stage === "followups" && cls && (
         <>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 10, background: `${route.tone}22`, color: OX }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 10, background: `${route.tone}22`, color: PHOTO.ink }}>
             <route.Icon size={12} /> {route.label.toUpperCase()} · {target.mode === "plan" ? "PLAN" : "LOG"} · {target.date === TODAY_STR ? "today" : format(parseISO(target.date), "EEE d MMM")}
           </div>
-          {degraded && <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted, marginBottom: 8 }}>Couldn't fully read the picture — going by what you said.</div>}
-          <div style={{ ...eyebrow, marginBottom: 8 }}>{FOLLOWUPS[cls.detected].q}</div>
+          {degraded && <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: PHOTO.muted, marginBottom: 8 }}>Couldn't fully read the picture — going by what you said.</div>}
+          <div style={{ ...photoEyebrow, marginBottom: 8 }}>{FOLLOWUPS[cls.detected].q}</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 8 }}>
             {FOLLOWUPS[cls.detected].options.map((o) => {
               const isRec = o === recFor();
               const on = !customOn && o === answer;
               return (
                 <button key={o} onClick={() => { setCustomOn(false); setAnswer(o); }} style={{
-                  ...pill, cursor: "pointer", position: "relative",
-                  background: on ? OX : isRec ? `${T.gold}22` : T.paperHi,
-                  color: on ? T.paper : OX, borderColor: on ? OX : isRec ? T.gold : T.paperDeep,
+                  ...photoPill, cursor: "pointer", position: "relative",
+                  background: on ? PHOTO.ink : isRec ? `${T.gold}22` : PHOTO.paperHi,
+                  color: on ? PHOTO.paper : PHOTO.ink, borderColor: on ? PHOTO.ink : isRec ? T.gold : PHOTO.paperDeep,
                   fontWeight: isRec || on ? 800 : 600,
                 }}>
                   {o}{isRec ? <span style={{ marginLeft: 5, fontSize: 12, fontWeight: 800, letterSpacing: 0.4, opacity: 0.85 }}>Likely</span> : null}
                 </button>
               );
             })}
-            <button onClick={() => setCustomOn(true)} style={{ ...pill, cursor: "pointer", background: customOn ? OX : T.paperHi, color: customOn ? T.paper : T.muted, borderColor: customOn ? OX : T.paperDeep }}>Type your own</button>
+            <button onClick={() => setCustomOn(true)} style={{ ...photoPill, cursor: "pointer", background: customOn ? PHOTO.ink : PHOTO.paperHi, color: customOn ? PHOTO.paper : PHOTO.muted, borderColor: customOn ? PHOTO.ink : PHOTO.paperDeep }}>Type your own</button>
           </div>
           {customOn && (
             <input value={customText} onChange={(e) => setCustomText(e.target.value)} autoFocus placeholder="Something else…"
-              style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 10, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: UI, fontSize: 14, outline: "none", marginBottom: 8 }} />
+              style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 10, border: `1px solid ${PHOTO.paperDeep}`, background: PHOTO.paper, color: PHOTO.ink, fontFamily: UI, fontSize: 14, outline: "none", marginBottom: 8 }} />
           )}
           <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
-            <button onClick={() => setStage("review")} style={{ ...ghostBtn, flex: 1 }}>Skip</button>
-            <button onClick={() => setStage("review")} style={{ ...solidBtn, flex: 2 }}>Continue</button>
+            <button onClick={() => setStage("review")} style={{ ...photoGhostBtn, flex: 1 }}>Skip</button>
+            <button onClick={() => setStage("review")} style={{ ...photoSolidBtn, flex: 2 }}>Continue</button>
           </div>
         </>
       )}
 
       {stage === "review" && cls && (
         <>
+          {sampleKind && <p role="status" style={{fontFamily:UI,fontSize:12,color:PHOTO.muted,margin:"0 0 8px"}}>Sample only · nothing will be saved</p>}
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 10, background: "rgba(143,175,143,0.2)", color: "#3f6b3a" }}>
-            <Check size={12} /> REVIEW BEFORE SAVING
+            <Check size={12} /> {sampleKind ? "EXPLORE THIS EXAMPLE" : "REVIEW BEFORE SAVING"}
           </div>
-          {degraded && !FOLLOWUPS[cls.detected] && <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted, marginBottom: 8 }}>Couldn't fully read the picture — going by what you said.</div>}
-          {imageUrl && <img src={imageUrl} alt="" style={{ width: "100%", maxHeight: 130, objectFit: "contain", borderRadius: 12, border: `1px solid ${T.paperDeep}`, background: "#fff", marginBottom: 10 }} />}
-          <div style={{ ...inset, padding: 12 }}>
+          {degraded && !FOLLOWUPS[cls.detected] && <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: PHOTO.muted, marginBottom: 8 }}>Couldn't fully read the picture — going by what you said.</div>}
+          {imageUrl && <img src={imageUrl} alt="" style={{ width: "100%", maxHeight: 130, objectFit: "contain", borderRadius: 12, border: `1px solid ${PHOTO.paperDeep}`, background: "#fff", marginBottom: 10 }} />}
+          <div style={{ ...photoInset, padding: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
               <span style={{ ...typeChip, background: `${route.tone}22`, color: route.tone }}><route.Icon size={15} /></span>
-              <span style={{ fontFamily: UI, fontWeight: 800, fontSize: 12, letterSpacing: 0.4, color: OX }}>{route.label.toUpperCase()}</span>
-              <span style={{ marginLeft: "auto", fontFamily: UI, fontSize: 12, fontWeight: 700, color: target.mode === "plan" ? "#A6862B" : OX }}>{target.mode === "plan" ? "PLAN" : "LOG"} · {target.date === TODAY_STR ? "today" : format(parseISO(target.date), "EEE d MMM")}</span>
+              <span style={{ fontFamily: UI, fontWeight: 800, fontSize: 12, letterSpacing: 0.4, color: PHOTO.ink }}>{route.label.toUpperCase()}</span>
+              <span style={{ marginLeft: "auto", fontFamily: UI, fontSize: 12, fontWeight: 700, color: target.mode === "plan" ? "#A6862B" : PHOTO.ink }}>{target.mode === "plan" ? "PLAN" : "LOG"} · {target.date === TODAY_STR ? "today" : format(parseISO(target.date), "EEE d MMM")}</span>
             </div>
-            <input value={titleEdit} onChange={(e) => setTitleEdit(e.target.value)} style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 10, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: SERIF, fontSize: 15, outline: "none", marginBottom: 8 }} />
+            <input value={titleEdit} onChange={(e) => setTitleEdit(e.target.value)} style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 10, border: `1px solid ${PHOTO.paperDeep}`, background: PHOTO.paper, color: PHOTO.ink, fontFamily: SERIF, fontSize: 15, outline: "none", marginBottom: 8 }} />
             {FOLLOWUPS[cls.detected] && (
-              <div style={{ fontFamily: UI, fontSize: 12.5, color: T.muted }}>{FOLLOWUPS[cls.detected].q}: <b style={{ color: T.ink }}>{finalAnswer}</b></div>
+              <div style={{ fontFamily: UI, fontSize: 12.5, color: PHOTO.muted }}>{FOLLOWUPS[cls.detected].q}: <b style={{ color: PHOTO.ink }}>{finalAnswer}</b></div>
             )}
           </div>
           {cls.detected === "food" ? (
             <>
-              <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, margin: "8px 0 10px" }}>Take it into the full food log to add items, portions and how it felt.</div>
-              <button onClick={() => onFood({ date: target.date, meal: (finalAnswer || "").toLowerCase(), photoUrl: imageUrl })} style={{ ...solidBtn, background: T.crimson }}>
-                <Utensils size={15} style={{ marginRight: 7, verticalAlign: -2 }} />Continue to food log
+              <div style={{ fontFamily: UI, fontSize: 12, color: PHOTO.muted, margin: "8px 0 10px" }}>Take it into the full food log to add items, portions and how it felt.</div>
+              <button onClick={() => sampleKind ? fileRef.current?.click() : onFood({ date: target.date, meal: (finalAnswer || "").toLowerCase(), photoUrl: imageUrl })} style={{ ...photoSolidBtn, background: T.crimson }}>
+                <Utensils size={15} style={{ marginRight: 7, verticalAlign: -2 }} />{sampleKind ? "Choose your photo to log" : "Continue to food log"}
               </button>
             </>
           ) : (
             <>
-              <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, margin: "8px 0 10px" }}>Nothing is saved until you tap below.</div>
-              <button onClick={saveSingle} style={{ ...solidBtn, background: target.mode === "plan" ? "#A6862B" : T.crimson, color: target.mode === "plan" ? T.ink : T.paper }}>
-                <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />{target.mode === "plan" ? "Add to plan" : "Log it"} · {target.date === TODAY_STR ? "today" : format(parseISO(target.date), "EEE d MMM")}
+              <div style={{ fontFamily: UI, fontSize: 12, color: PHOTO.muted, margin: "8px 0 10px" }}>Nothing is saved until you tap below.</div>
+              <button onClick={sampleKind ? () => fileRef.current?.click() : saveSingle} style={{ ...photoSolidBtn, background: target.mode === "plan" ? "#A6862B" : T.crimson, color: target.mode === "plan" ? PHOTO.ink : PHOTO.paper }}>
+                <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />{sampleKind ? "Choose your photo to continue" : `${target.mode === "plan" ? "Add to plan" : "Log it"} · ${target.date === TODAY_STR ? "today" : format(parseISO(target.date), "EEE d MMM")}`}
               </button>
             </>
           )}
@@ -1647,56 +1690,57 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
 
       {stage === "schedule_review" && (
         <>
+          {sampleKind && <p role="status" style={{fontFamily:UI,fontSize:12,color:PHOTO.muted,margin:"0 0 8px"}}>Sample rota · these are old example dates. Nothing will be saved.</p>}
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 8, background: "rgba(143,175,143,0.2)", color: "#3f6b3a" }}>
-            <Check size={12} /> REVIEW BEFORE SAVING · {rows.length} {rows.length === 1 ? "entry" : "entries"} · PLAN
+            <Check size={12} /> {sampleKind ? "EXAMPLE ROTA" : "REVIEW BEFORE SAVING"} · {rows.length} {rows.length === 1 ? "entry" : "entries"} · PLAN
           </div>
-          {degraded && <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted, marginBottom: 8 }}>Couldn't fully read the picture — check these carefully.</div>}
+          {degraded && <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: PHOTO.muted, marginBottom: 8 }}>Couldn't fully read the picture — check these carefully.</div>}
 
           {/* FIXED vs FLEXIBLE — the general schedule question (detected default, user confirms) */}
-          <div style={{ ...eyebrow, marginBottom: 6 }}>Is this the same every week?</div>
+          <div style={{ ...photoEyebrow, marginBottom: 6 }}>Is this the same every week?</div>
           <div style={{ display: "flex", gap: 6, marginBottom: scheduleKind === "fixed" ? 8 : 12 }}>
             {[["fixed", "Same every week"], ["flexible", "Varies week to week"]].map(([k, lab]) => {
               const on = scheduleKind === k;
               return (
                 <button key={k} onClick={() => setScheduleKind(k)} style={{ flex: 1, padding: "9px 6px", borderRadius: 10, cursor: "pointer",
-                  border: `1.5px solid ${on ? "#A6862B" : T.paperDeep}`, background: on ? "rgba(168,137,63,0.16)" : T.paperHi, color: on ? OX : T.muted, fontFamily: UI, fontSize: 12.5, fontWeight: 700 }}>{lab}</button>
+                  border: `1.5px solid ${on ? "#A6862B" : PHOTO.paperDeep}`, background: on ? "rgba(168,137,63,0.16)" : PHOTO.paperHi, color: on ? PHOTO.ink : PHOTO.muted, fontFamily: UI, fontSize: 12.5, fontWeight: 700 }}>{lab}</button>
               );
             })}
           </div>
           {scheduleKind === "fixed" && (
             <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
-              <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>Repeat weekly for</span>
+              <span style={{ fontFamily: UI, fontSize: 12, color: PHOTO.muted }}>Repeat weekly for</span>
               {[4, 8, 12].map((w) => (
-                <button key={w} onClick={() => setRepeatWeeks(w)} style={{ ...pill, cursor: "pointer", background: repeatWeeks === w ? OX : T.paperHi, color: repeatWeeks === w ? T.paper : T.muted, borderColor: repeatWeeks === w ? OX : T.paperDeep }}>{w} wks</button>
+                <button key={w} onClick={() => setRepeatWeeks(w)} style={{ ...photoPill, cursor: "pointer", background: repeatWeeks === w ? PHOTO.ink : PHOTO.paperHi, color: repeatWeeks === w ? PHOTO.paper : PHOTO.muted, borderColor: repeatWeeks === w ? PHOTO.ink : PHOTO.paperDeep }}>{w} wks</button>
               ))}
             </div>
           )}
 
           {/* shared location — applied to every entry, edit once */}
-          <div style={{ ...eyebrow, marginBottom: 4 }}>Location · all entries</div>
+          <div style={{ ...photoEyebrow, marginBottom: 4 }}>Location · all entries</div>
           <input value={schedLocation} onChange={(e) => setSchedLocation(e.target.value)} placeholder="e.g. Halliburton Oji, Paddington"
-            style={{ width: "100%", boxSizing: "border-box", padding: "9px 11px", borderRadius: 10, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: UI, fontSize: 13, outline: "none", marginBottom: 10 }} />
+            style={{ width: "100%", boxSizing: "border-box", padding: "9px 11px", borderRadius: 10, border: `1px solid ${PHOTO.paperDeep}`, background: PHOTO.paper, color: PHOTO.ink, fontFamily: UI, fontSize: 13, outline: "none", marginBottom: 10 }} />
 
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 }}>
             {rows.map((r, i) => {
               const overnight = r.end_next_day || (r.start && r.end && r.end <= r.start);
               return (
-                <div key={r._id} style={{ ...inset, padding: "10px 11px", opacity: r.include ? 1 : 0.55 }}>
+                <div key={r._id} style={{ ...photoInset, padding: "10px 11px", opacity: r.include ? 1 : 0.55 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                    <button onClick={() => setRow(i, { include: !r.include })} aria-label="Include"
-                      style={{ width: 22, height: 22, borderRadius: 6, flexShrink: 0, cursor: "pointer", border: `1.5px solid ${r.include ? T.sage : T.paperDeep}`, background: r.include ? T.sage : "transparent", display: "grid", placeItems: "center", padding: 0 }}>
+                    <button onClick={() => setRow(i, { include: !r.include })} aria-pressed={r.include} aria-label={`${r.include ? "Exclude" : "Include"} entry ${i + 1}: ${r.title || "work shift"}`}
+                      style={{ width: 44, height: 44, borderRadius: 12, flexShrink: 0, cursor: "pointer", border: `1.5px solid ${r.include ? T.sage : PHOTO.paperDeep}`, background: r.include ? T.sage : "transparent", display: "grid", placeItems: "center", padding: 0 }}>
                       {r.include && <Check size={13} color="#fff" />}
                     </button>
                     <input value={r.title} onChange={(e) => setRow(i, { title: e.target.value })}
-                      style={{ flex: 1, minWidth: 0, padding: "6px 9px", borderRadius: 8, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: SERIF, fontSize: 14.5, fontWeight: 600, outline: "none" }} />
+                      style={{ flex: 1, minWidth: 0, padding: "6px 9px", borderRadius: 8, border: `1px solid ${PHOTO.paperDeep}`, background: PHOTO.paper, color: PHOTO.ink, fontFamily: SERIF, fontSize: 14.5, fontWeight: 600, outline: "none" }} />
                     {r.done && <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.4, color: "#2e9e5b", background: "rgba(46,158,91,0.12)", padding: "2px 6px", borderRadius: 6 }}>DONE</span>}
-                    <button onClick={() => setRows((p) => p.filter((_, j) => j !== i))} aria-label="Remove" style={{ ...iconBtn, width: 24, height: 24, flexShrink: 0 }}><Trash2 size={11} /></button>
+                    <button onClick={() => setRows((p) => p.filter((_, j) => j !== i))} aria-label={`Remove entry ${i + 1}: ${r.title || "work shift"}`} style={{ ...iconBtn, width: 44, height: 44, flexShrink: 0 }}><Trash2 size={17} /></button>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", paddingLeft: 30 }}>
-                    <input type="date" value={r.date || ""} onChange={(e) => setRow(i, { date: e.target.value })} style={miniField} />
-                    <input type="time" value={r.start || ""} onChange={(e) => setRow(i, { start: e.target.value })} style={miniField} />
-                    <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>–</span>
-                    <input type="time" value={r.end || ""} onChange={(e) => setRow(i, { end: e.target.value })} style={miniField} />
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                    <input type="date" aria-label={`Entry ${i + 1} date`} value={r.date || ""} onChange={(e) => setRow(i, { date: e.target.value })} style={photoMiniField} />
+                    <input type="time" aria-label={`Entry ${i + 1} start time`} value={r.start || ""} onChange={(e) => setRow(i, { start: e.target.value })} style={photoMiniField} />
+                    <span style={{ fontFamily: UI, fontSize: 12, color: PHOTO.muted }}>–</span>
+                    <input type="time" aria-label={`Entry ${i + 1} end time`} value={r.end || ""} onChange={(e) => setRow(i, { end: e.target.value })} style={photoMiniField} />
                     {overnight && <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.3, color: "#8a6e23", background: "rgba(168,137,63,0.16)", padding: "2px 6px", borderRadius: 6 }}>OVERNIGHT · ends +1 day</span>}
                     {!r.date && <span style={{ fontFamily: UI, fontSize: 12, color: T.crimson }}>needs a date</span>}
                   </div>
@@ -1705,20 +1749,20 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
             })}
           </div>
 
-          <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginBottom: 10 }}>
-            Untick an entry, edit any time/date, or remove a row. Done ones are unticked. Nothing is saved until you tap below.
+          <div style={{ fontFamily: UI, fontSize: 12, color: PHOTO.muted, marginBottom: 10 }}>
+            Edit dates or times; untick or remove anything. Nothing saves yet.
           </div>
-          <button onClick={saveSchedule} disabled={includedWithDate === 0} style={{ ...solidBtn, background: "#A6862B", color: T.ink, opacity: includedWithDate === 0 ? 0.45 : 1, cursor: includedWithDate === 0 ? "default" : "pointer" }}>
-            <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />Add {savedCount} {savedCount === 1 ? "entry" : "entries"} to your plan{scheduleKind === "fixed" ? ` · ${repeatWeeks} wks` : ""}
+          <button onClick={sampleKind ? () => fileRef.current?.click() : saveSchedule} disabled={!sampleKind && includedWithDate === 0} style={{ ...photoSolidBtn, background: "#A6862B", color: PHOTO.ink, opacity: !sampleKind && includedWithDate === 0 ? 0.45 : 1, cursor: !sampleKind && includedWithDate === 0 ? "default" : "pointer" }}>
+            <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />{sampleKind ? "Choose your rota to plan" : `Add ${savedCount} ${savedCount === 1 ? "entry" : "entries"} to your plan${scheduleKind === "fixed" ? ` · ${repeatWeeks} wks` : ""}`}
           </button>
         </>
       )}
 
       {stage === "error" && (
-        <div style={{ ...inset, padding: 18, textAlign: "center" }}>
-          <div style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, marginBottom: 4 }}>Couldn't read that one</div>
-          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted, marginBottom: 6 }}>Try a clearer, upright photo — or tell it what this is and we'll go from your words.</div>
-          <button onClick={() => setStage("pick")} style={{ ...solidBtn, marginTop: 6 }}>Try another photo</button>
+        <div style={{ ...photoInset, padding: 18, textAlign: "center" }}>
+          <div style={{ fontFamily: SERIF, fontSize: 15, color: PHOTO.ink, marginBottom: 4 }}>Couldn't read that one</div>
+          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: PHOTO.muted, marginBottom: 6 }}>Try a clearer, upright photo — or tell it what this is and we'll go from your words.</div>
+          <button onClick={() => setStage("pick")} style={{ ...photoSolidBtn, marginTop: 6 }}>Try another photo</button>
         </div>
       )}
     </>

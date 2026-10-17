@@ -166,9 +166,12 @@ function smartReflectPrompt(bookId, chapterIndex, heading, title, cleanPreview =
 export default function BookReader({ cleanPreview: ideasPreview = false } = {}) {
   const navigate = useNavigate();
   const route = new URLSearchParams(window.location.search);
-  const cleanPreview = ideasPreview || (route.get("appearance") === "calm" && route.get("from") === "lifestyle-main");
+  const clubOrigin = route.get("from") === "community-bookclub";
+  const requestedClubPick = clubOrigin ? (route.get("club_pick") || "") : null;
+  const cleanPreview = ideasPreview || (route.get("appearance") === "calm" && (route.get("from") === "lifestyle-main" || clubOrigin));
   const returnToLifestyle = () => {
-    if (route.get("via") === "saved" && route.get("from") === "lifestyle-main") {
+    if (clubOrigin) navigate(createPageUrl(`Community?view=bookclub${requestedClubPick ? `&pick=${encodeURIComponent(requestedClubPick)}` : ""}&appearance=calm`));
+    else if (route.get("via") === "saved" && route.get("from") === "lifestyle-main") {
       const tab = ["ADVICE", "LIFESTYLE", "CONTENT", "PROGRAM", "JOURNAL", "EVENT"].includes(route.get("saved_tab")) ? route.get("saved_tab") : "LIFESTYLE";
       navigate(`/Saved?tab=${tab}&appearance=calm&from=lifestyle-main`);
     } else if (route.get("from") === "lifestyle-main") navigate(`/Lifestyle?section=${route.get("return_section") === "yours" ? "yours" : "books"}`);
@@ -218,22 +221,22 @@ export default function BookReader({ cleanPreview: ideasPreview = false } = {}) 
     setClub({ status: "loading", pick: null });
     // Reuse the same pick/checkpoints contract as the club. Only a successful empty
     // query permits its authored seed; a failed read never identifies another book.
-    loadBookClubPick().then((pick) => {
+    loadBookClubPick(requestedClubPick).then((pick) => {
       if (!cancelled) setClub({ status: "ready", pick });
     }).catch(() => {
       if (!cancelled) setClub({ status: "error", pick: null });
     });
     return () => { cancelled = true; };
-  }, [gutenbergId, clubRetryTick]);
+  }, [gutenbergId, clubRetryTick, requestedClubPick]);
 
   // The book's OWN community thread: the Book Club for the club pick, else this book's
   // readers' corner (a per-book club keyed by the Gutenberg id). Never the generic page.
   const communityHref = useMemo(() => {
     if (club.status !== "ready") return null;
-    if (inClub) return createPageUrl("Community?view=bookclub");
+    if (inClub) return createPageUrl(`Community?view=bookclub&pick=${encodeURIComponent(club.pick.pick_key)}${cleanPreview ? "&appearance=calm" : ""}`);
     if (gutenbergId == null) return null;
     return createPageUrl(`Community?club=${dailyReadClubKey(gutenbergId)}&title=${encodeURIComponent(book?.title || "")}`);
-  }, [club.status, inClub, gutenbergId, book?.title]);
+  }, [club.status, club.pick?.pick_key, inClub, gutenbergId, book?.title, cleanPreview]);
 
   // smart (schedule) mark — the daily read advances ~1 chapter/day from the day she first
   // opened this book (device-local; no backend). "Where the daily read expects you today."

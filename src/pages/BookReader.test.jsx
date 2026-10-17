@@ -95,6 +95,24 @@ describe("daily marks at British summer-time midnight", () => {
 });
 
 describe("Ideas-only reader margin preview", () => {
+  it("opens an archived club edition in the clean reader and returns to its exact discussion", async () => {
+    api.picks.mockImplementation(async (query) => query.pick_key === "archived-a"
+      ? [{ ...active, pick_key: "archived-a", active: false }]
+      : [active]);
+    const search = "gutenberg_id=105&appearance=calm&from=community-bookclub&club_pick=archived-a";
+    window.history.replaceState({}, "", `/BookReader?${search}`);
+    function Destination() { const location = useLocation(); return <p>{location.pathname + location.search}</p>; }
+    render(<MemoryRouter initialEntries={[`/BookReader?${search}`]}><Routes>
+      <Route path="/BookReader" element={<BookReader/>}/>
+      <Route path="/Community" element={<Destination/>}/>
+    </Routes></MemoryRouter>);
+    const reader = await screen.findByRole("article", { name: "Controlled book reader" });
+    expect(reader).toHaveAttribute("data-clean-preview", "true");
+    expect(api.picks).toHaveBeenCalledWith({ pick_key: "archived-a" }, "-created_date", 1);
+    expect(await screen.findByRole("link", { name: /Book club · spoiler-safe/ })).toHaveAttribute("href", "/Community?view=bookclub&pick=archived-a&appearance=calm");
+    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+    expect(screen.getByText("/Community?view=bookclub&pick=archived-a&appearance=calm")).toBeVisible();
+  });
   it.each([
     ["gutenberg_id=105&appearance=calm&from=lifestyle-main", "/Lifestyle?section=books"],
     ["gutenberg_id=105&appearance=calm&from=lifestyle-main&return_section=yours", "/Lifestyle?section=yours"],
@@ -306,7 +324,7 @@ describe("BookReader canonical club identity", () => {
     expect(screen.queryByRole("button", { name: "Add to the room" })).toBeNull();
     expect(screen.getByText(/You're in Chapter 1 of Persuasion/)).toBeInTheDocument();
     await act(async () => pick.resolve([active]));
-    expect(clubLink()).toHaveAttribute("href", "/Community?view=bookclub");
+    expect(clubLink()).toHaveAttribute("href", "/Community?view=bookclub&pick=persuasion-current");
     expect(screen.getByRole("button", { name: "Add to the room" })).toBeInTheDocument();
     expect(api.picks).toHaveBeenCalledWith({ active: true }, "-created_date", 1);
     expect(api.checkpoints).toHaveBeenCalledWith({ pick_key: active.pick_key }, "index", 150);

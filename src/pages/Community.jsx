@@ -793,15 +793,24 @@ function QotdCard({ user, onCrisis }) {
 }
 
 // ── Book Club (Phase 4, §P.2.2) — on the existing BookReader ──────────────────
+const CLUB_CLEAN = { ground: "#fbfaf8", surface: "#fff", tint: "#f6f8f5", line: "#dce4dc", ink: "#51444e", muted: "#665d63", plum: "#51444e" };
 function ClubCheckpointThread({ pickKey, cp, user, onCrisis }) {
   const [notes, setNotes] = useState(null);
+  const [readError, setReadError] = useState("");
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
+  const readSequence = useRef(0);
   const load = useCallback(async () => {
-    const rows = await base44.entities.ClubNote.filter({ pick_key: pickKey, checkpoint_index: cp.index, hidden: false }, "created_date", 100).catch(() => []);
-    setNotes(Array.isArray(rows) ? rows : []);
+    const request = ++readSequence.current;
+    setReadError("");
+    try {
+      const rows = await base44.entities.ClubNote.filter({ pick_key: pickKey, checkpoint_index: cp.index, hidden: false }, "created_date", 100);
+      if (request === readSequence.current) setNotes(Array.isArray(rows) ? rows : []);
+    } catch {
+      if (request === readSequence.current) setReadError("Couldn't open this part of the conversation.");
+    }
   }, [pickKey, cp.index]);
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load(); return () => { readSequence.current++; }; }, [load]);
   const send = async () => {
     const text = draft.trim(); if (!text || busy) return;
     if (crisisCheck(text).intercept) { onCrisis(); return; }
@@ -819,17 +828,18 @@ function ClubCheckpointThread({ pickKey, cp, user, onCrisis }) {
   };
   return (
     <div style={{ marginTop: 10 }}>
-      <Hand size={17} color={T.inkSoft} style={{ marginBottom: 10, fontStyle: "italic" }}>{cp.jess_prompt}</Hand>
-      {notes === null && <Hand size={15} color={T.muted}>Opening the thread…</Hand>}
-      {notes && notes.length === 0 && <Hand size={15} color={T.muted}>No one's spoken here yet. The thread waits — no one is late.</Hand>}
+      <Hand size={17} color={CLUB_CLEAN.ink} style={{ marginBottom: 10, fontStyle: "italic" }}>{cp.jess_prompt}</Hand>
+      {notes === null && !readError && <div role="status"><Hand size={15} color={CLUB_CLEAN.muted}>Opening the thread…</Hand></div>}
+      {readError && <div role="alert" style={{ color: CLUB_CLEAN.ink, fontFamily: UI, fontSize: 13, marginBottom: 10 }}><p>{readError}</p><button onClick={load} style={{ ...ghostBtn, background: CLUB_CLEAN.surface, borderColor: CLUB_CLEAN.line, borderRadius: 12, minHeight: 44 }}>Try this part again</button></div>}
+      {!readError && notes && notes.length === 0 && <Hand size={15} color={CLUB_CLEAN.muted}>No one's spoken here yet. The thread waits — no one is late.</Hand>}
       {notes && notes.map((n) => (
         n.status === "removed"
-          ? <div key={n.id} style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontStyle: "italic", padding: "6px 0" }}>{MOD_REMOVED}</div>
-          : <div key={n.id} style={{ padding: "6px 0", borderTop: `1px solid ${T.paperDeep}` }}><Hand size={16} color={T.inkSoft}>{n.body}</Hand></div>
+          ? <div key={n.id} style={{ fontFamily: UI, fontSize: 12, color: CLUB_CLEAN.muted, fontStyle: "italic", padding: "6px 0" }}>{MOD_REMOVED}</div>
+          : <div key={n.id} style={{ padding: "6px 0", borderTop: `1px solid ${CLUB_CLEAN.line}` }}><Hand size={16} color={CLUB_CLEAN.ink}>{n.body}</Hand></div>
       ))}
-      <textarea value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={600} placeholder="A few words — lurking counts too." style={{ ...inputStyle, minHeight: 52, fontSize: 16, marginTop: 8 }} />
+      <textarea value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={600} placeholder="A few words — lurking counts too." style={{ ...inputStyle, background: CLUB_CLEAN.surface, borderColor: CLUB_CLEAN.line, borderRadius: 12, color: CLUB_CLEAN.ink, minHeight: 52, fontSize: 16, marginTop: 8 }} />
       <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 6 }}>
-        <button onClick={send} disabled={!draft.trim() || busy} style={{ ...primaryBtn, padding: "8px 14px", opacity: (!draft.trim() || busy) ? 0.5 : 1 }}><Send size={13} /> {busy ? "Adding…" : "Add a note"}</button>
+        <button onClick={send} disabled={!draft.trim() || busy} style={{ ...primaryBtn, background: CLUB_CLEAN.plum, color: CLUB_CLEAN.surface, borderRadius: 12, minHeight: 44, padding: "8px 14px", opacity: (!draft.trim() || busy) ? 0.5 : 1 }}><Send size={13} /> {busy ? "Adding…" : "Add a note"}</button>
       </div>
     </div>
   );
@@ -856,8 +866,8 @@ export function BookClubView({ user, onCrisis, onBack, requestedPickKey = null }
   useEffect(() => { load(); return () => { sequence.current++; }; }, [load]);
   const attest = (idx) => { setClubReached(pick.pick_key, idx); setReached((r) => Math.max(r, idx)); };
   return (
-    <div style={{ padding: "26px 18px 60px" }}>
-      <button onClick={onBack} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
+    <div style={{ padding: "26px 18px 60px", color: CLUB_CLEAN.ink }}>
+      <button onClick={onBack} style={{ ...ghostBtn, background: CLUB_CLEAN.surface, borderColor: CLUB_CLEAN.line, borderRadius: 12, minHeight: 44, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
       <Eyebrow color={T.gold} mb={8}>Book club · Jess hosts</Eyebrow>
       {(loading || loadedRequest !== requestedPickKey && !error) && <div role="status"><Hand size={17} color={T.muted}>Finding the club book…</Hand></div>}
       {error && <div role="alert"><Hand size={17} color={T.muted}>{error}</Hand><button onClick={load} style={{...ghostBtn,minHeight:44,minWidth:44}}>Try again</button></div>}
@@ -868,14 +878,14 @@ export function BookClubView({ user, onCrisis, onBack, requestedPickKey = null }
       <Hand size={17} color={T.inkSoft} style={{ marginBottom: 14 }}>{pick.host_intro}</Hand>
 
       {Array.isArray(pick.trigger_warnings) && pick.trigger_warnings.length > 0 && (
-        <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 6, padding: "11px 13px", marginBottom: 14 }}>
+        <div style={{ background: CLUB_CLEAN.tint, border: `1px solid ${CLUB_CLEAN.line}`, borderRadius: 16, padding: "11px 13px", marginBottom: 14 }}>
           <Eyebrow color={T.muted} mb={5}>A gentle heads-up</Eyebrow>
           {pick.trigger_warnings.map((w, i) => <div key={i} style={{ fontFamily: UI, fontSize: 12, color: T.inkSoft, lineHeight: 1.5 }}>· {w}</div>)}
         </div>
       )}
 
       {pick.gutenberg_id && (
-        <button onClick={() => navigate(createPageUrl(`BookReader?gutenberg_id=${pick.gutenberg_id}`))} style={{ ...primaryBtn, marginBottom: 22 }}>
+        <button onClick={() => navigate(createPageUrl(`BookReader?gutenberg_id=${encodeURIComponent(pick.gutenberg_id)}&appearance=calm&from=community-bookclub&club_pick=${encodeURIComponent(pick.pick_key)}`))} style={{ ...primaryBtn, background: CLUB_CLEAN.plum, color: CLUB_CLEAN.surface, borderRadius: 13, minHeight: 44, marginBottom: 22 }}>
           <MessageCircle size={14} /> Read it in the Library
         </button>
       )}
@@ -885,7 +895,7 @@ export function BookClubView({ user, onCrisis, onBack, requestedPickKey = null }
       {checkpoints.map((cp) => {
         const unlocked = reached >= cp.index;
         return (
-          <div key={`${pick.pick_key}:${cp.index}`} style={{ background: T.paperHi, border: `1px solid ${unlocked ? T.gold : T.paperDeep}`, borderRadius: 6, padding: "13px 14px", marginBottom: 12 }}>
+          <div key={`${pick.pick_key}:${cp.index}`} style={{ background: CLUB_CLEAN.surface, border: `1px solid ${unlocked ? T.gold : CLUB_CLEAN.line}`, borderRadius: 18, padding: "13px 14px", marginBottom: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {unlocked ? <MessageCircle size={14} style={{ color: T.gold }} /> : <Lock size={14} style={{ color: T.muted }} />}
               <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 17, color: unlocked ? T.ink : T.muted }}>{cp.label}</div>
@@ -894,7 +904,7 @@ export function BookClubView({ user, onCrisis, onBack, requestedPickKey = null }
               ? <ClubCheckpointThread pickKey={pick.pick_key} cp={cp} user={user} onCrisis={onCrisis} />
               : <div style={{ marginTop: 8 }}>
                   <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, marginBottom: 8 }}>Spoiler-safe: the discussion opens once you've read this far.</div>
-                  <button onClick={() => attest(cp.index)} style={{ ...ghostBtn }}>I've read this far — open it</button>
+                  <button onClick={() => attest(cp.index)} style={{ ...ghostBtn, background: CLUB_CLEAN.surface, borderColor: CLUB_CLEAN.line, borderRadius: 12, minHeight: 44 }}>I've read this far — open it</button>
                 </div>}
           </div>
         );
@@ -3302,7 +3312,7 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
   return (
     // embedded (rendered inside a HubSheet): no own page background or 100vh — inherit
     // the sheet's single flat surface so there are no nested/mismatched background edges.
-    <div style={embedded ? { minHeight: 0, background: "transparent" } : { minHeight: "100vh", overflowX: "clip", ...PAPER_BG }}>
+    <div style={embedded ? { minHeight: 0, background: "transparent" } : view === "bookclub" ? { minHeight: "100vh", overflowX: "clip", background: CLUB_CLEAN.ground } : { minHeight: "100vh", overflowX: "clip", ...PAPER_BG }}>
       <InkFilter />
       <div style={{ maxWidth: 460, margin: "0 auto", padding: view === "home" ? "30px 18px 50px" : "0 0 50px" }}>
         {view === "home"

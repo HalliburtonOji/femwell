@@ -60,3 +60,17 @@ it("pick changes never carry another checkpoint's draft or notes into reused ind
   expect(screen.queryByText("Prompt past-a")).not.toBeInTheDocument();
   expect(api.invoke).not.toHaveBeenCalled();
 });
+it("an unlocked thread names a failed read, keeps its draft, and retries without inventing an empty conversation",async()=>{
+  localStorage.setItem("fw_club_past-a","0");
+  api.notes.mockRejectedValueOnce(new Error("offline")).mockResolvedValueOnce([]);
+  render(<MemoryRouter><BookClubView requestedPickKey="past-a"/></MemoryRouter>);
+  expect(await screen.findByRole("alert")).toHaveTextContent("Couldn't open this part");
+  expect(screen.queryByText(/No one's spoken here yet/)).not.toBeInTheDocument();
+  const draft=screen.getByPlaceholderText("A few words — lurking counts too.");
+  fireEvent.change(draft,{target:{value:"A private draft to keep"}});
+  fireEvent.click(screen.getByRole("button",{name:"Try this part again"}));
+  expect(await screen.findByText(/No one's spoken here yet/)).toBeVisible();
+  expect(draft).toHaveValue("A private draft to keep");
+  expect(api.notes).toHaveBeenCalledTimes(2);
+  expect(api.invoke).not.toHaveBeenCalled();
+});

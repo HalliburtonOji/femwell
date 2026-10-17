@@ -442,7 +442,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
             {reached >= nextCp.index ? <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, fontWeight: 500, color: C.slate, lineHeight: 1.5, margin: "6px 0 0" }}>{clean(nextCp.jess_prompt)}</p> : <p style={{fontFamily:UI,fontSize:13,color:C.slate,margin:"8px 0 0"}}>The conversation opens when you reach this part.</p>}
           </div> : <Body size={16}>This book’s checkpoints haven’t been published yet.</Body>}
           <div style={{ fontFamily: UI, fontSize: 13, color: C.faint, textAlign: "center", margin: "10px 0 0", lineHeight: 1.5 }}>Prompts stay tucked away until you reach each part.</div>
-          <div style={{ marginTop: 12 }}><Cta Icon={Users} onClick={() => window.location.assign(createPageUrl(calmLayout ? "Community?view=bookclub&appearance=calm" : "Community?view=bookclub"))}>Open the book club</Cta></div>
+          <div style={{ marginTop: 12 }}><Cta Icon={Users} onClick={() => window.location.assign(createPageUrl(`Community?view=bookclub&pick=${encodeURIComponent(club.pick_key)}${calmLayout ? "&appearance=calm" : ""}`))}>Open the book club</Cta></div>
           {club.checkpoints.length > 0 && <Quiet onClick={() => onSchedule && onSchedule({ club })}>Plan the club’s checkpoints ›</Quiet>}</>}
         </Card>
       </section>
