@@ -1,0 +1,67 @@
+.fw-morning-dialog {
+  box-sizing: border-box;
+  width: min(100% - 24px, 520px);
+  max-width: 520px;
+  max-height: min(760px, calc(100dvh - 24px));
+  min-height: 0;
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgba(80, 59, 73, .16);
+  border-radius: 28px;
+  color: #231e22;
+  background: #fff;
+  box-shadow: 0 22px 75px rgba(34, 24, 34, .2);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-weight: 400;
+}
+.fw-morning-dialog::backdrop { background: rgba(29, 24, 30, .45); backdrop-filter: blur(4px); }
+.fw-morning-dialog[open] { display: flex; flex-direction: column; }
+.fw-morning-dialog button { cursor: pointer; }
+.fw-morning-dialog button:focus-visible,
+.fw-morning-dialog summary:focus-visible { outline: 3px solid #806384; outline-offset: 3px; }
+.fw-morning-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 18px 5px 23px; }
+.fw-morning-kicker { color: #7d667c; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.fw-morning-close { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; border: 1px solid #e6e1e2; border-radius: 50%; background: #fff; color: #302932; }
+.fw-morning-scroll { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 24px 16px; }
+.fw-morning-intro { position: relative; padding: 15px 0 24px; }
+.fw-morning-intro h1 { position: relative; z-index: 1; margin: 0 0 6px; color: #5d374f; font-family: "Ephesis", "Pinyon Script", cursive; font-size: clamp(44px, 10vw, 64px); font-weight: 400; line-height: 1.05; text-shadow: none; }
+.fw-morning-intro p { position: relative; z-index: 1; margin: 0; max-width: 33ch; color: #4c424b; font-family: "Cormorant Garamond", Georgia, serif; font-size: 21px; font-weight: 400; line-height: 1.28; }
+.fw-morning-flower { position: absolute; right: 12px; top: 4px; width: 55px; height: 55px; opacity: .55; transform: rotate(-18deg); }
+.fw-morning-flower i { position: absolute; left: 21px; top: 2px; width: 14px; height: 27px; border-radius: 80% 80% 35% 35%; background: #bea9c0; transform-origin: 7px 26px; }
+.fw-morning-flower i:nth-child(2) { transform: rotate(72deg); }.fw-morning-flower i:nth-child(3) { transform: rotate(144deg); }.fw-morning-flower i:nth-child(4) { transform: rotate(216deg); }.fw-morning-flower i:nth-child(5) { transform: rotate(288deg); }
+.fw-morning-checkin { padding: 18px 0 10px; border-top: 1px solid #e7e2e3; }
+.fw-morning-checkin h2 { margin: 0; color: #231e22; font-family: "Cormorant Garamond", Georgia, serif; font-size: 26px; font-weight: 600; line-height: 1.1; text-shadow: none; }
+.fw-morning-hint { margin: 4px 0 17px; color: #706770; font-size: 13px; }
+.fw-morning-options { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; }
+.fw-morning-options button { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 4px; min-height: 72px; min-width: 0; padding: 7px 2px; border: 1px solid #e5dfe5; border-radius: 16px; background: #faf9f8; color: #514852; }
+.fw-morning-options button span { max-width: 100%; font-size: 12px; line-height: 1.05; text-align: center; overflow-wrap: anywhere; }
+.fw-morning-options button.is-picked, .fw-morning-numbers button.is-picked { border-color: #836b8a; background: #eee8ef; color: #4d3853; }
+.fw-morning-options button:disabled, .fw-morning-numbers button:disabled { cursor: not-allowed; opacity: .6; }
+.fw-morning-more { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; margin-top: 7px; padding: 0 2px; border: 0; background: transparent; color: #5e4666; font-size: 13px; font-weight: 700; }
+.fw-morning-more[aria-expanded="true"] svg { transform: rotate(180deg); }
+.fw-morning-details { display: grid; gap: 14px; padding: 5px 0 12px; }
+.fw-morning-details > div > span { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; color: #514852; font-size: 13px; font-weight: 600; }
+.fw-morning-numbers { display: flex; gap: 7px; }
+.fw-morning-numbers button { flex: 1; min-height: 44px; border: 1px solid #e5dfe5; border-radius: 13px; background: #faf9f8; color: #514852; font-size: 13px; }
+.fw-morning-status { display: flex; align-items: center; gap: 7px; min-height: 22px; color: #6c5c67; font-size: 12px; }
+.fw-morning-status:empty { display: none; }
+.fw-morning-status button, .fw-morning-glance-body button { min-height: 44px; padding: 0 6px; border: 0; background: transparent; color: #5e4666; font-weight: 700; text-decoration: underline; }
+.fw-morning-glance { margin: 12px 0 8px; border-top: 1px solid #e7e2e3; border-bottom: 1px solid #e7e2e3; }
+.fw-morning-glance summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 54px; list-style: none; cursor: pointer; font-family: "Cormorant Garamond", Georgia, serif; font-size: 19px; font-weight: 600; }
+.fw-morning-glance summary::-webkit-details-marker { display: none; }
+.fw-morning-glance summary::after { content: "+"; margin-left: auto; color: #735c78; font-family: ui-sans-serif, sans-serif; font-size: 22px; font-weight: 400; }
+.fw-morning-glance[open] summary::after { content: "−"; }
+.fw-morning-glance summary span { color: #786d77; font-family: ui-sans-serif, sans-serif; font-size: 12px; font-weight: 500; }
+.fw-morning-glance-body { padding: 1px 0 14px; }
+.fw-morning-glance-body p { margin: 7px 0; color: #625762; font-size: 13px; }
+.fw-morning-glance-row { display: flex; align-items: flex-start; gap: 9px; padding: 7px 0; color: #433942; font-size: 13px; line-height: 1.4; }
+.fw-morning-glance-row svg { flex: 0 0 17px; color: #826a83; }
+.fw-morning-footer { padding: 11px 20px max(14px, env(safe-area-inset-bottom)); border-top: 1px solid #ece8e9; background: #fff; }
+.fw-morning-footer button { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 48px; border: 0; border-radius: 16px; background: #5a4059; color: #fff; font-size: 14px; font-weight: 700; }
+@media (max-width: 380px) {
+  .fw-morning-scroll { padding-right: 17px; padding-left: 17px; }
+  .fw-morning-options { gap: 4px; }
+  .fw-morning-options button span { font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { .fw-morning-dialog * { scroll-behavior: auto !important; transition-duration: 0.01ms !important; } }

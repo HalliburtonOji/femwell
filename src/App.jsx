@@ -128,6 +128,7 @@ const AuthenticatedApp = () => {
   const [briefProfile, setBriefProfile] = useState(null);
   const [showBrief,    setShowBrief]    = useState(false);
   useEffect(() => {
+    setShowBrief(false);
     if (isLoadingAuth || authError) return;
     if (location.pathname === "/Onboarding") return;
     let cancelled = false;
@@ -216,11 +217,12 @@ const AuthenticatedApp = () => {
       {/* Sprint 8 — Morning Brief sits above the routed app on first
           open per day. Dismissal sets a localStorage flag so it stays
           gone until tomorrow. */}
-      {showBrief && briefUser && (
+      {showBrief && briefUser && !isLoadingAuth && !authError && location.pathname !== "/Onboarding" && (
         // Sprint 3 S3-3 — variant="hidden" so a crash silently skips
         // the overlay rather than blocking the rest of the app.
         <JessErrorBoundary variant="hidden" label="MorningBriefSheet">
           <MorningBriefSheet
+            key={briefUser.id}
             user={briefUser}
             profile={briefProfile}
             onDismiss={() => {
