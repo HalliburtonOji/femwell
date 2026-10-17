@@ -157,7 +157,7 @@ line: **no generative AI writing about her reading** (the Fable incident, Jan 20
 
 ## 6. IN FLIGHT — claim a surface before you edit it
 
-| Codex | LC10 Delight to existing Community games exact deep-link only | `src/pages/Community.jsx`, scoped Community deep-link test and `src/pages/Delight.jsx` caller | 2026-10-17 | IN FLIGHT. Extend the existing parsed `view` list with its existing games view; no social action, age-gate bypass or new game. |
+| Codex | LC10 Delight to existing Community games exact deep-link only | `src/pages/Community.jsx`, scoped Community deep-link test and `src/pages/Delight.jsx` caller | 2026-10-17 | RELEASED in `dcd5aca` at `index-CBU3bVgA.js`. Existing games view exact query, unchanged age gate; no social action or new game. |
 
 | Codex | LC10 Good life destination owners: eleven linked rooms, their opened details, return to main Lifestyle and retired paper at each owner | `src/pages/{Mirror,Move,Kindred,Curious,Delight,Nest,Tonight,Becoming,Make,Outside,Money}.jsx`, `src/Layout.jsx` for exact owner underlay, relevant `src/components/brand/{PageTop,Card,expandCards}.jsx` only after consumer map, `src/components/lifestyle-elite/LifestyleOpenedKeeps.test.jsx` for stale clean-Yours action names, new `src/components/lifestyle-elite/useGoodLifeKeep.js` with focused tests, new room-scoped styles/tests, `claude-state/{STATUS,BUILD_PLAN,BRAND_IDENTITY}.md`, mirror, Ideas and LC10 critique report | 2026-10-17 | IN FLIGHT. Map/inventory before source edit. No strip, no mass global restyle; one bespoke room at a time with full interactions and source/return. No schema/function/social send or paid action. |
 
