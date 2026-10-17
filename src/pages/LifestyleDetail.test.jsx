@@ -115,6 +115,19 @@ describe('owned keeps and likes authority',()=>{
 });
 
 describe('complete article and last-place recovery',()=>{
+  it('shows all available external source prose when its summary is only a teaser',async()=>{
+    api.items.mockImplementation(async q=>q.id ? [{...article,provider:'PARTNER',summary:'A short teaser.',lede:'The whole opening.\n\nThe complete ending stays here.'}] : []);
+    const {container}=open();await screen.findByRole('heading',{name:article.title});
+    expect(container.querySelectorAll('.fw-body-p')[0]).toHaveTextContent('The whole opening.');
+    expect(container.querySelectorAll('.fw-body-p')[1]).toHaveTextContent('The complete ending stays here.');
+    expect(api.expand).not.toHaveBeenCalled();
+  });
+  it('keeps main Lifestyle as the return origin through related reads',async()=>{
+    api.items.mockImplementation(async q=>q.id ? [article] : [{...article,id:'next',title:'Next read'},{...article,id:'other',title:'Another read'}]);
+    render(<MemoryRouter initialEntries={['/LifestyleDetail?id=article&appearance=calm&from=lifestyle-main']}><LifestyleDetail/></MemoryRouter>);
+    const link=await screen.findByRole('link',{name:/Next read/i});
+    expect(link.getAttribute('href')).toBe('/LifestyleDetail?id=next&appearance=calm&from=lifestyle-main');
+  });
   it('preserves full paragraphs and a heading on its own line',async()=>{
     const {container}=open();await screen.findByRole('heading',{name:article.title});
     expect(container.querySelectorAll('.fw-body-p')).toHaveLength(3);

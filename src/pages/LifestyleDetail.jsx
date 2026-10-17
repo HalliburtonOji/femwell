@@ -149,7 +149,8 @@ export default function LifestyleDetail() {
   const urlParams = new URLSearchParams(location.search);
   const id = urlParams.get("id");
   const calmReader = urlParams.get("appearance") === "calm";
-  const backTo = urlParams.get("from") === "lifestyle-main" ? "/Lifestyle?section=read" : calmReader ? "/CalmLifestyleDemo?section=read" : "/Lifestyle?section=read";
+  const fromLifestyleMain = urlParams.get("from") === "lifestyle-main";
+  const backTo = fromLifestyleMain ? "/Lifestyle?section=read" : calmReader ? "/CalmLifestyleDemo?section=read" : "/Lifestyle?section=read";
   const goBack = () => window.history.length > 1 ? window.history.back() : window.location.assign(backTo);
 
   const [item, setItem] = useState(null);
@@ -247,7 +248,7 @@ export default function LifestyleDetail() {
         setItem(fetched);
 
         // For FemWell-generated content, the full body lives in `lede` or needs `expandContent`.
-        // For external articles, `summary` is the body.
+        // For external articles, use the longest source text we actually hold.
         if (fetched) {
           const isFemwell = FEMWELL_GENERATED_PROVIDERS.has(fetched.provider);
           const lede = fetched.lede || "";
@@ -274,8 +275,8 @@ export default function LifestyleDetail() {
               }
             }
           } else {
-            // External article: use summary as inline body
-            if (!cancelled) setFullBody(stripHtml(fetched.summary || lede || ""));
+            // `summary` can be a teaser even when the full licensed/source lede is present.
+            if (!cancelled) setFullBody(stripHtml(lede || fetched.summary || ""));
           }
 
           // Related items — same category, exclude self.
@@ -624,7 +625,7 @@ export default function LifestyleDetail() {
           {useYouTubeHero ? (
             <div style={{ marginBottom: 24 }}>
               <p style={{
-                fontSize: 11,
+                fontSize: calmReader ? 12 : 11,
                 fontWeight: 700,
                 textTransform: "uppercase",
                 letterSpacing: "0.14em",
@@ -765,7 +766,7 @@ export default function LifestyleDetail() {
               }}>
                 {eyebrowBits.length > 0 && (
                   <p style={{
-                    fontSize: 11,
+                    fontSize: calmReader ? 12 : 11,
                     fontWeight: 700,
                     textTransform: "uppercase",
                     letterSpacing: "0.14em",
@@ -808,7 +809,7 @@ export default function LifestyleDetail() {
           {item.phase_tags?.length > 0 && (
             <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
               {item.phase_tags.map((pt) => (
-                <span key={pt} style={{ fontSize: 10, fontWeight: 600, color: "#2E261B", backgroundColor: "#D8CFBC", borderRadius: 9999, padding: "3px 10px", textTransform: "capitalize", }}>
+                <span key={pt} style={{ fontSize: calmReader ? 12 : 10, fontWeight: 600, color: calmReader ? "#51444e" : "#2E261B", backgroundColor: calmReader ? "#f1edf2" : "#D8CFBC", borderRadius: 9999, padding: calmReader ? "6px 12px" : "3px 10px", textTransform: "capitalize", }}>
                   {pt} phase
                 </span>
               ))}
@@ -923,17 +924,18 @@ export default function LifestyleDetail() {
           {/* Takeaways */}
           {takeaways.length > 0 && (
             <div style={{
-              backgroundColor: "#D8CFBC",
-              border: "1px solid #E8B4B8",
-              borderRadius: 18,
-              padding: "24px 22px",
+              backgroundColor: calmReader ? "#f8f7f5" : "#D8CFBC",
+              border: calmReader ? "1px solid #e6e3dc" : "1px solid #E8B4B8",
+              borderRadius: calmReader ? 22 : 18,
+              padding: calmReader ? "20px 18px" : "24px 22px",
               marginTop: 32,
             }}>
               <p style={{
                 fontStyle: "italic",
                 fontWeight: 400,
-                fontSize: 14,
-                color: "#7A1A12",
+                fontSize: calmReader ? 18 : 14,
+                fontFamily: calmReader ? '"FemWell Editorial","Cormorant Garamond",Georgia,serif' : undefined,
+                color: calmReader ? "#51444e" : "#7A1A12",
                 marginTop: 0,
                 marginBottom: 14,
               }}>
@@ -949,15 +951,15 @@ export default function LifestyleDetail() {
                       gap: 14,
                       alignItems: "flex-start",
                       padding: "12px 0",
-                      borderBottom: isLast ? "none" : "1px solid #E8B4B8",
+                      borderBottom: isLast ? "none" : calmReader ? "1px solid #e6e3dc" : "1px solid #E8B4B8",
                     }}
                   >
                     <span style={{
                       width: 28,
                       height: 28,
                       borderRadius: "50%",
-                      backgroundColor: "#BC2E27",
-                      color: "#ECE7DA",
+                      backgroundColor: calmReader ? "#e9e4e9" : "#BC2E27",
+                      color: calmReader ? "#51444e" : "#ECE7DA",
                       fontSize: 16,
                       fontWeight: 500,
                       lineHeight: 1,
@@ -1044,7 +1046,7 @@ export default function LifestyleDetail() {
                 return (
                   <Link
                     key={r.id}
-                    to={`/LifestyleDetail?id=${encodeURIComponent(r.id)}${calmReader ? "&appearance=calm" : ""}`}
+                    to={`/LifestyleDetail?id=${encodeURIComponent(r.id)}${calmReader ? "&appearance=calm" : ""}${fromLifestyleMain ? "&from=lifestyle-main" : ""}`}
                     className="fw-related-card"
                   >
                     <div style={{
@@ -1097,7 +1099,7 @@ export default function LifestyleDetail() {
                     </p>
                     {metaBits.length > 0 && (
                       <p style={{
-                        fontSize: 11,
+                        fontSize: calmReader ? 12 : 11,
                         fontWeight: 600,
                         textTransform: "uppercase",
                         letterSpacing: "0.1em",

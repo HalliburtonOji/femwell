@@ -25,7 +25,7 @@ const sLabel = {
   letterSpacing: "0.12em", color: "var(--mauve)", };
 
 function ownerSnapshot(ownerId) {
-  return { ownerId, rows: [], profile: null, resolutions: new Map(), deletedRows: new Set(), pendingRemovalIds: new Map(), removedProfileKeeps: new Map(), profileMutation: 0 };
+  return { ownerId, rows: [], profile: null, resolutions: new Map(), deletedRows: new Set(), pendingRemovalIds: new Map(), pendingRemovalRows: new Map(), removedProfileKeeps: new Map(), profileMutation: 0 };
 }
 function survivingProfile(profile, snapshot) {
   if (!profile) return null;
@@ -152,16 +152,36 @@ export default function Saved() {
     const snapshot = confirmed.current;
     if (snapshot?.ownerId !== user.id) return;
     const stillOwner = () => confirmed.current === snapshot;
+    const assertOwner = async () => {
+      if (!stillOwner() || (await base44.auth.me())?.id !== snapshot.ownerId || !stillOwner()) throw new Error("Account changed");
+    };
     const removal = {};
     const removalKey = JSON.stringify([item.item_type, item.item_id || item.id]);
+    const attempts = snapshot.pendingRemovalRows.get(removalKey) || new Map();
+    snapshot.pendingRemovalRows.set(removalKey, attempts);
     let acknowledgedProfile = null;
     removingRef.current = removal; setRemoving(item.id); setRemoveError("");
     try {
-      for (const record of item._savedRecords || []) {
-        if (!stillOwner()) return;
+      await assertOwner();
+      const candidates = new Map([...(item._savedRecords || []), ...attempts.values()].map(record => [record.id, record]));
+      for (const record of candidates.values()) {
+        await assertOwner();
         if (record.user_id !== snapshot.ownerId) throw new Error("Owner changed");
         if (snapshot.deletedRows.has(record.id)) continue;
-        await base44.entities.SavedItems.delete(record.id);
+        if (attempts.has(record.id)) {
+          const before = await base44.entities.SavedItems.filter({ id: record.id, user_id: snapshot.ownerId }, undefined, 1);
+          await assertOwner();
+          if (!Array.isArray(before) || before.some(row => row?.id !== record.id || row.user_id !== snapshot.ownerId)) throw new Error("Save removal not confirmed");
+          if (before.length) await base44.entities.SavedItems.delete(record.id);
+        } else {
+          attempts.set(record.id, record); // A failed request may still have deleted the row.
+          await base44.entities.SavedItems.delete(record.id);
+        }
+        await assertOwner();
+        const surviving = await base44.entities.SavedItems.filter({ id: record.id, user_id: snapshot.ownerId }, undefined, 1);
+        await assertOwner();
+        if (!Array.isArray(surviving) || surviving.length) throw new Error("Save removal not confirmed");
+        attempts.delete(record.id);
         // Record each acknowledgement, not only the final all-or-nothing UI outcome.
         snapshot.deletedRows.add(record.id);
         snapshot.rows = snapshot.rows.filter(row => row.id !== record.id);
@@ -171,19 +191,20 @@ export default function Saved() {
         const pendingIds = snapshot.pendingRemovalIds.get(removalKey) || new Set();
         pendingIds.add(record.id); snapshot.pendingRemovalIds.set(removalKey, pendingIds);
       }
-      if (!stillOwner()) return;
+      await assertOwner();
       if (item._profileId) {
         const profiles = await base44.entities.UserProfile.filter({ user_id: snapshot.ownerId });
-        if (!stillOwner()) return;
+        await assertOwner();
         const ownerProfile = Array.isArray(profiles) && profiles.find(row => row?.id === item._profileId && row.user_id === snapshot.ownerId);
         if (!isOwnedKeepProfile(ownerProfile, item._profileId, snapshot.ownerId)) throw new Error("Profile unavailable");
         const intendedIds = ownerProfile.saved_item_ids.filter(id => id !== item.item_id);
+        await assertOwner();
         const updated = await base44.entities.UserProfile.update(ownerProfile.id, { saved_item_ids: intendedIds });
-        if (!stillOwner()) return;
+        await assertOwner();
         acknowledgedProfile = confirmedKeepRemoval(updated, ownerProfile.id, snapshot.ownerId, intendedIds);
         if (!acknowledgedProfile) {
           const readBack = await base44.entities.UserProfile.filter({ id: ownerProfile.id, user_id: snapshot.ownerId }, undefined, 1);
-          if (!stillOwner()) return;
+          await assertOwner();
           acknowledgedProfile = Array.isArray(readBack) && readBack.length === 1
             ? confirmedKeepRemoval(readBack[0], ownerProfile.id, snapshot.ownerId, intendedIds) : null;
         }
@@ -192,7 +213,7 @@ export default function Saved() {
         removed.set(item.item_id, ++snapshot.profileMutation); snapshot.removedProfileKeeps.set(ownerProfile.id, removed);
         snapshot.profile = survivingProfile({ ...snapshot.profile, ...acknowledgedProfile }, snapshot);
       }
-      if (!stillOwner()) return;
+      await assertOwner();
       setItems(current => current.filter(entry => entry.id !== item.id));
       window.dispatchEvent(new CustomEvent("fw_sky_lesson_saved", { detail: {
         ownerId: snapshot.ownerId, itemId: item.item_id,

@@ -4,11 +4,11 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import Saved, { mergeSavedCollections, savedReturnRoute } from "./Saved";
 import SavedItemCard, { calmSavedDestination } from "@/components/saved/SavedItemCard";
 
-const mock=vi.hoisted(()=>({me:vi.fn(),saved:vi.fn(),profiles:vi.fn(),lifestyle:vi.fn(),remove:vi.fn(),update:vi.fn()}));
-vi.mock("@/api/base44Client",()=>({base44:{auth:{me:mock.me},entities:{SavedItems:{filter:mock.saved,delete:mock.remove},UserProfile:{filter:mock.profiles,update:mock.update},LifestyleItems:{filter:mock.lifestyle}}}}));
+const mock=vi.hoisted(()=>({me:vi.fn(),saved:vi.fn(),exact:vi.fn(),profiles:vi.fn(),lifestyle:vi.fn(),remove:vi.fn(),update:vi.fn()}));
+vi.mock("@/api/base44Client",()=>({base44:{auth:{me:mock.me},entities:{SavedItems:{filter:(query,...args)=>query?.id?mock.exact(query,...args):mock.saved(query,...args),delete:mock.remove},UserProfile:{filter:mock.profiles,update:mock.update},LifestyleItems:{filter:mock.lifestyle}}}}));
 const row=(id="record",itemId="find")=>({id,user_id:"owner",item_type:"LIFESTYLE",item_id:itemId,title:"An actual keep",meta_json:JSON.stringify({route:`/LifestyleDetail?id=${itemId}`})});
 const profile={id:"profile",user_id:"owner",saved_item_ids:["find"]};
-beforeEach(()=>{vi.resetAllMocks();window.history.replaceState({},"","/Saved?tab=LIFESTYLE");mock.me.mockResolvedValue({id:"owner"});mock.saved.mockResolvedValue([]);mock.profiles.mockResolvedValue([]);mock.lifestyle.mockImplementation(async({id})=>[{id,title:`Find ${id}`,content_type:"ARTICLE"}]);mock.remove.mockResolvedValue();mock.update.mockImplementation(async(id,data)=>({id,user_id:"owner",...data}));});
+beforeEach(()=>{vi.resetAllMocks();window.history.replaceState({},"","/Saved?tab=LIFESTYLE");mock.me.mockResolvedValue({id:"owner"});mock.saved.mockResolvedValue([]);mock.exact.mockResolvedValue([]);mock.profiles.mockResolvedValue([]);mock.lifestyle.mockImplementation(async({id})=>[{id,title:`Find ${id}`,content_type:"ARTICLE"}]);mock.remove.mockResolvedValue();mock.update.mockImplementation(async(id,data)=>({id,user_id:"owner",...data}));});
 
 describe("Saved identity and truthful exact returns",()=>{
   it("reconciles both stores once while retaining every physical record for removal",()=>{
@@ -57,6 +57,54 @@ describe("Saved identity and truthful exact returns",()=>{
 });
 
 describe("Saved collection loading and removal read-back",()=>{
+  it("does not remove the previous account's keep after an account switch without a page reload",async()=>{
+    mock.saved.mockResolvedValue([row()]);render(<Saved/>);
+    await screen.findByRole("heading",{name:"An actual keep"});
+    mock.me.mockResolvedValue({id:"other"});
+    fireEvent.click(screen.getByRole("button",{name:"Remove An actual keep"}));
+    await act(async()=>{});
+    expect(mock.remove).not.toHaveBeenCalled();expect(mock.update).not.toHaveBeenCalled();
+  });
+  it("stops a duplicate-removal batch when the account changes after one deletion",async()=>{
+    mock.saved.mockResolvedValue([row("first"),row("second")]);mock.profiles.mockResolvedValue([profile]);
+    mock.remove.mockImplementation(async id=>{if(id==="first")mock.me.mockResolvedValue({id:"other"});});
+    render(<Saved/>);await screen.findByRole("heading",{name:"Find find"});
+    fireEvent.click(screen.getByRole("button",{name:"Remove Find find"}));
+    await waitFor(()=>expect(mock.remove).toHaveBeenCalledTimes(1));
+    expect(mock.remove).toHaveBeenCalledWith("first");expect(mock.update).not.toHaveBeenCalled();
+  });
+  it("keeps a save visible when delete resolves but its exact row still exists",async()=>{
+    mock.saved.mockResolvedValue([row()]);mock.exact.mockResolvedValue([row()]);render(<Saved/>);
+    await screen.findByRole("heading",{name:"An actual keep"});
+    fireEvent.click(screen.getByRole("button",{name:"Remove An actual keep"}));
+    expect(await screen.findByRole("alert")).toHaveTextContent("couldn’t be removed completely");
+    expect(screen.getByRole("heading",{name:"An actual keep"})).toBeVisible();
+    expect(mock.exact).toHaveBeenCalledWith({id:"record",user_id:"owner"},undefined,1);
+  });
+  it("carries a deleted physical ID through a failed exact read and profile-only retry",async()=>{
+    let rows=[row()];
+    let currentProfile={...profile};
+    const events=[];
+    const onAck=event=>events.push(event.detail);
+    window.addEventListener("fw_sky_lesson_saved",onAck);
+    try {
+      mock.saved.mockImplementation(async()=>rows);
+      mock.profiles.mockImplementation(async()=>[currentProfile]);
+      mock.exact.mockRejectedValueOnce(new Error("read unavailable")).mockResolvedValue([]);
+      mock.remove.mockImplementation(async()=>{rows=[];});
+      mock.update.mockImplementation(async(id,data)=>{currentProfile={...currentProfile,...data};return currentProfile;});
+      render(<Saved/>);
+      fireEvent.click(await screen.findByRole("button",{name:"Remove Find find"}));
+      expect(await screen.findByRole("alert")).toHaveTextContent("couldn’t be removed completely");
+      expect(screen.getByRole("heading",{name:"Find find"})).toBeVisible();
+      expect(events).toHaveLength(0);
+      fireEvent.click(screen.getByRole("button",{name:"Remove Find find"}));
+      await waitFor(()=>expect(events).toHaveLength(1));
+      expect(mock.remove).toHaveBeenCalledTimes(1);
+      expect(mock.update).toHaveBeenCalledWith("profile",{saved_item_ids:[]});
+      expect(events[0].removedSavedRecordIds).toEqual(["record"]);
+    } finally { window.removeEventListener("fw_sky_lesson_saved",onAck); }
+  });
   it("excludes foreign saves and profile keeps from the owner library",async()=>{
     mock.saved.mockResolvedValue([row(),{...row("foreign","other-find"),user_id:"other",title:"Another owner's save"}]);
     mock.profiles.mockResolvedValue([{...profile,user_id:"other",saved_item_ids:["private-profile-find"]}]);render(<Saved/>);
@@ -83,6 +131,7 @@ describe("Saved collection loading and removal read-back",()=>{
   });
   it("retains only the remotely surviving duplicate after a partially failed removal",async()=>{
     let records=[row("first"),row("second")];mock.saved.mockImplementation(async()=>records);
+    mock.exact.mockImplementation(async({id})=>records.filter(record=>record.id===id));
     mock.remove.mockImplementation(async id=>{if(id==="second") throw new Error("offline");records=records.filter(item=>item.id!==id);});
     render(<Saved/>);fireEvent.click(await screen.findByRole("button",{name:"Remove An actual keep"}));
     expect(await screen.findByRole("alert")).toHaveTextContent("couldn’t be removed completely");
@@ -105,6 +154,9 @@ describe("Saved card dates and pending removal",()=>{
   it("keeps exact saved editions while their Ideas route uses clean room materials",()=>{
     expect(calmSavedDestination("/LifestyleDetail?id=story-1")).toBe("/LifestyleDetail?id=story-1&appearance=calm");
     expect(calmSavedDestination("/FictionReader?id=story-1",{returnToMain:true})).toBe("/FictionReader?id=story-1&appearance=calm&from=lifestyle-main");
+    expect(calmSavedDestination("/ReaderMarginDemo?gutenberg_id=105",{returnToMain:true,savedTab:"LIFESTYLE"})).toBe("/BookReader?gutenberg_id=105&appearance=calm&from=lifestyle-main&via=saved&saved_tab=LIFESTYLE");
+    expect(calmSavedDestination("/ReaderMarginDemo?gutenberg_id=105",{returnToMain:true})).toBe("/BookReader?gutenberg_id=105&appearance=calm&from=lifestyle-main");
+    expect(calmSavedDestination("/ReaderMarginDemo?gutenberg_id=105",{returnToMain:true,originSection:"yours"})).toBe("/BookReader?gutenberg_id=105&appearance=calm&from=lifestyle-main&return_section=yours");
     expect(calmSavedDestination("/LivingLifestyleDemo?section=sky&lesson=earthshine&lessonVersion=1#daily-sky-lesson")).toBe("/CalmLifestyleDemo?section=sky&lesson=earthshine&lessonVersion=1&direction=petal-press#daily-sky-lesson");
     expect(calmSavedDestination("/LivingLifestyleDemo?section=sky&lesson=earthshine&lessonVersion=1#daily-sky-lesson",{returnToMain:true})).toBe("/Lifestyle?section=sky&lesson=earthshine&lessonVersion=1&direction=petal-press#daily-sky-lesson");
     expect(calmSavedDestination("https://example.com/source")).toBe("https://example.com/source");
@@ -205,6 +257,8 @@ describe("Saved confirmed collection recovery", () => {
   });
 
   it("never resurrects an acknowledged deleted duplicate when the partial-removal read-back fails", async () => {
+    let secondRemaining = true;
+    mock.exact.mockImplementation(async ({id}) => id === "second" && secondRemaining ? [row("second")] : []);
     mock.saved.mockResolvedValueOnce([row("first"), row("second")]).mockRejectedValue(new Error("read-back unavailable"));
     mock.remove.mockImplementation(async id => { if (id === "second") throw new Error("delete unavailable"); });
     render(<Saved />);
@@ -212,7 +266,7 @@ describe("Saved confirmed collection recovery", () => {
     await screen.findByText("Some saves couldn’t load.");
     expect(screen.getByRole("heading", { name: "An actual keep" })).toBeVisible();
     expect(screen.getByText("That save couldn’t be removed completely. Try again.")).toBeVisible();
-    mock.remove.mockResolvedValue();
+    mock.remove.mockImplementation(async () => { secondRemaining = false; });
     fireEvent.click(screen.getByRole("button", { name: "Remove An actual keep" }));
     await waitFor(() => expect(screen.queryByRole("heading", { name: "An actual keep" })).toBeNull());
     expect(mock.remove.mock.calls.map(([id]) => id)).toEqual(["first", "second", "second"]);
@@ -270,7 +324,7 @@ describe("Saved confirmed collection recovery", () => {
     mock.saved.mockResolvedValue([row("first"), row("second")]); mock.remove.mockReturnValueOnce(deletion.promise);
     const view = render(<Saved />);
     fireEvent.click(await screen.findByRole("button", { name: "Remove An actual keep" }));
-    expect(mock.remove).toHaveBeenCalledExactlyOnceWith("first");
+    await waitFor(() => expect(mock.remove).toHaveBeenCalledExactlyOnceWith("first"));
     view.unmount();
     await act(async () => deletion.resolve());
     expect(mock.remove).toHaveBeenCalledExactlyOnceWith("first");
@@ -279,6 +333,8 @@ describe("Saved confirmed collection recovery", () => {
   it("filters acknowledged deleted rows even out of a stale successful page followed by a failed page", async () => {
     const stale = [row("first"), row("second"), ...Array.from({ length: 148 }, (_, i) => ({ ...row(`other-${i}`, `other-${i}`), item_type: "JOURNAL" }))];
     let readBack = false;
+    let secondRemaining = true;
+    mock.exact.mockImplementation(async ({id}) => id === "second" && secondRemaining ? [row("second")] : []);
     mock.saved.mockImplementation(async (_query, _order, _limit, skip) => {
       if (!readBack) return [row("first"), row("second")];
       if (skip === 0) return stale;
@@ -288,7 +344,7 @@ describe("Saved confirmed collection recovery", () => {
     render(<Saved />);
     fireEvent.click(await screen.findByRole("button", { name: "Remove An actual keep" }));
     await screen.findByText("Some saves couldn’t load.");
-    mock.remove.mockResolvedValue();
+    mock.remove.mockImplementation(async () => { secondRemaining = false; });
     fireEvent.click(screen.getByRole("button", { name: "Remove An actual keep" }));
     await waitFor(() => expect(screen.queryByRole("heading", { name: "An actual keep" })).toBeNull());
     expect(mock.remove.mock.calls.map(([id]) => id)).toEqual(["first", "second", "second"]);
@@ -424,6 +480,7 @@ describe("Saved confirmed removal events", () => {
   it("publishes all physical duplicates acknowledged across a failed attempt and successful retry", async () => {
     let records = [row("first"), row("second")], failSecond = true;
     mock.saved.mockImplementation(async () => records);
+    mock.exact.mockImplementation(async ({id}) => records.filter(record => record.id === id));
     mock.remove.mockImplementation(async id => {
       if (id === "second" && failSecond) { failSecond = false; throw new Error("second deletion unavailable"); }
       records = records.filter(entry => entry.id !== id);

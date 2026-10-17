@@ -2,7 +2,7 @@ import React, { StrictMode } from "react";
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 
 const api = vi.hoisted(() => ({ picks: vi.fn(), checkpoints: vi.fn(), invoke: vi.fn(), me: vi.fn(), progress: vi.fn() }));
@@ -40,8 +40,8 @@ function deferred() {
   const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
   return { promise, resolve, reject };
 }
-function open(id = 105, strict = false, cleanPreview = false) {
-  window.history.replaceState({}, "", `/BookReader?gutenberg_id=${id}`);
+function open(id = 105, strict = false, cleanPreview = false, suffix = "") {
+  window.history.replaceState({}, "", `/BookReader?gutenberg_id=${id}${suffix}`);
   const element = <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><BookReader cleanPreview={cleanPreview} /></MemoryRouter>;
   return render(strict ? <StrictMode>{element}</StrictMode> : element);
 }
@@ -95,6 +95,32 @@ describe("daily marks at British summer-time midnight", () => {
 });
 
 describe("Ideas-only reader margin preview", () => {
+  it.each([
+    ["gutenberg_id=105&appearance=calm&from=lifestyle-main", "/Lifestyle?section=books"],
+    ["gutenberg_id=105&appearance=calm&from=lifestyle-main&return_section=yours", "/Lifestyle?section=yours"],
+    ["gutenberg_id=105&appearance=calm&from=lifestyle-main&via=saved&saved_tab=CONTENT", "/Saved?tab=CONTENT&appearance=calm&from=lifestyle-main"],
+  ])("returns an exact main entry %s when Back is tapped directly", async (search, destination) => {
+    window.history.replaceState({},"",`/BookReader?${search}`);
+    function Destination(){const location=useLocation();return <p>{location.pathname+location.search}</p>;}
+    render(<MemoryRouter initialEntries={[`/BookReader?${search}`]}><Routes>
+      <Route path="/BookReader" element={<BookReader/>}/>
+      <Route path="/Lifestyle" element={<Destination/>}/>
+      <Route path="/Saved" element={<Destination/>}/>
+    </Routes></MemoryRouter>);
+    await screen.findByRole("article",{name:"Controlled book reader"});
+    fireEvent.click(screen.getByRole("button",{name:"Back"}));
+    expect(screen.getByText(destination)).toBeVisible();
+  });
+  it("gives main Lifestyle the clean canonical reader without an Ideas label or open-as-read mark", async () => {
+    open(1342, false, false, "&appearance=calm&from=lifestyle-main");
+    const reader=await screen.findByRole("article",{name:"Controlled book reader"});
+    expect(reader).toHaveAttribute("data-clean-preview","true");
+    expect(screen.queryByText("Ideas · reader preview")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button",{name:"Reach first chapter"}));
+    expect(api.progress).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button",{name:"Finish first chapter"}));
+    expect(api.progress).toHaveBeenCalledExactlyOnceWith("1342",0,undefined);
+  });
   it("does not turn opening or entering a classic chapter into Garden progress", async () => {
     open(1342, false, true);
     await screen.findByRole("article", { name: "Controlled book reader" });

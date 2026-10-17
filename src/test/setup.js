@@ -26,6 +26,25 @@ if (typeof window !== "undefined" && !window.matchMedia) {
 // depends on. We pin them so a paragraph "renders" at a known height. With
 // these, the slicing logic walks paragraphs deterministically.
 if (typeof window !== "undefined") {
+  // Node 25 can shadow jsdom with an incomplete localStorage object. Keep a
+  // per-worker browser-shaped store so storage tests exercise the real API.
+  if (typeof window.localStorage?.clear !== "function") {
+    const values = new Map();
+    const storage = {};
+    Object.defineProperties(storage, {
+      length: { get: () => values.size },
+      key: { value: index => [...values.keys()][index] ?? null },
+      getItem: { value: key => values.get(String(key)) ?? null },
+      setItem: { value: (key, value) => {
+        values.set(String(key), String(value));
+        Object.defineProperty(storage, String(key), { configurable: true, enumerable: true, writable: true, value: String(value) });
+      } },
+      removeItem: { value: key => { values.delete(String(key)); delete storage[String(key)]; } },
+      clear: { value: () => { values.clear(); for (const key of Object.keys(storage)) delete storage[key]; } },
+    });
+    Object.defineProperty(window, "localStorage", { configurable: true, value: storage });
+    Object.defineProperty(globalThis, "localStorage", { configurable: true, value: storage });
+  }
   if (!window.HTMLElement.prototype.scrollTo) {
     window.HTMLElement.prototype.scrollTo = () => {};
   }

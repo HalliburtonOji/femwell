@@ -163,8 +163,17 @@ function smartReflectPrompt(bookId, chapterIndex, heading, title, cleanPreview =
   return `You're in ${where}${title ? ` of ${title}` : ""}. What's staying with you from these pages — a line, a feeling, a face you recognise?`;
 }
 
-export default function BookReader({ cleanPreview = false } = {}) {
+export default function BookReader({ cleanPreview: ideasPreview = false } = {}) {
   const navigate = useNavigate();
+  const route = new URLSearchParams(window.location.search);
+  const cleanPreview = ideasPreview || (route.get("appearance") === "calm" && route.get("from") === "lifestyle-main");
+  const returnToLifestyle = () => {
+    if (route.get("via") === "saved" && route.get("from") === "lifestyle-main") {
+      const tab = ["ADVICE", "LIFESTYLE", "CONTENT", "PROGRAM", "JOURNAL", "EVENT"].includes(route.get("saved_tab")) ? route.get("saved_tab") : "LIFESTYLE";
+      navigate(`/Saved?tab=${tab}&appearance=calm&from=lifestyle-main`);
+    } else if (route.get("from") === "lifestyle-main") navigate(`/Lifestyle?section=${route.get("return_section") === "yours" ? "yours" : "books"}`);
+    else navigate(-1);
+  };
   const [book, setBook] = useState(null);
   const [chapters, setChapters] = useState([]);
   const [chaptersReal, setChaptersReal] = useState(false);   // true only when real chapter headings were found
@@ -370,7 +379,7 @@ export default function BookReader({ cleanPreview = false } = {}) {
 
   if (loading) {
     return (
-      <Frame onBack={() => navigate(-1)} cleanPreview={cleanPreview}>
+      <Frame onBack={returnToLifestyle} cleanPreview={cleanPreview} ideasPreview={ideasPreview}>
         <div className={cleanPreview ? "fw-book-empty" : undefined} style={emptyStyle}>
           <p style={{ marginBottom: 10 }}>{loadingMsg}</p>
         </div>
@@ -379,7 +388,7 @@ export default function BookReader({ cleanPreview = false } = {}) {
   }
   if (error) {
     return (
-      <Frame onBack={() => navigate(-1)} cleanPreview={cleanPreview}>
+      <Frame onBack={returnToLifestyle} cleanPreview={cleanPreview} ideasPreview={ideasPreview}>
         <div className={cleanPreview ? "fw-book-empty" : undefined} style={emptyStyle}>
           <p style={{ fontWeight: 600, marginBottom: 10 }}>{cleanPreview ? "We couldn’t open this book." : "We couldn't open this book just now."}</p>
           <p style={{ marginBottom: 16 }}>{cleanPreview ? "Give it another go." : "Sometimes the library's slow to wake. Give it another moment."}</p>
@@ -396,7 +405,7 @@ export default function BookReader({ cleanPreview = false } = {}) {
   }
   if (!chapters.length) {
     return (
-      <Frame onBack={() => navigate(-1)} cleanPreview={cleanPreview}>
+      <Frame onBack={returnToLifestyle} cleanPreview={cleanPreview} ideasPreview={ideasPreview}>
         <div className={cleanPreview ? "fw-book-empty" : undefined} style={emptyStyle}>
           <p>This book has no readable text.</p>
         </div>
@@ -407,7 +416,8 @@ export default function BookReader({ cleanPreview = false } = {}) {
   return (
     <Frame
       cleanPreview={cleanPreview}
-      onBack={() => navigate(-1)}
+      ideasPreview={ideasPreview}
+      onBack={returnToLifestyle}
       title={book?.title}
       author={book?.author}
       sourceUrl={book?.source_url}
@@ -549,6 +559,7 @@ function MarksBar({ current, expected, physical, total, onJump, cleanPreview = f
   const jumpBtn = {
     fontFamily: UI, fontSize: 12, fontWeight: 700, color: "#fff", background: GOLD,
     border: "none", borderRadius: 999, padding: "5px 12px", cursor: "pointer", flexShrink: 0,
+    ...(cleanPreview ? { minHeight: 44 } : {}),
   };
   return (
     <div className={cleanPreview ? "fw-book-marks" : undefined} style={{
@@ -556,7 +567,7 @@ function MarksBar({ current, expected, physical, total, onJump, cleanPreview = f
       border: "1px solid #D8CFBC", background: "#F4EFE3",
       ...(cleanPreview ? { background: "transparent", border: "none", borderRadius: 0, padding: 0, marginBottom: 20 } : {}),
     }}>
-      <p style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: GOLD, margin: "0 0 4px" }}>Your two marks</p>
+      <p style={{ fontFamily: UI, fontSize: cleanPreview ? 12 : 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: GOLD, margin: "0 0 4px" }}>Your two marks</p>
       <div style={{ ...row, borderBottom: "1px solid rgba(43,30,22,0.12)" }}>
         <CalendarDays size={16} style={{ color: SAGE, flexShrink: 0 }} />
         <span style={label}>
@@ -582,7 +593,7 @@ function MarksBar({ current, expected, physical, total, onJump, cleanPreview = f
   );
 }
 
-function Frame({ children, onBack, title, author, sourceUrl, cornerHref, cornerLabel, clubStatus, onClubRetry, cleanPreview = false }) {
+function Frame({ children, onBack, title, author, sourceUrl, cornerHref, cornerLabel, clubStatus, onClubRetry, cleanPreview = false, ideasPreview = false }) {
   return (
     <div className={cleanPreview ? "fw-book-preview" : undefined} style={{ minHeight: "100vh", backgroundColor: cleanPreview ? "#F5F4F1" : "#ECE7DA" }}>
       <div className={cleanPreview ? "fw-book-folio" : "max-w-2xl mx-auto px-4 pt-8 pb-8"}>
@@ -595,7 +606,7 @@ function Frame({ children, onBack, title, author, sourceUrl, cornerHref, cornerL
         >
           <ArrowLeft className="w-4 h-4" style={{ color: "#7A1A12" }} />
         </button>
-        {cleanPreview && <div className="fw-book-preview-label">Ideas · reader preview</div>}
+        {ideasPreview && <div className="fw-book-preview-label">Ideas · reader preview</div>}
         <h1 className={cleanPreview ? "fw-book-eyebrow" : "fw-display"} style={{ margin: "0 0 10px 0" }}>Library</h1>
         {title && (
           <h2 className={cleanPreview ? "fw-book-title" : "fw-heading"} style={{ color: "#7A1A12", margin: "0 0 8px 0" }}>

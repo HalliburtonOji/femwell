@@ -34,7 +34,7 @@ function shortPreview(value) {
 export default function SavedItemCard({ item, onRemove, disabled = false, calm = false, returnToMain = false }) {
   const meta = parseSavedMeta(item);
   const href = meta.route || meta.url || meta.content_url || FALLBACK_ROUTES[item.item_type] || "#";
-  const openHref = calm ? calmSavedDestination(href, { returnToMain }) : href;
+  const openHref = calm ? calmSavedDestination(href, { returnToMain, savedTab: item.item_type }) : href;
   const preview = calm ? shortPreview(item.preview_text) : item.preview_text;
   const actionLabel = item.item_type === "ADVICE" ? "Open Assistant" : item.item_type === "EVENT" ? "Open event" : "Open";
   const savedDate = item.created_at || item.created_date;
@@ -44,7 +44,7 @@ export default function SavedItemCard({ item, onRemove, disabled = false, calm =
     <div className="rounded-[24px] p-4" style={{ border: calm ? "1px solid #e6e3dc" : "1px solid var(--border)", backgroundColor: calm ? "#fff" : "var(--surface)", boxShadow: calm ? "0 8px 28px rgba(58,46,57,.05)" : "var(--shadow-sm)" }}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]"
+          <div className={`inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold uppercase tracking-[0.18em] ${calm ? "text-xs" : "text-[11px]"}`}
             style={{ backgroundColor: calm ? "#e9edf0" : "var(--rose-dust-subtle)", color: calm ? "#4e6973" : "var(--rose-dust)" }}>
             <BookmarkCheck className="h-3.5 w-3.5" /> {item.item_type.toLowerCase()}
           </div>
