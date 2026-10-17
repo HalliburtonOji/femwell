@@ -18,7 +18,7 @@ export function calmSavedDestination(href, options) {
   try {
     const url = new URL(calmLifestyleDestination(href, options), window.location.origin);
     if (url.origin !== window.location.origin) return href;
-    if (url.pathname === "/FictionReader" && options?.returnToMain && options?.savedTab) {
+    if (["/FictionReader", "/LifestyleDetail"].includes(url.pathname) && options?.returnToMain && options?.savedTab) {
       url.searchParams.set("via", "saved");
       url.searchParams.set("saved_tab", options.savedTab);
     }

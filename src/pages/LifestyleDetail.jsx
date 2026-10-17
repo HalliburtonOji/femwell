@@ -154,7 +154,8 @@ export default function LifestyleDetail() {
   const calmReader = true;
   const fromLifestyleMain = urlParams.get("from") === "lifestyle-main";
   const originSection = urlParams.get("return_section") === "yours" ? "yours" : "read";
-  const backTo = fromLifestyleMain ? `/Lifestyle?section=${originSection}` : "/Lifestyle?section=read";
+  const savedTab = fromLifestyleMain && urlParams.get("via") === "saved" && ["ADVICE", "LIFESTYLE", "CONTENT", "PROGRAM", "JOURNAL", "EVENT"].includes(urlParams.get("saved_tab")) ? urlParams.get("saved_tab") : null;
+  const backTo = savedTab ? `/Saved?tab=${savedTab}&appearance=calm&from=lifestyle-main` : fromLifestyleMain ? `/Lifestyle?section=${originSection}` : "/Lifestyle?section=read";
   const goBack = () => fromLifestyleMain ? navigate(backTo) : window.history.length > 1 ? window.history.back() : window.location.assign(backTo);
 
   const [item, setItem] = useState(null);
@@ -1077,7 +1078,7 @@ export default function LifestyleDetail() {
                 return (
                   <Link
                     key={r.id}
-                    to={`/LifestyleDetail?id=${encodeURIComponent(r.id)}${calmReader ? "&appearance=calm" : ""}${fromLifestyleMain ? "&from=lifestyle-main" : ""}${fromLifestyleMain && originSection === "yours" ? "&return_section=yours" : ""}`}
+                    to={`/LifestyleDetail?id=${encodeURIComponent(r.id)}${calmReader ? "&appearance=calm" : ""}${fromLifestyleMain ? "&from=lifestyle-main" : ""}${savedTab ? `&via=saved&saved_tab=${savedTab}` : fromLifestyleMain && originSection === "yours" ? "&return_section=yours" : ""}`}
                     className="fw-related-card"
                   >
                     <div style={{

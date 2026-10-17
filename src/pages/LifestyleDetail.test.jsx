@@ -141,6 +141,25 @@ describe('complete article and last-place recovery',()=>{
     fireEvent.click(screen.getByRole('button',{name:'Back'}));
     expect(screen.getByTestId('path')).toHaveTextContent('/Lifestyle?section=yours');
   });
+  it('returns a Saved article and related read to the exact Saved tab',async()=>{
+    api.items.mockImplementation(async q=>q.id ? [{...article,id:q.id,title:q.id==='next'?'Next read':article.title}] : [{...article,id:'next',title:'Next read'},{...article,id:'other',title:'Another read'}]);
+    function Path(){const location=useLocation();return <output data-testid="path">{location.pathname+location.search}</output>;}
+    render(<MemoryRouter initialEntries={['/LifestyleDetail?id=article&appearance=calm&from=lifestyle-main&via=saved&saved_tab=LIFESTYLE']}><Path/><LifestyleDetail/></MemoryRouter>);
+    await screen.findByRole('heading',{name:article.title});
+    const related=await screen.findByRole('link',{name:/Next read/i});
+    expect(related.getAttribute('href')).toBe('/LifestyleDetail?id=next&appearance=calm&from=lifestyle-main&via=saved&saved_tab=LIFESTYLE');
+    fireEvent.click(related);
+    await screen.findByRole('heading',{name:'Next read'});
+    fireEvent.click(screen.getByRole('button',{name:'Back'}));
+    expect(screen.getByTestId('path')).toHaveTextContent('/Saved?tab=LIFESTYLE&appearance=calm&from=lifestyle-main');
+  });
+  it('ignores an unrecognised Saved tab on a main Read article',async()=>{
+    function Path(){const location=useLocation();return <output data-testid="path">{location.pathname+location.search}</output>;}
+    render(<MemoryRouter initialEntries={['/LifestyleDetail?id=article&appearance=calm&from=lifestyle-main&via=saved&saved_tab=UNKNOWN']}><Path/><LifestyleDetail/></MemoryRouter>);
+    await screen.findByRole('heading',{name:article.title});
+    fireEvent.click(screen.getByRole('button',{name:'Back'}));
+    expect(screen.getByTestId('path')).toHaveTextContent('/Lifestyle?section=read');
+  });
   it('returns an explicit main Read source to Read even with unrelated browser history',async()=>{
     function Path(){const location=useLocation();return <output data-testid="path">{location.pathname+location.search}</output>;}
     render(<MemoryRouter initialEntries={['/Unrelated','/LifestyleDetail?id=article&appearance=calm&from=lifestyle-main']} initialIndex={1}><Path/><LifestyleDetail/></MemoryRouter>);
