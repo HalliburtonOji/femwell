@@ -14,6 +14,8 @@ vi.mock("@/hooks/usePodcastPlayer", () => ({ usePodcastPlayer: () => null }));
 
 import Mirror from "./Mirror";
 import Move from "./Move";
+import Kindred from "./Kindred";
+import Curious from "./Curious";
 
 const mirrorRead = { id: "mirror-read", status: "PUBLISHED", category: "Fashion", media_type: "ARTICLE", title: "Colour in your wardrobe", summary: "An honest style idea.", lede: "A real first paragraph.\n\nA useful second paragraph.", content_url: "https://publisher.example/style", source_name: "Style Journal" };
 const moveRead = { id: "move-read", status: "PUBLISHED", category: "Fitness", media_type: "ARTICLE", title: "Dance for the pleasure of it", summary: "Movement without a target.", lede: "Start with a song.\n\nStop whenever you like.", content_url: "https://publisher.example/move", source_name: "Movement Journal" };
@@ -102,4 +104,55 @@ it("does not remove a Mirror keep after the signed-in account changes", async ()
   expect(await screen.findByRole("alert")).toHaveTextContent("That save didn't stick. Try again.");
   expect(api.updateProfile).not.toHaveBeenCalled();
   expect(api.remove).not.toHaveBeenCalled();
+});
+
+it("keeps Kindred's solitude equal and opens a complete friendship source", async () => {
+  const friendship = { id: "friend-1", status: "PUBLISHED", category: "Relationships", media_type: "ARTICLE", title: "An old friendship", summary: "Some friends stay.", lede: "The first real thought.\n\nThe second real thought.", content_url: "https://publisher.example/friends", source_name: "Kindred Review" };
+  api.items.mockResolvedValue([friendship]);
+  render(<Kindred />);
+  await waitFor(() => expect(document.querySelector(".fw-kin-shelf .fw-folio-card__open")).not.toBeNull());
+  fireEvent.click(screen.getByRole("button", { name: /Just solitude/ }));
+  expect(screen.getByText(/Solitude you choose is rest/)).toBeVisible();
+  expect(screen.queryByText(/A small hello/)).toBeNull();
+  expect(screen.getByRole("link", { name: /See what's on in Events/ })).toBeVisible();
+  expect(screen.queryByText(/Lonely tonight|meeting people beats/)).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: /A friend/ }));
+  fireEvent.click(document.querySelector(".fw-kin-shelf .fw-folio-card__open"));
+  expect(await screen.findByText("The second real thought.")).toBeVisible();
+  expect(screen.getByRole("link", { name: "Read at Kindred Review" })).toHaveAttribute("href", friendship.content_url);
+});
+
+it("keeps Kindred's library failure and Retry available during chosen solitude", async () => {
+  api.items.mockRejectedValueOnce(new Error("read unavailable"));
+  render(<Kindred />);
+  fireEvent.click(screen.getByRole("button", { name: /Just solitude/ }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("The reads didn't arrive.");
+  fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+  await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
+  expect(screen.getByText(/Solitude you choose is rest/)).toBeVisible();
+});
+
+it("opens the Curious podcast from its separate source with audio and publisher exit", async () => {
+  const read = { id: "science-1", status: "PUBLISHED", category: "Culture", media_type: "ARTICLE", title: "The science of a bluebell", summary: "A real question.", lede: "A full answer." };
+  const podcast = { id: "pod-1", status: "PUBLISHED", category: "Culture", media_type: "PODCAST", title: "The history of bluebells", summary: "An episode.", lede: "The story begins.", audio_url: "https://media.example/bluebells.mp3", episode_url: "https://publisher.example/bluebells", source_name: "Wonder Radio" };
+  api.items.mockImplementation(async query => query.media_type === "PODCAST" ? [podcast] : [read]);
+  render(<Curious />);
+  await waitFor(() => expect(document.querySelector(".fw-cur-shelf .fw-folio-card__open")).not.toBeNull());
+  expect(document.querySelector(".fw-cur-rabbit.fw-good-shelf .fw-folio-card__open")).not.toBeNull();
+  fireEvent.click(screen.getByText(/More trails · science/));
+  await waitFor(() => expect(document.querySelector(".fw-cur-shelf .fw-folio-card[data-media='audio']")).not.toBeNull());
+  expect(document.querySelector(".fw-cur-shelf audio")?.getAttribute("src")).toBe(podcast.audio_url);
+  fireEvent.click(document.querySelector(".fw-cur-shelf .fw-folio-card[data-media='audio'] .fw-folio-card__open"));
+  expect(await screen.findByText("The story begins.")).toBeVisible();
+  expect(screen.getByRole("link", { name: "Listen at Wonder Radio" })).toHaveAttribute("href", podcast.episode_url);
+});
+
+it("distinguishes a failed Curious podcast query from an empty podcast shelf and retries", async () => {
+  const read = { id: "science-2", status: "PUBLISHED", category: "Culture", media_type: "ARTICLE", title: "The science of rain", summary: "A question." };
+  api.items.mockImplementationOnce(async () => [read]).mockRejectedValueOnce(new Error("podcast read failed")).mockResolvedValue([read]);
+  render(<Curious />);
+  fireEvent.click(screen.getByText(/More trails · science/));
+  expect(await screen.findByRole("alert")).toHaveTextContent("The listens didn't arrive.");
+  fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+  await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
 });

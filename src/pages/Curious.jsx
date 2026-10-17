@@ -15,17 +15,18 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Telescope, Landmark, Brain, Palette, Shuffle, Sparkles, Headphones, MessageCircle, Feather, CalendarHeart, Users } from "lucide-react";
-import { T, SERIF, UI, PAPER_BG } from "@/components/journal/Editorial";
+import { T, SERIF, UI } from "@/components/journal/Editorial";
 import { OXBLOOD } from "@/components/brand/SliderKit";
-import { FwFloraHero } from "@/components/brand/PageTop";
-import { SummaryCard } from "@/components/brand/Card";
 import { CoverCard, ExpandDetailCard, decodeEntities } from "@/components/brand/expandCards";
+import { GoodLifeSection as Section, GoodLifeShelf as Shelf } from "./GoodLifeRoomParts";
 import { cwOf } from "@/components/brand/flora";
 import { pickProfile } from "@/utils/userProfile";
 import { createPageUrl } from "@/utils";
 import { fmtDuration } from "@/utils/duration";
 import { isClickbait } from "@/utils/clickbait";
 import { cleanTitle } from "@/utils/cleanTitle";
+import { useGoodLifeKeep } from "@/components/lifestyle-elite/useGoodLifeKeep";
+import "./GoodLifeRoomsClean.css";
 
 const dayOffset = () => Math.floor(Date.now() / 86400000);
 const rotateDaily = (pool, n = 6) => {
@@ -63,20 +64,28 @@ export default function Curious() {
   const [firstName, setFirstName] = useState("");
   const [lens, setLens] = useState(LENS[0]);
   const [expanded, setExpanded] = useState(null);
+  const [itemsStatus, setItemsStatus] = useState("loading");
+  const [podcastsStatus, setPodcastsStatus] = useState("loading");
+  const [retryKey, setRetryKey] = useState(0);
+  const [ownerId, setOwnerId] = useState(null);
+  const { saved, saveError, onSave } = useGoodLifeKeep(ownerId, expanded);
   const sky = cwOf("sky").petal;
 
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
-        const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500).catch(() => []);
-        if (alive) setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r)));
-        const pods = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED", media_type: "PODCAST" }, "-created_date", 60).catch(() => []);
-        if (alive) setPodcasts(Array.isArray(pods) ? pods : []);
-      } catch { /* graceful */ }
+        const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500);
+        if (alive) { setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r))); setItemsStatus("ready"); }
+      } catch { if (alive) setItemsStatus("error"); }
+      try {
+        const pods = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED", media_type: "PODCAST" }, "-created_date", 60);
+        if (alive) { setPodcasts(Array.isArray(pods) ? pods : []); setPodcastsStatus("ready"); }
+      } catch { if (alive) setPodcastsStatus("error"); }
       try {
         const u = await base44.auth.me().catch(() => null);
         if (u?.id) {
+          if (alive) setOwnerId(u.id);
           const profs = await base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []);
           const p = pickProfile(profs);
           const nm = String(p?.display_name || u.full_name || "").trim().split(/\s+/)[0] || "";
@@ -85,7 +94,7 @@ export default function Curious() {
       } catch { /* anon */ }
     })();
     return () => { alive = false; };
-  }, []);
+  }, [retryKey]);
 
   const pool = useMemo(() => items.filter((r) => !isFiction(r) && !hasAny(r, HEALTH) && !hasAny(r, DENY) && (r.category === "Culture" || hasAny(r, IDEAS))), [items]);
 
@@ -97,6 +106,8 @@ export default function Curious() {
     const isAudio = (mt === "PODCAST" || mt === "CLIP") && r.audio_url;
     return {
       id: r.id,
+      type: mt === "VIDEO" ? "video" : isAudio ? "audio" : "article",
+      _raw: { ...r, source_url: r.source_url || r.episode_url }, sourceName: r.source_name || r.channel_name || "FemWell", actions: [],
       title: decodeEntities(r.title || ""),
       subtitle: r.source_name || r.channel_name || r.subtitle || "",
       summary: (r.summary || r.excerpt || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
@@ -129,90 +140,68 @@ export default function Curious() {
   const summaryRows = useMemo(() => [
     { Icon: Sparkles, label: "Today", text: firstName ? `${firstName}, follow your curiosity — no test, no deadline, no reason it has to be useful. Just the pleasure of finding out.` : "Follow your curiosity — no test, no deadline, no reason it has to be useful. Just the pleasure of finding out." },
     { Icon: Shuffle, label: "The whole point", text: "A rabbit hole is a perfectly good way to spend an evening. \"Useless\" knowledge is one of life's real joys — you're allowed to learn things just because they're wonderful." },
-    { Icon: Brain, label: "Why it feels good", text: "That little \"ooh\" when something clicks is a genuine reward signal in the brain — curiosity lights up the same circuit as a treat. Follow the ooh." },
+    { Icon: Brain, label: "Why it sticks", text: "When something makes you curious, you're more likely to remember the answer. No homework required." },
   ], [firstName]);
 
-  const Section = ({ Icon, title, sub, accent, children }) => (
-    <section style={{ marginTop: 26 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 2px 4px" }}>
-        <span style={{ width: 30, height: 30, borderRadius: 9, background: `${accent}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><Icon size={16} color={accent} /></span>
-        <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, fontWeight: 600, color: OXBLOOD }}>{title}</div>
-      </div>
-      {sub && <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 2px 12px" }}>{sub}</p>}
-      {children}
-    </section>
-  );
-  const Shelf = ({ cards, empty }) => (
-    cards.length ? (
-      // bleed the shelf to the screen edges so a ~89vw card still leaves a visible peek sliver
-      // (the container's 16px side padding would otherwise swallow it); first card stays aligned
-      // with the headings at 16px, and it trims wasted outer margin too.
-      <div className="fw-cur-shelf" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 0 8px 16px", margin: "0 -16px", scrollbarWidth: "none", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)" }}>
-        <style>{`.fw-cur-shelf::-webkit-scrollbar{display:none}`}</style>
-        {/* PASS: ~85% of the viewport (was a fixed 250px that read small — 64% @390, 58% @430),
-            capped so it stays a card on tablets, keeping a real edge-peek for the slide affordance. */}
-        {cards.map((it) => <div key={it.id} style={{ flex: "0 0 89vw", maxWidth: 400, height: 368 }}><CoverCard item={it} compact onOpen={() => setExpanded(it)} /></div>)}
-      </div>
-    ) : <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "0 2px" }}>{empty}</p>
-  );
-
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
+    <div className="fw-good-clean fw-curious-clean" style={{ minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "12px 16px 0" }}>
-        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/Lifestyle")} aria-label="Back" className="fw-elite-press"
-          style={{ width: 40, height: 40, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paperHi, color: OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer" }}><ArrowLeft size={19} /></button>
+        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/Lifestyle?section=good")} aria-label="Back to Good life" className="fw-elite-press"
+          style={{ width: 44, height: 44, borderRadius: 999, border: "1px solid #EAE7E0", background: "#fff", color: OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer" }}><ArrowLeft size={19} /></button>
 
-        <FwFloraHero title="Curious" line="Learning for the sheer aliveness of it — no test, no deadline, no reason it has to be useful."
-          colorway="sky" bloom="cornflower" flankL="bluebell" flankR="forget-me-not" titleColor={OXBLOOD} creature="dragonfly" />
-
-        <div style={{ marginTop: 6 }}><SummaryCard eyebrow="Wonder today" accent={sky} rows={summaryRows} /></div>
+        <header className="fw-good-hero fw-curious-hero"><span className="fw-good-path">GOOD LIFE / CURIOUS</span><span className="fw-curious-orbit" aria-hidden="true"/><span className="fw-curious-bluebell" aria-hidden="true"/><h1>Curious</h1><p>One good question can take you anywhere. Which way today?</p></header>
+        <details className="fw-good-context"><summary>A note for today <span aria-hidden="true">+</span></summary><div className="fw-good-context-body">{summaryRows.map(({Icon,label,text}) => <div key={label} className="fw-good-context-row"><Icon size={16} aria-hidden="true"/><div><strong>{label}</strong><p>{text}</p></div></div>)}</div></details>
 
         {/* A · FOLLOW YOUR CURIOSITY — picker (incl. "surprise me" = the anti-algorithm) + the daily rabbit hole */}
         <Section Icon={Sparkles} title="Follow your curiosity" accent={cwOf(lens.cw).petal}
-          sub="What are you drawn to right now? No wrong answer — and 'surprise me' is a real one.">
+          sub="Pick a trail. Surprise me is a real one.">
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
             {LENS.map((l) => { const on = l.key === lens.key; const c = cwOf(l.cw).petal; return (
-              <button key={l.key} onClick={() => setLens(l)} className="fw-elite-press"
-                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 13px", borderRadius: 999, cursor: "pointer", background: on ? c : `${c}14`, border: `1px solid ${on ? c : c + "55"}`, color: on ? "#fff" : c, fontFamily: UI, fontSize: 13, fontWeight: 700 }}>
+              <button key={l.key} onClick={() => setLens(l)} className="fw-elite-press" aria-pressed={on}
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, minHeight: 44, padding: "8px 13px", borderRadius: 999, cursor: "pointer", background: on ? "#51444e" : `${c}14`, border: `1px solid ${on ? "#51444e" : c + "55"}`, color: on ? "#fff" : "#51444e", fontFamily: UI, fontSize: 13, fontWeight: 700 }}>
                 <l.Icon size={14} /> {l.label}
               </button>
             ); })}
           </div>
           <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, color: T.muted, lineHeight: 1.5, margin: "0 2px 12px" }}>{lens.line}</p>
-          <Shelf cards={lensPicks} empty="Curiosities land here as the library fills out." />
+          <Shelf room="cur" onOpen={setExpanded} cards={lensPicks} empty={itemsStatus === "error" ? "" : itemsStatus === "loading" ? "Finding a read…" : "No read on this trail just now. Try another."} />
+          {itemsStatus === "error" && <div className="fw-good-load-error" role="alert">The reads didn't arrive. <button type="button" onClick={() => { setItemsStatus("loading"); setPodcastsStatus("loading"); setRetryKey(value => value + 1); }}>Try again</button></div>}
         </Section>
 
         {/* the daily rabbit hole — one genuinely interesting thing, no task attached */}
         {rabbitHole && (
           <Section Icon={Shuffle} title="Down a rabbit hole" accent={cwOf("gold").petal}
             sub="Today's one fascinating thing. No reason. That's the reason.">
-            <div style={{ maxWidth: "min(90vw, 404px)" }}><CoverCard item={rabbitHole} onOpen={() => setExpanded(rabbitHole)} /></div>
+            <div className="fw-good-shelf fw-cur-rabbit" style={{ maxWidth: "min(90vw, 404px)" }}><CoverCard item={rabbitHole} presentation="folio" onOpen={() => setExpanded(rabbitHole)} /></div>
           </Section>
         )}
 
+        <details className="fw-good-library"><summary>More trails · science, mind, culture &amp; listen <span aria-hidden="true">+</span></summary>
         {/* B · SCIENCE & NATURE — awe */}
         <Section Icon={Telescope} title="Science & the natural world" accent={sky}
           sub="The universe is under no obligation to make sense to us — and yet, sometimes, wonderfully, it does.">
-          <Shelf cards={scienceCards} empty="Science lands here as the library fills out." />
+          <Shelf room="cur" onOpen={setExpanded} cards={scienceCards} empty={itemsStatus === "error" ? "" : "No science read just now."} />
         </Section>
 
         {/* C · THE MIND — "that explains me" */}
         <Section Icon={Brain} title="The mind" accent={cwOf("plum").petal}
           sub="Why we feel, decide and misremember the way we do. The most fascinating subject is often yourself.">
-          <Shelf cards={mindCards} empty="The mind lands here as the library fills out." />
+          <Shelf room="cur" onOpen={setExpanded} cards={mindCards} empty={itemsStatus === "error" ? "" : "No mind read just now."} />
         </Section>
 
         {/* D · ARTS & CULTURE — the big browsable pool; no degree required */}
         <Section Icon={Palette} title="Arts & culture" accent={cwOf("crimson").petal}
           sub="Books, music, film, the made world — and why any of it moves us. Elitism not invited; taste is enough.">
-          <Shelf cards={artsCards} empty="Culture lands here as the library fills out." />
+          <Shelf room="cur" onOpen={setExpanded} cards={artsCards} empty={itemsStatus === "error" ? "" : "No culture read just now."} />
         </Section>
 
         {/* E · LISTEN WHILE YOUR HANDS ARE BUSY — the 67 podcasts, playing on the card face */}
         <Section Icon={Headphones} title="Learn while your hands are busy" accent={cwOf("sage").petal}
           sub="Wonder for the washing-up, the walk, the commute — press play right on the card.">
-          <Shelf cards={listenCards} empty="Listens land here as podcasts are added." />
+          <Shelf room="cur" onOpen={setExpanded} cards={listenCards} empty={podcastsStatus === "error" ? "" : podcastsStatus === "loading" ? "Finding a listen…" : "No listen here just now."} />
+          {podcastsStatus === "error" && <div className="fw-good-load-error" role="alert">The listens didn't arrive. <button type="button" onClick={() => { setItemsStatus("loading"); setPodcastsStatus("loading"); setRetryKey(value => value + 1); }}>Try again</button></div>}
         </Section>
+        </details>
 
         {/* F · CARRY IT ON */}
         <Section Icon={MessageCircle} title="Carry it on" accent={cwOf("gold").petal} sub="Curiosity doesn't end here.">
@@ -225,7 +214,7 @@ export default function Curious() {
             ].map((r) => {
               const c = cwOf(r.cw).petal;
               return (
-                <a key={r.label} href={r.href} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", textAlign: "left", background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${c}`, borderRadius: 13, padding: "11px 13px", cursor: "pointer", textDecoration: "none" }}>
+                <a key={r.label} href={r.href} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", textAlign: "left", background: "#fff", border: "1px solid #EAE7E0", borderLeft: `3px solid ${c}`, borderRadius: 16, padding: "11px 13px", cursor: "pointer", textDecoration: "none" }}>
                   <span style={{ width: 34, height: 34, borderRadius: 10, background: `${c}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><r.Icon size={16} color={c} /></span>
                   <span style={{ flex: 1, minWidth: 0 }}>
                     <span style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink, display: "block", lineHeight: 1.2 }}>{r.label}</span>
@@ -244,7 +233,7 @@ export default function Curious() {
         </div>
       </div>
 
-      {expanded && <ExpandDetailCard item={expanded} onClose={() => setExpanded(null)} />}
+      {expanded && <ExpandDetailCard item={expanded} onClose={() => setExpanded(null)} presentation="focused" room="good" saved={saved} onSave={onSave} error={saveError} />}
     </div>
   );
 }

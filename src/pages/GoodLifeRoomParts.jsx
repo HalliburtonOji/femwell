@@ -17,7 +17,7 @@ export function GoodLifeSection({ Icon, title, sub, accent, children }) {
 
 export function GoodLifeShelf({ cards, empty, onOpen, room }) {
   if (!cards.length) return empty ? <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "0 2px" }}>{empty}</p> : null;
-  return <div className={`fw-${room}-shelf`} style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 0 8px 16px", margin: "0 -16px", scrollbarWidth: "none", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)" }}>
+  return <div className={`fw-good-shelf fw-${room}-shelf`} style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 0 8px 16px", margin: "0 -16px", scrollbarWidth: "none", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)" }}>
     {cards.map(it => <div key={it.id} style={{ flex: "0 0 89vw", maxWidth: 400 }}><CoverCard item={it} compact presentation="folio" onOpen={() => onOpen(it)} /></div>)}
   </div>;
 }

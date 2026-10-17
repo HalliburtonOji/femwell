@@ -15,11 +15,10 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Users, Home, Heart, HandHeart, Leaf, MessageCircle, Feather, Moon, CalendarHeart, Sparkles } from "lucide-react";
-import { T, SERIF, UI, PAPER_BG } from "@/components/journal/Editorial";
+import { T, SERIF, UI } from "@/components/journal/Editorial";
 import { OXBLOOD } from "@/components/brand/SliderKit";
-import { FwFloraHero } from "@/components/brand/PageTop";
-import { SummaryCard } from "@/components/brand/Card";
-import { CoverCard, ExpandDetailCard, decodeEntities } from "@/components/brand/expandCards";
+import { ExpandDetailCard, decodeEntities } from "@/components/brand/expandCards";
+import { GoodLifeSection as Section, GoodLifeShelf as Shelf } from "./GoodLifeRoomParts";
 import { cwOf } from "@/components/brand/flora";
 import { pickProfile } from "@/utils/userProfile";
 import { computeCycleDay } from "@/hooks/useCycleDay";
@@ -27,6 +26,8 @@ import { createPageUrl } from "@/utils";
 import { fmtDuration } from "@/utils/duration";
 import { isClickbait } from "@/utils/clickbait";
 import { cleanTitle } from "@/utils/cleanTitle";
+import { useGoodLifeKeep } from "@/components/lifestyle-elite/useGoodLifeKeep";
+import "./GoodLifeRoomsClean.css";
 
 const dayOffset = () => Math.floor(Date.now() / 86400000);
 const rotateDaily = (pool, n = 6) => {
@@ -58,7 +59,7 @@ const HEART = [
 ];
 
 // honest, cited notes — permission, never pressure
-const REACH_OUT = "One small, evidence-backed thing: people are happier to hear from you than you'd ever guess — someone measured it. No pressure. But maybe text them.";
+const REACH_OUT = "A small hello can mean more than you think. If there's someone you want to text, you can.";
 
 export default function Kindred() {
   const [items, setItems] = useState([]);
@@ -66,18 +67,23 @@ export default function Kindred() {
   const [firstName, setFirstName] = useState("");
   const [heart, setHeart] = useState(HEART[0]);
   const [expanded, setExpanded] = useState(null);
+  const [itemsStatus, setItemsStatus] = useState("loading");
+  const [retryKey, setRetryKey] = useState(0);
+  const [ownerId, setOwnerId] = useState(null);
+  const { saved, saveError, onSave } = useGoodLifeKeep(ownerId, expanded);
   const crimson = cwOf("crimson").petal;
 
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
-        const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500).catch(() => []);
-        if (alive) setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r)));
-      } catch { /* graceful */ }
+        const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500);
+        if (alive) { setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r))); setItemsStatus("ready"); }
+      } catch { if (alive) setItemsStatus("error"); }
       try {
         const u = await base44.auth.me().catch(() => null);
         if (u?.id) {
+          if (alive) setOwnerId(u.id);
           const profs = await base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []);
           const p = pickProfile(profs);
           if (alive && p) {
@@ -90,7 +96,7 @@ export default function Kindred() {
       } catch { /* anon */ }
     })();
     return () => { alive = false; };
-  }, []);
+  }, [retryKey]);
 
   const pools = useMemo(() => {
     const conn = items.filter((r) => !isFiction(r) && !hasAny(r, DENY) && (["Relationships", "Sex Education"].includes(r.category) || hasAny(r, CONN)));
@@ -101,14 +107,21 @@ export default function Kindred() {
     return { conn, friendship, family, love, belonging };
   }, [items]);
 
-  const toCard = useCallback((r, cw) => ({
+  const toCard = useCallback((r, cw) => {
+    const mt = String(r.media_type || "").toUpperCase();
+    const isVid = mt === "VIDEO" && r.video_id && r.is_embeddable !== false;
+    const isAudio = (mt === "PODCAST" || mt === "CLIP") && !!r.audio_url;
+    return {
     id: r.id,
+    type: mt === "VIDEO" ? "video" : isAudio ? "audio" : "article", _raw: { ...r, source_url: r.source_url || r.episode_url }, sourceName: r.source_name || r.channel_name || "FemWell", actions: [],
     title: decodeEntities(r.title || ""),
     subtitle: r.source_name || r.channel_name || r.subtitle || "",
     summary: (r.summary || r.excerpt || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
-    category: r.category || "Relationships", cw, Icon: "Heart", kind: "Read · Kindred",
+    category: r.category || "Relationships", cw, Icon: isVid ? "Film" : isAudio ? "Headphones" : "Heart", kind: isVid ? "Watch · Kindred" : isAudio ? "Listen · Kindred" : "Read · Kindred",
     meta: [["Clock", fmtDuration(r) || "a few minutes"]],
-  }), []);
+    ...(isVid ? { youtubeId: r.video_id } : {}),
+    ...(isAudio ? { audioSrc: r.audio_url, playerLabel: decodeEntities(r.title || "") } : {}),
+  }; }, []);
 
   const heartPicks = useMemo(() => {
     if (heart.key === "solitude") return [];
@@ -128,98 +141,79 @@ export default function Kindred() {
     phase === "luteal" ? { Icon: Moon, label: "This week", text: "Luteal week can make everything with people feel sharper — the closeness and the friction both. Be gentle with what you read into things." } : { Icon: Sparkles, label: "A gentle reminder", text: "Connection quality beats quantity — the long study is clear. You never have to count your friends." },
   ], [firstName, phase]);
 
-  const Section = ({ Icon, title, sub, accent, children }) => (
-    <section style={{ marginTop: 26 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 2px 4px" }}>
-        <span style={{ width: 30, height: 30, borderRadius: 9, background: `${accent}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><Icon size={16} color={accent} /></span>
-        <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, fontWeight: 600, color: OXBLOOD }}>{title}</div>
-      </div>
-      {sub && <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 2px 12px" }}>{sub}</p>}
-      {children}
-    </section>
-  );
-
-  const Shelf = ({ cards, empty }) => (
-    cards.length ? (
-      <div className="fw-kin-shelf" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 0 8px 16px", margin: "0 -16px", scrollbarWidth: "none", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)" }}>
-        <style>{`.fw-kin-shelf::-webkit-scrollbar{display:none}`}</style>
-        {cards.map((it) => <div key={it.id} style={{ flex: "0 0 89vw", maxWidth: 400, height: 366 }}><CoverCard item={it} compact onOpen={() => setExpanded(it)} /></div>)}
-      </div>
-    ) : <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "0 2px" }}>{empty}</p>
-  );
-
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
+    <div className="fw-good-clean fw-kindred-clean" style={{ minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "12px 16px 0" }}>
-        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/Lifestyle")} aria-label="Back" className="fw-elite-press"
-          style={{ width: 40, height: 40, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paperHi, color: OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer" }}><ArrowLeft size={19} /></button>
+        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/Lifestyle?section=good")} aria-label="Back to Good life" className="fw-elite-press"
+          style={{ width: 44, height: 44, borderRadius: 999, border: "1px solid #EAE7E0", background: "#fff", color: OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer" }}><ArrowLeft size={19} /></button>
 
-        <FwFloraHero title="Kindred" line="Friendship, family, love and belonging — held as equals. However you're connected today, you belong here."
-          colorway="crimson" bloom="peony" flankL="rose" flankR="primrose" titleColor={OXBLOOD} creature="butterfly" />
-
-        <div style={{ marginTop: 6 }}><SummaryCard eyebrow="Your people today" accent={crimson} rows={summaryRows} /></div>
+        <header className="fw-good-hero fw-kindred-hero"><span className="fw-good-path">GOOD LIFE / KINDRED</span><span className="fw-kindred-path" aria-hidden="true"/><span className="fw-kindred-jasmine" aria-hidden="true"/><h1>Kindred</h1><p>Friends. Family. Love. Your own good company. Pick what you need.</p></header>
+        <details className="fw-good-context"><summary>A note for today <span aria-hidden="true">+</span></summary><div className="fw-good-context-body">{summaryRows.map(({Icon,label,text}) => <div key={label} className="fw-good-context-row"><Icon size={16} aria-hidden="true"/><div><strong>{label}</strong><p>{text}</p></div></div>)}</div></details>
 
         {/* A · WHAT'S YOUR HEART ASKING FOR — the return hook; solitude is first-class */}
         <Section Icon={Heart} title="What's your heart asking for?" accent={cwOf(heart.cw).petal}
-          sub="Not who you 'should' call — what you actually need today. Every answer is equal, including being alone.">
+          sub="Pick the feeling. Solitude is an answer too.">
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
             {HEART.map((h) => { const on = h.key === heart.key; const c = cwOf(h.cw).petal; return (
-              <button key={h.key} onClick={() => setHeart(h)} className="fw-elite-press"
-                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 13px", borderRadius: 999, cursor: "pointer", background: on ? c : `${c}14`, border: `1px solid ${on ? c : c + "55"}`, color: on ? "#fff" : c, fontFamily: UI, fontSize: 13, fontWeight: 700 }}>
+              <button key={h.key} onClick={() => setHeart(h)} className="fw-elite-press" aria-pressed={on}
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, minHeight: 44, padding: "8px 13px", borderRadius: 999, cursor: "pointer", background: on ? "#51444e" : `${c}14`, border: `1px solid ${on ? "#51444e" : c + "55"}`, color: on ? "#fff" : "#51444e", fontFamily: UI, fontSize: 13, fontWeight: 700 }}>
                 <h.Icon size={14} /> {h.label}
               </button>
             ); })}
           </div>
           <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, color: T.muted, lineHeight: 1.5, margin: "0 2px 12px" }}>{heart.line}</p>
           {heart.key === "solitude" ? (
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 12, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${cwOf("lavender").petal}`, borderRadius: 14, padding: "14px 16px" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 12, background: "#fff", border: "1px solid #EAE7E0", borderLeft: `3px solid ${cwOf("lavender").petal}`, borderRadius: 18, padding: "14px 16px" }}>
               <span style={{ width: 34, height: 34, borderRadius: 10, background: `${cwOf("lavender").petal}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><Leaf size={17} color={cwOf("lavender").petal} /></span>
               <span style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.5 }}>A slow coffee, a walk with no one, a book and the door shut. Solitude you choose is rest, not loneliness — enjoy your own company today.</span>
             </div>
           ) : (
             <>
-              <Shelf cards={heartPicks} empty="Reads land here as the library fills out." />
-              {heart.nudge && <p style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, lineHeight: 1.5, margin: "10px 2px 0", fontStyle: "italic" }}>{REACH_OUT}</p>}
+              <Shelf room="kin" onOpen={setExpanded} cards={heartPicks} empty={itemsStatus === "error" ? "" : itemsStatus === "loading" ? "Finding a read…" : "Nothing here just now. Try another feeling."} />
+              {heart.nudge && <p style={{ fontFamily: UI, fontSize: 13, color: T.muted, lineHeight: 1.5, margin: "10px 2px 0", fontStyle: "italic" }}>{REACH_OUT}</p>}
             </>
           )}
+          {itemsStatus === "error" && <div className="fw-good-load-error" role="alert">The reads didn't arrive. <button type="button" onClick={() => { setItemsStatus("loading"); setRetryKey(value => value + 1); }}>Try again</button></div>}
         </Section>
 
+        <details className="fw-good-library"><summary>More on friendship, family, love &amp; belonging <span aria-hidden="true">+</span></summary>
         {/* B · FRIENDSHIP — deliberately FIRST, decentring romance */}
         <Section Icon={Users} title="Friends" accent={cwOf("gold").petal}
           sub="The great underrated love story. Making them as an adult, keeping them, and the ache when one drifts — normal, not a failure.">
-          <Shelf cards={friendshipCards} empty="Friendship reads land here as the library fills out." />
+          <Shelf room="kin" onOpen={setExpanded} cards={friendshipCards} empty={itemsStatus === "error" ? "" : "No friendship read just now."} />
         </Section>
 
         {/* C · FAMILY — closeness AND distance both validated, no moralising */}
         <Section Icon={Home} title="Family" accent={cwOf("sage").petal}
           sub="The people you were given. Bonds worth keeping, and the ones you're allowed to hold at a distance — no guilt required.">
-          <Shelf cards={familyCards} empty="Family reads land here as the library fills out." />
+          <Shelf room="kin" onOpen={setExpanded} cards={familyCards} empty={itemsStatus === "error" ? "" : "No family read just now."} />
         </Section>
 
         {/* D · LOVE — mid-board on purpose; attachment-literate, never tactical */}
         <Section Icon={Heart} title="Love & partnership" accent={crimson}
           sub="The honest kind — attachment, desire, the long middle of it, and its endings. No games, no 'how to keep him'.">
-          <Shelf cards={loveCards} empty="Love reads land here as the library fills out." />
+          <Shelf room="kin" onOpen={setExpanded} cards={loveCards} empty={itemsStatus === "error" ? "" : "No love read just now."} />
         </Section>
 
         {/* E · BELONGING — loneliness met with warmth */}
         <Section Icon={HandHeart} title="Belonging" accent={cwOf("plum").petal}
           sub="Wanting to be part of something is human, and loneliness is not a personal failing — a third of us feel it, the young most of all. Gently, then.">
-          <Shelf cards={belongingCards} empty="Belonging reads land here as the library fills out." />
+          <Shelf room="kin" onOpen={setExpanded} cards={belongingCards} empty={itemsStatus === "error" ? "" : "No belonging read just now."} />
         </Section>
+        </details>
 
         {/* F · CARRY IT ON — Jess as the 11pm companion is the most important wiring */}
         <Section Icon={MessageCircle} title="Carry it on" accent={cwOf("gold").petal} sub="Kindred doesn't end here.">
           <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
             {[
-              { Icon: Sparkles, cw: "crimson", label: "Lonely tonight? Jess is up.", sub: "The 11pm no-one-to-text feeling — she's a real companion for exactly that.", href: createPageUrl("Jess") },
+              { Icon: Sparkles, cw: "crimson", label: "Talk it out with Jess", sub: "Whatever your people-weather is today, she has time.", href: createPageUrl("Jess") },
               { Icon: MessageCircle, cw: "plum", label: "The rooms in Community", sub: "Friendship, love and a quiet 'lonely tonight' space — all held as equals.", href: createPageUrl("Community") },
               { Icon: Feather, cw: "sage", label: "Write it out in your Journal", sub: "The thing you can't say to them yet — say it here first.", href: createPageUrl("Journal") },
-              { Icon: CalendarHeart, cw: "gold", label: "Find people in Events", sub: "Somewhere to actually go — meeting people beats reading about it.", href: createPageUrl("Events") },
+              { Icon: CalendarHeart, cw: "gold", label: "See what's on in Events", sub: "If you fancy company, there's somewhere to go.", href: createPageUrl("Events") },
             ].map((r) => {
               const c = cwOf(r.cw).petal;
               return (
-                <a key={r.label} href={r.href} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", textAlign: "left", background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${c}`, borderRadius: 13, padding: "11px 13px", cursor: "pointer", textDecoration: "none" }}>
+                <a key={r.label} href={r.href} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", textAlign: "left", background: "#fff", border: "1px solid #EAE7E0", borderLeft: `3px solid ${c}`, borderRadius: 16, padding: "11px 13px", cursor: "pointer", textDecoration: "none" }}>
                   <span style={{ width: 34, height: 34, borderRadius: 10, background: `${c}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><r.Icon size={16} color={c} /></span>
                   <span style={{ flex: 1, minWidth: 0 }}>
                     <span style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink, display: "block", lineHeight: 1.2 }}>{r.label}</span>
@@ -238,7 +232,7 @@ export default function Kindred() {
         </div>
       </div>
 
-      {expanded && <ExpandDetailCard item={expanded} onClose={() => setExpanded(null)} />}
+      {expanded && <ExpandDetailCard item={expanded} onClose={() => setExpanded(null)} presentation="focused" room="good" saved={saved} onSave={onSave} error={saveError} />}
     </div>
   );
 }
