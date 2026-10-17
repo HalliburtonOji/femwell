@@ -94,8 +94,8 @@ async function openPhysicalDetails(rows) {
  api.filter.mockImplementation(async(entity,query)=>entity==='UserProfile'?[{id:'profile',user_id:'owner',saved_item_ids:[]}]:entity==='SavedItems' && (!query.item_type || (query.item_type==='ADVICE' && query.item_id==='advice-one'))?rows():[]);
  render(<MemoryRouter initialEntries={['/Lifestyle?section=yours']}><KeptAlive/></MemoryRouter>);
  const main=screen.getByTestId('kept-lifestyle');
- fireEvent.click(await within(main).findByRole('button',{name:'Details & tools'},{timeout:10000}));
- return (await screen.findAllByRole('button',{name:'Remove from saved',exact:true}))[0];
+ fireEvent.click(await within(main).findByRole('button',{name:'Details & tools for An actual kept advice'},{timeout:10000}));
+ return (await screen.findAllByRole('button',{name:'Saved',exact:true}))[0];
 }
 it('stops duplicate physical removal when auth changes after the first deletion',async()=>{
  const rows=physicalRows(), remove=await openPhysicalDetails(()=>rows);
@@ -118,7 +118,7 @@ it('retries only remaining duplicates and publishes all acknowledged removal rec
   fail=false;fireEvent.click(remove);await screen.findByText('Removed from your keeps');
   expect(api.delete.mock.calls.map(([,id])=>id)).toEqual(['owned-one','owned-two','owned-two']);
   expect(events).toContainEqual({ownerId:'owner',itemId:'advice-one',removedSavedRecordIds:['owned-one','owned-two']});
-  expect(screen.queryByRole('button',{name:'Remove from saved',exact:true})).toBeNull();
+  expect(screen.queryByRole('button',{name:'Saved',exact:true})).toBeNull();
   expect(screen.getByTestId('kept-lifestyle')).toBeVisible();
  } finally {window.removeEventListener('fw_sky_lesson_saved',onAck);}
 });
