@@ -79,6 +79,7 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, 
     const moreAudio = restAudio.filter(item => !used.has(item.id));
     const moreWatches = watches.filter(item => !used.has(item.id));
     const moreCount = moreAudio.length + moreWatches.length;
+    const alternateSourceAction = alternate?.type === "video" && (alternate.actions || []).find(action => typeof action?.onClick === "function" && /open|watch/i.test(action.label || ""));
     return <ListenCard className="fw-selected-listening-choice" eyebrow={active ? player?.isPlaying ? "On air" : "Pick up your listen" : featured?.type === "video" ? "Watch here" : externalLead ? "Listen elsewhere" : isCheckedRoundtable(featured) ? "From the listening desk" : "Worth your headphones"} title={featured?.type === "video" ? "Put this on" : externalLead ? "Choose a show" : "Press play"} accent="sage">
       {presentation && <SelectedRoomDetail section="listen"/>}
       {featured && <>
@@ -93,7 +94,7 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, 
           <h4>{resolveCard(alternate).title}</h4>
           <FloraYouTube videoId={alternate.youtubeId} item={alternate} accent="#8faa9a"/>
           <button type="button" onClick={() => onOpen?.(alternate)}>Details &amp; tools</button>
-        </div> : <CalmFindRow item={alternate} onOpen={onOpen} label={alternate.type === "video" ? "Watch at source" : "Listen"} context={alternate.type === "video" && !alternate.duration ? "Creator video" : durOf(alternate)}/>}
+        </div> : <CalmFindRow item={alternate} onOpen={alternateSourceAction ? () => alternateSourceAction.onClick() : onOpen} onDetails={alternateSourceAction ? onOpen : undefined} label={alternateSourceAction ? "Watch at source" : alternate.type === "video" ? "Details" : "Listen"} context={alternate.type === "video" && !alternate.duration ? "Creator video" : durOf(alternate)}/>}
       </div>}
       <CalmMore enabled={moreCount > 0} title={`Browse all listens & watches · ${moreCount}`}>
         {moreAudio.map(renderAudio)}

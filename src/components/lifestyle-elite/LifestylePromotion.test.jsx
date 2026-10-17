@@ -11,10 +11,9 @@ beforeEach(()=>{mock.empty.mockResolvedValue([]);mock.chapters.mockResolvedValue
 describe('approved main Lifestyle parity',()=>{
   it('names the exact joy action as planning and opens the existing time choice',async()=>{
     window.history.replaceState({},'', '/Lifestyle?section=good&joy=try-11gq3zo');render(<Lifestyle/>);
-    const joy=await screen.findByRole('dialog',{name:'A small joy'});
+    const joy=await screen.findByRole('dialog',{name:/Read one poem, out loud, to no one/});
     expect(joy).toHaveTextContent('Read one poem, out loud, to no one');
-    expect(joy.style.top).toBe('64px');
-    expect(within(joy).getByRole('button',{name:'Back',exact:true}).style.width).toBe('44px');
+    expect(within(joy).getByRole('button',{name:'Close'})).toBeVisible();
     fireEvent.click(within(joy).getByRole('button',{name:'Plan a time',exact:true}));
     expect(await screen.findByRole('dialog',{name:'Plan a time',exact:true})).toHaveTextContent('Read one poem, out loud, to no one');
   });
@@ -38,13 +37,16 @@ describe('approved main Lifestyle parity',()=>{
     const today=new Date().toISOString().slice(0,10);
     mock.chapters.mockResolvedValue([{id:'first',series_key:'real-run',day_number:1,segment_text:'First chapter',published_date:'2020-01-01'},{id:'today',series_key:'real-run',day_number:2,segment_text:'Today’s actual text',published_date:today}]);
     window.history.replaceState({},'', '/Lifestyle?section=books');render(<Lifestyle/>);
+    fireEvent.click(await screen.findByText('Chapters & short reads'));
     fireEvent.click(await screen.findByRole('button',{name:'Read straight through from chapter 1 ›'}));
     expect(screen.getByRole('dialog',{name:'Actual chapter reader'})).toHaveTextContent('Chapter index: 0');
     fireEvent.click(screen.getByRole('button',{name:'Exit chapter reader'}));
-    fireEvent.click(screen.getAllByRole('button',{name:"Today's chapter",exact:true})[0]);
+    const chapterIndex=screen.getByText('Chapters & short reads').closest('details');
+    if(!chapterIndex.open)fireEvent.click(screen.getByText('Chapters & short reads'));
+    fireEvent.click(screen.getByRole('button',{name:/Today.s open chapter/}));
     expect(screen.getByRole('dialog',{name:'Actual chapter reader'})).toHaveTextContent('Chapter index: 1');
     fireEvent.click(screen.getByRole('button',{name:'Exit chapter reader'}));
-    fireEvent.click(screen.getByRole('button',{name:/Today’s chapter · notes/}));
+    fireEvent.click(screen.getByRole('button',{name:/Notes & reflection/}));
     expect(screen.getByRole('button',{name:/Mark.*read/})).toBeVisible();
     expect(screen.getByRole('button',{name:/Reflect/})).toBeVisible();
   });
@@ -53,8 +55,11 @@ describe('approved main Lifestyle parity',()=>{
     const nav=await screen.findByRole('navigation',{name:'Lifestyle sections'});
     expect(within(nav).getAllByRole('button')).toHaveLength(6);
     await waitFor(()=>expect(within(nav).getByRole('button',{name:'Read',exact:true})).toHaveAttribute('aria-pressed','true'));
-    for(const name of ['The Mirror','Move','Kindred','Curious','Delight','Nest','Tonight','Becoming','Outside','Make','Money'])expect(screen.getAllByRole('button',{name,exact:true}).length).toBeGreaterThan(0);
     expect(screen.getByRole('button',{name:'Everything',exact:true})).toBeVisible();
+    fireEvent.click(within(nav).getByRole('button',{name:'Good life',exact:true}));
+    fireEvent.click(screen.getByRole('button',{name:/Explore life’s rooms/}));
+    const room=screen.getByRole('combobox',{name:'Room'});
+    for(const name of ['Mirror','Move','Kindred','Curious','Delight','Nest','Tonight','Becoming','Outside','Make','Money'])expect(within(room).getByRole('option',{name})).toBeVisible();
   });
   it('keeps Everything through remount and clears foreign content identity when changing rooms',async()=>{
     window.history.replaceState({},'', '/Lifestyle?section=read&reading=old&lesson=old#daily-sky-lesson');
@@ -86,5 +91,14 @@ describe('approved main Lifestyle parity',()=>{
     const library=document.getElementById('book-library');
     fireEvent.click(within(library).getAllByRole('button',{name:/Details & tools/})[1]);expect(details).toHaveBeenCalledWith(classic);
     fireEvent.click(screen.getByRole('button',{name:/Today’s chapter · notes/}));expect(notes).toHaveBeenCalledTimes(1);
+  });
+  it('opens the full shelf disclosure with its own cue in one tap on main',()=>{
+    render(<BooksStoryFocus calmLayout artDirection="reading-room" shelfBookCards={[{id:'owned-book',title:'My own book'}]} />);
+    const library=document.getElementById('book-library');
+    const disclosure=library.closest('details');
+    expect(disclosure.open).toBe(false);
+    fireEvent.click(screen.getByRole('button',{name:/Open your shelf & free classics/}));
+    expect(disclosure.open).toBe(true);
+    expect(within(disclosure).getByRole('button',{name:/My own book/})).toBeVisible();
   });
 });

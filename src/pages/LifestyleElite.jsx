@@ -2,9 +2,11 @@
 // Revert this page's props to <LifestyleEliteShell /> to restore the prior presentation.
 import LifestyleEliteShell from "@/components/lifestyle-elite/LifestyleEliteShell";
 import "@/components/lifestyle-elite/SkyWorlds.css";
+import "@/components/lifestyle-elite/FocusedLifestyle.css";
+import "@/components/lifestyle-elite/CalmLifestyle.css";
 
 export default function LifestyleElite({ routeActive = true }) {
-  return <main className="fw-sky-worlds fw-lifestyle-main" data-world="petal-press">
-    <LifestyleEliteShell routeActive={routeActive} enableFocus layout="bespoke" clean previewActions initialSection="read" continuousSky celestialSky firstFoldVariant="living" dailySkyLessons artDirection="sky-worlds" skyWorld="petal-press" contentRoute="/Lifestyle" />
+  return <main className="fw-sky-worlds fw-lifestyle-main fw-calm-lifestyle" data-world="petal-press">
+    <LifestyleEliteShell routeActive={routeActive} enableFocus layout="bespoke" clean previewActions initialSection="read" continuousSky celestialSky firstFoldVariant="living" dailySkyLessons artDirection="sky-worlds" skyWorld="petal-press" contentRoute="/Lifestyle" focusedPreview calmLayout />
   </main>;
 }

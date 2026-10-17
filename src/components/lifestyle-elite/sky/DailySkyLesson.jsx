@@ -49,7 +49,7 @@ export function SavedSkyLessons({userId,direction,onCount,previewRoute,human=fal
       const fallback=skyLessonRoute({id:meta.lessonId || "unavailable",version:meta.lessonVersion || "unknown"},direction,previewRoute);
       return <a className="saved-sky-row" key={row.id} href={lesson ? skyLessonRoute(lesson,direction,previewRoute) : safeSkySavedReturn(meta.route,fallback)}><span>{row.title}{!lesson && <small className="daily-sky-edition">Saved edition · unavailable</small>}</span><ArrowRight size={16} aria-hidden="true"/></a>;
     }) : <Body>{human ? "Keep a Sky piece and you’ll find it here." : "Your saved Sky lessons will settle here. No collection invented on your behalf."}</Body>}
-    <a className="daily-sky-link" href={`/Saved?tab=LIFESTYLE${previewRoute?.includes("CalmLifestyleDemo") ? "&appearance=calm" : ""}`}>All your Lifestyle saves</a>
+    <a className="daily-sky-link" href={`/Saved?tab=LIFESTYLE${["/CalmLifestyleDemo", "/Lifestyle"].includes(previewRoute) ? "&appearance=calm" : ""}${previewRoute === "/Lifestyle" ? "&from=lifestyle-main" : ""}`}>All your Lifestyle saves</a>
   </Card>;
 }
 

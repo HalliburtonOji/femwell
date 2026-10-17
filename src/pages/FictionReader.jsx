@@ -96,6 +96,10 @@ function pagesToChapters(pages, item) {
 
 export default function FictionReader() {
   const navigate = useNavigate();
+  const params = new URLSearchParams(window.location.search);
+  const calm = params.get("appearance") === "calm";
+  const backTo = params.get("from") === "lifestyle-main" ? "/Lifestyle?section=books" : calm ? "/CalmLifestyleDemo?section=books" : "/Lifestyle?section=books";
+  const goBack = () => window.history.length > 1 ? navigate(-1) : navigate(backTo);
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -151,14 +155,14 @@ export default function FictionReader() {
 
   if (loading) {
     return (
-      <Frame onBack={() => navigate(-1)}>
+      <Frame calm={calm} onBack={goBack}>
         <p style={emptyStyle}>Loading the story…</p>
       </Frame>
     );
   }
   if (error) {
     return (
-      <Frame onBack={() => navigate(-1)}>
+      <Frame calm={calm} onBack={goBack}>
         <h2 style={errorTitleStyle}>We couldn't open this story.</h2>
         <p style={emptyStyle}>{error}</p>
       </Frame>
@@ -166,7 +170,7 @@ export default function FictionReader() {
   }
   if (!chapters.length) {
     return (
-      <Frame onBack={() => navigate(-1)}>
+      <Frame calm={calm} onBack={goBack}>
         <h2 style={errorTitleStyle}>This story has no readable text yet.</h2>
         <p style={emptyStyle}>It may still be being written. Check back soon.</p>
       </Frame>
@@ -179,9 +183,10 @@ export default function FictionReader() {
       ? item.chapters_json.length
       : 1;
     return (
-      <Frame onBack={() => navigate(-1)}>
+      <Frame calm={calm} onBack={goBack}>
         <CoverPage
           item={item}
+          calm={calm}
           pageCount={chapters.length}
           chapterCount={chapterCount}
           onOpen={() => setShowReader(true)}
@@ -201,6 +206,7 @@ export default function FictionReader() {
       textSize={textSize}
       onTextSizeChange={handleTextSizeChange}
       defaultImmersive
+      cleanPreview={calm}
       onExit={() => setShowReader(false)}
       bookId={item?.id}
     />
@@ -208,7 +214,7 @@ export default function FictionReader() {
 }
 
 // ─── Cover page ──────────────────────────────────────────────────────────────
-function CoverPage({ item, pageCount, chapterCount, onOpen }) {
+function CoverPage({ item, pageCount, chapterCount, onOpen, calm = false }) {
   const { gradient, accent, initial } = getBookCover(item.title);
   const subtitle = item.summary || item.why_it_matters || "";
   const tags = Array.isArray(item.tags) ? item.tags.slice(0, 3) : [];
@@ -216,7 +222,7 @@ function CoverPage({ item, pageCount, chapterCount, onOpen }) {
     ? `Open book · ${chapterCount} chapters`
     : `Open story · ${pageCount} page${pageCount === 1 ? "" : "s"}`;
   return (
-    <div style={coverShellStyle}>
+    <div style={coverShellStyle} className={calm ? "fw-clean-fiction-cover" : undefined}>
       <div style={{ ...coverArtStyle, background: gradient }}>
         <span style={{ ...coverInitialStyle, color: accent }}>{initial}</span>
         <div style={coverTextStyle}>
@@ -243,20 +249,20 @@ function CoverPage({ item, pageCount, chapterCount, onOpen }) {
 }
 
 // ─── Frame ───────────────────────────────────────────────────────────────────
-function Frame({ children, onBack }) {
+function Frame({ children, onBack, calm = false }) {
   return (
-    <div style={{ minHeight: "100vh", paddingBottom: 80, background: "#ECE7DA" }}>
-      <div style={frameHeaderStyle}>
+    <div className={calm ? "fw-clean-fiction-frame" : undefined} style={{ minHeight: "100vh", paddingBottom: 80, background: calm ? "#F5F4F1" : "#ECE7DA" }}>
+      <div style={calm ? {...frameHeaderStyle,background:"#fff",borderBottom:"1px solid #EAE7E0"} : frameHeaderStyle}>
         <div style={frameHeaderInnerStyle}>
           <button
             type="button"
             onClick={onBack}
             aria-label="Back"
-            style={backButtonStyle}
+            style={calm ? {...backButtonStyle,background:"#fff",border:"1px solid #EAE7E0",width:44,height:44,color:"#51444e"} : backButtonStyle}
           >
             <ArrowLeft size={16} />
           </button>
-          <h1 className="fw-display" style={{ fontSize: 32, margin: 0 }}>Library</h1>
+          <h1 className="fw-display" style={calm ? {fontFamily:"Ephesis, cursive",fontWeight:400,fontSize:42,color:"#7a1a12",margin:0,textShadow:"none",filter:"none"} : { fontSize: 32, margin: 0 }}>{calm ? "Books" : "Library"}</h1>
         </div>
       </div>
       <div style={frameBodyStyle}>{children}</div>

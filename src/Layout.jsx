@@ -21,7 +21,9 @@ const LITE_NAV = ["ProgramDay", "ProgramDetail"];
 const todayStr = new Date().toISOString().split("T")[0];
 
 export default function Layout({ children, currentPageName }) {
-  const cleanPreview = ["FocusedLifestyleDemo","CalmLifestyleDemo"].includes(currentPageName);
+  const cleanPreview = ["Lifestyle", "LifestyleElite", "FocusedLifestyleDemo","CalmLifestyleDemo"].includes(currentPageName)
+    || (["LifestyleDetail", "Saved", "WatchListen", "FictionReader"].includes(currentPageName)
+      && new URLSearchParams(window.location.search).get("appearance") === "calm");
   const navPageName = ["SkyWorldsDemo","FocusedLifestyleDemo","CalmLifestyleDemo"].includes(currentPageName) ? "Lifestyle" : currentPageName;
   const showNav = !HIDE_NAV.includes(currentPageName) || LITE_NAV.includes(currentPageName);
   const navMode = LITE_NAV.includes(currentPageName) ? "lite" : "full";

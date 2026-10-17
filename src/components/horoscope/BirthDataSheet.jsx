@@ -253,6 +253,10 @@ function PlaceAutocomplete({ value, onChange }) {
 // ── Main sheet ───────────────────────────────────────────────────────────────
 export default function BirthDataSheet({ open, onClose, onSaved, userId, initial, userProfile }) {
   useScrollLock(open);   // lock the background page while the sheet is open
+  const ownerRef = useRef(userId);
+  ownerRef.current = userId;
+  const savingRef = useRef(false);
+  const pendingCreateRef = useRef(null);
   const seedDate = initial?.birth_date || userProfile?.birthday || userProfile?.date_of_birth || "";
   const [date, setDate] = useState(seedDate);
   const [time, setTime] = useState(initial?.birth_time || "");
@@ -274,9 +278,11 @@ export default function BirthDataSheet({ open, onClose, onSaved, userId, initial
   const sunSign = date ? getSunSign(date) : null;
 
   const handleSave = async () => {
+    if (savingRef.current) return;
     setError("");
     if (!date) { setError("Birth date is needed for your sun sign."); return; }
     if (!userId) { setError("You need to be signed in to save birth data."); return; }
+    savingRef.current = true;
     setSaving(true);
     try {
       const payload = {
@@ -286,31 +292,60 @@ export default function BirthDataSheet({ open, onClose, onSaved, userId, initial
         birth_place: place?.trim() || null,
         sun_sign: getSunSign(date),
       };
-      let saved;
-      if (initial?.id) {
+      const assertOwner = async () => {
+        const current = await base44.auth.me();
+        if (ownerRef.current !== userId || current?.id !== userId) throw new Error("Your account changed. Reopen your chart before saving.");
+      };
+      await assertOwner();
+      if (pendingCreateRef.current?.owner !== userId) pendingCreateRef.current = null;
+      const pendingId = !initial?.id ? pendingCreateRef.current?.id : null;
+      const expectedId = initial?.id || pendingId;
+      const matches = (row, id) => row?.id === id && row.user_id === userId
+        && row.birth_date === payload.birth_date
+        && (row.birth_time || null) === payload.birth_time
+        && (row.birth_place || null) === payload.birth_place;
+      const readExact = async id => {
+        const rows = await base44.entities.AstroProfile.filter({ id, user_id: userId }, undefined, 1);
+        await assertOwner();
+        return Array.isArray(rows) && rows.length === 1 && rows[0]?.id === id && rows[0]?.user_id === userId ? rows[0] : null;
+      };
+      let saved, id = expectedId;
+      if (pendingId) {
+        saved = await readExact(pendingId);
+        if (!saved) throw new Error("Your chart save could not be confirmed. Try again.");
+        if (!matches(saved, pendingId)) saved = await base44.entities.AstroProfile.update(pendingId, payload);
+      } else if (initial?.id) {
         saved = await base44.entities.AstroProfile.update(initial.id, payload);
       } else {
         saved = await base44.entities.AstroProfile.create(payload);
+        id = saved?.id;
+        if (id) pendingCreateRef.current = { id, owner: userId };
       }
+      await assertOwner();
+      if (!id) throw new Error("Your chart save could not be confirmed. Try again.");
+      if (!matches(saved, id)) saved = await readExact(id);
+      if (!matches(saved, id)) throw new Error("Your chart save could not be confirmed. Try again.");
+      pendingCreateRef.current = null;
       base44.functions.invoke("generateHoroscopeReading", { user_id: userId }).catch(() => {});
       onSaved?.(saved);
       onClose?.();
     } catch (e) {
-      setError(e?.message || "Couldn't save. Try again.");
+      if (ownerRef.current === userId) setError(e?.message || "Couldn't save. Try again.");
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   };
 
   return (
-    <div style={overlayStyle} onClick={(e) => { if (e.target === e.currentTarget) onClose?.(); }}>
+    <div style={overlayStyle} onClick={(e) => { if (!savingRef.current && e.target === e.currentTarget) onClose?.(); }}>
       <div style={sheetStyle} className="fw-sheet-safe" role="dialog" aria-label="Set your birth details">
         <div style={headerRowStyle}>
           <div>
             <p style={eyebrowStyle}>Your chart</p>
             <h2 style={titleStyle}>Unlock your <em style={{ fontStyle: "italic", color: "var(--rose-primary)" }}>moon</em> and <em style={{ fontStyle: "italic", color: "var(--rose-primary)" }}>rising</em></h2>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close" style={closeBtnStyle}>
+          <button type="button" onClick={() => { if (!savingRef.current) onClose?.(); }} aria-label="Close" disabled={saving} style={closeBtnStyle}>
             <X size={18} />
           </button>
         </div>

@@ -1,6 +1,7 @@
 import { BookmarkCheck, ExternalLink, Trash2 } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { parseSavedMeta } from "@/lib/savedItems";
+import { calmLifestyleDestination } from "@/lib/lifestyleAppearance";
 
 const FALLBACK_ROUTES = {
   ADVICE: createPageUrl("Assistant"),
@@ -11,14 +12,13 @@ const FALLBACK_ROUTES = {
   LIFESTYLE: null,
 };
 
-export function calmSavedDestination(href) {
+export function calmSavedDestination(href, options) {
   if (!href || href === "#") return href;
   try {
-    const url = new URL(href, window.location.origin);
+    const url = new URL(calmLifestyleDestination(href, options), window.location.origin);
     if (url.origin !== window.location.origin) return href;
-    if (url.pathname === "/LifestyleDetail") url.searchParams.set("appearance", "calm");
     if (["/LivingLifestyleDemo", "/SkyWorldsDemo", "/CalmLifestyleDemo"].includes(url.pathname) && url.searchParams.get("section") === "sky") {
-      url.pathname = "/CalmLifestyleDemo";
+      url.pathname = options?.returnToMain ? "/Lifestyle" : "/CalmLifestyleDemo";
       url.searchParams.set("direction", "petal-press");
     }
     return `${url.pathname}${url.search}${url.hash}`;
@@ -31,10 +31,10 @@ function shortPreview(value) {
   return `${text.slice(0, 105).replace(/\s+\S*$/, "").trim()}…`;
 }
 
-export default function SavedItemCard({ item, onRemove, disabled = false, calm = false }) {
+export default function SavedItemCard({ item, onRemove, disabled = false, calm = false, returnToMain = false }) {
   const meta = parseSavedMeta(item);
   const href = meta.route || meta.url || meta.content_url || FALLBACK_ROUTES[item.item_type] || "#";
-  const openHref = calm ? calmSavedDestination(href) : href;
+  const openHref = calm ? calmSavedDestination(href, { returnToMain }) : href;
   const preview = calm ? shortPreview(item.preview_text) : item.preview_text;
   const actionLabel = item.item_type === "ADVICE" ? "Open Assistant" : item.item_type === "EVENT" ? "Open event" : "Open";
   const savedDate = item.created_at || item.created_date;

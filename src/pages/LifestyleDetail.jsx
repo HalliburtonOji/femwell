@@ -149,6 +149,8 @@ export default function LifestyleDetail() {
   const urlParams = new URLSearchParams(location.search);
   const id = urlParams.get("id");
   const calmReader = urlParams.get("appearance") === "calm";
+  const backTo = urlParams.get("from") === "lifestyle-main" ? "/Lifestyle?section=read" : calmReader ? "/CalmLifestyleDemo?section=read" : "/Lifestyle?section=read";
+  const goBack = () => window.history.length > 1 ? window.history.back() : window.location.assign(backTo);
 
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -395,7 +397,7 @@ export default function LifestyleDetail() {
   if (loadError && !item) return <div className="min-h-screen flex flex-col items-center justify-center" style={{backgroundColor:"#F5F4F1",padding:24,gap:16}}>
     <p role="alert" style={{fontSize:18,color:"#191510"}}>{loadError}</p>
     <button type="button" onClick={()=>setRetry(n=>n+1)} style={{minHeight:44,padding:"10px 22px",borderRadius:24,background:"#4B3849",color:"#fff"}}>Retry article</button>
-    <button type="button" onClick={()=>window.history.back()} style={{minHeight:44}}>Go back</button>
+    <button type="button" onClick={goBack} style={{minHeight:44}}>Go back</button>
   </div>;
   // Genuine not-found, only after a successful array response.
   if (!item) {
@@ -408,9 +410,9 @@ export default function LifestyleDetail() {
           It may have been removed or the link is out of date.
         </p>
         <button
-          onClick={() => window.history.back()}
+          onClick={goBack}
           style={{
-            backgroundColor: "#E8B4B8",
+            backgroundColor: calmReader ? "#51444e" : "#E8B4B8",
             color: "white",
             border: "none",
             borderRadius: 12,
@@ -588,7 +590,7 @@ export default function LifestyleDetail() {
 
       <div className="max-w-2xl mx-auto px-4 pt-12">
         <div className="flex items-center justify-between mb-6">
-          <button aria-label="Back" onClick={() => window.history.back()} className="w-11 h-11 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid #D8CFBC" }}>
+          <button aria-label="Back" onClick={goBack} className="w-11 h-11 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid #D8CFBC" }}>
             <ArrowLeft className="w-4 h-4" style={{ color: "#0B0805" }} />
           </button>
           <div className="flex items-center gap-2">

@@ -9,10 +9,13 @@ vi.mock('./SelectedLifestyleHeader',()=>({default:()=>null,SelectedRoomDetail:()
 function Destination(){const location=useLocation();return <output aria-label="Actual destination">{location.pathname}{location.search}</output>;}
 beforeEach(()=>{api.empty.mockResolvedValue([]);api.rows.mockImplementation(async query=>(query.media_type && query.media_type !== 'ARTICLE') || (query.content_type && query.content_type !== 'ARTICLE') ? [] : [{id:'exact-read',title:'A complete source',summary:'The actual source hook.',lede:'Source words.',provider:'FEMWELL_AI',content_type:'ARTICLE',media_type:'ARTICLE',status:'PUBLISHED'}]);vi.spyOn(globalThis,'fetch').mockResolvedValue({ok:true,json:async()=>({results:[]})});window.history.replaceState({},'', '/Lifestyle?section=read');});
 describe('read navigation within the existing app document',()=>{
-  it('opens the exact article through Router instead of document assignment',async()=>{
+  it('opens the exact article in the clean Lifestyle reader without changing its source identity',async()=>{
     render(<MemoryRouter initialEntries={['/Lifestyle?section=read']}><Lifestyle/><Destination/></MemoryRouter>);
-    const desk=await screen.findByRole('heading',{name:"Today's read"}, {timeout:5000});
-    fireEvent.click(within(desk.closest('.fw-selected-lead')).getByRole('button',{name:/A complete source/}));
-    expect(screen.getByLabelText('Actual destination')).toHaveTextContent('/LifestyleDetail?id=exact-read');
+    await screen.findByRole('heading',{name:'Start here'}, {timeout:15000});
+    const browse=screen.getByText(/Browse all reading/).closest('details');
+    fireEvent.click(screen.getByText(/Browse all reading/));
+    fireEvent.click(within(browse).getAllByRole('button',{name:/A complete source/})[0]);
+    expect(await screen.findByRole('dialog',{name:'A complete source'})).toHaveTextContent('Source words.');
+    expect(screen.getByLabelText('Actual destination')).toHaveTextContent('/Lifestyle?section=read');
   });
 });

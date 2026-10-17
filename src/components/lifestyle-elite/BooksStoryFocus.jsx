@@ -107,6 +107,14 @@ function WayIn({ Icon, title, line, onClick, first }) {
 
 export default function BooksStoryFocus({ chapters = [], story, pick, onRead, continueCards = [], shelfBookCards = [], classicCards = [], onOpenBook, lifeStage, userId, onSchedule, onCorner, artDirection, onChapterDetails, onBookDetails, calmLayout = false }) {
   const room = artDirection === "reading-room";
+  const libraryRef = useRef(null);
+  const openLibrary = () => {
+    if (!calmLayout) { onOpenBook?.({ _library: true }); return; }
+    const library = libraryRef.current;
+    const disclosure = library?.closest("details");
+    if (disclosure) disclosure.open = true;
+    requestAnimationFrame(() => { if (library?.isConnected) library.scrollIntoView?.({ behavior: "smooth", block: "start" }); });
+  };
   // Reader exit re-renders this surface with the same source rows; read marks are
   // device state, so derive position afresh rather than memoising only those rows.
   const pos = readingPosition(chapters, pick);
@@ -335,9 +343,9 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
           ) : null}
           <WayIn first={!shortest} Icon={RotateCcw} title="Something you already know"
             line={contBooks.length ? `Pick up ${clean(contBooks[0].title)} where you left it — re-reading counts.` : "Re-reading a favourite is reading. It asks nothing new of you."}
-            onClick={() => (contBooks.length ? onOpenBook && onOpenBook(contBooks[0]) : onOpenBook && onOpenBook({ _library: true }))} />
+            onClick={() => (contBooks.length ? onOpenBook && onOpenBook(contBooks[0]) : openLibrary())} />
           <WayIn Icon={BookOpen} title="Just a page" line="Open it, read one page, close it. That counts."
-            onClick={() => (pos ? onRead && onRead(pos.index) : set.featured ? openBook(set.featured) : onOpenBook && onOpenBook({ _library: true }))} />
+            onClick={() => (pos ? onRead && onRead(pos.index) : set.featured ? openBook(set.featured) : openLibrary())} />
         </Card>
         <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: C.faint, textAlign: "center", lineHeight: 1.5, margin: "10px 14px 0" }}>Some weeks there's no room for a book. This is here for those weeks.</p>
       </section>
@@ -408,7 +416,10 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
         )}
       </section>
 
+      {calmLayout && <Quiet onClick={openLibrary}>Open your shelf &amp; free classics ›</Quiet>}
+
       {/* 5 · READ IT WITH OTHERS — the Book Club we already built */}
+      <CalmOptional enabled={calmLayout} title="Read with the book club">
       <section className={room ? "fw-room-club" : undefined} style={{ marginTop: 24 }}>
         <Eyebrow cw="blush">Read it with others</Eyebrow>
         <Title>The book club</Title>
@@ -419,7 +430,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
             <span style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: C.ink }}>{club.title}</span>
             <span style={{ fontFamily: UI, fontSize: 13, color: C.slate }}>{[club.author,club.cadence,!calmLayout && club.gutenberg_id ? `Gutenberg ${club.gutenberg_id}` : null].filter(Boolean).join(" · ")}</span>
           </div>
-          {calmLayout && <Body size={16} style={{ margin: "0 0 9px", color: C.slate }}>Four sisters, one house, plenty to talk about. Read at your pace; lurking counts.</Body>}
+          {calmLayout && <Body size={16} style={{ margin: "0 0 9px", color: C.slate }}>Read at your pace. Lurking counts.</Body>}
           <CalmOptional enabled={calmLayout} title="About the read & content notes">
           <Body size={16} style={{ margin: "0 0 12px", color: C.slate }}>{clean(club.host_intro)}</Body>
           {club.trigger_warnings?.length > 0 && <div style={{fontFamily:UI,fontSize:13,color:C.slate,marginBottom:12}}><strong>Worth knowing</strong>{club.trigger_warnings.map(line => <p key={line}>{line}</p>)}</div>}
@@ -434,9 +445,11 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
           {club.checkpoints.length > 0 && <Quiet onClick={() => onSchedule && onSchedule({ club })}>Plan the club’s checkpoints ›</Quiet>}</>}
         </Card>
       </section>
+      </CalmOptional>
 
       {/* 6 · ALSO THIS MONTH — quiet alternates + the mature reveal (synopsis now, book on the day) */}
       {(set.alternates.length || set.reveal) ? (
+        <CalmOptional enabled={calmLayout} title={`Browse ${set.alternates.length + (set.reveal ? 1 : 0)} more books`}>
         <section className={room ? "fw-room-catalogue" : undefined} style={{ marginTop: 24 }}>
           <Eyebrow cw="sky">{calmLayout && !set.hasMonthlyEdition ? "Other ways in" : "Also this month"}</Eyebrow>
           <div style={{ display: "flex", flexDirection: "column" }}>
@@ -473,12 +486,13 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
               </div>
             ) : null}
           </div>
-          <Quiet onClick={() => onOpenBook && onOpenBook({ _library: true })}>Your shelf &amp; free classics ›</Quiet>
+          {!calmLayout && <Quiet onClick={openLibrary}>Open your shelf &amp; free classics ›</Quiet>}
         </section>
+        </CalmOptional>
       ) : null}
 
       <CalmOptional enabled={calmLayout} title="Your shelf & free classics">
-      <section id="book-library" className={room ? "fw-room-catalogue fw-room-library" : undefined} style={{marginTop:24,scrollMarginTop:64}}>
+      <section id="book-library" ref={libraryRef} className={room ? "fw-room-catalogue fw-room-library" : undefined} style={{marginTop:24,scrollMarginTop:64}}>
         <Eyebrow cw="sky">Your shelf &amp; free classics</Eyebrow>
         {!calmLayout && onChapterDetails && <Quiet onClick={onChapterDetails}>Today’s chapter · notes &amp; reflection ›</Quiet>}
         {[["On the shelf",shelfBookCards],["Free classics",classicCards]].map(([label,items]) => <div key={label} style={{marginTop:16}}><Title size={20}>{label}</Title>{items.length ? items.map(item => <div key={item.id} style={{borderBottom:`1px solid ${C.hair}`,padding:"8px 0"}}><button type="button" className="fw-elite-press" onClick={() => onOpenBook?.(item)} style={{display:"flex",alignItems:"center",gap:12,width:"100%",minHeight:64,textAlign:"left",background:"transparent",border:0,color:C.ink,cursor:"pointer"}}><Cover title={item.title} w={36} h={50} room={room}/><span style={{flex:1,minWidth:0}}><span style={{display:"block",fontFamily:SERIF,fontSize:18}}>{item.title}</span><span style={{display:"block",fontFamily:UI,fontSize:12,color:C.slate}}>{item.subtitle || item.summary}</span></span><ChevronRight size={16}/></button>{onBookDetails && <Quiet onClick={() => onBookDetails(item)}>Details &amp; tools ›</Quiet>}</div>) : <p style={{fontFamily:SERIF,color:C.slate}}>Nothing on this shelf yet.</p>}</div>)}

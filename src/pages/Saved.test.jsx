@@ -104,7 +104,9 @@ describe("Saved collection loading and removal read-back",()=>{
 describe("Saved card dates and pending removal",()=>{
   it("keeps exact saved editions while their Ideas route uses clean room materials",()=>{
     expect(calmSavedDestination("/LifestyleDetail?id=story-1")).toBe("/LifestyleDetail?id=story-1&appearance=calm");
+    expect(calmSavedDestination("/FictionReader?id=story-1",{returnToMain:true})).toBe("/FictionReader?id=story-1&appearance=calm&from=lifestyle-main");
     expect(calmSavedDestination("/LivingLifestyleDemo?section=sky&lesson=earthshine&lessonVersion=1#daily-sky-lesson")).toBe("/CalmLifestyleDemo?section=sky&lesson=earthshine&lessonVersion=1&direction=petal-press#daily-sky-lesson");
+    expect(calmSavedDestination("/LivingLifestyleDemo?section=sky&lesson=earthshine&lessonVersion=1#daily-sky-lesson",{returnToMain:true})).toBe("/Lifestyle?section=sky&lesson=earthshine&lessonVersion=1&direction=petal-press#daily-sky-lesson");
     expect(calmSavedDestination("https://example.com/source")).toBe("https://example.com/source");
   });
   it("shows a short kept preview while preserving its full original note",()=>{

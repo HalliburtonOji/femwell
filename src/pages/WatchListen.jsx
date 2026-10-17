@@ -103,7 +103,9 @@ function ShowTile({ show, calm = false }) {
 const linkBtn = (accent) => ({ display: "inline-flex", alignItems: "center", gap: 4, textDecoration: "none", fontFamily: UI, fontSize: 12, fontWeight: 700, color: accent, background: `${accent}12`, border: `1px solid ${accent}44`, borderRadius: 999, padding: "6px 11px" });
 
 export default function WatchListen() {
-  const calm = new URLSearchParams(window.location.search).get("appearance") === "calm";
+  const params = new URLSearchParams(window.location.search);
+  const calm = params.get("appearance") === "calm";
+  const returnToMain = params.get("from") === "lifestyle-main";
   const [tab, setTab] = useState("media");     // "media" | "shows"
   const [length, setLength] = useState("all");
   const [visibleCount, setVisibleCount] = useState(6);
@@ -173,7 +175,7 @@ export default function WatchListen() {
     <div className={calm ? "fw-calm-media-directory" : undefined} style={{ ...(calm ? {backgroundColor:"#f5f4f1"} : PAPER_BG), minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}>
       {calm && <style>{`.fw-calm-media-directory .fw-calm-media-hero{position:relative;overflow:hidden;min-height:220px;padding:105px 8px 24px;border-bottom:1px solid #b9cabe}.fw-calm-media-directory .fw-calm-media-hero:before{content:"";position:absolute;top:-12px;right:-10px;width:195px;height:175px;background:url('/images/flora-dream/specimen-bluebell-v2.webp') right top/contain no-repeat;opacity:.5;mask-image:linear-gradient(180deg,#000 10%,transparent 100%);pointer-events:none}.fw-calm-media-directory .fw-calm-media-hero>*{position:relative}.fw-calm-media-directory .fw-calm-media-hero h1{font:400 clamp(44px,11vw,58px)/.98 Ephesis,cursive;color:#7a1a12;margin:0 0 12px}.fw-calm-media-directory .fw-calm-media-hero p{font:500 15px/1.4 system-ui;color:#51444e;margin:0;max-width:290px}.fw-calm-media-directory .fw-calm-media-hero small{display:block;font:700 12px/1.3 system-ui;letter-spacing:.13em;text-transform:uppercase;color:#42634c;margin-bottom:10px}.fw-calm-media-directory .fw-wl-filters{flex-wrap:wrap;overflow:visible!important}.fw-calm-media-directory :is(button,a):focus-visible{outline:3px solid #6f8f77;outline-offset:3px}`}</style>}
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "12px 16px 0" }}>
-        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign(calm ? "/CalmLifestyleDemo?section=listen" : "/Lifestyle")} aria-label="Back" className="fw-elite-press"
+        <button onClick={() => window.location.assign(returnToMain ? "/Lifestyle?section=listen" : calm ? "/CalmLifestyleDemo?section=listen" : "/Lifestyle")} aria-label="Back" className="fw-elite-press"
           style={{ width: 44, height: 44, borderRadius: 999, border: `1px solid ${calm ? "#e6e3dc" : T.paperDeep}`, background: calm ? "#fff" : T.paperHi, color: calm ? "#51444e" : OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer", marginBottom: 8 }}>
           <ArrowLeft size={18} />
         </button>
