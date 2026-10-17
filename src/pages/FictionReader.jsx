@@ -99,9 +99,10 @@ export default function FictionReader() {
   const params = new URLSearchParams(window.location.search);
   const calm = params.get("appearance") !== "legacy";
   const fromMain = params.get("from") === "lifestyle-main";
+  const originSection = params.get("return_section") === "yours" ? "yours" : "books";
   const savedTab = params.get("saved_tab");
   const fromSaved = params.get("via") === "saved" && ["ADVICE", "LIFESTYLE", "CONTENT", "PROGRAM", "JOURNAL", "EVENT"].includes(savedTab);
-  const backTo = fromSaved ? `/Saved?tab=${savedTab}&appearance=calm${fromMain ? "&from=lifestyle-main" : ""}` : fromMain ? "/Lifestyle?section=books" : calm ? "/CalmLifestyleDemo?section=books" : "/Lifestyle?section=books";
+  const backTo = fromSaved ? `/Saved?tab=${savedTab}&appearance=calm${fromMain ? "&from=lifestyle-main" : ""}` : fromMain ? `/Lifestyle?section=${originSection}` : calm ? "/CalmLifestyleDemo?section=books" : "/Lifestyle?section=books";
   const goBack = () => fromMain || fromSaved || window.history.length <= 1 ? navigate(backTo) : navigate(-1);
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);

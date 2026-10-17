@@ -1,7 +1,7 @@
 import React from 'react';
 import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {beforeEach, afterEach, describe, it, expect, vi} from 'vitest';
-import {MemoryRouter, useNavigate} from 'react-router-dom';
+import {MemoryRouter, useLocation, useNavigate} from 'react-router-dom';
 import LifestyleDetail from './LifestyleDetail';
 import {continuePositions} from '@/components/lifestyle-elite/finishLifestyle';
 
@@ -115,6 +115,27 @@ describe('owned keeps and likes authority',()=>{
 });
 
 describe('complete article and last-place recovery',()=>{
+  it('opens a saved podcast with its playable episode, full transcript and publisher exit without article expansion',async()=>{
+    const podcast={id:'kept-audio',title:'The real episode',provider:'FEMWELL_AI',content_type:'PODCAST',category:'Culture',audio_url:'https://media.example.test/episode.mp3',episode_url:'https://publisher.example.test/episode',transcript:'The complete spoken words, in their own order.',summary:'A short introduction.',source_name:'The publisher'};
+    api.items.mockImplementation(async q=>q.id ? [podcast] : []);
+    render(<MemoryRouter initialEntries={['/LifestyleDetail?id=kept-audio&appearance=calm&from=lifestyle-main&return_section=yours']}><LifestyleDetail/></MemoryRouter>);
+    await screen.findByRole('heading',{name:'The real episode'});
+    expect(screen.getByRole('button',{name:'Play'})).toBeVisible();
+    expect(screen.getByRole('link',{name:'Open original episode'})).toHaveAttribute('href',podcast.episode_url);
+    fireEvent.click(screen.getByRole('button',{name:'Read it instead'}));
+    expect(screen.getByText(podcast.transcript)).toBeVisible();
+    expect(api.expand).not.toHaveBeenCalled();
+  });
+  it('returns a direct main Yours source to Yours and retains that origin in related reads',async()=>{
+    api.items.mockImplementation(async q=>q.id ? [article] : [{...article,id:'next',title:'Next read'},{...article,id:'other',title:'Another read'}]);
+    function Path(){const location=useLocation();return <output data-testid="path">{location.pathname+location.search}</output>;}
+    render(<MemoryRouter initialEntries={['/LifestyleDetail?id=article&appearance=calm&from=lifestyle-main&return_section=yours']}><Path/><LifestyleDetail/></MemoryRouter>);
+    await screen.findByRole('heading',{name:article.title});
+    const related=await screen.findByRole('link',{name:/Next read/i});
+    expect(related.getAttribute('href')).toBe('/LifestyleDetail?id=next&appearance=calm&from=lifestyle-main&return_section=yours');
+    fireEvent.click(screen.getByRole('button',{name:'Back'}));
+    expect(screen.getByTestId('path')).toHaveTextContent('/Lifestyle?section=yours');
+  });
   it('shows all available external source prose when its summary is only a teaser',async()=>{
     api.items.mockImplementation(async q=>q.id ? [{...article,provider:'PARTNER',summary:'A short teaser.',lede:'The whole opening.\n\nThe complete ending stays here.'}] : []);
     const {container}=open();await screen.findByRole('heading',{name:article.title});

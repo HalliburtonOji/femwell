@@ -2,6 +2,7 @@ import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { journalSourceReturn, lifestyleReturnLink } from "./lifestyleReturns";
+import { calmLifestyleDestination } from "./lifestyleAppearance";
 import { mergeSavedCollections, savedReturnRoute } from "./savedCollections";
 import DailySkyLesson, { SavedSkyLessons } from "@/components/lifestyle-elite/sky/DailySkyLesson";
 import { safeSkySavedReturn } from "@/components/lifestyle-elite/sky/skySourceContracts";
@@ -27,6 +28,12 @@ beforeEach(() => {
 });
 
 describe("canonical source returns with exact identity", () => {
+  it("keeps a main Yours article or fiction tied to Yours without changing Saved or Books origins", () => {
+    expect(calmLifestyleDestination("/LifestyleDetail?id=kept-read", { returnToMain: true, originSection: "yours" })).toBe("/LifestyleDetail?id=kept-read&appearance=calm&from=lifestyle-main&return_section=yours");
+    expect(calmLifestyleDestination("/FictionReader?id=kept-book", { returnToMain: true, originSection: "yours" })).toBe("/FictionReader?id=kept-book&appearance=calm&from=lifestyle-main&return_section=yours");
+    expect(calmLifestyleDestination("/FictionReader?id=kept-book", { returnToMain: true, savedTab: "LIFESTYLE" })).toBe("/FictionReader?id=kept-book&appearance=calm&from=lifestyle-main");
+    expect(calmLifestyleDestination("/BookReader?gutenberg_id=1342", { returnToMain: true, originSection: "yours" })).toBe("/BookReader?gutenberg_id=1342&appearance=calm&from=lifestyle-main&return_section=yours");
+  });
   it("returns Planner and Journal lesson sources to the live edition, retaining its anchor", () => {
     expect(lifestyleReturnLink({ source: "sky-lesson", ref: edition })).toEqual({ href, label: "Open this Sky lesson" });
     expect(journalSourceReturn({ content_key: edition })).toEqual({ href, label: "Open this Sky lesson" });

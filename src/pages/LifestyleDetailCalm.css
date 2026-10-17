@@ -13,6 +13,10 @@
 .fw-calm-article .fw-reader-card :is(.fw-h2,.fw-chapter){font-family:"FemWell Editorial","Cormorant Garamond",Georgia,serif!important;color:#51444e!important}
 .fw-calm-article .fw-reader-card .fw-dropcap{font-family:"FemWell Editorial","Cormorant Garamond",Georgia,serif;color:#7a1a12}
 .fw-calm-article .fw-reader-card .fw-ornament{color:#b9a5bd}
+.fw-calm-article .fw-calm-article__listen{margin:12px 0 26px;padding:18px;border:1px solid #dfe7df;border-radius:22px;background:linear-gradient(145deg,#f7faf6,#fff 70%)}
+.fw-calm-article .fw-calm-article__listen-label{margin:0 0 10px;color:#58765f;font:700 12px/1.4 Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase}
+.fw-calm-article .fw-calm-article__listen-unavailable{margin:0;color:#51444e;line-height:1.5}
+.fw-calm-article .fw-calm-article__source{display:inline-flex;align-items:center;min-height:44px;margin-top:8px;color:#51444e;font-weight:650;text-decoration:underline;text-underline-offset:3px}
 .fw-calm-article .fw-related-rail{scroll-padding-inline:1px}
 .fw-calm-article .fw-related-card:focus-visible,.fw-calm-article button:focus-visible{outline:3px solid #916b8f;outline-offset:3px}
 @media(max-width:600px){.fw-calm-article .fw-reader-card{padding-left:15px!important;padding-right:15px!important}.fw-calm-article .fw-reader-hero{margin:-24px -15px 22px!important;min-height:270px!important}.fw-calm-article .fw-reader-hero>div:last-of-type{left:18px!important;right:18px!important;bottom:22px!important}.fw-calm-article .fw-reader-hero h1{font-size:clamp(34px,9vw,43px)!important}}

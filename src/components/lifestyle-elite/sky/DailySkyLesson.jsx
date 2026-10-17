@@ -44,10 +44,13 @@ export function useLessonSaves(userId) {
   return {rows:collection.owner===userId ? collection.rows : [],error,loading:loading || collection.owner!==userId,retry:()=>setAttempt(n=>n+1)};
 }
 
-export function SavedSkyLessons({userId,direction,onCount,previewRoute,human=false}) {
-  const {rows,error,loading,retry}=useLessonSaves(userId);
+export function SavedSkyLessons({userId,direction,onCount,previewRoute,human=false,ownedState=null,compactEmpty=false}) {
+  // Main Lifestyle already owns this exact Sky collection. Reuse its edition
+  // instead of paging the same SavedItems again merely to render Yours.
+  const ownState=useLessonSaves(ownedState ? null : userId);
+  const {rows,error,loading,retry}=ownedState || ownState;
   useEffect(()=>{if(onCount)onCount(loading || error ? 0 : rows.length);},[rows,loading,error,onCount]);
-  return <Card className="daily-sky saved-sky-lessons" style={{marginTop:20}}>
+  const content=<Card className="daily-sky saved-sky-lessons" style={{marginTop:20}}>
     <Eyebrow cw="lavender" align="left">Your sky keepsakes</Eyebrow><Title align="left" size={26}>Little things you kept.</Title>
     {loading ? <p role="status">Opening your Sky keepsakes…</p> : error ? <><p role="alert">Your Sky keepsakes couldn’t load.</p><button onClick={retry}>Try again</button></> : rows.length ? rows.map(row=>{
       const meta=parseSavedMeta(row);const lesson=findSkyPiece(meta.lessonId,meta.lessonVersion);
@@ -56,6 +59,9 @@ export function SavedSkyLessons({userId,direction,onCount,previewRoute,human=fal
     }) : <Body>{human ? "Keep a Sky piece and you’ll find it here." : "Your saved Sky lessons will settle here. No collection invented on your behalf."}</Body>}
     <a className="daily-sky-link" href={`/Saved?tab=LIFESTYLE${["/CalmLifestyleDemo", "/Lifestyle"].includes(previewRoute) ? "&appearance=calm" : ""}${previewRoute === "/Lifestyle" ? "&from=lifestyle-main" : ""}`}>All your Lifestyle saves</a>
   </Card>;
+  return compactEmpty && !loading && !error && !rows.length
+    ? <details className="fw-calm-more fw-sky-keeps-empty"><summary>Sky keepsakes · a place for later</summary><div className="fw-calm-more-content">{content}</div></details>
+    : content;
 }
 
 export default function DailySkyLesson({userId,moon,direction="letter",previewRoute,human=false,calmLayout=false}) {

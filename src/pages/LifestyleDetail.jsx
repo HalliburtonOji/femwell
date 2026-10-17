@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { readLifestyleFindAuthority as readFindAuthority } from "@/lib/savedCollections";
 import { ArrowLeft, Bookmark, BookmarkCheck, Heart, HeartOff, Loader2, PlayCircle } from "lucide-react";
@@ -8,6 +8,7 @@ import { getCategoryGradient, attachFallbackOverlay } from "@/utils/imageFallbac
 import ContentActionBar from "@/components/common/ContentActionBar";
 import ShareButton from "@/components/share/ShareButton";
 import ReadingColumn, { readTimeLabel, countWords } from "@/components/brand/ReadingColumn";
+import { FloraAudio } from "@/components/brand/expandCards";
 import "./LifestyleDetailCalm.css";
 
 // Map a content category to the best-fit whole-life Community room (default: the Lounge).
@@ -146,12 +147,14 @@ export function renderBodyBlocks(body) {
 
 export default function LifestyleDetail() {
   const location = useLocation();
+  const navigate = useNavigate();
   const urlParams = new URLSearchParams(location.search);
   const id = urlParams.get("id");
   const calmReader = urlParams.get("appearance") === "calm";
   const fromLifestyleMain = urlParams.get("from") === "lifestyle-main";
-  const backTo = fromLifestyleMain ? "/Lifestyle?section=read" : calmReader ? "/CalmLifestyleDemo?section=read" : "/Lifestyle?section=read";
-  const goBack = () => window.history.length > 1 ? window.history.back() : window.location.assign(backTo);
+  const originSection = urlParams.get("return_section") === "yours" ? "yours" : "read";
+  const backTo = fromLifestyleMain ? `/Lifestyle?section=${originSection}` : calmReader ? "/CalmLifestyleDemo?section=read" : "/Lifestyle?section=read";
+  const goBack = () => fromLifestyleMain && originSection === "yours" ? navigate(backTo) : window.history.length > 1 ? window.history.back() : window.location.assign(backTo);
 
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -252,7 +255,8 @@ export default function LifestyleDetail() {
         if (fetched) {
           const isFemwell = FEMWELL_GENERATED_PROVIDERS.has(fetched.provider);
           const lede = fetched.lede || "";
-          if (isFemwell) {
+          const isMedia = Boolean(fetched.audio_url || fetched.video_id || fetched.embed_url || ["AUDIO", "PODCAST", "VIDEO"].includes(String(fetched.media_type || fetched.content_type || "").toUpperCase()));
+          if (isFemwell && !isMedia) {
             if (lede.length >= 300) {
               if (!cancelled) setFullBody(stripHtml(lede));
             } else {
@@ -452,6 +456,10 @@ export default function LifestyleDetail() {
   const decodedWhy = decodeHtmlEntities(item.why_it_matters || "");
   const decodedAuthor = decodeHtmlEntities(item.author_name || "");
   const decodedSource = decodeHtmlEntities(item.source_name || "");
+  const episodeSource = [item.episode_url, item.source_url, item.content_url].find((value) => {
+    try { return ["https:", "http:"].includes(new URL(value).protocol); } catch { return false; }
+  });
+  const isAudio = Boolean(item.audio_url || ["AUDIO", "PODCAST"].includes(String(item.media_type || item.content_type || "").toUpperCase()));
   const byline = decodedAuthor || decodedSource;
   const eyebrowSource = (decodedSource || decodedAuthor || "").toUpperCase();
   const eyebrowDate = formatRelativeDate(item.published_at).toUpperCase();
@@ -816,6 +824,19 @@ export default function LifestyleDetail() {
             </div>
           )}
 
+          {isAudio && (
+            <section className="fw-calm-article__listen" aria-label={`Listen to ${decodedTitle}`}>
+              <p className="fw-calm-article__listen-label">Listen</p>
+              {item.audio_url ? (
+                <FloraAudio src={item.audio_url} label={decodedTitle} accent="#58765f"
+                  initialDuration={Number(item.duration_seconds) || 0}
+                  item={{id:item.id,title:decodedTitle,sourceName:decodedSource || item.channel_name || "FemWell",_raw:item}}
+                  presentation={calmReader ? "focused" : undefined}/>
+              ) : <p className="fw-calm-article__listen-unavailable">Audio isn’t available here.</p>}
+              {episodeSource && <a className="fw-calm-article__source" href={episodeSource} target="_blank" rel="noopener noreferrer">Open original episode</a>}
+            </section>
+          )}
+
           {/* Body — editorial blocks */}
           {(bodyError || loadError) && <div role="alert" style={{marginBottom:18,fontSize:15}}><p>{bodyError || loadError}</p><button type="button" style={{minHeight:44}} onClick={()=>setRetry(n=>n+1)}>Retry full reading</button></div>}
           {bodyLoading ? (
@@ -1046,7 +1067,7 @@ export default function LifestyleDetail() {
                 return (
                   <Link
                     key={r.id}
-                    to={`/LifestyleDetail?id=${encodeURIComponent(r.id)}${calmReader ? "&appearance=calm" : ""}${fromLifestyleMain ? "&from=lifestyle-main" : ""}`}
+                    to={`/LifestyleDetail?id=${encodeURIComponent(r.id)}${calmReader ? "&appearance=calm" : ""}${fromLifestyleMain ? "&from=lifestyle-main" : ""}${fromLifestyleMain && originSection === "yours" ? "&return_section=yours" : ""}`}
                     className="fw-related-card"
                   >
                     <div style={{

@@ -103,7 +103,7 @@ export default function YoursFocus({ savedCards = [], savedSummary, phaseCards =
         </YoursCard>
       ) : null}
 
-      <Foot>{presentation ? "Your excellent taste, filed loosely." : "Kept for when the moment's right — open any of it whenever, nothing owed."}</Foot>
+      <Foot>{presentation ? "Come back when you fancy. It will all be here." : "Kept for when the moment's right — open any of it whenever, nothing owed."}</Foot>
     </div>
   );
 }

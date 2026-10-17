@@ -7,6 +7,7 @@ export function calmLifestyleDestination(href, { returnToMain = false, savedTab 
     if (["/LifestyleDetail", "/FictionReader"].includes(url.pathname)) {
       url.searchParams.set("appearance", "calm");
       if (returnToMain) url.searchParams.set("from", "lifestyle-main");
+      if (returnToMain && originSection === "yours") url.searchParams.set("return_section", "yours");
     }
     if (returnToMain && ["/BookReader", "/ReaderMarginDemo"].includes(url.pathname)) {
       url.pathname = "/BookReader";
