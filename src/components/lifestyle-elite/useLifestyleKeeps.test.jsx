@@ -13,6 +13,15 @@ const deferred = () => { let resolve, reject; const promise = new Promise((ok, n
 beforeEach(() => { vi.resetAllMocks(); api.saved.mockResolvedValue([keep()]); api.source.mockImplementation(async ({ id }) => [item(id)]); });
 
 describe("complete, owner-scoped Lifestyle keeps", () => {
+  it("distinguishes an unfinished collection read from a confirmed empty one", async () => {
+    const scan = deferred(); api.saved.mockReturnValue(scan.promise);
+    const { result } = renderHook(useLifestyleKeeps, { initialProps: initial() });
+    expect(result.current.keepsLoading).toBe(true);
+    await act(async () => scan.resolve([]));
+    await waitFor(() => expect(result.current.keepsLoading).toBe(false));
+    expect(result.current.archiveKeeps).toEqual([]);
+    expect(result.current.keepsError).toBe("");
+  });
   it("retains typed physical-only content and exact tools without an extra profile save", async () => {
     const { result } = renderHook(useLifestyleKeeps, { initialProps: initial() });
     await waitFor(() => expect(result.current.archiveKeeps).toHaveLength(1));

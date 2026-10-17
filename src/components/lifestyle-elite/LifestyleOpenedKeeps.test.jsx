@@ -90,6 +90,27 @@ it('accepts a minimal write response only after its exact owned read-back',async
 });
 
 const physicalRows = () => ['owned-one','owned-two'].map(id => ({id,user_id:'owner',item_type:'ADVICE',item_id:'advice-one',title:'An actual kept advice',preview_text:'Actual words kept.',meta_json:JSON.stringify({route:'/Assistant'})}));
+it('uses one physical-only Lifestyle read in Yours, Saved reads and the first-fold count', async()=>{
+ const article={id:'kept-read',title:'The exact kept read',content_type:'ARTICLE',status:'PUBLISHED',lede:'A whole source worth returning to.'};
+ const saved={id:'saved-record',user_id:'owner',item_type:'LIFESTYLE',item_id:article.id,title:article.title};
+ api.filter.mockImplementation(async(entity,query)=>{
+   if(entity==='UserProfile')return [{id:'profile',user_id:'owner',saved_item_ids:[]}];
+   if(entity==='SavedItems')return [saved];
+   if(entity==='LifestyleItems' && query?.id===article.id)return [article];
+   return [];
+ });
+ render(<MemoryRouter initialEntries={['/Lifestyle?section=read']}><KeptAlive/></MemoryRouter>);
+ const main=screen.getByTestId('kept-lifestyle');
+ await waitFor(()=>expect(within(main).getByRole('button',{name:/Saved reads/})).toBeVisible());
+ await waitFor(()=>expect(within(main).getByRole('button',{name:/Your reading.*1 saved to come back to/})).toBeVisible());
+ fireEvent.click(within(main).getByRole('button',{name:'Saved reads'}));
+ const chooser=await screen.findByRole('dialog',{name:'Saved reads'});
+ expect(within(chooser).getByRole('button',{name:article.title})).toBeVisible();
+ fireEvent.click(within(chooser).getByRole('button',{name:article.title}));
+ await waitFor(()=>expect(screen.getByRole('dialog',{name:article.title})).toBeVisible());
+ expect(api.filter.mock.calls.filter(([entity])=>entity==='SavedItems').length).toBeGreaterThan(0);
+ expect(api.create).not.toHaveBeenCalled();expect(api.update).not.toHaveBeenCalled();
+});
 async function openPhysicalDetails(rows) {
  api.filter.mockImplementation(async(entity,query)=>entity==='UserProfile'?[{id:'profile',user_id:'owner',saved_item_ids:[]}]:entity==='SavedItems' && (!query.item_type || (query.item_type==='ADVICE' && query.item_id==='advice-one'))?rows():[]);
  render(<MemoryRouter initialEntries={['/Lifestyle?section=yours']}><KeptAlive/></MemoryRouter>);

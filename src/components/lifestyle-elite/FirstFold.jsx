@@ -18,8 +18,8 @@ export function FirstFoldNavigation({ cards, activeIndex, onSelect, phaseLine, c
         </button>;
       })}
     </nav>
-    {(phaseLine || focusLabel) && <div className={`fw-ff-status${calmLayout ? " fw-ff-status--calm" : ""}`}>
-      <span>{phaseLine && <><span aria-hidden="true" className="fw-ff-phase-dot"/>{compactPhaseLine || phaseLine}{phaseDetail && <span className="sr-only"> · {phaseDetail}</span>}</>}{focusLabel && <span className={phaseLine ? "sr-only" : undefined}>{phaseLine ? ` · Showing ${focusLabel}` : `Showing ${focusLabel}`}</span>}</span>
+    {(phaseLine || focusLabel) && <div className={`fw-ff-status${calmLayout ? " fw-ff-status--calm" : ""}${!phaseLine ? " fw-ff-status--focus-only" : ""}`}>
+      <span>{phaseLine && <><span aria-hidden="true" className="fw-ff-phase-dot"/>{compactPhaseLine || phaseLine}{phaseDetail && <span className="sr-only"> · {phaseDetail}</span>}</>}{focusLabel && <span className={phaseLine || calmLayout ? "sr-only" : undefined}>{phaseLine ? ` · Showing ${focusLabel}` : `Showing ${focusLabel}`}</span>}</span>
       {focusLabel && <button type="button" onClick={onClear} title="Show all Lifestyle rooms"><X size={13} aria-hidden="true"/> Everything</button>}
     </div>}
   </>;

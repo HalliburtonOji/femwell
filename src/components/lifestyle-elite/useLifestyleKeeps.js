@@ -77,7 +77,7 @@ export function useLifestyleKeeps({ ownerId, enabled, profile, savedIds, items, 
       }
       if (cancelled || activeOwner.current !== ownerId || mutationRevision.current !== mutationAtStart) return;
       const merged = mergeSavedCollections(physical, { ...ownedProfile, user_id: ownerId, saved_item_ids: ownedIds }, resolutions);
-      setDerived({ ownerId, rows: merged.filter(row => parseSavedMeta(row)?.kind !== "sky-lesson"),
+      setDerived({ ownerId, physicalRows: physical, rows: merged.filter(row => parseSavedMeta(row)?.kind !== "sky-lesson"),
         items: [...resolutions.values()].map(value => value.item).filter(Boolean) });
     })();
     return () => { cancelled = true; };
@@ -112,6 +112,8 @@ export function useLifestyleKeeps({ ownerId, enabled, profile, savedIds, items, 
   const invalidateSources = useCallback(() => setContentRevision(value => value + 1), []);
   const current = enabled && ownerId && derived?.ownerId === ownerId ? derived : null;
   return { archiveKeeps: current?.rows || EMPTY, resolvedKeeps: current?.items || EMPTY,
+    keepsLoading: !!(enabled && ownerId && !(snapshot?.ownerId === ownerId && snapshot.failed)
+      && !(snapshot?.ownerId === ownerId && current?.physicalRows === snapshot.rows)),
     keepsError: enabled && ownerId && snapshot?.ownerId === ownerId && snapshot?.failed ? ERROR : "",
     removeConfirmed, invalidateSources };
 }

@@ -603,7 +603,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
   // Day 8). One derivation, one answer.
   const cycleDay = useCycleDay(profile).cycleDay;
   const { feed, phaseFeed } = useLifestyleFeed(loading ? null : user?.id, phaseKey);
-  const { archiveKeeps, resolvedKeeps, keepsError, removeConfirmed: removeConfirmedKeeps, invalidateSources: invalidateKeptSources } = useLifestyleKeeps({
+  const { archiveKeeps, resolvedKeeps, keepsLoading, keepsError, removeConfirmed: removeConfirmedKeeps, invalidateSources: invalidateKeptSources } = useLifestyleKeeps({
     ownerId: user?.id, enabled: !!selectedPresentation, profile, savedIds, items, revision: keepsRevision,
   });
   useLifestyleKeepAcknowledgements({ ownerId: user?.id, setProfile, setSavedIds });
@@ -643,9 +643,12 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
   const morePicks = useMemo(() => [grouped.article[0], grouped.video[0], grouped.audio[0]].filter(Boolean).slice(0, 2), [grouped]);
   const savedItems = useMemo(() => {
     const pool = selectedPresentation ? [...resolvedKeeps, ...(items || [])] : (items || []);
+    const ownedIds = selectedPresentation
+      ? new Set([...savedIds, ...archiveKeeps.filter(keep => keep.item_type === "LIFESTYLE").map(keep => keep.item_id).filter(Boolean)])
+      : new Set(savedIds);
     const seen = new Set();
-    return pool.filter(i => savedIds.includes(i.id) && !seen.has(i.id) && seen.add(i.id));
-  }, [items, savedIds, selectedPresentation, resolvedKeeps]);
+    return pool.filter(i => ownedIds.has(i.id) && !seen.has(i.id) && seen.add(i.id));
+  }, [items, savedIds, selectedPresentation, resolvedKeeps, archiveKeeps]);
   const isSaved = useCallback((id) => savedIds.includes(id) || archiveKeeps.some(keep=>keep.item_id===id), [savedIds,archiveKeeps]);
 
   // ── loaders (real, guarded — same calls as Lifestyle.jsx) ─────────────────
@@ -1440,6 +1443,12 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
       ["tab", "reading", "lesson", "lessonVersion", "joy"].forEach(key => url.searchParams.delete(key));
       url.hash = "";
       window.history.replaceState(window.history.state, "", url);
+      // replaceState leaves React Router's location unchanged. Keep Sky's accepted
+      // source in step with an intentional room change, including a return to Sky.
+      if (routeActive && url.pathname === (routePathname ?? url.pathname)) {
+        setSkyArrival(current => current.pathname === url.pathname && current.search === url.search
+          ? current : { pathname: url.pathname, search: url.search });
+      }
     }
   };
   const focusBoard = focus ? focus.board : null;
@@ -1467,7 +1476,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
     setReaderOpen(true);
   };
   const sectionActions = {
-    read: [continueCards[0] ? {label:"Continue reading",run:()=>openReadCard(continueCards[0])} : choose("Choose a read", [...articleCards, ...storyCards], openReadCard), choose("Saved reads", actionSavedCards.filter((i) => ["article", "daily_story"].includes(i.type)), openReadCard, "No saved reads yet. Save a piece you enjoy and it will appear here.")],
+    read: [continueCards[0] ? {label:"Continue reading",run:()=>openReadCard(continueCards[0])} : choose("Choose a read", [...articleCards, ...storyCards], openReadCard), choose("Saved reads", actionSavedCards.filter((i) => ["article", "story", "daily_story"].includes(i.type)), openReadCard, keepsError ? "Some saves couldn’t load. Open Yours to retry." : keepsLoading ? "Finding your saved reads…" : "No saved reads yet. Save a piece you enjoy and it will appear here.")],
     listen: [choose("Choose a listen", audioCards), choose("Choose a watch", videoCards)],
     books: [{ label: calmBookPosition && !calmBookPosition.caughtUp ? "Continue story" : "Today's chapter", run: calmBookPosition && !calmBookPosition.caughtUp ? openPersonalChapter : openTodaysChapter }, choose("Choose a book", calmLayout ? [...classicCards, ...shelfBookCards] : [...shelfBookCards, ...classicCards])],
     good: [calmLayout ? { label: "Time for yourself", run: focusGoodTime } : { label: "Time for yourself", description: "A read, a listen, or a little doing.", content: (afterClose) => <TimePickerLens presentation={selectedPresentation} calmLayout={calmLayout} pickFor={pickFor} isSaved={isSaved} onSave={(it) => afterClose(toggleSave, it)} onOpen={(it) => afterClose(openItem, it)} onTry={(title) => afterClose(saveTryThis, title)} /> }, choose("A small joy", goodLifeJoys, openJoy)],
@@ -1600,7 +1609,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
             moon: moonToday?.name, phaseKey, listens: (grouped.audio || []).length, watches: playableVideos(grouped.video).length,
           });
           if (selectedPresentation && focusSection && focusSection !== "sky") {
-            const lines = {read:continueCards[0] ? `Your place in ${continueCards[0].title} is waiting. One good read beats twelve open tabs.` : "One good read beats twelve open tabs.",listen:"Let someone else do the talking. Your headphones have earned an outing.",books:calmLayout ? (story ? `${cleanTitle(story.series_title || story.title || "The story")} has a chapter for you. Your shelf can wait.` : "The shelf is here when you want it. Pick the company you fancy.") : "One chapter. Then we’ll see.",good:"A little room in your day. No productivity hat required.",yours:"Your excellent taste, filed loosely."};
+            const lines = {read:continueCards[0] ? `Your place in ${continueCards[0].title} is waiting. One good read beats twelve open tabs.` : "One good read beats twelve open tabs.",listen:"Let someone else do the talking. Your headphones have earned an outing.",books:calmLayout ? (story ? `${cleanTitle(story.series_title || story.title || "The story")} has a chapter for you. Your shelf can wait.` : "The shelf is here when you want it. Pick the company you fancy.") : "One chapter. Then we’ll see.",good:"A little room in your day. No productivity hat required.",yours:savedItems.length || skySavedCount ? "Your excellent taste, filed loosely." : keepsError || skySavesError ? "Some keeps need another look." : keepsLoading || skySavesLoading ? "Finding the things you've kept." : "Your shelf's yours to make."};
             jess.eyebrow = "Jess · " + (FOCUS_MAP[focusSection]?.label || "Lifestyle"); jess.body = lines[focusSection] || jess.body;
           }
           const glanceRows = [
@@ -1618,16 +1627,25 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
           // that already summarises itself.
           if(livingDemo && focusSection === "listen")glanceRows.unshift({Icon:Headphones,label:"Listen & watch",text:`${audioCards.length} listens · ${videoCards.length} watches in this selection`,onClick:()=>audioCards[0] || videoCards[0] ? setExpanded(audioCards[0] || videoCards[0]) : window.location.assign(calmLayout ? watchHref : "/WatchListen")});
           if(livingDemo && focusSection === "good")glanceRows.unshift({Icon:Coffee,label:"A small joy",text:goodLifeJoys[0]?.title || "A little time to yourself",onClick:()=>openJoy(goodLifeJoys[0])});
-          if(livingDemo && focusSection === "yours")glanceRows.unshift({Icon:Bookmark,label:"Your kept things",text:skySavedCount ? `${skySavedCount} Sky ${skySavedCount===1 ? "lesson" : "lessons"}${savedItems.length ? ` · ${savedItems.length} Lifestyle ${savedItems.length===1 ? "find" : "finds"}` : " kept for another day"}` : savedItems.length ? `${savedItems.length} Lifestyle ${savedItems.length===1 ? "find" : "finds"} · your Sky keepsakes below` : "Your saved things, with room for more",onClick:()=>navigate(savedHref)});
+          if(livingDemo && focusSection === "yours")glanceRows.unshift({Icon:Bookmark,label:"Your kept things",text:skySavedCount ? `${skySavedCount} Sky ${skySavedCount===1 ? "lesson" : "lessons"}${savedItems.length ? ` · ${savedItems.length} Lifestyle ${savedItems.length===1 ? "find" : "finds"}` : " kept for another day"}` : savedItems.length ? `${savedItems.length} Lifestyle ${savedItems.length===1 ? "find" : "finds"} · your Sky keepsakes below` : keepsError || skySavesError ? "Some keeps couldn't load · open Yours to retry" : keepsLoading || skySavesLoading ? "Finding what you've kept" : "Your saved things, with room for more",onClick:()=>navigate(savedHref)});
           const focusRowLabel = { read: "Your reading", books: calmBookPosition && !calmBookPosition.caughtUp ? "Your place" : "Today's chapter", story: "Today's chapter", sky: "Your sky", ...(livingDemo ? {listen:"Listen & watch",good:"A small joy",yours:"Your kept things"} : {}) }[focusSection] || null;
           const orderedGlance = focusRowLabel
             ? [...glanceRows].sort((a, b) => (b.label === focusRowLabel) - (a.label === focusRowLabel))
             : glanceRows;
           // the deep read — only sections we genuinely have signal for, never padded
+          const readWhatOn = continueCards.length ? "Your reading place is saved. Come back mid-sentence." : grouped.article.length ? "Fresh reads are here. Follow the one that catches your eye." : "Read is taking a breath today. Books is next door if you fancy a chapter.";
+          const jessWhatOn = {
+            read: readWhatOn,
+            listen: audioCards.length || videoCards.length ? "A listen or watch is here. Pick the one that fits your day." : "Listen is quiet today. Silence can have a turn too.",
+            books: story ? "A chapter is here. The shelf can wait until you fancy it." : "Books is open. Take your time choosing company.",
+            sky: horoscope ? "Your sky reading is here. Take what helps; leave the rest." : "Your sky starts with a birth date. Time and place can wait.",
+            good: goodLifeJoys.length ? "One small good thing is enough. Pick the room you fancy." : "Good life is here when you want a different room.",
+            yours: savedItems.length || skySavedCount ? "Your keeps are here. No deadline attached." : keepsError || skySavesError ? "Some keeps couldn't load. Open Yours to retry." : keepsLoading || skySavesLoading ? "Finding what you've kept. Give your shelf a moment." : "Nothing kept yet. Save only what you want to find again.",
+          }[focusSection] || readWhatOn;
           const sheetSections = [
-            { label: "What's on", text: continueCards.length ? `${continueCards.length} on the go, with your place saved. Fancy something new? ${grouped.article.length} fresh reads are here too.` : `${grouped.article.length} fresh reads are in, and ${savedItems.length+(livingDemo ? skySavedCount : 0)} saved for later. Nothing here expires.` },
+            { label: "What's on", text: jessWhatOn },
             story ? { label: "If you've ten minutes", text: `Today's chapter${story.cliffhanger ? ` picks up on "${story.cliffhanger}"` : " is ready"} — a finished story you can also read straight through whenever you fancy it.` } : null,
-            moonToday ? { label: "Your sky", text: `The moon is ${moonToday.name.toLowerCase()}, ${moonToday.illumination}% lit tonight${phaseKey ? `, and you're in your ${phaseLabel(phaseKey).toLowerCase()} week` : ""}. Folklore, held lightly.` } : null,
+            moonToday ? { label: "Your sky", text: `Tonight's moon: ${moonToday.name.toLowerCase()}, ${moonToday.illumination}% lit${phaseKey ? `. Your cycle: ${phaseLabel(phaseKey).toLowerCase()}` : ""}. Two rhythms, no instructions.` } : null,
           ].filter(Boolean);
           if (foldVariant) return <FirstFoldSummary calmLayout={calmLayout} active={routeActive} orderedGlance={orderedGlance} jess={jess} sheetSections={sheetSections}
             jessOpen={jessOpen} onJessOpen={() => setJessOpen(true)} onJessClose={() => setJessOpen(false)} />;

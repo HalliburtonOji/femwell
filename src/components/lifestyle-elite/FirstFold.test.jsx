@@ -47,7 +47,8 @@ describe("First fold navigation and complete summaries", () => {
     const {container,rerender}=render(<FirstFoldNavigation cards={cards} activeIndex={0} onSelect={vi.fn()} phaseLine="" calmLayout/>);
     expect(container.querySelector('.fw-ff-status')).not.toBeInTheDocument();
     rerender(<FirstFoldNavigation cards={cards} activeIndex={0} onSelect={vi.fn()} phaseLine="" focusLabel="Read" onClear={vi.fn()} calmLayout/>);
-    expect(container.querySelector('.fw-ff-status')).toHaveTextContent('Showing Read');
+    expect(container.querySelector('.fw-ff-status--focus-only')).toHaveTextContent('Showing Read');
+    expect(screen.getByText('Showing Read')).toHaveClass('sr-only');
     expect(screen.getByRole('button',{name:'Everything'})).toBeVisible();
   });
 
