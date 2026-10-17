@@ -20,7 +20,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays,
-  isSameMonth, parseISO,
+  isSameMonth, parseISO, differenceInCalendarDays,
 } from "date-fns";
 import {
   CalendarDays, X, ArrowLeft, ChevronLeft, ChevronRight, Utensils, Droplets, Smile,
@@ -83,6 +83,7 @@ function downscaleDataUrl(dataUrl, maxEdge = 1000) {
 }
 
 const OX = "#7A1A12"; // oxblood — the app-wide heading colour (BRAND_IDENTITY §1)
+const CALM_FORM = { surface: "#fff", tint: "#f7f9f7", line: "#dfe6e1", ink: "#51444e", muted: "#665d63" };
 const PHASE = { menstrual: "#BC2E27", follicular: "#8FAF8F", ovulatory: "#D4AF37", luteal: "#8E6E8E" };
 
 // ── the type catalogue + the LOG/PLAN gate ─────────────────────────────────────
@@ -104,11 +105,11 @@ const TYPE = { ...Object.fromEntries(TYPES.map(t => [t.id, t])), task: { label: 
 const DOT = { meal: T.gold, water: "#5E93B8", mood: T.sage, symptom: T.crimson, note: "#8E6E8E", habit: T.sage, med: T.blush, event: "#A6862B", reminder: T.muted, period: T.crimson, task: T.plum || "#8E6E8E" };
 const PHASE_LABEL = { menstrual: "Menstrual", follicular: "Follicular", ovulatory: "Ovulatory", luteal: "Luteal" };
 // cycle-day from the same anchor the whole app uses (UserProfile.last_period_start_date)
-function cycleDayFor(dateStr) {
+export function cycleDayFor(dateStr) {
   const p = _liveProfile;
   if (!p?.last_period_start_date) return null;
   const cycleLen = p.cycle_avg_length || 28;
-  const diff = Math.floor((parseISO(dateStr) - parseISO(String(p.last_period_start_date).slice(0, 10))) / 86400000);
+  const diff = differenceInCalendarDays(parseISO(dateStr), parseISO(String(p.last_period_start_date).slice(0, 10)));
   if (diff < 0) return null;
   return (((diff % cycleLen) + cycleLen) % cycleLen) + 1;
 }
@@ -122,12 +123,12 @@ const localTodayKey = () => iso(new Date());
 // after auth). Falls back to no tint when we don't have period data (never a wrong colour).
 let _liveProfile = null;
 export function setLiveProfile(p) { _liveProfile = p || null; }
-function cyclePhase(dateStr) {
+export function cyclePhase(dateStr) {
   const p = _liveProfile;
   if (!p?.last_period_start_date) return null;
   const cycleLen = p.cycle_avg_length || 28;
   const periodLen = p.period_length || 5;
-  const diff = Math.floor((parseISO(dateStr) - parseISO(String(p.last_period_start_date).slice(0, 10))) / 86400000);
+  const diff = differenceInCalendarDays(parseISO(dateStr), parseISO(String(p.last_period_start_date).slice(0, 10)));
   if (diff < 0) return null;
   const day = (((diff % cycleLen) + cycleLen) % cycleLen) + 1;
   if (day <= periodLen) return "menstrual";
@@ -306,12 +307,12 @@ export default function CalendarOverlay() {
       if (generation !== openGeneration.current) return;
       if (!id) { setSaveError(authOwner.current ? "Your account changed or session is not ready. Reopen the calendar before saving." : "Sign in to save this period. Your choice is still here."); return; }
       if (userId && id !== userId) { setSaveError("Your account changed. Reopen the calendar before saving."); return; }
-      await writePeriod(id, date, { type, flow }, () => authOwner.current === id);
+      const savedPeriod = await writePeriod(id, date, { type, flow }, () => authOwner.current === id);
       if (generation !== openGeneration.current) return;
       if (authOwner.current !== id) throw new Error("Account changed during save");
       await reloadProfile(id, generation); await reload(id, generation);
       if (generation !== openGeneration.current) return;
-      flash(type === "PeriodStart" ? "Period logged — cycle updated" : type === "PeriodEnd" ? "Period end logged" : "Spotting logged");
+      flash(type === "PeriodStart" ? (savedPeriod.anchorUpdated ? "Period logged — cycle updated" : "Earlier period logged — current cycle kept") : type === "PeriodEnd" ? "Period end logged" : "Spotting logged");
       closeAll();
     } catch { if (generation === openGeneration.current) { blockedSignature.current = true; setSaveError("This period save was not confirmed. Check the day before trying again."); } }
     finally { commitBusy.current = false; }
@@ -455,7 +456,7 @@ export default function CalendarOverlay() {
             {sheet.stage === "smartshot" && <SmartShotSheet sheet={sheet}
               onBack={() => setSheet({ stage: "day", mode: sheet.mode, date: sheet.date })}
               onClose={closeAll}
-              onFood={({ date, meal, photoUrl }) => setSheet({ stage: "food", mode: date > TODAY_STR ? "plan" : "log", date, initialMeal: meal, photoUrl })}
+              onFood={({ date, meal, photoUrl, reviewedTitle, initialWords }) => setSheet({ stage: "food", mode: date > TODAY_STR ? "plan" : "log", date, initialMeal: meal, photoUrl, suggested: reviewedTitle && !/^(a meal|food)$/i.test(reviewedTitle) ? reviewedTitle : "", initialWords })}
               onConfirm={async (list) => { const planned = list.length > 0 && list.every((x) => x.plan); await commitAndReload(list, `${planned ? "Added" : "Logged"} ${list.length} ${planned ? "to your plan" : list.length === 1 ? "thing" : "things"}`); }} />}
 
             {sheet.stage === "done" && <DoneSheet sheet={sheet} onClose={closeAll} onAnother={() => setSheet({ stage: "day", mode: sheet.mode, date: sheet.date })} />}
@@ -472,6 +473,9 @@ export default function CalendarOverlay() {
 
 // ── QuickForm — compact per-type capture for a chosen day (real write via commitReal) ──
 function QuickForm({ sheet, onBack, onClose, onSave }) {
+  const quietPill = {...pill, background: CALM_FORM.tint, borderColor: CALM_FORM.line, color: CALM_FORM.ink};
+  const quietGhostBtn = {...ghostBtn, background: CALM_FORM.surface, borderColor: CALM_FORM.line, color: CALM_FORM.ink, borderRadius: 14};
+  const quietSolidBtn = {...solidBtn, borderRadius: 14};
   const { date, mode, type } = sheet;
   const t = TYPE[type] || { label: type, Icon: StickyNote, tone: T.muted };
   const dayWord = date === TODAY_STR ? "today" : format(parseISO(date), "EEE d MMM");
@@ -510,59 +514,59 @@ function QuickForm({ sheet, onBack, onClose, onSave }) {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <button onClick={onBack} style={iconBtn} aria-label="Back"><ArrowLeft size={15} /></button>
-          <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 21, color: OX }}>{isFuture ? "Plan" : "Log"} {t.label.toLowerCase()}</span>
+          <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 21, color: CALM_FORM.ink }}>{isFuture ? "Plan" : "Log"} {t.label.toLowerCase()}</span>
         </div>
         <button onClick={onClose} style={iconBtn} aria-label="Close"><X size={15} /></button>
       </div>
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 12, background: `${t.tone}22`, color: OX }}>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 12, background: `${t.tone}22`, color: CALM_FORM.ink }}>
         <t.Icon size={11} /> {isFuture ? "PLAN" : "LOG"} · {dayWord}
       </div>
 
       {type === "mood" && (
         <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
-          {MOODS.map((m, i) => { const on = mood === i + 1; return <button key={m} onClick={() => setMood(i + 1)} style={{ flex: 1, padding: "10px 4px", borderRadius: 10, cursor: "pointer", border: `1.5px solid ${on ? OX : T.paperDeep}`, background: on ? `${T.sage}22` : T.paperHi, color: on ? OX : T.muted, fontFamily: UI, fontSize: 12, fontWeight: 700 }}>{m}</button>; })}
+          {MOODS.map((m, i) => { const on = mood === i + 1; return <button key={m} onClick={() => setMood(i + 1)} aria-pressed={on} style={{ flex: 1, minHeight: 44, padding: "10px 4px", borderRadius: 10, cursor: "pointer", border: `1.5px solid ${on ? CALM_FORM.ink : CALM_FORM.line}`, background: on ? `${T.sage}22` : CALM_FORM.tint, color: on ? CALM_FORM.ink : CALM_FORM.muted, fontFamily: UI, fontSize: 12, fontWeight: 700 }}>{m}</button>; })}
         </div>
       )}
       {type === "symptom" && (
         <>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
-            {[...SYMPTOMS, ...syms.filter((s) => !SYMPTOMS.includes(s))].map((s) => { const on = syms.includes(s); return <button key={s} onClick={() => setSyms((p) => on ? p.filter((x) => x !== s) : [...p, s])} style={{ ...pill, cursor: "pointer", background: on ? PHASE.menstrual : T.paperHi, color: on ? "#fff" : T.muted, borderColor: on ? PHASE.menstrual : T.paperDeep }}>{s}</button>; })}
+            {[...SYMPTOMS, ...syms.filter((s) => !SYMPTOMS.includes(s))].map((s) => { const on = syms.includes(s); return <button key={s} onClick={() => setSyms((p) => on ? p.filter((x) => x !== s) : [...p, s])} aria-pressed={on} style={{ ...quietPill, minHeight: 40, cursor: "pointer", background: on ? PHASE.menstrual : CALM_FORM.tint, color: on ? "#fff" : CALM_FORM.muted, borderColor: on ? PHASE.menstrual : CALM_FORM.line }}>{s}</button>; })}
           </div>
           <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
-            <input value={customSym} onChange={(e) => setCustomSym(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomSym(); } }}
+            <input value={customSym} aria-label="Type your own symptom" onChange={(e) => setCustomSym(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomSym(); } }}
               placeholder="Type your own symptom…"
-              style={{ flex: 1, boxSizing: "border-box", padding: "9px 11px", borderRadius: 10, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: SERIF, fontSize: 14, outline: "none" }} />
-            <button onClick={addCustomSym} disabled={!customSym.trim()} style={{ ...ghostBtn, padding: "9px 14px", opacity: customSym.trim() ? 1 : 0.4, cursor: customSym.trim() ? "pointer" : "default" }}>Add</button>
+              style={{ flex: 1, boxSizing: "border-box", padding: "9px 11px", borderRadius: 10, border: `1px solid ${CALM_FORM.line}`, background: CALM_FORM.surface, color: CALM_FORM.ink, fontFamily: SERIF, fontSize: 14, outline: "none" }} />
+            <button onClick={addCustomSym} disabled={!customSym.trim()} style={{ ...quietGhostBtn, padding: "9px 14px", opacity: customSym.trim() ? 1 : 0.4, cursor: customSym.trim() ? "pointer" : "default" }}>Add</button>
           </div>
-          <div style={{ ...eyebrow, marginBottom: 6 }}>Severity · {sev}/5</div>
-          <input type="range" min="1" max="5" value={sev} onChange={(e) => setSev(Number(e.target.value))} style={{ width: "100%", accentColor: PHASE.menstrual, marginBottom: 14 }} />
+          <div style={{ ...eyebrow, color: CALM_FORM.ink, marginBottom: 6 }}>Severity · {sev}/5</div>
+          <input type="range" aria-label="Symptom severity" min="1" max="5" value={sev} onChange={(e) => setSev(Number(e.target.value))} style={{ width: "100%", accentColor: PHASE.menstrual, marginBottom: 14 }} />
         </>
       )}
       {type === "water" && (
         <div style={{ display: "flex", alignItems: "center", gap: 12, justifyContent: "center", marginBottom: 16 }}>
-          <button onClick={() => setWater((w) => Math.max(1, w - 1))} style={{ ...iconBtn, width: 40, height: 40 }}>−</button>
-          <span style={{ fontFamily: SERIF, fontSize: 18, color: T.ink, minWidth: 90, textAlign: "center" }}>{water} glass{water === 1 ? "" : "es"}</span>
-          <button onClick={() => setWater((w) => w + 1)} style={{ ...iconBtn, width: 40, height: 40 }}>+</button>
+          <button onClick={() => setWater((w) => Math.max(1, w - 1))} aria-label="Remove a glass of water" style={{ ...iconBtn, width: 44, height: 44 }}>−</button>
+          <span style={{ fontFamily: SERIF, fontSize: 18, color: CALM_FORM.ink, minWidth: 90, textAlign: "center" }}>{water} glass{water === 1 ? "" : "es"}</span>
+          <button onClick={() => setWater((w) => w + 1)} aria-label="Add a glass of water" style={{ ...iconBtn, width: 44, height: 44 }}>+</button>
         </div>
       )}
       {type === "note" && (
-        <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} autoFocus placeholder="What's on your mind?"
-          style={{ width: "100%", boxSizing: "border-box", padding: "11px 12px", borderRadius: 10, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: SERIF, fontSize: 15, outline: "none", resize: "vertical", marginBottom: 14 }} />
+        <textarea value={text} aria-label="Your note" onChange={(e) => setText(e.target.value)} rows={3} autoFocus placeholder="What's on your mind?"
+          style={{ width: "100%", boxSizing: "border-box", padding: "11px 12px", borderRadius: 10, border: `1px solid ${CALM_FORM.line}`, background: CALM_FORM.surface, color: CALM_FORM.ink, fontFamily: SERIF, fontSize: 15, outline: "none", resize: "vertical", marginBottom: 14 }} />
       )}
       {(type === "habit" || type === "med" || type === "task" || type === "event" || type === "reminder") && (
         <>
-          <input value={title} onChange={(e) => setTitle(e.target.value)} autoFocus placeholder={type === "med" ? "e.g. Vitamin D" : type === "habit" ? "e.g. Morning walk" : type === "task" ? "What needs doing?" : "What's the event?"}
-            style={{ width: "100%", boxSizing: "border-box", padding: "11px 12px", borderRadius: 10, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: SERIF, fontSize: 15, outline: "none", marginBottom: 10 }} />
+          <input value={title} aria-label={`${t.label} title`} onChange={(e) => setTitle(e.target.value)} autoFocus placeholder={type === "med" ? "e.g. Vitamin D" : type === "habit" ? "e.g. Morning walk" : type === "task" ? "What needs doing?" : "What's the event?"}
+            style={{ width: "100%", boxSizing: "border-box", padding: "11px 12px", borderRadius: 10, border: `1px solid ${CALM_FORM.line}`, background: CALM_FORM.surface, color: CALM_FORM.ink, fontFamily: SERIF, fontSize: 15, outline: "none", marginBottom: 10 }} />
           {(type === "event" || type === "reminder") && (
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
               <Clock size={14} color={T.gold} />
-              <input type="time" value={time} onChange={(e) => setTime(e.target.value)} style={{ padding: "8px 10px", borderRadius: 8, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: UI, fontSize: 13, outline: "none" }} />
+              <input type="time" aria-label={`${t.label} time`} value={time} onChange={(e) => setTime(e.target.value)} style={{ padding: "8px 10px", borderRadius: 8, border: `1px solid ${CALM_FORM.line}`, background: CALM_FORM.surface, color: CALM_FORM.ink, fontFamily: UI, fontSize: 13, outline: "none" }} />
             </div>
           )}
         </>
       )}
 
-      <button onClick={save} disabled={!canSave} style={{ ...solidBtn, background: isFuture ? "#A6862B" : T.crimson, color: isFuture ? T.ink : T.paper, opacity: canSave ? 1 : 0.45, cursor: canSave ? "pointer" : "default" }}>
+      <button onClick={save} disabled={!canSave} style={{ ...quietSolidBtn, background: isFuture ? "#A6862B" : T.crimson, color: isFuture ? T.ink : CALM_FORM.surface, opacity: canSave ? 1 : 0.45, cursor: canSave ? "pointer" : "default" }}>
         <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />{isFuture ? "Add to plan" : "Log it"} · {dayWord}
       </button>
     </>
@@ -570,7 +574,10 @@ function QuickForm({ sheet, onBack, onClose, onSave }) {
 }
 
 // ── CYCLE sheet — log a period (start/end/spotting + flow); drives the gradient ──
-function CycleSheet({ sheet, onBack, onClose, onSave }) {
+export function CycleSheet({ sheet, onBack, onClose, onSave }) {
+  const quietInset = {...inset, background: CALM_FORM.surface, borderColor: CALM_FORM.line, borderRadius: 18};
+  const quietGhostBtn = {...ghostBtn, background: CALM_FORM.surface, borderColor: CALM_FORM.line, color: CALM_FORM.ink, borderRadius: 14};
+  const quietSolidBtn = {...solidBtn, borderRadius: 14};
   const { date } = sheet;
   const dayWord = date === TODAY_STR ? "today" : format(parseISO(date), "EEE d MMM");
   const ph = cyclePhase(date);
@@ -584,32 +591,32 @@ function CycleSheet({ sheet, onBack, onClose, onSave }) {
           <button onClick={onBack} style={iconBtn} aria-label="Back"><ArrowLeft size={15} /></button>
           <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
             <Droplets size={18} color={T.crimson} />
-            <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 21, color: OX }}>Period &amp; cycle</span>
+            <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 21, color: CALM_FORM.ink }}>Period &amp; cycle</span>
           </div>
         </div>
         <button onClick={onClose} style={iconBtn} aria-label="Close"><X size={15} /></button>
       </div>
-      <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginBottom: 12 }}>
-        For <b style={{ color: OX }}>{dayWord}</b>{ph ? <> · currently <b style={{ color: OX }}>{PHASE_LABEL[ph]}</b>{cd ? `, cycle day ${cd}` : ""}</> : <> · no cycle set yet</>}
+      <div style={{ fontFamily: UI, fontSize: 12, color: CALM_FORM.muted, marginBottom: 12 }}>
+        For <b style={{ color: CALM_FORM.ink }}>{dayWord}</b>{ph ? <> · currently <b style={{ color: CALM_FORM.ink }}>{PHASE_LABEL[ph]}</b>{cd ? `, cycle day ${cd}` : ""}</> : <> · no cycle set yet</>}
       </div>
 
-      <div style={{ ...inset, padding: 14, marginBottom: 10, background: "#FFFFFF" }}>
+      <div style={{ ...quietInset, padding: 14, marginBottom: 10, background: "#FFFFFF" }}>
         <div style={{ ...eyebrow, color: T.crimson, marginBottom: 8 }}>My period started</div>
-        <div style={{ ...eyebrow, marginBottom: 6 }}>Flow</div>
+        <div style={{ ...eyebrow, color: CALM_FORM.ink, marginBottom: 6 }}>Flow</div>
         <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
-          {FLOWS.map(([v, l]) => { const on = flow === v; return <button key={v} onClick={() => setFlow(v)} style={{ flex: 1, padding: "9px 0", borderRadius: 10, cursor: "pointer", border: `1.5px solid ${on ? T.crimson : T.paperDeep}`, background: on ? `${T.crimson}18` : T.paperHi, color: on ? T.crimson : T.muted, fontFamily: UI, fontSize: 12, fontWeight: 700 }}>{l}</button>; })}
+          {FLOWS.map(([v, l]) => { const on = flow === v; return <button key={v} onClick={() => setFlow(v)} aria-pressed={on} style={{ flex: 1, minHeight: 44, padding: "9px 0", borderRadius: 10, cursor: "pointer", border: `1.5px solid ${on ? T.crimson : CALM_FORM.line}`, background: on ? `${T.crimson}18` : CALM_FORM.tint, color: on ? T.crimson : CALM_FORM.muted, fontFamily: UI, fontSize: 12, fontWeight: 700 }}>{l}</button>; })}
         </div>
-        <button onClick={() => onSave({ date, type: "PeriodStart", flow })} style={{ ...solidBtn, background: T.crimson }}>
+        <button onClick={() => onSave({ date, type: "PeriodStart", flow })} style={{ ...quietSolidBtn, background: T.crimson }}>
           <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />Log period start · {dayWord}
         </button>
-        <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted, marginTop: 8 }}>
-          This sets your cycle from this date — the calendar gradient &amp; phases update from here.
+        <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: CALM_FORM.muted, marginTop: 8 }}>
+          The latest start sets your cycle; older starts stay in your history.
         </div>
       </div>
 
       <div style={{ display: "flex", gap: 8 }}>
-        <button onClick={() => onSave({ date, type: "PeriodEnd" })} style={{ ...ghostBtn, flex: 1 }}>Period ended</button>
-        <button onClick={() => onSave({ date, type: "Spotting" })} style={{ ...ghostBtn, flex: 1 }}>Spotting</button>
+        <button onClick={() => onSave({ date, type: "PeriodEnd" })} style={{ ...quietGhostBtn, flex: 1 }}>Period ended</button>
+        <button onClick={() => onSave({ date, type: "Spotting" })} style={{ ...quietGhostBtn, flex: 1 }}>Spotting</button>
       </div>
     </>
   );
@@ -871,17 +878,23 @@ function DoneSheet({ sheet, onClose, onAnother }) {
 // optional macros / notes / "how it felt", inline water quick-add, and a warm review.
 // ════════════════════════════════════════════════════════════════════════════════
 const COMMON_FOODS = ["Porridge", "Greek yoghurt", "Banana", "Eggs", "Sourdough toast", "Avocado", "Chicken salad", "Salmon", "Brown rice", "Pasta", "Hummus", "Apple", "Coffee", "Green smoothie", "Lentil soup", "Berries", "Almonds", "Stir-fry", "Roast veg", "Dark chocolate"];
-const FOOD_RECENTS = ["Greek yoghurt & berries", "Porridge with banana", "Chicken & avocado salad"];
-const FOOD_FAVES = ["Overnight oats", "Salmon & greens", "Green smoothie"];
+const FOOD_SUGGESTIONS = [...new Set([...COMMON_FOODS, "Greek yoghurt & berries", "Porridge with banana", "Chicken & avocado salad", "Overnight oats", "Salmon & greens"])];
+const FOOD_QUICK = ["Porridge", "Eggs", "Chicken salad", "Salmon", "Green smoothie"];
 const FEELINGS = ["Light", "Satisfied", "Full", "Energised", "Sluggish", "Still peckish"];
 const PORTIONS = ["Small", "Medium", "Large"];
 const MEALS = [["breakfast", "Breakfast"], ["lunch", "Lunch"], ["dinner", "Dinner"], ["snack", "Snack"]];
 
-function FoodLogSheet({ sheet, onBack, onClose, onConfirm }) {
+export function FoodLogSheet({ sheet, onBack, onClose, onConfirm }) {
+  const FOOD = {surface: "#fff", tint: "#f7f9f7", line: "#dfe6e1", ink: "#51444e", muted: "#665d63", plum: "#51444e"};
+  const foodInset = {...inset, background: FOOD.tint, borderColor: FOOD.line, borderRadius: 16};
+  const foodSolidBtn = {...solidBtn, borderRadius: 14, color: "#fff"};
+  const foodGhostBtn = {...ghostBtn, background: FOOD.surface, borderColor: FOOD.line, color: FOOD.ink, borderRadius: 14};
+  const foodPill = {...pill, background: FOOD.tint, borderColor: FOOD.line, color: FOOD.ink};
+  const foodEyebrow = {...eyebrow, color: "#58765f"};
   const { date, mode } = sheet;
   const isFuture = date > TODAY_STR;
   const dayWord = date === TODAY_STR ? "today" : format(parseISO(date), "EEE d MMM");
-  const [mealType, setMealType] = useState(sheet.initialMeal || (() => { const h = new Date().getHours(); return h < 11 ? "breakfast" : h < 15 ? "lunch" : h < 21 ? "dinner" : "snack"; })());
+  const [mealType, setMealType] = useState(() => MEALS.some(([id]) => id === sheet.initialMeal) ? sheet.initialMeal : (() => { const h = new Date().getHours(); return h < 11 ? "breakfast" : h < 15 ? "lunch" : h < 21 ? "dinner" : "snack"; })());
   const [items, setItems] = useState(sheet.suggested ? [{ name: sheet.suggested, portion: "Medium" }] : []);
   const [query, setQuery] = useState("");
   const [photoUrl, setPhotoUrl] = useState(sheet.photoUrl || null);
@@ -889,34 +902,51 @@ function FoodLogSheet({ sheet, onBack, onClose, onConfirm }) {
   const [feeling, setFeeling] = useState(null);
   const [showMacros, setShowMacros] = useState(false);
   const [kcal, setKcal] = useState(""); const [protein, setProtein] = useState("");
-  const [showNotes, setShowNotes] = useState(false); const [notes, setNotes] = useState("");
+  const [showNotes, setShowNotes] = useState(Boolean(sheet.initialWords)); const [notes, setNotes] = useState(sheet.initialWords || "");
   const [water, setWater] = useState(0);
+  const [showFoodIdeas, setShowFoodIdeas] = useState(false);
+  const [photoError, setPhotoError] = useState("");
   const fileRef = useRef(null);
+  const foodPhotoGeneration = useRef(0);
 
   const addItem = (name) => { if (!name) return; setItems((p) => p.some((i) => i.name.toLowerCase() === name.toLowerCase()) ? p : [...p, { name, portion: "Medium" }]); setQuery(""); };
   const setPortion = (i, portion) => setItems((p) => p.map((x, j) => j === i ? { ...x, portion } : x));
   const removeItem = (i) => setItems((p) => p.filter((_, j) => j !== i));
-  const matches = query.trim() ? COMMON_FOODS.filter((f) => f.toLowerCase().includes(query.trim().toLowerCase())) : [];
+  const matches = query.trim() ? FOOD_SUGGESTIONS.filter((f) => f.toLowerCase().includes(query.trim().toLowerCase())) : [];
 
   // photo path INTEGRATED — pick a food photo → the app's existing meal vision names the
   // items and adds them (8s-timeout + downscale, same safety as everywhere; unauth/slow →
   // just attaches the photo and you type). This is the photo+intent path inside the logger.
-  const onFile = async (e) => {
-    const f = e.target.files?.[0]; if (!f) return;
-    const r = new FileReader();
-    r.onload = async () => {
-      setPhotoUrl(r.result); setReading(true);
-      try {
-        const small = await downscaleDataUrl(r.result);
-        const res = await withTimeout(base44.functions.invoke("analyzeMealPhoto", { image_base64: small, mode: "meal" }), VISION_TIMEOUT_MS);
-        const d = res?.data || res;
-        const names = Array.isArray(d?.items) ? d.items.map((it) => it?.name).filter(Boolean) : [];
-        if (names.length) setItems((p) => { const have = new Set(p.map((x) => x.name.toLowerCase())); return [...p, ...names.filter((n) => !have.has(n.toLowerCase())).map((n) => ({ name: n, portion: "Medium" }))]; });
-      } catch { /* attach the photo; user types the food */ }
-      setReading(false);
-    };
-    r.readAsDataURL(f);
+  const readFoodPhoto = async (url, generation) => {
+    if (generation !== foodPhotoGeneration.current) return;
+    setPhotoUrl(url); setReading(true); setPhotoError("");
+    try {
+      const small = await downscaleDataUrl(url);
+      if (generation !== foodPhotoGeneration.current) return;
+      const res = await withTimeout(base44.functions.invoke("analyzeMealPhoto", { image_base64: small, mode: "meal" }), VISION_TIMEOUT_MS);
+      if (generation !== foodPhotoGeneration.current) return;
+      const d = res?.data || res;
+      const names = Array.isArray(d?.items) ? d.items.map((it) => it?.name).filter(Boolean) : [];
+      if (names.length) setItems((p) => { const have = new Set(p.map((x) => x.name.toLowerCase())); return [...p, ...names.filter((n) => !have.has(n.toLowerCase())).map((n) => ({ name: n, portion: "Medium" }))]; });
+    } catch { if (generation === foodPhotoGeneration.current) setPhotoError("Couldn't read the foods. You can still add them below."); }
+    finally { if (generation === foodPhotoGeneration.current) setReading(false); }
   };
+  useEffect(() => {
+    if (sheet.photoUrl) readFoodPhoto(sheet.photoUrl, ++foodPhotoGeneration.current);
+    return () => { foodPhotoGeneration.current++; };
+  }, [sheet.photoUrl]);
+  const onFile = (e) => {
+    const f = e.target.files?.[0]; if (!f) return;
+    e.target.value = "";
+    if (!f.type.startsWith("image/")) { setPhotoError("Choose an image to continue."); return; }
+    const generation = ++foodPhotoGeneration.current;
+    setPhotoError(""); setReading(true);
+    const reader = new FileReader();
+    reader.onload = () => { if (generation === foodPhotoGeneration.current) readFoodPhoto(reader.result, generation); };
+    reader.onerror = () => { if (generation === foodPhotoGeneration.current) { setReading(false); setPhotoError("That photo didn't open. Try another image."); } };
+    reader.readAsDataURL(f);
+  };
+  const removePhoto = () => { foodPhotoGeneration.current++; setPhotoUrl(null); setReading(false); setPhotoError(""); };
 
   const canSave = items.length > 0;
   const save = () => {
@@ -931,116 +961,117 @@ function FoodLogSheet({ sheet, onBack, onClose, onConfirm }) {
           <button onClick={onBack} style={iconBtn} aria-label="Back"><ArrowLeft size={15} /></button>
           <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
             <FlowerGlyph variant="poppy" size={20} color={T.gold} idx="food-flower" />
-            <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 21, color: OX }}>{isFuture ? "Plan a meal" : "Log a meal"}</span>
+            <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 21, color: FOOD.plum }}>{isFuture ? "Plan a meal" : "Log a meal"}</span>
           </div>
         </div>
         <button onClick={onClose} style={iconBtn} aria-label="Close"><X size={15} /></button>
       </div>
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 12, background: "rgba(168,137,63,0.16)", color: OX }}>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 12, background: "rgba(168,137,63,0.16)", color: FOOD.plum }}>
         <Utensils size={11} /> {isFuture ? "PLAN" : "LOG"} · {dayWord}
       </div>
 
       {/* meal type */}
-      <div style={{ ...eyebrow, marginBottom: 6 }}>Which meal</div>
+      <div style={{ ...foodEyebrow, marginBottom: 6 }}>Which meal</div>
       <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
         {MEALS.map(([id, lab]) => {
           const on = mealType === id;
-          return <button key={id} onClick={() => setMealType(id)} style={{ flex: 1, padding: "9px 4px", borderRadius: 10, cursor: "pointer", border: `1.5px solid ${on ? OX : T.paperDeep}`, background: on ? OX : T.paperHi, color: on ? T.paper : T.muted, fontFamily: UI, fontSize: 12, fontWeight: 700 }}>{lab}</button>;
+          return <button key={id} onClick={() => setMealType(id)} aria-pressed={on} style={{ flex: 1, minHeight: 44, padding: "9px 4px", borderRadius: 10, cursor: "pointer", border: `1.5px solid ${on ? FOOD.plum : FOOD.line}`, background: on ? FOOD.plum : FOOD.tint, color: on ? FOOD.surface : FOOD.muted, fontFamily: UI, fontSize: 12, fontWeight: 700 }}>{lab}</button>;
         })}
       </div>
 
       {/* photo (integrated) */}
       <input ref={fileRef} type="file" accept="image/*" onChange={onFile} style={{ display: "none" }} />
+      {photoError && <p role="alert" style={{fontFamily:UI,fontSize:12.5,color:T.crimson,margin:"0 0 8px"}}>{photoError}</p>}
       {photoUrl ? (
-        <div style={{ display: "flex", alignItems: "center", gap: 10, ...inset, padding: 8, marginBottom: 12 }}>
-          <img src={photoUrl} alt="" style={{ width: 52, height: 52, objectFit: "cover", borderRadius: 10, border: `1px solid ${T.paperDeep}` }} />
-          <div style={{ flex: 1, fontFamily: UI, fontSize: 12, color: T.muted }}>{reading ? <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Loader2 size={13} className="animate-spin" /> Reading your plate…</span> : "From your photo"}</div>
-          <button onClick={() => setPhotoUrl(null)} style={{ ...iconBtn, width: 26, height: 26 }}><X size={12} /></button>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, ...foodInset, padding: 8, marginBottom: 12 }}>
+          <img src={photoUrl} alt="" style={{ width: 52, height: 52, objectFit: "cover", borderRadius: 10, border: `1px solid ${FOOD.line}` }} />
+          <div role={reading ? "status" : undefined} style={{ flex: 1, fontFamily: UI, fontSize: 12, color: FOOD.muted }}>{reading ? <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Loader2 size={13} className="animate-spin" /> Reading your plate…</span> : "Photo used to suggest foods; it won't be saved."}</div>
+          <button onClick={removePhoto} aria-label="Remove food photo" style={{ ...iconBtn, width: 44, height: 44 }}><X size={17} /></button>
         </div>
       ) : (
-        <button onClick={() => fileRef.current?.click()} style={{ ...ghostBtn, width: "100%", marginBottom: 12, borderColor: T.gold, color: OX }}>
+        <button onClick={() => fileRef.current?.click()} style={{ ...foodGhostBtn, width: "100%", marginBottom: 12, borderColor: T.gold, color: FOOD.plum }}>
           <Camera size={14} style={{ marginRight: 7, verticalAlign: -2, color: T.gold }} />Add a photo of your plate
         </button>
       )}
 
       {/* add food — search + common foods */}
-      <div style={{ ...eyebrow, marginBottom: 6 }}>Add food</div>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, ...inset, padding: "9px 11px", marginBottom: 8 }}>
-        <Search size={14} color={T.muted} />
-        <input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && query.trim()) addItem(query.trim()); }}
-          placeholder="Search or type a food…" style={{ flex: 1, border: "none", background: "none", outline: "none", fontFamily: UI, fontSize: 14, color: T.ink }} />
-        {query.trim() && <button onClick={() => addItem(query.trim())} style={{ ...pill, cursor: "pointer", background: OX, color: T.paper, borderColor: OX }}>Add</button>}
+      <div style={{ ...foodEyebrow, marginBottom: 6 }}>Add food</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, ...foodInset, padding: "9px 11px", marginBottom: 8 }}>
+        <Search size={14} color={FOOD.muted} />
+        <input value={query} aria-label="Add a food" onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && query.trim()) addItem(query.trim()); }}
+          placeholder="Search or type a food…" style={{ flex: 1, border: "none", background: "none", outline: "none", fontFamily: UI, fontSize: 14, color: FOOD.ink }} />
+        {query.trim() && <button onClick={() => addItem(query.trim())} style={{ ...foodPill, cursor: "pointer", background: FOOD.plum, color: FOOD.surface, borderColor: FOOD.plum }}>Add</button>}
       </div>
       {matches.length > 0 && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
-          {matches.slice(0, 8).map((f) => <button key={f} onClick={() => addItem(f)} style={{ ...pill, cursor: "pointer" }}>{f}</button>)}
+          {matches.slice(0, 8).map((f) => <button key={f} onClick={() => addItem(f)} style={{ ...foodPill, cursor: "pointer" }}>{f}</button>)}
         </div>
       )}
       {!query.trim() && (
         <>
-          <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.gold, margin: "2px 0 5px" }}>Favourites</div>
+          <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.gold, margin: "2px 0 5px" }}>Quick ideas</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
-            {FOOD_FAVES.map((f) => <button key={f} onClick={() => addItem(f)} style={{ ...pill, cursor: "pointer", background: "rgba(188,46,39,0.08)", borderColor: `${T.crimson}55`, color: T.ink }}>♥ {f}</button>)}
+            {(showFoodIdeas ? FOOD_SUGGESTIONS : FOOD_QUICK).map((f) => <button key={f} onClick={() => addItem(f)} style={{ ...foodPill, cursor: "pointer" }}>{f}</button>)}
           </div>
-          <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.gold, margin: "2px 0 5px" }}>Recent</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-            {FOOD_RECENTS.map((f) => <button key={f} onClick={() => addItem(f)} style={{ ...pill, cursor: "pointer" }}>↺ {f}</button>)}
-          </div>
+          <button onClick={() => setShowFoodIdeas((v) => !v)} aria-expanded={showFoodIdeas} style={{ border: 0, background: "none", padding: "2px 0 8px", fontFamily: UI, color: FOOD.plum, textDecoration: "underline", cursor: "pointer", fontSize: 12.5 }}>
+            {showFoodIdeas ? "Show fewer ideas" : "See all quick ideas"}
+          </button>
         </>
       )}
 
       {/* the plate — added items with per-item portion */}
       {items.length > 0 && (
-        <div style={{ ...eyebrow, marginTop: 4, marginBottom: 6 }}>On your plate · {items.length}</div>
+        <div style={{ ...foodEyebrow, marginTop: 4, marginBottom: 6 }}>On your plate · {items.length}</div>
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: items.length ? 12 : 0 }}>
         {items.map((it, i) => (
-          <div key={i} style={{ ...inset, padding: "9px 11px" }}>
+          <div key={i} style={{ ...foodInset, padding: "9px 11px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}>
-              <span style={{ fontFamily: SERIF, fontSize: 15.5, fontWeight: 600, color: T.ink, flex: 1, minWidth: 0 }}>{it.name}</span>
-              <button onClick={() => removeItem(i)} style={{ ...iconBtn, width: 24, height: 24 }}><Trash2 size={11} /></button>
+              <span style={{ fontFamily: SERIF, fontSize: 15.5, fontWeight: 600, color: FOOD.ink, flex: 1, minWidth: 0 }}>{it.name}</span>
+              <button onClick={() => removeItem(i)} aria-label={`Remove ${it.name}`} style={{ ...iconBtn, width: 44, height: 44 }}><Trash2 size={17} /></button>
             </div>
             <div style={{ display: "flex", gap: 5 }}>
-              {PORTIONS.map((p) => { const on = it.portion === p; return <button key={p} onClick={() => setPortion(i, p)} style={{ flex: 1, padding: "5px 0", borderRadius: 8, cursor: "pointer", border: `1px solid ${on ? T.gold : T.paperDeep}`, background: on ? "rgba(168,137,63,0.16)" : T.paper, color: on ? OX : T.muted, fontFamily: UI, fontSize: 12, fontWeight: 700 }}>{p}</button>; })}
+              {PORTIONS.map((p) => { const on = it.portion === p; return <button key={p} onClick={() => setPortion(i, p)} aria-pressed={on} style={{ flex: 1, minHeight: 40, padding: "5px 0", borderRadius: 8, cursor: "pointer", border: `1px solid ${on ? T.gold : FOOD.line}`, background: on ? "rgba(168,137,63,0.16)" : FOOD.surface, color: on ? FOOD.plum : FOOD.muted, fontFamily: UI, fontSize: 12, fontWeight: 700 }}>{p}</button>; })}
             </div>
           </div>
         ))}
       </div>
 
       {/* details — how it felt / macros / notes (optional) */}
-      <div style={{ ...eyebrow, marginTop: 4, marginBottom: 6 }}>How it felt <span style={{ textTransform: "none", fontWeight: 500, color: T.muted }}>· optional</span></div>
+      <div style={{ ...foodEyebrow, marginTop: 4, marginBottom: 6 }}>How it felt <span style={{ textTransform: "none", fontWeight: 500, color: FOOD.muted }}>· optional</span></div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-        {FEELINGS.map((f) => { const on = feeling === f; return <button key={f} onClick={() => setFeeling(on ? null : f)} style={{ ...pill, cursor: "pointer", background: on ? T.sage : T.paperHi, color: on ? "#12240f" : T.muted, borderColor: on ? T.sage : T.paperDeep }}>{f}</button>; })}
+        {FEELINGS.map((f) => { const on = feeling === f; return <button key={f} onClick={() => setFeeling(on ? null : f)} aria-pressed={on} style={{ ...foodPill, minHeight: 40, cursor: "pointer", background: on ? T.sage : FOOD.tint, color: on ? "#12240f" : FOOD.muted, borderColor: on ? T.sage : FOOD.line }}>{f}</button>; })}
       </div>
       <div style={{ display: "flex", gap: 8, marginBottom: showMacros || showNotes ? 8 : 12 }}>
-        <button onClick={() => setShowMacros((v) => !v)} style={{ ...pill, cursor: "pointer", background: showMacros ? "rgba(168,137,63,0.14)" : T.paperHi, borderColor: showMacros ? T.gold : T.paperDeep, color: showMacros ? OX : T.muted }}>＋ Macros</button>
-        <button onClick={() => setShowNotes((v) => !v)} style={{ ...pill, cursor: "pointer", background: showNotes ? "rgba(168,137,63,0.14)" : T.paperHi, borderColor: showNotes ? T.gold : T.paperDeep, color: showNotes ? OX : T.muted }}>＋ Notes</button>
+        <button onClick={() => setShowMacros((v) => !v)} aria-expanded={showMacros} style={{ ...foodPill, minHeight: 44, cursor: "pointer", background: showMacros ? "rgba(168,137,63,0.14)" : FOOD.tint, borderColor: showMacros ? T.gold : FOOD.line, color: showMacros ? FOOD.plum : FOOD.muted }}>＋ Macro note</button>
+        <button onClick={() => setShowNotes((v) => !v)} aria-expanded={showNotes} style={{ ...foodPill, minHeight: 44, cursor: "pointer", background: showNotes ? "rgba(168,137,63,0.14)" : FOOD.tint, borderColor: showNotes ? T.gold : FOOD.line, color: showNotes ? FOOD.plum : FOOD.muted }}>＋ Notes</button>
       </div>
       {showMacros && (
-        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-          <div style={{ ...inset, flex: 1, display: "flex", alignItems: "center", gap: 6, padding: "8px 10px" }}>
-            <input value={kcal} onChange={(e) => setKcal(e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder="0" style={{ width: "100%", border: "none", background: "none", outline: "none", fontFamily: UI, fontSize: 14, color: T.ink }} /><span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>kcal</span>
+        <div style={{ display: "flex", gap: 8, marginBottom: 4 }}>
+          <div style={{ ...foodInset, flex: 1, display: "flex", alignItems: "center", gap: 6, padding: "8px 10px" }}>
+            <input value={kcal} aria-label="Calories in kcal" onChange={(e) => setKcal(e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder="0" style={{ width: "100%", border: "none", background: "none", outline: "none", fontFamily: UI, fontSize: 14, color: FOOD.ink }} /><span style={{ fontFamily: UI, fontSize: 12, color: FOOD.muted }}>kcal</span>
           </div>
-          <div style={{ ...inset, flex: 1, display: "flex", alignItems: "center", gap: 6, padding: "8px 10px" }}>
-            <input value={protein} onChange={(e) => setProtein(e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder="0" style={{ width: "100%", border: "none", background: "none", outline: "none", fontFamily: UI, fontSize: 14, color: T.ink }} /><span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>g protein</span>
+          <div style={{ ...foodInset, flex: 1, display: "flex", alignItems: "center", gap: 6, padding: "8px 10px" }}>
+            <input value={protein} aria-label="Protein in grams" onChange={(e) => setProtein(e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder="0" style={{ width: "100%", border: "none", background: "none", outline: "none", fontFamily: UI, fontSize: 14, color: FOOD.ink }} /><span style={{ fontFamily: UI, fontSize: 12, color: FOOD.muted }}>g protein</span>
           </div>
         </div>
       )}
+      {showMacros && <p style={{fontFamily:UI,fontSize:12,color:FOOD.muted,margin:"0 0 12px"}}>Saved with this meal. Daily totals use a separate estimate.</p>}
       {showNotes && (
         <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Anything to remember about this meal…"
-          style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 10, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: SERIF, fontSize: 14, outline: "none", resize: "vertical", marginBottom: 12 }} />
+          style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 10, border: `1px solid ${FOOD.line}`, background: FOOD.surface, color: FOOD.ink, fontFamily: SERIF, fontSize: 14, outline: "none", resize: "vertical", marginBottom: 12 }} />
       )}
 
       {/* water quick-add */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, ...inset, padding: "9px 12px", marginBottom: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, ...foodInset, padding: "9px 12px", marginBottom: 14 }}>
         <Droplets size={16} color="#5E93B8" />
-        <span style={{ fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.ink, flex: 1 }}>Water with this</span>
-        <button onClick={() => setWater((w) => Math.max(0, w - 1))} style={{ ...iconBtn, width: 30, height: 30 }}>−</button>
-        <span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, minWidth: 58, textAlign: "center" }}>{water} glass{water === 1 ? "" : "es"}</span>
-        <button onClick={() => setWater((w) => w + 1)} style={{ ...iconBtn, width: 30, height: 30 }}>+</button>
+        <span style={{ fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: FOOD.ink, flex: 1 }}>Water with this</span>
+        <button onClick={() => setWater((w) => Math.max(0, w - 1))} aria-label="Remove a glass of water" style={{ ...iconBtn, width: 44, height: 44 }}>−</button>
+        <span style={{ fontFamily: SERIF, fontSize: 15, color: FOOD.ink, minWidth: 58, textAlign: "center" }}>{water} glass{water === 1 ? "" : "es"}</span>
+        <button onClick={() => setWater((w) => w + 1)} aria-label="Add a glass of water" style={{ ...iconBtn, width: 44, height: 44 }}>+</button>
       </div>
 
-      <button onClick={save} disabled={!canSave} style={{ ...solidBtn, background: isFuture ? "#A6862B" : T.crimson, color: isFuture ? T.ink : T.paper, opacity: canSave ? 1 : 0.45, cursor: canSave ? "pointer" : "default" }}>
+      <button onClick={save} disabled={!canSave} style={{ ...foodSolidBtn, background: isFuture ? "#A6862B" : T.crimson, color: isFuture ? T.ink : FOOD.surface, opacity: canSave ? 1 : 0.45, cursor: canSave ? "pointer" : "default" }}>
         <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />{isFuture ? "Add to plan" : "Log"} {MEALS.find(([m]) => m === mealType)[1].toLowerCase()} · {dayWord}{water ? ` + ${water} water` : ""}
       </button>
     </>
@@ -1051,6 +1082,10 @@ function FoodLogSheet({ sheet, onBack, onClose, onConfirm }) {
 // ONE-FLOW "run/plan the whole day" — a single sheet, sectioned, skippable, one save
 // ════════════════════════════════════════════════════════════════════════════════
 function DayRunSheet({ sheet, onBack, onClose, onSave, onSmartShot }) {
+  const quietPill = {...pill, background: CALM_FORM.tint, borderColor: CALM_FORM.line, color: CALM_FORM.ink};
+  const quietInset = {...inset, background: CALM_FORM.surface, borderColor: CALM_FORM.line, borderRadius: 18};
+  const quietGhostBtn = {...ghostBtn, background: CALM_FORM.surface, borderColor: CALM_FORM.line, color: CALM_FORM.ink, borderRadius: 14};
+  const quietSolidBtn = {...solidBtn, borderRadius: 14};
   const { date, mode } = sheet;
   const d = parseISO(date);
   const isFuture = date > TODAY_STR;
@@ -1086,7 +1121,6 @@ function DayRunSheet({ sheet, onBack, onClose, onSave, onSmartShot }) {
     return v ? 1 : 0; // count / scale
   };
   const total = SECTIONS.reduce((n, s) => n + countFor(s), 0);
-  const touched = SECTIONS.filter((s) => countFor(s) > 0).length;
   const scrollTo = (id) => document.getElementById(`dr-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   const save = () => {
@@ -1110,40 +1144,36 @@ function DayRunSheet({ sheet, onBack, onClose, onSave, onSmartShot }) {
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <button onClick={onBack} style={iconBtn} aria-label="Back"><ArrowLeft size={15} /></button>
           <div>
-            <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, color: OX, lineHeight: 1.05 }}>{mode === "plan" ? "Plan the whole day" : "Run through the day"}</div>
-            <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{format(d, "EEEE d MMMM")} · <b style={{ color: mode === "plan" ? "#A6862B" : OX }}>{mode === "plan" ? "PLAN" : "LOG"}</b></div>
+            <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, color: CALM_FORM.ink, lineHeight: 1.05 }}>{mode === "plan" ? "Plan the whole day" : "Run through the day"}</div>
+            <div style={{ fontFamily: UI, fontSize: 12, color: CALM_FORM.muted }}>{format(d, "EEEE d MMMM")} · <b style={{ color: mode === "plan" ? "#A6862B" : CALM_FORM.ink }}>{mode === "plan" ? "PLAN" : "LOG"}</b></div>
           </div>
         </div>
         <button onClick={onClose} style={iconBtn} aria-label="Close"><X size={15} /></button>
       </div>
 
-      {/* jump-to rail (the app's central switcher pattern) + progress */}
-      <div style={{ display: "flex", gap: 6, overflowX: "auto", padding: "2px 0 8px" }}>
-        {SECTIONS.map((s) => {
-          const n = countFor(s);
-          return (
-            <button key={s.id} onClick={() => scrollTo(s.id)} style={{ ...pill, flexShrink: 0, cursor: "pointer",
-              background: n ? `${s.tone}22` : T.paperHi, borderColor: n ? s.tone : T.paperDeep, color: n ? OX : T.muted }}>
-              {n ? <Check size={11} style={{ verticalAlign: -1, marginRight: 3 }} /> : null}{s.label}
-            </button>
-          );
-        })}
-      </div>
-      <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginBottom: 10 }}>
-        {touched}/{SECTIONS.length} sections · {total} {total === 1 ? "thing" : "things"} · every section optional — skip freely.
-      </div>
+      <div style={{ fontFamily: UI, fontSize: 12.5, color: CALM_FORM.muted, marginBottom: 12 }}>Pick what belongs to this day. Skip the rest.</div>
+      <details style={{marginBottom:12}}>
+        <summary style={{fontFamily:UI,fontSize:12.5,fontWeight:700,color:CALM_FORM.ink,cursor:"pointer",textDecoration:"underline",padding:"4px 0"}}>Jump to a part</summary>
+        <div style={{display:"flex",gap:6,overflowX:"auto",padding:"8px 0 2px"}}>
+          {SECTIONS.map((s) => {
+            const selected = countFor(s) > 0;
+            return <button key={s.id} onClick={(event) => { event.currentTarget.closest("details").open = false; scrollTo(s.id); }} aria-label={`Jump to ${s.label}`} style={{...quietPill,flexShrink:0,minHeight:40,cursor:"pointer",background:selected?`${s.tone}22`:CALM_FORM.tint,borderColor:selected?s.tone:CALM_FORM.line,color:CALM_FORM.ink}}>{selected && <Check size={11} style={{verticalAlign:-1,marginRight:3}} />}{s.label}</button>;
+          })}
+        </div>
+      </details>
 
       {/* the sections, one continuous scroll */}
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {SECTIONS.map((s) => {
           const n = countFor(s);
           return (
-            <div key={s.id} id={`dr-${s.id}`} style={{ ...inset, padding: "12px 4px 14px", background: "#FFFFFF", border: "none", borderBottom: `1px solid ${T.paperDeep}`, borderRadius: 0 }}>
+            <div key={s.id} id={`dr-${s.id}`} style={{ ...quietInset, padding: "12px 14px 14px", background: CALM_FORM.surface, border: `1px solid ${CALM_FORM.line}`, borderRadius: 18 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                 <span style={{ ...typeChip, width: 26, height: 26, background: `${s.tone}22`, color: s.tone }}><s.Icon size={13} /></span>
-                <span style={{ fontFamily: UI, fontWeight: 700, fontSize: 13.5, color: T.ink }}>{s.label}</span>
+                <span style={{ fontFamily: UI, fontWeight: 700, fontSize: 13.5, color: CALM_FORM.ink }}>{s.label}</span>
                 {n > 0 && <span style={{ marginLeft: "auto", fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.sage }}><Check size={11} style={{ verticalAlign: -1 }} /> {n}</span>}
               </div>
+              {s.id === "meal" && <div style={{fontFamily:UI,fontSize:12,color:CALM_FORM.muted,margin:"-2px 0 8px"}}>Meal slots here. Add foods in the Meal form.</div>}
 
               {s.kind === "multi" && (
                 <>
@@ -1151,26 +1181,26 @@ function DayRunSheet({ sheet, onBack, onClose, onSave, onSmartShot }) {
                     {[...s.opts, ...((data[s.id] || []).filter((o) => !s.opts.includes(o)))].map((o) => {
                       const on = (data[s.id] || []).includes(o);
                       return (
-                        <button key={o} onClick={() => set(s.id, on ? (data[s.id] || []).filter((x) => x !== o) : [...(data[s.id] || []), o])}
-                          style={{ ...pill, cursor: "pointer", background: on ? s.tone : T.paperHi, color: on ? T.paper : T.muted, borderColor: on ? s.tone : T.paperDeep }}>{o}</button>
+                        <button key={o} onClick={() => set(s.id, on ? (data[s.id] || []).filter((x) => x !== o) : [...(data[s.id] || []), o])} aria-pressed={on}
+                          style={{ ...quietPill, minHeight: 40, cursor: "pointer", background: on ? s.tone : CALM_FORM.tint, color: on ? (s.id === "symptom" ? CALM_FORM.surface : T.ink) : CALM_FORM.muted, borderColor: on ? s.tone : CALM_FORM.line }}>{o}</button>
                       );
                     })}
                   </div>
                   <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-                    <input value={draft[s.id] || ""} onChange={(e) => setDraft((p) => ({ ...p, [s.id]: e.target.value }))}
+                    <input value={draft[s.id] || ""} aria-label={`Add your own ${s.label.toLowerCase()}`} onChange={(e) => setDraft((p) => ({ ...p, [s.id]: e.target.value }))}
                       onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustom(s.id); } }}
                       placeholder="Add your own…"
-                      style={{ flex: 1, boxSizing: "border-box", padding: "8px 10px", borderRadius: 9, border: `1px solid ${T.paperDeep}`, background: T.paperHi, color: T.ink, fontFamily: SERIF, fontSize: 13.5, outline: "none" }} />
-                    <button onClick={() => addCustom(s.id)} disabled={!(draft[s.id] || "").trim()} style={{ ...ghostBtn, padding: "8px 12px", fontSize: 12, opacity: (draft[s.id] || "").trim() ? 1 : 0.4, cursor: (draft[s.id] || "").trim() ? "pointer" : "default" }}>Add</button>
+                      style={{ flex: 1, boxSizing: "border-box", padding: "8px 10px", borderRadius: 9, border: `1px solid ${CALM_FORM.line}`, background: CALM_FORM.tint, color: CALM_FORM.ink, fontFamily: SERIF, fontSize: 13.5, outline: "none" }} />
+                    <button onClick={() => addCustom(s.id)} disabled={!(draft[s.id] || "").trim()} style={{ ...quietGhostBtn, padding: "8px 12px", fontSize: 12, opacity: (draft[s.id] || "").trim() ? 1 : 0.4, cursor: (draft[s.id] || "").trim() ? "pointer" : "default" }}>Add</button>
                   </div>
                 </>
               )}
 
               {s.kind === "count" && (
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <button onClick={() => set(s.id, Math.max(0, (data[s.id] || 0) - 1))} style={stepBtn}>−</button>
-                  <span style={{ fontFamily: SERIF, fontSize: 17, color: T.ink, minWidth: 78, textAlign: "center" }}>{data[s.id] || 0} glass{(data[s.id] || 0) === 1 ? "" : "es"}</span>
-                  <button onClick={() => set(s.id, (data[s.id] || 0) + 1)} style={stepBtn}>+</button>
+                  <button onClick={() => set(s.id, Math.max(0, (data[s.id] || 0) - 1))} aria-label="Remove a glass of water" style={stepBtn}>−</button>
+                  <span style={{ fontFamily: SERIF, fontSize: 17, color: CALM_FORM.ink, minWidth: 78, textAlign: "center" }}>{data[s.id] || 0} glass{(data[s.id] || 0) === 1 ? "" : "es"}</span>
+                  <button onClick={() => set(s.id, (data[s.id] || 0) + 1)} aria-label="Add a glass of water" style={stepBtn}>+</button>
                 </div>
               )}
 
@@ -1179,15 +1209,15 @@ function DayRunSheet({ sheet, onBack, onClose, onSave, onSmartShot }) {
                   {["Low", "Meh", "OK", "Good", "Great"].map((lab, i) => {
                     const on = data[s.id] === i + 1;
                     return (
-                      <button key={lab} onClick={() => set(s.id, on ? null : i + 1)} style={{ flex: 1, padding: "8px 0", borderRadius: 10, cursor: "pointer",
-                        border: `1.5px solid ${on ? s.tone : T.paperDeep}`, background: on ? `${s.tone}22` : T.paperHi, color: on ? OX : T.muted, fontFamily: UI, fontSize: 12, fontWeight: 700 }}>{lab}</button>
+                      <button key={lab} onClick={() => set(s.id, on ? null : i + 1)} aria-pressed={on} style={{ flex: 1, minHeight: 40, padding: "8px 0", borderRadius: 10, cursor: "pointer",
+                        border: `1.5px solid ${on ? s.tone : CALM_FORM.line}`, background: on ? `${s.tone}22` : CALM_FORM.tint, color: on ? CALM_FORM.ink : CALM_FORM.muted, fontFamily: UI, fontSize: 12, fontWeight: 700 }}>{lab}</button>
                     );
                   })}
                 </div>
               )}
 
               {s.smart && (
-                <button onClick={onSmartShot} style={{ ...pill, cursor: "pointer", marginTop: 8, background: "rgba(168,137,63,0.14)", borderColor: T.gold, color: OX }}>
+                <button onClick={onSmartShot} style={{ ...quietPill, cursor: "pointer", marginTop: 8, background: "rgba(168,137,63,0.14)", borderColor: T.gold, color: CALM_FORM.ink }}>
                   <WandSparkles size={12} style={{ verticalAlign: -2, marginRight: 5, color: T.gold }} />Read a photo → add shifts/events
                 </button>
               )}
@@ -1197,8 +1227,8 @@ function DayRunSheet({ sheet, onBack, onClose, onSave, onSmartShot }) {
       </div>
 
       {/* ONE save at the end — in-flow footer (sits at the end of the day's sections) */}
-      <div style={{ paddingTop: 14, marginTop: 8, borderTop: `1px solid ${T.paperDeep}` }}>
-        <button onClick={save} disabled={total === 0} style={{ ...solidBtn, background: mode === "plan" ? "#A6862B" : T.crimson, color: mode === "plan" ? T.ink : T.paper, opacity: total === 0 ? 0.45 : 1, cursor: total === 0 ? "default" : "pointer" }}>
+      <div style={{ paddingTop: 14, marginTop: 8, borderTop: `1px solid ${CALM_FORM.line}` }}>
+        <button onClick={save} disabled={total === 0} style={{ ...quietSolidBtn, background: mode === "plan" ? "#A6862B" : T.crimson, color: mode === "plan" ? T.ink : CALM_FORM.surface, opacity: total === 0 ? 0.45 : 1, cursor: total === 0 ? "default" : "pointer" }}>
           <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />
           {mode === "plan" ? "Save the plan" : "Save the day"}{total > 0 ? ` · ${total} ${total === 1 ? "thing" : "things"}` : ""}
         </button>
@@ -1673,14 +1703,14 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
           {cls.detected === "food" ? (
             <>
               <div style={{ fontFamily: UI, fontSize: 12, color: PHOTO.muted, margin: "8px 0 10px" }}>Take it into the full food log to add items, portions and how it felt.</div>
-              <button onClick={() => sampleKind ? fileRef.current?.click() : onFood({ date: target.date, meal: (finalAnswer || "").toLowerCase(), photoUrl: imageUrl })} style={{ ...photoSolidBtn, background: T.crimson }}>
+              <button onClick={() => sampleKind ? fileRef.current?.click() : onFood({ date: target.date, meal: (finalAnswer || "").toLowerCase(), photoUrl: imageUrl, reviewedTitle: titleEdit.trim(), initialWords: intentText.trim() })} style={{ ...photoSolidBtn, background: T.crimson }}>
                 <Utensils size={15} style={{ marginRight: 7, verticalAlign: -2 }} />{sampleKind ? "Choose your photo to log" : "Continue to food log"}
               </button>
             </>
           ) : (
             <>
               <div style={{ fontFamily: UI, fontSize: 12, color: PHOTO.muted, margin: "8px 0 10px" }}>Nothing is saved until you tap below.</div>
-              <button onClick={sampleKind ? () => fileRef.current?.click() : saveSingle} style={{ ...photoSolidBtn, background: target.mode === "plan" ? "#A6862B" : T.crimson, color: target.mode === "plan" ? PHOTO.ink : PHOTO.paper }}>
+              <button onClick={sampleKind ? () => fileRef.current?.click() : saveSingle} style={{ ...photoSolidBtn, background: target.mode === "plan" ? "#A6862B" : T.crimson, color: target.mode === "plan" ? T.ink : PHOTO.paper }}>
                 <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />{sampleKind ? "Choose your photo to continue" : `${target.mode === "plan" ? "Add to plan" : "Log it"} · ${target.date === TODAY_STR ? "today" : format(parseISO(target.date), "EEE d MMM")}`}
               </button>
             </>

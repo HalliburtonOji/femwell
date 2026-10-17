@@ -112,4 +112,34 @@ describe("calendar write acknowledgement and plan semantics", () => {
     await expect(writePeriod("owner", "2026-10-17", { type: "PeriodStart" })).rejects.toThrow("profile write failed");
     expect(mocks.entities.CycleEvents.create).toHaveBeenCalledTimes(1);
   });
+
+  it("records a historical period start without moving a newer cycle anchor backwards", async () => {
+    mocks.entities.UserProfile.filter.mockResolvedValueOnce([{ id: "profile", user_id: "owner", last_period_start_date: "2026-10-10" }]);
+    const result = await writePeriod("owner", "2026-09-09", { type: "PeriodStart", flow: "light" });
+    expect(result).toMatchObject({ anchorUpdated: false, date: "2026-09-09", flow_level: "light" });
+    expect(mocks.entities.CycleEvents.create).toHaveBeenCalledTimes(1);
+    expect(mocks.entities.UserProfile.update).not.toHaveBeenCalled();
+  });
+
+  it("updates the cycle anchor for a later confirmed start", async () => {
+    mocks.entities.UserProfile.filter.mockResolvedValueOnce([{ id: "profile", user_id: "owner", last_period_start_date: "2026-09-09" }]);
+    mocks.entities.UserProfile.update.mockImplementationOnce(async (id, body) => ({ id, user_id: "owner", ...body }));
+    const result = await writePeriod("owner", "2026-10-10", { type: "PeriodStart" });
+    expect(result.anchorUpdated).toBe(true);
+    expect(mocks.entities.UserProfile.update).toHaveBeenCalledWith("profile", { last_period_start_date: "2026-10-10" });
+  });
+
+  it("saves whole-day meal slots without inventing food analysis, but analyzes actual foods", async () => {
+    const day = "2026-10-17";
+    const result = await commitEntries("owner", [
+      { date: day, type: "meal", title: "Breakfast", meal_type: "breakfast" },
+      { date: day, type: "meal", title: "Lunch", meal_type: "lunch" },
+      { date: day, type: "meal", title: "Dinner", meal_type: "dinner" },
+    ]);
+    expect(result).toMatchObject({ saved: 3 });
+    expect(mocks.entities.MealLog.create).toHaveBeenCalledTimes(3);
+    expect(mocks.invoke).not.toHaveBeenCalled();
+    expect(await commitEntries("owner", [{ date: day, type: "meal", title: "Salmon and greens", meal_type: "dinner" }])).toMatchObject({ saved: 1 });
+    expect(mocks.invoke).toHaveBeenCalledExactlyOnceWith("analyzeMeal", expect.objectContaining({ raw_text: "Salmon and greens" }));
+  });
 });

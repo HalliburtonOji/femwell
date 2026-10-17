@@ -35,8 +35,11 @@ export async function writeMealLog(user_id, date, { raw_text, meal_type = "snack
     meal_type: String(meal_type).toLowerCase(), method: "text",
     raw_text: raw_text || "Meal", portion_size, notes,
   }), "Meal", "MealLog", user_id, "day_key", date);
-  // fire-and-forget analysis (same pattern as the live meal loggers) — never blocks.
-  if (sameOwner()) try { base44.functions.invoke("analyzeMeal", { raw_text: raw_text || "Meal", meal_log_id: log?.id }).catch(() => {}); } catch { /* ignore */ }
+  // A whole-day meal slot is a real log, but it contains no ingredients for a
+  // nutrition estimate. Keep the row without spending an analysis invocation.
+  const words = String(raw_text || "").trim();
+  const hasFoodDetails = words && !["meal", "breakfast", "lunch", "dinner", "snack"].includes(words.toLowerCase());
+  if (hasFoodDetails && sameOwner()) try { base44.functions.invoke("analyzeMeal", { raw_text: words, meal_log_id: log?.id }).catch(() => {}); } catch { /* ignore */ }
   return log;
 }
 
@@ -137,8 +140,13 @@ export async function writePeriod(user_id, date, { type = "PeriodStart", flow = 
       const p = pickProfile(profs);
       if (!p?.id) throw new Error("Period saved, but cycle anchor could not be found");
       if (!sameOwner()) throw new Error("Account changed before cycle anchor");
+      // Backfilling an earlier start adds history; it must not replace the latest
+      // confirmed anchor consumed by Today, Jess and the rest of the app.
+      const currentAnchor = String(p.last_period_start_date || "").slice(0, 10);
+      if (currentAnchor && currentAnchor > date) return { ...event, anchorUpdated: false };
       const updated = await receipt(await base44.entities.UserProfile.update(p.id, { last_period_start_date: date }), "Cycle anchor", "UserProfile", user_id);
       if (String(updated.last_period_start_date).slice(0, 10) !== date) throw new Error("Cycle anchor was not confirmed");
+      return { ...event, anchorUpdated: true };
   }
   return event;
 }
