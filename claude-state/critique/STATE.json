@@ -43,8 +43,8 @@
   },
   "manualContent": {
     "id": "LIFESTYLE-CONTENT-2026-10-14",
-    "stage": "LC11 A05 live on main at index-BnOw-kEG.js: Sky owner/source and Daily Story recovery, 162 focused tests, independent 127 and bounded 360/390/430 taps passed; next A06 remains Lifestyle",
-    "nextAtom": "LC11-A06: remain on Lifestyle. Inventory Books, Good life and Yours main controls and actual opened owners, popup/detail/return and every useful feature; include the busy shared first fold and mapped visually old calendar/photo/deeper reader states. Map research, consumers and cost before cohesive repairs; organise Ideas, 360/390/430 actual taps and independent critique before main ship. No Planner-page diversion or automation restart.",
+    "stage": "LC11 A06 live on main at index-CsRiCDZU.js: quiet fold, route-aware plan, exact Books return/owned shelf and Good life topic; root 86 focused tests, independent closure and bounded 360/390/430 taps passed",
+    "nextAtom": "LC11-A07: remain on Lifestyle. Complete the remaining Good life and Yours opened source/reader/saved journeys plus direct-route variants, then mapped old calendar photo/review and deeper Books/club controls. Inventory each actual tap and owner, source return, old underlay, full content and cost before edits; organised Ideas, real 360/390/430 taps and independent critique. No Planner-page diversion or automation restart.",
     "proofGate": "Preserve every accepted feature and bold reader preference; clean actual old-paper owners only after consumer map. Complete 360/390/430 real taps and secondary returns, P0/P1/P2 self-critique, organised Ideas and actual live identity per batch. Live writes, native media/iPhone and long-history cost remain deferred rather than asserted.",
     "carryForward": ["Clean Ideas reader false-open progress repaired in LC08; canonical main reader still follows its held old reached contract until separate promotion", "Full Planner/Garden old-paper redesign and signed-in exact read-back remain; preview book ref token is only a bounded return repair", "Complete 2701-source and later reader-page proof", "Good life short-time read/play inventory thin in the sampled account", "Listen directory ordering and Sky availability copy; 360 Read action wrap", "Generated factual archive and book attribution source review", "LR09 Saved owner read errors", "B01-S03-A05 remaining reader/secondary returns and unchanged main reader front-matter model", "Legacy MediaLens/TikTok no-op controls", "daily generator workflow still invokes no-op", "custom-generation weekly limit enforcement unproved", "C06 request and paid-unit measurement", "Other video runtimes/captions and physical iPhone unproved"],
     "automation": "PAUSED; manual work only"
@@ -55,8 +55,8 @@
   },
   "current": {
     "section": "Lifestyle / LC11 main opened owners (manual)",
-    "atom": "LC11-A06 after A05 release receipt",
-    "status": "A01 chapter, A02 calendar, A03 Books/Saved, A04 Listen/player/fiction and A05 Sky/Story are live on main at index-BnOw-kEG.js. Controlled phone taps and independent bounded critique passed; shared first fold, remaining Lifestyle opened owners, production persistence, native media/iPhone and long-history capacity remain open. The four-hour automation remains PAUSED."
+    "atom": "LC11-A07 after A06 live release receipt",
+    "status": "A01–A06 are live on main at index-CsRiCDZU.js. A06 closed the shared fold/plan, owned Books shelf and Good life topic contract with 86 focused tests, independent bounded critique and controlled phone taps. Remaining Lifestyle opened owners, signed-in persistence, native iPhone and long-history cost remain open. The four-hour automation remains PAUSED."
   },
   "lastCompleted": {
     "run": 5,
