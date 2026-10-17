@@ -43,8 +43,8 @@
   },
   "manualContent": {
     "id": "LIFESTYLE-CONTENT-2026-10-14",
-    "stage": "LC11 A13 live on main at index-BfjD-SUK.js: canonical clean BookReader underlay across direct and flagged routes; in-app edition-switch repair; source bf884b45 and staged receipt 82565628 pushed, both live domains/Ideas verified; 53 affected tests, controlled 360/390/430 next-page/Settings/Escape/Exit/Back and independent BR01-BR03 closure",
-    "nextAtom": "LC11-A14: stay on Lifestyle. Map actual FictionReader openings from Books/Yours/Read and historical links, full text/actions/returns and old material, then one complete owner pass with Ideas, three-width real taps/pixels and independent P0/P1/P2. Continue remaining secondary-owner inventory and first-fold density critique. No standalone Planner redesign or automation restart.",
+    "stage": "LC11 A14 source ready: clean routed FictionReader cover/underlay, exact direct/Saved/Yours returns, stale edition guard, manual Retry and truthful empty/page-count; source 7bcd7699, local index-mNAxdxXu.js, public A13 index-BfjD-SUK.js pending push/site deploy; 23 affected tests, controlled 360/390/430 cover/open/Close/Back and independent FR01-FR02 closure",
+    "nextAtom": "LC11-A15: stay on Lifestyle. Reconcile remaining main-room taps against LEGACY_SURFACES and completed LC11 stages; select still-old actual opened sheet/popup/destination or first-fold crowding by evidence. Map features, source/backend, exact return and cost before one bounded owner repair, Ideas, three-width real taps/pixels and independent P0/P1/P2. No standalone Planner redesign or automation restart.",
     "proofGate": "Preserve every accepted feature and bold reader preference; clean actual old-paper owners only after consumer map. Complete 360/390/430 real taps and secondary returns, P0/P1/P2 self-critique, organised Ideas and actual live identity per batch. Live writes, native media/iPhone and long-history cost remain deferred rather than asserted.",
     "carryForward": ["Clean Ideas reader false-open progress repaired in LC08; canonical main reader still follows its held old reached contract until separate promotion", "Full Planner/Garden old-paper redesign and signed-in exact read-back remain; preview book ref token is only a bounded return repair", "Complete 2701-source and later reader-page proof", "Good life short-time read/play inventory thin in the sampled account", "Listen directory ordering and Sky availability copy; 360 Read action wrap", "Generated factual archive and book attribution source review", "LR09 Saved owner read errors", "B01-S03-A05 remaining reader/secondary returns and unchanged main reader front-matter model", "Legacy MediaLens/TikTok no-op controls", "daily generator workflow still invokes no-op", "custom-generation weekly limit enforcement unproved", "C06 request and paid-unit measurement", "Other video runtimes/captions and physical iPhone unproved"],
     "automation": "PAUSED; manual work only"
@@ -55,8 +55,8 @@
   },
   "current": {
     "section": "Lifestyle / LC11 remaining direct opened owners (manual)",
-    "atom": "LC11-A14 FictionReader owner and remaining direct opened destinations",
-    "status": "A01–A13 are live on main at index-BfjD-SUK.js. A13 canonical BookReader and edition-switch repairs passed bounded root/independent proof and both domains/Ideas were verified. Remaining opened owners, signed-in persistence, native iPhone/media and measured provider cost remain open. The four-hour automation remains PAUSED."
+    "atom": "LC11-A14 source-ready release gate, then A15 remaining opened-owner census",
+    "status": "A01–A13 are live on main at index-BfjD-SUK.js. A14 source 7bcd7699 and local index-mNAxdxXu.js are committed but pending push/site deploy; exact routed fiction/return/empty/edition repairs passed bounded root/independent proof. Remaining opened owners, signed-in persistence, native iPhone/media and measured provider cost remain open. The four-hour automation remains PAUSED."
   },
   "lastCompleted": {
     "run": 5,
