@@ -26,6 +26,10 @@ describe("Lifestyle article shell and Jess handoff", () => {
     const { container } = render(<MemoryRouter><Layout currentPageName="BookReader"><p>Book</p></Layout></MemoryRouter>);
     expect(container.querySelector(".min-h-screen")).toHaveStyle({ backgroundColor: "#f5f4f1" });
   });
+  it("puts clean ground under an older direct fiction link too", () => {
+    const { container } = render(<MemoryRouter><Layout currentPageName="FictionReader"><p>Story</p></Layout></MemoryRouter>);
+    expect(container.querySelector(".min-h-screen")).toHaveStyle({ backgroundColor: "#f5f4f1" });
+  });
   it("prefills article context without converting it to an auto-sent prompt", () => {
     render(<MemoryRouter><Layout currentPageName="LifestyleDetail"><p>Article</p></Layout></MemoryRouter>);
     fireEvent(window, new CustomEvent("fw_open_assistant", { detail: { context: "A place to begin again" } }));

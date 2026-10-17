@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ArrowLeft, RefreshCw } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import DailyStoryReader, { TEXT_SIZES } from "@/components/lifestyle/DailyStoryReader";
 import { buildBookChapters } from "@/components/lifestyle/bookChapters";
@@ -95,19 +95,29 @@ function pagesToChapters(pages, item) {
 }
 
 export default function FictionReader() {
+  const location = useLocation();
+  // This route stays mounted when only ?id= changes. Give each edition its own
+  // fetch, cover and reader state so a late reply cannot replace another story.
+  return <FictionReaderEdition key={location.search} routeSearch={location.search} />;
+}
+
+function FictionReaderEdition({ routeSearch }) {
   const navigate = useNavigate();
-  const params = new URLSearchParams(window.location.search);
-  const calm = params.get("appearance") !== "legacy";
+  const params = new URLSearchParams(routeSearch);
+  const calm = true;
   const fromMain = params.get("from") === "lifestyle-main";
   const originSection = params.get("return_section") === "yours" ? "yours" : "books";
   const savedTab = params.get("saved_tab");
   const fromSaved = params.get("via") === "saved" && ["ADVICE", "LIFESTYLE", "CONTENT", "PROGRAM", "JOURNAL", "EVENT"].includes(savedTab);
-  const backTo = fromSaved ? `/Saved?tab=${savedTab}&appearance=calm${fromMain ? "&from=lifestyle-main" : ""}` : fromMain ? `/Lifestyle?section=${originSection}` : calm ? "/CalmLifestyleDemo?section=books" : "/Lifestyle?section=books";
-  const goBack = () => fromMain || fromSaved || window.history.length <= 1 ? navigate(backTo) : navigate(-1);
+  const backTo = fromSaved ? `/Saved?tab=${savedTab}&appearance=calm${fromMain ? "&from=lifestyle-main" : ""}` : `/Lifestyle?section=${originSection}`;
+  const goBack = () => fromMain || fromSaved || !Number.isInteger(window.history.state?.idx) || window.history.state.idx <= 0
+    ? navigate(backTo, { replace: !fromMain && !fromSaved })
+    : navigate(-1);
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showReader, setShowReader] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
 
   // textSize is owned HERE so we can re-paginate chapters whenever the user
   // changes size. The DailyStoryReader receives it as a controlled prop.
@@ -122,8 +132,14 @@ export default function FictionReader() {
   }, []);
 
   const itemId = useMemo(() => {
-    return new URLSearchParams(window.location.search).get("id") || null;
-  }, []);
+    return new URLSearchParams(routeSearch).get("id") || null;
+  }, [routeSearch]);
+
+  const retry = () => {
+    setError("");
+    setLoading(true);
+    setRetryKey((key) => key + 1);
+  };
 
   useEffect(() => {
     if (!itemId) {
@@ -144,14 +160,14 @@ export default function FictionReader() {
         }
         setItem(rec);
         setLoading(false);
-      } catch (e) {
+      } catch {
         if (cancelled) return;
-        setError(e?.message || "Couldn't load this story.");
+        setError("The story didn't load. Give it another go.");
         setLoading(false);
       }
     })();
     return () => { cancelled = true; };
-  }, [itemId]);
+  }, [itemId, retryKey]);
 
   // Reader v3: ONE entry per chapter; the reader measures + paginates each body to the
   // viewport. Shared with the in-place Lifestyle reader via buildBookChapters (one source).
@@ -167,12 +183,15 @@ export default function FictionReader() {
   if (error) {
     return (
       <Frame calm={calm} onBack={goBack}>
-        <h2 style={errorTitleStyle}>We couldn't open this story.</h2>
-        <p style={emptyStyle}>{error}</p>
+        <div role="alert" className="fw-fiction-state">
+          <h2 style={errorTitleStyle}>We couldn't open this story.</h2>
+          <p style={emptyStyle}>{error}</p>
+          {itemId && <button type="button" style={retryButtonStyle} onClick={retry}><RefreshCw size={16} /> Try again</button>}
+        </div>
       </Frame>
     );
   }
-  if (!chapters.length) {
+  if (!chapters.some((chapter) => String(chapter.body || "").trim())) {
     return (
       <Frame calm={calm} onBack={goBack}>
         <h2 style={errorTitleStyle}>This story has no readable text yet.</h2>
@@ -191,7 +210,6 @@ export default function FictionReader() {
         <CoverPage
           item={item}
           calm={calm}
-          pageCount={chapters.length}
           chapterCount={chapterCount}
           onOpen={() => setShowReader(true)}
         />
@@ -218,13 +236,13 @@ export default function FictionReader() {
 }
 
 // ─── Cover page ──────────────────────────────────────────────────────────────
-function CoverPage({ item, pageCount, chapterCount, onOpen, calm = false }) {
+function CoverPage({ item, chapterCount, onOpen, calm = false }) {
   const { gradient, accent, initial } = getBookCover(item.title);
   const subtitle = item.summary || item.why_it_matters || "";
   const tags = Array.isArray(item.tags) ? item.tags.slice(0, 3) : [];
-  const cta = chapterCount > 1
-    ? `Open book · ${chapterCount} chapters`
-    : `Open story · ${pageCount} page${pageCount === 1 ? "" : "s"}`;
+  // DailyStoryReader measures pages after opening against the actual viewport
+  // and text settings. Chapter count is known here; page count is not.
+  const cta = chapterCount > 1 ? `Open book · ${chapterCount} chapters` : "Open story";
   return (
     <div style={coverShellStyle} className={calm ? "fw-clean-fiction-cover" : undefined}>
       <div style={{ ...coverArtStyle, background: gradient }}>
@@ -280,6 +298,12 @@ const emptyStyle = {
   textAlign: "center",
   fontSize: 14,
   color: "#2E261B",
+};
+const retryButtonStyle = {
+  display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+  minHeight: 44, margin: "0 auto 28px", padding: "10px 18px",
+  borderRadius: 999, border: "1px solid #D8CFBC", background: "#fff",
+  color: "#191510", fontSize: 14, fontWeight: 600, cursor: "pointer",
 };
 const errorTitleStyle = {
   fontWeight: 400,
@@ -348,6 +372,7 @@ const coverEyebrowStyle = {
 const coverTitleStyle = {
   lineHeight: 1.1,
   margin: "0 0 10px",
+  color: "#FFF9F0",
   textShadow: "0 1px 3px rgba(0,0,0,0.20)",
 };
 const coverSubtitleStyle = {
