@@ -73,7 +73,7 @@ describe("DailyStoryReader — v4 contract", () => {
     storyApi.filter.mockReset();
     storyApi.filter.mockResolvedValue([]);
   });
-  afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+  afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
   function measuredSource(kind = "book") {
     vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: true })));
@@ -571,6 +571,37 @@ describe("DailyStoryReader — v4 contract", () => {
     const positions = writes.mock.calls.filter(([key]) => key === "fw_reader_pos_requested").map(([, value]) => JSON.parse(value));
     expect(positions.length).toBeGreaterThan(0);
     expect(positions.every(position => position.chapterIndex === 1 && position.pageInChapter === 0)).toBe(true);
+  });
+
+  it("lets a waiting reader close without a chapter response", () => {
+    storyApi.filter.mockReturnValue(new Promise(() => {}));
+    const onExit = vi.fn();
+    render(<DailyStoryReader onExit={onExit} defaultImmersive />);
+    expect(screen.getByLabelText("Loading chapter")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Close reader" }));
+    expect(onExit).toHaveBeenCalledTimes(1);
+  });
+
+  it("names a failed fetch honestly, retries, and keeps an exit", async () => {
+    storyApi.filter.mockRejectedValueOnce(new Error("offline")).mockResolvedValueOnce([]);
+    const onExit = vi.fn();
+    render(<DailyStoryReader onExit={onExit} defaultImmersive />);
+    expect(await screen.findByRole("alert")).toHaveTextContent("This chapter couldn’t load.");
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByText("No chapter is ready yet.")).toBeVisible();
+    expect(storyApi.filter).toHaveBeenCalledTimes(2);
+    fireEvent.click(screen.getByRole("button", { name: "Close reader" }));
+    expect(onExit).toHaveBeenCalledTimes(1);
+  });
+
+  it("opens the chapter published after local midnight while UTC is still yesterday", async () => {
+    vi.stubEnv("TZ", "Europe/London");
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-17T23:15:00Z"));
+    expect(new Date().getDate()).toBe(18);
+    storyApi.filter.mockResolvedValue([{ id: "local-18", day_number: 2, published_date: "2026-10-18", segment_text: "## A new page\n\nReady locally." }]);
+    render(<DailyStoryReader seriesKey="local-series" />);
+    expect(await screen.findByRole("heading", { name: "A new page" })).toBeVisible();
   });
 
   it("applies a marks-bar nonce sent before loading and later jumps without provisional reach callbacks", async () => {

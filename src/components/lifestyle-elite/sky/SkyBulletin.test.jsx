@@ -3,11 +3,11 @@ import {beforeEach,it,expect,vi} from 'vitest';
 import {render,screen,fireEvent,waitFor,within} from '@testing-library/react';
 import DailySkyLesson,{SavedSkyLessons} from './DailySkyLesson';
 import {SKY_LESSONS,SKY_BULLETINS,dailyBulletinDeck,findSkyPiece,localSkyDay,skyLessonKey} from './skyLessons';
-const mock=vi.hoisted(()=>({filter:vi.fn(),journals:vi.fn(),create:vi.fn(),save:vi.fn(),remove:vi.fn()}));
-vi.mock('@/api/base44Client',()=>({base44:{entities:{SavedItems:{filter:mock.filter},JournalEntries:{filter:mock.journals,create:mock.create}}}}));
+const mock=vi.hoisted(()=>({me:vi.fn(),filter:vi.fn(),journals:vi.fn(),create:vi.fn(),save:vi.fn(),remove:vi.fn()}));
+vi.mock('@/api/base44Client',()=>({base44:{auth:{me:mock.me},entities:{SavedItems:{filter:mock.filter},JournalEntries:{filter:mock.journals,create:mock.create}}}}));
 vi.mock('@/lib/savedItems',()=>({saveItem:mock.save,removeSavedItem:mock.remove,parseSavedMeta:row=>JSON.parse(row.meta_json || '{}')}));
 const props={userId:'owner',direction:'petal-press',previewRoute:'/CalmLifestyleDemo',human:true,calmLayout:true};
-beforeEach(()=>{vi.clearAllMocks();mock.filter.mockResolvedValue([]);mock.journals.mockResolvedValue([]);window.history.replaceState({},'','/CalmLifestyleDemo?section=sky');HTMLElement.prototype.scrollTo=vi.fn();});
+beforeEach(()=>{vi.clearAllMocks();mock.me.mockResolvedValue({id:'owner'});mock.filter.mockResolvedValue([]);mock.journals.mockResolvedValue([]);window.history.replaceState({},'','/CalmLifestyleDemo?section=sky');HTMLElement.prototype.scrollTo=vi.fn();});
 it('rotates a seven-piece starter catalogue with distinct daily cards and keeps historical editions intact',()=>{
   expect(SKY_LESSONS).toHaveLength(24);expect(SKY_BULLETINS).toHaveLength(7);
   const leads=new Set();for(let i=0;i<7;i++){const deck=dailyBulletinDeck(`2026-10-${9+i}`);expect(new Set(deck.map(item=>item.id)).size).toBe(5);leads.add(deck[0].id);}expect(leads.size).toBe(7);

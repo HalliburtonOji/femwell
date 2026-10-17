@@ -6,6 +6,7 @@ import { useScrollLock } from "@/utils/useScrollLock";
 // §6.7.8 — the reader reads its measure/type standard from the ONE source, so it can never
 // drift from the other readers again.
 import { READING } from "@/components/brand/ReadingColumn";
+import { isoDay } from "./dailyStory";
 
 // v4c — persisted reader preferences (theme, typeface, line, margins).
 // All keys live in one place so other components could read them if needed.
@@ -39,10 +40,6 @@ export const TEXT_SIZE_INDEX = (s) => Math.max(0, TEXT_SIZES.indexOf(s));
 //   { kind: 'daily_story' | 'book' | 'article', items: ChapterLike[], currentIndex: number }
 // ChapterLike = { id, day_number?, title?, heading?, body, cliffhanger? }
 // ─────────────────────────────────────────────────────────────────────────────
-
-function todayISO() {
-  return new Date().toISOString().split("T")[0];
-}
 
 // Parse `## Chapter N — Title` from segment_text
 function parseChapter(segment_text) {
@@ -774,6 +771,7 @@ export default function DailyStoryReader({
   }, []);
   const [loading, setLoading] = useState(!providedSource);
   const [error, setError] = useState(false);
+  const [fetchAttempt, setFetchAttempt] = useState(0);
   const [flipState, setFlipState] = useState({ phase: "idle", dir: 0 });
   // Books (kind='book') have all chapters unlocked — no lock screen.
   const noLock = providedSource?.kind === "book";
@@ -869,17 +867,18 @@ export default function DailyStoryReader({
       setPositionReady(false);
       setAppliedJump(null);
       setLoading(true);
+      setError(false);
       try {
-        const today = todayISO();
+        const today = isoDay();
         const all = await base44.entities.DailyStory.filter(
           { series_key: seriesKey, is_active: true }
-        ).catch(() => []);
+        );
+        if (!Array.isArray(all)) throw new Error("Daily Story did not return chapters");
         const visible = (all || [])
           .filter((r) => !r.published_date || r.published_date <= today)
           .sort((a, b) => (a.day_number || 0) - (b.day_number || 0));
         if (cancelled) return;
         if (!visible.length) {
-          setError(true);
           setChapters([]);
         } else {
           setChapters(visible);
@@ -894,7 +893,7 @@ export default function DailyStoryReader({
       }
     })();
     return () => { cancelled = true; };
-  }, [providedSource, seriesKey]);
+  }, [providedSource, seriesKey, fetchAttempt]);
 
   const latestRevealed = chapters.length - 1;
   const currentChapterRef = chapters[currentIndex];
@@ -1247,19 +1246,50 @@ export default function DailyStoryReader({
     else if (immersive) toggleChrome();
   };
 
-  if (loading || (!positionReady && chapters.length > 0)) {
+  const readerWaiting = loading || (!positionReady && chapters.length > 0);
+  const readerStateRootRef = useRef(null);
+  const readerStateActionRef = useRef(null);
+  useEffect(() => {
+    if (active && (readerWaiting || error || !chapters.length)) readerStateActionRef.current?.focus({ preventScroll: true });
+  }, [active, readerWaiting, error, chapters.length]);
+  const onReaderStateKeyDown = event => {
+    if (!onExit || event.key !== "Tab") return;
+    const buttons = [...(readerStateRootRef.current?.querySelectorAll("button:not(:disabled)") || [])];
+    if (!buttons.length) return;
+    const first = buttons[0], last = buttons[buttons.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  };
+  useEffect(() => {
+    if (!active || !onExit || (!readerWaiting && !error && chapters.length)) return undefined;
+    const closeOnEscape = event => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      onExit();
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [active, onExit, readerWaiting, error, chapters.length]);
+
+  const readerStateStyle = { minHeight: "100dvh", padding: "max(24px, env(safe-area-inset-top)) 24px calc(32px + env(safe-area-inset-bottom))", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, textAlign: "center", background: "#f8f6f3", color: "#30252d" };
+  const readerStateButton = { minHeight: 44, padding: "10px 20px", border: "1px solid #b9a7b7", borderRadius: 999, background: "#fff", color: "#463647", font: "600 14px Inter, sans-serif", cursor: "pointer" };
+
+  if (readerWaiting) {
     return (
-      <div className="ds-reader-loading">
-        <div className="ds-reader-spinner" aria-label="Loading chapter" />
+      <div ref={readerStateRootRef} className="ds-reader-loading" style={readerStateStyle} hidden={!active} inert={!active ? "" : undefined} role={onExit ? "dialog" : "status"} aria-modal={onExit ? "true" : undefined} aria-label={onExit ? "Daily Story reader" : undefined} onKeyDown={onReaderStateKeyDown}>
+        <div className="ds-reader-spinner" aria-label="Loading chapter" style={{width:24,height:24,border:"2px solid #dfd6dc",borderTopColor:"#8b6d8a",borderRadius:"50%"}} />
         <p className="ds-reader-loading-text">Loading the chapter…</p>
+        {onExit && <button ref={readerStateActionRef} type="button" style={readerStateButton} onClick={onExit}>Close reader</button>}
       </div>
     );
   }
 
   if (error || !chapters.length) {
     return (
-      <div className="ds-reader-empty">
-        The story is being written. Check back soon.
+      <div ref={readerStateRootRef} className="ds-reader-empty" style={readerStateStyle} hidden={!active} inert={!active ? "" : undefined} role={onExit ? "dialog" : error ? "alert" : "status"} aria-modal={onExit ? "true" : undefined} aria-label={onExit ? "Daily Story reader" : undefined} onKeyDown={onReaderStateKeyDown}>
+        <p role={error ? "alert" : "status"}>{error ? "This chapter couldn’t load." : "No chapter is ready yet."}</p>
+        {!providedSource && <button ref={readerStateActionRef} type="button" style={readerStateButton} onClick={() => setFetchAttempt(attempt => attempt + 1)}>Try again</button>}
+        {onExit && <button ref={providedSource ? readerStateActionRef : undefined} type="button" style={readerStateButton} onClick={onExit}>Close reader</button>}
       </div>
     );
   }

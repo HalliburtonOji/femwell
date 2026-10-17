@@ -8,16 +8,16 @@ import {skyCheckoutResult,skyPairingValue,skyParagraphs,safeSkySavedReturn} from
 import {dailyLessonDeck,localSkyDay,skyLessonKey} from "./skyLessons";
 import useObservedSkyDiary from "./useObservedSkyDiary";
 
-const mock=vi.hoisted(()=>({saves:vi.fn(),journals:vi.fn(),createNote:vi.fn(),save:vi.fn(),remove:vi.fn(),skyNotes:vi.fn(),createSkyNote:vi.fn(),cycles:vi.fn(),readings:vi.fn(),threads:vi.fn(),messages:vi.fn(),invoke:vi.fn()}));
-vi.mock("@/api/base44Client",()=>({base44:{entities:{SavedItems:{filter:mock.saves},JournalEntries:{filter:mock.journals,create:mock.createNote},SkyNote:{filter:mock.skyNotes,create:mock.createSkyNote},CycleEvents:{filter:mock.cycles},HoroscopeReading:{filter:mock.readings},AdviceThreads:{filter:mock.threads},AdviceMessages:{filter:mock.messages}},functions:{invoke:mock.invoke}}}));
+const mock=vi.hoisted(()=>({me:vi.fn(),saves:vi.fn(),journals:vi.fn(),createNote:vi.fn(),save:vi.fn(),remove:vi.fn(),skyNotes:vi.fn(),createSkyNote:vi.fn(),cycles:vi.fn(),readings:vi.fn(),threads:vi.fn(),messages:vi.fn(),invoke:vi.fn()}));
+vi.mock("@/api/base44Client",()=>({base44:{auth:{me:mock.me},entities:{SavedItems:{filter:mock.saves},JournalEntries:{filter:mock.journals,create:mock.createNote},SkyNote:{filter:mock.skyNotes,create:mock.createSkyNote},CycleEvents:{filter:mock.cycles},HoroscopeReading:{filter:mock.readings},AdviceThreads:{filter:mock.threads},AdviceMessages:{filter:mock.messages}},functions:{invoke:mock.invoke}}}));
 vi.mock("@/lib/savedItems",()=>({saveItem:mock.save,removeSavedItem:mock.remove,parseSavedMeta:row=>JSON.parse(row.meta_json || "{}")}));
 const deferred=()=>{let resolve;const promise=new Promise(done=>{resolve=done;});return{resolve,promise};};
 const lessonRow=(id="earthshine",owner="a",version=1)=>({id:`keep-${id}`,user_id:owner,item_id:`sky-lesson:${id}:v${version}`,title:"Earth lends a little light",meta_json:JSON.stringify({kind:"sky-lesson",lessonId:id,lessonVersion:version})});
 beforeEach(()=>{
-  vi.resetAllMocks();window.history.replaceState({},"","/SkyWorldsDemo?direction=petal-press&section=sky");HTMLElement.prototype.scrollTo=vi.fn();
+  vi.resetAllMocks();mock.me.mockResolvedValue({id:"a"});window.history.replaceState({},"","/SkyWorldsDemo?direction=petal-press&section=sky");HTMLElement.prototype.scrollTo=vi.fn();
   for(const source of [mock.saves,mock.journals,mock.skyNotes,mock.cycles,mock.readings,mock.threads,mock.messages])source.mockResolvedValue([]);
   mock.save.mockImplementation(async({itemId,title,meta})=>({id:"keep",user_id:"a",item_id:itemId,title,meta_json:JSON.stringify(meta)}));
-  mock.remove.mockResolvedValue({id:"keep",user_id:"a"});mock.createNote.mockImplementation(async row=>({...row,id:"note"}));mock.createSkyNote.mockImplementation(async row=>({...row,id:"moment"}));
+  mock.remove.mockResolvedValue({id:"keep",user_id:"a",item_id:"sky-lesson:earthshine:v1"});mock.createNote.mockImplementation(async row=>({...row,id:"note"}));mock.createSkyNote.mockImplementation(async row=>({...row,id:"moment"}));
 });
 afterEach(()=>vi.useRealTimers());
 
@@ -68,7 +68,7 @@ describe("complete lesson keeps and source-linked notes",()=>{
     window.history.replaceState({},"","/SkyWorldsDemo?lesson=earthshine&lessonVersion=1");render(<DailySkyLesson userId="a"/>);
     const keep=screen.getByRole("button",{name:"Keep this"});await waitFor(()=>expect(keep).toBeEnabled());fireEvent.click(keep);
     const undo=await screen.findByRole("button",{name:"Kept · undo"});await waitFor(()=>expect(undo).toBeEnabled());fireEvent.click(undo);
-    await screen.findByText("Removed from your saves.");expect(mock.remove).toHaveBeenCalledExactlyOnceWith("LIFESTYLE","sky-lesson:earthshine:v1");
+    await screen.findByText("Removed from your saves.");expect(mock.remove).toHaveBeenCalledExactlyOnceWith("LIFESTYLE","sky-lesson:earthshine:v1","a");
     expect(screen.getByRole("button",{name:"Keep this"})).toHaveAttribute("aria-pressed","false");
   });
   it("does not claim a keep when the returned object has another owner or identity",async()=>{

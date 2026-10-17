@@ -489,17 +489,31 @@ function FocusableBoards({ focusBoard, sliderRef, gold, children }) {
   return <div style={{ marginTop: 20 }}>{boards[focusBoard] || null}</div>;
 }
 
+function exactSkySource(search) {
+  const params = new URLSearchParams(search);
+  return JSON.stringify(["reading", "lesson", "lessonVersion"].map(name => params.get(name) || ""));
+}
+
 function RoutedLifestyleShell(props) {
   const navigate = useNavigate();
   const location = useLocation();
-  return <LifestyleShell {...props} navigate={navigate} routePathname={location.pathname}/>;
+  return <LifestyleShell {...props} navigate={navigate} routePathname={location.pathname} routeSearch={location.search}/>;
 }
 export default function LifestyleEliteShell(props = {}) {
   const routed = useInRouterContext();
   // Standalone founder studies can render without App's router; main keeps one document/player.
   return routed ? <RoutedLifestyleShell {...props}/> : <LifestyleShell {...props} navigate={href=>window.location.assign(href)}/>;
 }
-function LifestyleShell({ navigate, routePathname, routeActive = true, enableFocus = false, layout = null, clean = false, previewActions = false, initialSection = null, continuousSky = false, celestialSky = false, botanicalHeader = false, firstFoldVariant = null, dailySkyLessons = false, artDirection = null, skyWorld = null, contentRoute, focusedPreview = false, calmLayout = false } = {}) {
+function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = true, enableFocus = false, layout = null, clean = false, previewActions = false, initialSection = null, continuousSky = false, celestialSky = false, botanicalHeader = false, firstFoldVariant = null, dailySkyLessons = false, artDirection = null, skyWorld = null, contentRoute, focusedPreview = false, calmLayout = false } = {}) {
+  const [skyArrival, setSkyArrival] = useState(() => ({pathname:window.location.pathname,search:window.location.search}));
+  useEffect(() => {
+    // The cached page stays mounted under /Saved and other routes. Their URL
+    // must not remount an open Sky draft while Lifestyle is hidden.
+    if (!routeActive) return;
+    const pathname = routePathname ?? window.location.pathname;
+    const search = routeSearch ?? window.location.search;
+    setSkyArrival(current => current.pathname === pathname && current.search === search ? current : {pathname,search});
+  }, [routeActive, routePathname, routeSearch]);
   const returnToMain = contentRoute === "/Lifestyle";
   const savedHref = `/Saved?tab=LIFESTYLE${calmLayout ? "&appearance=calm" : ""}${returnToMain ? "&from=lifestyle-main" : ""}`;
   const watchHref = `/WatchListen?appearance=calm${returnToMain ? "&from=lifestyle-main" : ""}`;
@@ -1392,9 +1406,9 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
     horoscope: "sky", sky: "sky", good: "good", good_life: "good", yours: "yours", saved: "yours",
   };
   useEffect(() => {
-    if (!enableFocus) return;            // the landing shell has no focus mode to deep-link into
+    if (!enableFocus || !routeActive) return; // cached Lifestyle also receives fresh route arrivals
     try {
-      const q = new URLSearchParams(window.location.search);
+      const q = new URLSearchParams(routeSearch ?? window.location.search);
       const requested = String(q.get("tab") || q.get("section") || "").toLowerCase();
       if (requested === "all") { setFocusSection(null); return; }
       const want = TAB_TO_SECTION[requested] || TAB_TO_SECTION[initialSection];
@@ -1403,9 +1417,9 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
       const i = (previewActions ? heroCards : HERO_CARDS).findIndex((c) => c.id === want);
       if (i >= 0) { _lifeHeroCard = i; setHeroCard(i); }
     } catch { /* a malformed URL just lands on the landing, as before */ }
-    // Once on mount: URL wins, then the opt-in review landing. Re-running would fight her taps.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enableFocus]);
+    // React Router arrivals may change the query without remounting this kept-alive page.
+    // In-room taps use replaceState and leave routeSearch unchanged, so they keep their draft.
+  }, [enableFocus, routeSearch, routeActive]);
 
   const focus = (enableFocus && focusSection) ? (FOCUS_MAP[focusSection] || null) : null;
   const selectRoom = (section, index = heroCards.findIndex(card => card.id === section), forceCurrent = false) => {
@@ -1806,7 +1820,9 @@ function LifestyleShell({ navigate, routePathname, routeActive = true, enableFoc
         {layout && (() => {
           const sec = focus ? focusSection : null;
           // BESPOKE section surfaces (§19). Each pulls everything for its section, in the new design.
-          if (sec === "sky") return <div className={livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><SkyFocus focusedPreview={focusedPreview} calmLayout={calmLayout} routeActive={routeActive} key={roomRevision} presentMoon={moonToday} onReadingState={acceptSkyReading} contentRoute={contentRoute} cycleContext={["marginalia","reading-room","sky-worlds"].includes(artDirection) ? {phase:phaseKey,day:cycleDay,len:profile?.cycle_avg_length || 28} : undefined} artDirection={artDirection} dailyLessons={dailySkyLessons} direction={worldDirection} userProfile={profile} celestial={celestialSky} continuous={continuousSky} portalChart={previewActions} actionRequest={previewActions ? skyActionRequest : undefined} onActionState={previewActions ? setSkyActionState : undefined} onActionHandled={previewActions ? setSkyActionRequest : undefined} /></div>;
+          if (sec === "sky") {
+            return <div className={livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><SkyFocus focusedPreview={focusedPreview} calmLayout={calmLayout} routeActive={routeActive} arrivalPathname={skyArrival.pathname} arrivalSearch={skyArrival.search} key={`${roomRevision}:${exactSkySource(skyArrival.search)}`} presentMoon={moonToday} onReadingState={acceptSkyReading} contentRoute={contentRoute} cycleContext={["marginalia","reading-room","sky-worlds"].includes(artDirection) ? {phase:phaseKey,day:cycleDay,len:profile?.cycle_avg_length || 28} : undefined} artDirection={artDirection} dailyLessons={dailySkyLessons} direction={worldDirection} userProfile={profile} celestial={celestialSky} continuous={continuousSky} portalChart={previewActions} actionRequest={previewActions ? skyActionRequest : undefined} onActionState={previewActions ? setSkyActionState : undefined} onActionHandled={previewActions ? setSkyActionRequest : undefined} /></div>;
+          }
           if (sec === "story" || sec === "books") return <div className={artDirection === "sky-worlds" ? "fw-living-content fw-reading-room" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><BooksStoryFocus calmLayout={calmLayout} artDirection={artDirection === "sky-worlds" ? "reading-room" : artDirection} chapters={chapters} story={story} pick={storyPick} onRead={(i) => { setReaderStart(i); setReaderOpen(true); }}
             userId={user?.id} onSchedule={scheduleReading} onCorner={(b) => window.location.assign(createPageUrl(`Community?club=${dailyReadClubKey(b.gutenberg_id)}&title=${encodeURIComponent(b.title || "")}${calmLayout ? "&appearance=calm" : ""}`))}
             continueCards={continueCards} shelfBookCards={shelfBookCards} classicCards={classicCards} onChapterDetails={() => setChapterOpen(true)} onBookDetails={setExpanded} onOpenBook={(it) => {

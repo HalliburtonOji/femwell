@@ -199,8 +199,11 @@ export default function SkyFocus(props) {
   return props.artDirection === "sky-worlds" && props.direction === "petal-press" ? <SelectedSkyFocus {...props}/> : <LegacySkyFocus {...props}/>;
 }
 function SelectedSkyFocus(props) {
-  const params = new URLSearchParams(window.location.search);
-  const chartState = useSelectedSkyChart(props.userProfile, params.has("reading") ? params.get("reading") : null, props.contentRoute === "/Lifestyle" && ["/Lifestyle","/LifestyleElite"].includes(window.location.pathname));
+  // Main Lifestyle is kept mounted under other routes. Only its accepted
+  // arrival may choose a reading or generation policy; /Saved's URL is foreign.
+  const params = new URLSearchParams(props.arrivalSearch ?? window.location.search);
+  const arrivalPathname = props.arrivalPathname ?? window.location.pathname;
+  const chartState = useSelectedSkyChart(props.userProfile, params.has("reading") ? params.get("reading") : null, props.contentRoute === "/Lifestyle" && ["/Lifestyle","/LifestyleElite"].includes(arrivalPathname));
   return <SkyFocusBody {...props} chartState={chartState}/>;
 }
 function LegacySkyFocus(props) {

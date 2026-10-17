@@ -7,8 +7,8 @@ import DailySkyLesson, { SavedSkyLessons } from "@/components/lifestyle-elite/sk
 import { safeSkySavedReturn } from "@/components/lifestyle-elite/sky/skySourceContracts";
 import { SKY_LESSONS, skyLessonRoute, localSkyDay } from "@/components/lifestyle-elite/sky/skyLessons";
 
-const mock = vi.hoisted(() => ({ saves: vi.fn(), journals: vi.fn(), save: vi.fn() }));
-vi.mock("@/api/base44Client", () => ({ base44: { entities: { SavedItems: { filter: mock.saves }, JournalEntries: { filter: mock.journals } } } }));
+const mock = vi.hoisted(() => ({ me: vi.fn(), saves: vi.fn(), journals: vi.fn(), save: vi.fn() }));
+vi.mock("@/api/base44Client", () => ({ base44: { auth: { me: mock.me }, entities: { SavedItems: { filter: mock.saves }, JournalEntries: { filter: mock.journals } } } }));
 vi.mock("@/lib/savedItems", () => ({
   parseSavedMeta: row => JSON.parse(row.meta_json || "{}"),
   saveItem: mock.save, removeSavedItem: vi.fn(),
@@ -20,7 +20,7 @@ const keep = (route = href, version = 1) => ({ id: "keep", user_id: "owner", ite
   meta_json: JSON.stringify({ kind: "sky-lesson", lessonId: lesson.id, lessonVersion: version, date: "2026-09-15", route }),
 });
 beforeEach(() => {
-  vi.clearAllMocks(); mock.saves.mockResolvedValue([]); mock.journals.mockResolvedValue([]);
+  vi.clearAllMocks(); mock.me.mockResolvedValue({id:"owner"}); mock.saves.mockResolvedValue([]); mock.journals.mockResolvedValue([]);
   mock.save.mockImplementation(async ({ itemId, meta }) => ({ id: "keep", user_id: "owner", item_id: itemId, meta_json: JSON.stringify(meta) }));
   window.history.replaceState({}, "", "/Lifestyle?section=sky&lesson=earthshine&lessonVersion=1");
   HTMLElement.prototype.scrollTo = vi.fn();
