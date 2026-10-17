@@ -7,6 +7,11 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE - 2026-10-17 - LC11 SAVED ARTICLE RETURN SOURCE READY; SKY ACTION NEXT
+>
+> - A15 claim `3a09bbb5`, source `34172b44` committed locally, **not yet pushed/site deployed**. Local built `index-BLsKJTj1.js`; last proved public main is `index-mNAxdxXu.js`. Main Yours → Saved Lifestyle article → related read → Back now restores the exact Saved tab; direct Read/Yours and older exits remain. Organised Ideas `#lc11-saved-read`, Bible §10.5.54/mirror and the LC11 report are local until the next deploy.
+> - Focused 113/113 tests, lint/build/diff and controlled 360/390/430 related→Back taps passed without sampled overflow/page error; root viewed 390px source pixels. Critique Director independently closed RC01 P1. Its further selected-main findings RC02 (Everything Sky false Save and legacy opening) and RC03 (low-contrast gold action pill) are **not yet repaired**. The next claimed A16 remains in Lifestyle; Planner and four-hour automation stay paused. Native iPhone, signed-in persistence and measured cost remain unproved.
+>
 > ### CURRENT STATE - 2026-10-17 - LC11 DIRECT FICTION LIVE ON MAIN
 >
 > - A14 source **`7bcd7699`** and staged receipt **`c44cfa9a`** pushed normally without force. `npx base44 site deploy -y` succeeded; fresh `https://femwells.com/` and Base44 origin both returned HTTP 200 with **`index-mNAxdxXu.js`**, matching local `dist`. [Organised Ideas A14](https://femwells.com/lifestyle-content/index.html#lc11-one-story) returned HTTP 200 with its marker. Older direct/Today/grid and Saved fiction links use the clean cover/reader ground, direct Back returns to promoted Books, exact Saved/Yours/history returns remain, query-only edition switches retire stale source, and failures/empty/page labels tell the truth. Main Books' in-place fiction and complete chapters/tools remain. No backend/function/entity/schema deployment.
