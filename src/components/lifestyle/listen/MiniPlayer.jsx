@@ -1,6 +1,7 @@
 import { Play, Pause, X, ExternalLink } from 'lucide-react';
 import { usePodcastPlayer } from '@/hooks/usePodcastPlayer';
 import { episodeSourceUrl } from './episode';
+import './ExpandedPlayer.css';
 
 // Mini-player rendered at the bottom of the viewport, above the mobile
 // bottom nav. Null-renders when no episode is loaded. Tap anywhere except
@@ -36,19 +37,19 @@ export default function MiniPlayer() {
       role="region"
       aria-label="Podcast mini player"
       onClick={handleClick}
-      className="podcast-mini-player"
+      className="podcast-mini-player fw-listen-mini"
       style={{
         position: 'fixed',
         left: 0,
         right: 0,
-        bottom: 80,
+        bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
         zIndex: 90,
         margin: '0 12px',
         height: MINI_HEIGHT,
-        background: '#7A1A12',
-        color: '#F4EFE3',
-        borderRadius: 14,
-        boxShadow: '0 8px 22px -10px rgba(43,30,22,0.45)',
+        background: '#51444E',
+        color: '#FFFFFF',
+        borderRadius: 22,
+        boxShadow: '0 10px 25px -12px rgba(49,45,54,0.38)',
         display: 'flex',
         alignItems: 'center',
         gap: 12,
@@ -73,10 +74,10 @@ export default function MiniPlayer() {
         style={{
           width: 40,
           height: 40,
-          borderRadius: 8,
+          borderRadius: 12,
           overflow: 'hidden',
           flexShrink: 0,
-          background: '#D8CFBC',
+          background: '#E8EEE9',
         }}
         aria-hidden="true"
       >
@@ -86,7 +87,7 @@ export default function MiniPlayer() {
             alt=""
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
-        ) : null}
+        ) : <div className="fw-listen-mini__fallback" />}
       </div>
 
       {/* Title + source */}
@@ -106,8 +107,7 @@ export default function MiniPlayer() {
         <div
           style={{
             fontSize: 12,
-            color: '#D8CFBC',
-            opacity: 0.7,
+            color: '#E8EEE9',
             lineHeight: 1.25,
             whiteSpace: 'nowrap',
             overflow: 'hidden',
@@ -134,8 +134,8 @@ export default function MiniPlayer() {
             display: 'flex', alignItems: 'center', gap: 5,
             height: 44, padding: '0 12px',
             borderRadius: 9999,
-            background: '#BC2E27',
-            color: '#F4EFE3',
+            background: '#E8EEE9',
+            color: '#51444E',
             border: 'none',
             textDecoration: 'none',
             fontSize: 12, fontWeight: 700, letterSpacing: '0.08em',
@@ -185,7 +185,7 @@ export default function MiniPlayer() {
           background: 'transparent',
           border: 'none',
           color: 'inherit',
-          opacity: 0.7,
+          opacity: 1,
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',

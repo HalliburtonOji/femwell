@@ -1,4 +1,5 @@
 import { BookmarkCheck, ExternalLink, Trash2 } from "lucide-react";
+import { Link, useInRouterContext } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { parseSavedMeta } from "@/lib/savedItems";
 import { calmLifestyleDestination } from "@/lib/lifestyleAppearance";
@@ -17,6 +18,10 @@ export function calmSavedDestination(href, options) {
   try {
     const url = new URL(calmLifestyleDestination(href, options), window.location.origin);
     if (url.origin !== window.location.origin) return href;
+    if (url.pathname === "/FictionReader" && options?.returnToMain && options?.savedTab) {
+      url.searchParams.set("via", "saved");
+      url.searchParams.set("saved_tab", options.savedTab);
+    }
     if (["/LivingLifestyleDemo", "/SkyWorldsDemo", "/CalmLifestyleDemo"].includes(url.pathname) && url.searchParams.get("section") === "sky") {
       url.pathname = options?.returnToMain ? "/Lifestyle" : "/CalmLifestyleDemo";
       url.searchParams.set("direction", "petal-press");
@@ -32,9 +37,12 @@ function shortPreview(value) {
 }
 
 export default function SavedItemCard({ item, onRemove, disabled = false, calm = false, returnToMain = false }) {
+  const routed = useInRouterContext();
   const meta = parseSavedMeta(item);
   const href = meta.route || meta.url || meta.content_url || FALLBACK_ROUTES[item.item_type] || "#";
   const openHref = calm ? calmSavedDestination(href, { returnToMain, savedTab: item.item_type }) : href;
+  const internal = routed && openHref.startsWith("/");
+  const OpenLink = internal ? Link : "a";
   const preview = calm ? shortPreview(item.preview_text) : item.preview_text;
   const actionLabel = item.item_type === "ADVICE" ? "Open Assistant" : item.item_type === "EVENT" ? "Open event" : "Open";
   const savedDate = item.created_at || item.created_date;
@@ -64,8 +72,8 @@ export default function SavedItemCard({ item, onRemove, disabled = false, calm =
       </div>
 
       <div className="mt-4 flex gap-2">
-        <a
-          href={openHref}
+        <OpenLink
+          {...(internal ? { to: openHref } : { href: openHref })}
           target={openHref.startsWith("http") ? "_blank" : undefined}
           rel={openHref.startsWith("http") ? "noreferrer" : undefined}
           aria-label={calm ? `${actionLabel} ${item.title}` : undefined}
@@ -74,7 +82,7 @@ export default function SavedItemCard({ item, onRemove, disabled = false, calm =
         >
           {actionLabel}
           <ExternalLink className="h-4 w-4" />
-        </a>
+        </OpenLink>
       </div>
     </div>
   );

@@ -41,6 +41,13 @@ function ownedListens(rows, uid, id) {
   const timestamp = row => [row.updated_at,row.updated_date,row.created_at,row.created_date].map(value=>Date.parse(value || '')).find(Number.isFinite) || 0;
   return [...rows].sort((a,b)=>timestamp(b)-timestamp(a));
 }
+function confirmsListen(row, payload, id) {
+  return row?.id === id && row.user_id === payload.user_id &&
+    row.lifestyle_item_id === payload.lifestyle_item_id &&
+    Number(row.position_sec) === payload.position_sec &&
+    Number(row.duration_sec) === payload.duration_sec &&
+    row.completed === payload.completed;
+}
 // Subscribers used so other components could read state directly; today
 // only the provider subscribes, but the hook is here for future use.
 const _singletonSubscribers = new Set();
@@ -77,6 +84,7 @@ export function PodcastPlayerProvider({ children }) {
   const controlsRef = useRef(null);
   const lastPersistAtRef = useRef(0);
   const sleepTimerRef = useRef(null);
+  const sleepAtEndRef = useRef(false);
   // Refs that mirror state so the (mount-once) audio-event handlers can
   // read the current values without stale closures.
   const currentEpisodeRef = useRef(null);
@@ -108,6 +116,12 @@ export function PodcastPlayerProvider({ children }) {
   const [sleepTimerMin, setSleepTimerMinState] = useState(null); // null = off
   const [sleepRemainingSec, setSleepRemainingSec] = useState(0);
   const [sleepFading, setSleepFading] = useState(false);          // true during the final fade-out
+  const [sleepAtEnd, setSleepAtEndState] = useState(false);
+  const clearEndSleep = useCallback(() => {
+    sleepAtEndRef.current = false;
+    setSleepAtEndState(false);
+    setSleepFading(false);
+  }, []);
 
   // Resolve current user once for PodcastListens upserts. Non-fatal if it
   // fails — anonymous playback still works, just no resume persistence.
@@ -148,7 +162,16 @@ export function PodcastPlayerProvider({ children }) {
       const acknowledgement = existing[0]?.id
         ? await base44.entities.PodcastListens.update(existing[0].id,payload)
         : await base44.entities.PodcastListens.create({...payload,created_at:new Date().toISOString()});
-      if (!acknowledgement?.id || (acknowledgement.user_id && acknowledgement.user_id !== uid)) throw new Error('Listen not confirmed');
+      const savedId = existing[0]?.id || acknowledgement?.id;
+      if (!savedId || (acknowledgement?.id && acknowledgement.id !== savedId)) throw new Error('Listen not confirmed');
+      // Base44 may return a sparse acknowledgement. Only pay for read-back when
+      // the response cannot prove the exact owner, episode and saved position.
+      if (!confirmsListen(acknowledgement,payload,savedId)) {
+        const confirmed = ownedListens(await base44.entities.PodcastListens.filter(
+          { user_id: uid, lifestyle_item_id: episode.id }, '-updated_at', 10,
+        ),uid,episode.id);
+        if (!confirmsListen(confirmed.find(row=>row.id===savedId),payload,savedId)) throw new Error('Listen not confirmed');
+      }
       if (_pendingPositions.get(key) === snapshot) _pendingPositions.delete(key);
       if (currentEpisodeRef.current?.id === episode.id && episodeOwnerRef.current === uid) setProgressError(null);
       } catch {
@@ -203,6 +226,11 @@ export function PodcastPlayerProvider({ children }) {
       const pos = finiteSeconds(a.currentTime);
       const dur = finiteSeconds(a.duration);
       setPosition(pos);
+      if (sleepAtEndRef.current && dur > 0) {
+        const remaining = Math.max(0, dur - pos);
+        setSleepFading(remaining <= SLEEP_FADE_SEC);
+        try { a.volume = Math.max(0, Math.min(1, remaining / SLEEP_FADE_SEC)); } catch { /* iOS may own volume */ }
+      }
       // Debounced persistence — single PodcastListens upsert per ~5s.
       const now = Date.now();
       if (now - lastPersistAtRef.current > PERSIST_DEBOUNCE_MS && currentEpisodeRef.current) {
@@ -256,6 +284,10 @@ export function PodcastPlayerProvider({ children }) {
     const onWaiting = () => { if (currentEpisodeRef.current && !a.paused) setTransport('buffering'); };
     const onEnd = () => {
       cancelResume();setTransport('ended');
+      if (sleepAtEndRef.current) {
+        clearEndSleep();
+        try { a.volume = 1; } catch { /* iOS may own volume */ }
+      }
       // Mark completed.
       const ep = currentEpisodeRef.current;
       if (ep) {
@@ -356,6 +388,10 @@ export function PodcastPlayerProvider({ children }) {
     const resumeNeeded = switching || !progressReadyRef.current;
     const isCurrent = () => intent === _singletonIntent && audioRef.current === a && currentEpisodeRef.current?.id === episode.id && a.getAttribute('src') === audioUrl;
     if (switching) {
+      if (sleepAtEndRef.current) {
+        clearEndSleep();
+        try { a.volume = 1; } catch { /* iOS may own volume */ }
+      }
       const previous = currentEpisodeRef.current;
       if (previous) upsertListenRow(previous,finiteSeconds(a.currentTime),finiteSeconds(a.duration),finiteSeconds(a.duration)>0 && a.currentTime/a.duration>=COMPLETED_THRESHOLD);
       currentEpisodeRef.current = null;episodeOwnerRef.current = null;
@@ -421,7 +457,7 @@ export function PodcastPlayerProvider({ children }) {
       if (isCurrent()) setProgressError('Your saved place couldn’t load.');
     }
     await startResult;
-  }, [cancelResume,setTransport,upsertListenRow,setProgressReady]);
+  }, [cancelResume,setTransport,upsertListenRow,setProgressReady,clearEndSleep]);
 
   const pause = useCallback(() => {
     cancelResume();
@@ -473,6 +509,7 @@ export function PodcastPlayerProvider({ children }) {
     _singletonEpisode = null;
     _notifySingleton();
     setTransport('idle');setSleepFading(false);setProgressError(null);
+    clearEndSleep();
     setPosition(0);
     setDuration(0);
     setIsExpanded(false);
@@ -487,7 +524,7 @@ export function PodcastPlayerProvider({ children }) {
       navigator.mediaSession.metadata = null;
       navigator.mediaSession.playbackState = 'none';
     }
-  }, [upsertListenRow,cancelResume,setTransport,setProgressReady]);
+  }, [upsertListenRow,cancelResume,setTransport,setProgressReady,clearEndSleep]);
 
   // Speed control — cycles through SPEED_OPTIONS. Persists to localStorage
   // so the user's preferred rate sticks across sessions + new episodes.
@@ -516,6 +553,7 @@ export function PodcastPlayerProvider({ children }) {
   // the last SLEEP_FADE_SEC and only then pause. `sleepFading` is exposed so the UI can fold
   // the flora closed as it goes. Volume is always restored (on end, on cancel, on unmount).
   const setSleepTimer = useCallback((min) => {
+    clearEndSleep();
     // Clear any existing interval first.
     if (sleepTimerRef.current) {
       clearInterval(sleepTimerRef.current);
@@ -555,6 +593,17 @@ export function PodcastPlayerProvider({ children }) {
         return next;
       });
     }, 1000);
+  }, [clearEndSleep]);
+
+  const setSleepAtEnd = useCallback(() => {
+    if (sleepTimerRef.current) { clearInterval(sleepTimerRef.current); sleepTimerRef.current = null; }
+    sleepAtEndRef.current = true;
+    setSleepAtEndState(true);
+    setSleepTimerMinState(null);
+    setSleepRemainingSec(0);
+    setSleepFading(false);
+    const a = audioRef.current;
+    if (a) { try { a.volume = 1; } catch { /* iOS may own volume */ } }
   }, []);
 
   // Clean up the sleep timer interval on unmount.
@@ -591,6 +640,7 @@ export function PodcastPlayerProvider({ children }) {
     },
     playbackRate,
     sleepTimerMin,
+    sleepAtEnd,
     sleepRemainingSec,
     sleepFading,        // true during the final fade — the UI folds the flora closed as it goes
     speedOptions: SPEED_OPTIONS,
@@ -605,6 +655,7 @@ export function PodcastPlayerProvider({ children }) {
     setPlaybackRate,
     cyclePlaybackRate,
     setSleepTimer,
+    setSleepAtEnd,
   };
 
   return (

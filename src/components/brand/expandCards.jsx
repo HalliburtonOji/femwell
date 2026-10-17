@@ -396,6 +396,7 @@ const fmtTime = (s) => (Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Mat
 // she navigates or locks the phone, and resumes where she left off. Reuse, don't duplicate.
 // (Falls back to a local <audio> when rendered outside the provider — e.g. a standalone demo.)
 export function FloraAudio({ src, label, accent, initialDuration = 0, item = {}, compact = false, presentation }) {
+  const focused = presentation === "focused";
   const player = usePodcastPlayer();
   const ref = useRef(null);
   const [localPlaying, setLocalPlaying] = useState(false);
@@ -425,18 +426,18 @@ export function FloraAudio({ src, label, accent, initialDuration = 0, item = {},
 
   const pct = dur > 0 ? Math.min(100, (t / dur) * 100) : 0;
   return (
-    <div className="fw-audio-transport" style={{ background: presentation === "focused" ? "#FFFFFF" : T.paper, border: `1px solid ${presentation === "focused" ? "#EAE7E0" : T.paperDeep}`, borderRadius: 16, padding: "12px 14px 10px", boxShadow: presentation === "focused" ? "none" : "inset 0 1px 0 rgba(255,253,247,0.6)" }}>
+    <div className="fw-audio-transport" style={{ background: focused ? "#FFFFFF" : T.paper, border: `1px solid ${focused ? "#EAE7E0" : T.paperDeep}`, borderRadius: 16, padding: "12px 14px 10px", boxShadow: focused ? "none" : "inset 0 1px 0 rgba(255,253,247,0.6)" }}>
       <div className="fw-audio-garden"><FloraVisualiser playing={playing} height={compact ? 36 : 66} /></div>
       <div style={{ display: "flex", alignItems: "center", gap: 13, marginTop: 6 }}>
         <button onClick={toggle} aria-label={playing || busy ? "Pause" : playerError || err ? "Retry playback" : "Play"} style={{ width: 46, height: 46, borderRadius: 999, background: accent, color: "#fff", border: "none", display: "grid", placeItems: "center", cursor: "pointer", flexShrink: 0, boxShadow: `0 4px 14px ${accent}55` }}>
           {playing || busy ? <Pause size={19} /> : <Play size={19} style={{ marginLeft: 2 }} />}
         </button>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</div>
-          <div style={{ height: 5, borderRadius: 999, background: T.paperDeep, margin: "8px 0 4px", overflow: "hidden" }}>
+          <div style={{ fontFamily: UI, fontSize: focused ? 14 : 12.5, fontWeight: 700, color: focused ? "#51444e" : T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</div>
+          <div style={{ height: 5, borderRadius: 999, background: focused ? "#DFE5E1" : T.paperDeep, margin: "8px 0 4px", overflow: "hidden" }}>
             <div style={{ width: `${pct}%`, height: "100%", background: accent, borderRadius: 999, transition: "width .2s linear" }} />
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", fontFamily: UI, fontSize: 10.5, fontWeight: 600, color: T.muted }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontFamily: UI, fontSize: focused ? 12 : 10.5, fontWeight: 600, color: focused ? "#51444e" : T.muted }}>
             <span>{fmtTime(t)}</span>
             <span role="status">{busy ? (player.playbackStatus === 'buffering' ? 'Buffering…' : 'Starting…') : playing ? "keeps playing while you browse" : dur > 0 ? fmtTime(dur) : 'Duration unavailable'}</span>
           </div>
@@ -445,7 +446,7 @@ export function FloraAudio({ src, label, accent, initialDuration = 0, item = {},
       {/* SC 1.2.1 — audio-only wants a TRANSCRIPT (not captions). Also just kind: she may
           want to READ the sleep story instead of hearing it. */}
       {(playerError || err) && <p role="alert" style={{fontFamily:UI,fontSize:13,lineHeight:1.5,margin:'10px 0 0',color:T.ink}}>{playerError || 'This one didn’t play.'} {externalUrl && <a href={externalUrl} target="_blank" rel="noopener noreferrer" style={{color:accent}}>Open episode</a>}</p>}
-      {episode.transcript && <TranscriptDisclosure text={episode.transcript} accent={accent} />}
+      {episode.transcript && <TranscriptDisclosure text={episode.transcript} accent={accent} focused={focused} />}
       {!player && <audio ref={ref} src={src} preload="none"
         onLoadedMetadata={(e) => setLocalDur(e.currentTarget.duration)}
         onTimeUpdate={(e) => setLocalT(e.currentTarget.currentTime)}
@@ -456,14 +457,14 @@ export function FloraAudio({ src, label, accent, initialDuration = 0, item = {},
 }
 
 // "Read it instead" — the transcript, folded away until she wants it (WCAG SC 1.2.1).
-function TranscriptDisclosure({ text, accent }) {
+function TranscriptDisclosure({ text, accent, focused = false }) {
   const [open, setOpen] = useState(false);
   return (
-    <div style={{ marginTop: 10, borderTop: `1px solid ${T.paperDeep}`, paddingTop: 9 }}>
+    <div style={{ marginTop: 10, borderTop: `1px solid ${focused ? "#DFE5E1" : T.paperDeep}`, paddingTop: 9 }}>
       <button onClick={() => setOpen((o) => !o)} aria-expanded={open} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: "none", padding: 0, cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, color: accent }}>
         <BookOpen size={13} /> {open ? "Hide the words" : "Read it instead"}
       </button>
-      {open && <p style={{ fontFamily: SERIF, fontSize: 15.5, color: T.inkSoft, lineHeight: 1.6, margin: "9px 0 2px", maxHeight: 240, overflowY: "auto" }}>{text}</p>}
+      {open && <p style={{ fontFamily: SERIF, fontSize: 15.5, color: focused ? "#51444e" : T.inkSoft, lineHeight: 1.6, margin: "9px 0 2px", maxHeight: 240, overflowY: "auto" }}>{text}</p>}
     </div>
   );
 }
@@ -705,7 +706,7 @@ function CardMediaFace({ item, accent, kind, compact }) {
   );
 }
 
-export function CoverCard({ item: raw, onOpen, onConsume, consumeLabel, previewText, compact = false, presentation }) {
+export function CoverCard({ item: raw, onOpen, onConsume, consumeLabel, previewText, compact = false, presentation, mediaPresentation }) {
   const item = resolveCard(raw);
   const c = cwOf(item.cw);
   const I = ICON[item.Icon] || Sparkles;
@@ -716,7 +717,7 @@ export function CoverCard({ item: raw, onOpen, onConsume, consumeLabel, previewT
     const hook = previewText ?? summaryOf(item);
     const details = <><span className="fw-folio-card__kind"><I size={13}/>{item.kind}</span><span className="fw-folio-card__title">{item.title}</span>{hook && <span className="fw-folio-card__hook">{hook}</span>}<span className="fw-folio-card__meta">{item.meta.map(([ic,label]) => {const M = ICON[ic] || Clock; return <span key={label}><M size={13}/>{label}</span>;})}</span><span className="fw-folio-card__actions">{playKind ? "Details" : consumeLabel || (item.external ? "Open source" : "Open")}<ChevronRight size={15}/></span></>;
     return <div className="fw-folio-card" data-compact={compact} data-media={playKind || undefined}>
-      {playKind && <div className="fw-folio-card__media">{playKind === "audio" ? <FloraAudio compact src={item.audioSrc} label={item.playerLabel || "Episode controls"} accent={c.petal} initialDuration={item.duration || 0} item={item}/> : <CardMediaFace item={item} accent={c.petal} kind={playKind} compact={compact}/>}</div>}
+      {playKind && <div className="fw-folio-card__media">{playKind === "audio" ? <FloraAudio compact presentation={mediaPresentation} src={item.audioSrc} label={item.playerLabel || "Episode controls"} accent={c.petal} initialDuration={item.duration || 0} item={item}/> : <CardMediaFace item={item} accent={c.petal} kind={playKind} compact={compact}/>}</div>}
       <button type="button" className="fw-folio-card__open" onClick={direct || onOpen}>{details}</button>
       {direct && onOpen && <button type="button" className="fw-folio-details" onClick={onOpen}>Details & tools</button>}
     </div>;

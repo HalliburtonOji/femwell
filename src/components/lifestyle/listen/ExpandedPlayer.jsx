@@ -4,6 +4,7 @@ import { usePodcastPlayer } from '@/hooks/usePodcastPlayer';
 import { FloraVisualiser } from '@/components/brand/expandCards';
 import { useScrollLock } from '@/utils/useScrollLock';
 import { episodeSourceUrl } from './episode';
+import './ExpandedPlayer.css';
 
 // Full-screen modal version of the podcast player. Opens when the user
 // taps the MiniPlayer body. Provides scrubber, ±15/30s skips, large play
@@ -36,10 +37,23 @@ export default function ExpandedPlayer() {
   // A11y: Escape closes, focus the close button on open.
   useEffect(() => {
     if (!player?.isExpanded) return;
+    const returnFocus = document.activeElement;
+    const siblings = [...(modalRef.current?.parentElement?.children || [])]
+      .filter(element => element !== modalRef.current)
+      .map(element => ({ element, inert: element.inert, hidden: element.getAttribute('aria-hidden') }));
+    siblings.forEach(({ element }) => { element.inert = true; element.setAttribute('aria-hidden', 'true'); });
     const handleKey = (e) => {
       if (e.key === 'Escape') {
         e.preventDefault();
         player.collapse();
+      } else if (e.key === 'Tab') {
+        const controls = [...(modalRef.current?.querySelectorAll('button:not(:disabled),a[href],input:not(:disabled)') || [])]
+          .filter(control => control.getClientRects().length > 0);
+        if (!controls.length) { e.preventDefault(); return; }
+        const first = controls[0], last = controls[controls.length - 1];
+        if (!modalRef.current?.contains(document.activeElement)) { e.preventDefault(); first.focus(); return; }
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
       }
     };
     window.addEventListener('keydown', handleKey);
@@ -47,6 +61,13 @@ export default function ExpandedPlayer() {
     if (closeBtn) closeBtn.focus();
     return () => {
       window.removeEventListener('keydown', handleKey);
+      siblings.forEach(({ element, inert, hidden }) => {
+        element.inert = inert;
+        if (hidden === null) element.removeAttribute('aria-hidden'); else element.setAttribute('aria-hidden', hidden);
+      });
+      const target = returnFocus?.isConnected && returnFocus !== document.body
+        ? returnFocus : document.querySelector('button[aria-label="Expand player"]');
+      target?.focus?.();
     };
   }, [player?.isExpanded]);
 
@@ -71,13 +92,15 @@ export default function ExpandedPlayer() {
     cyclePlaybackRate,
     sleepRemainingSec,
     sleepTimerMin,
+    sleepAtEnd,
     sleepFading,
     setSleepTimer,
+    setSleepAtEnd,
   } = player;
   const externalUrl = episodeSourceUrl(ep);
   const active = isPlaying || ['loading','buffering'].includes(playbackStatus);
 
-  const sleepLabel = sleepTimerMin
+  const sleepLabel = sleepAtEnd ? 'End of story' : sleepTimerMin
     ? `${Math.floor(sleepRemainingSec / 60)}:${String(sleepRemainingSec % 60).padStart(2, '0')}`
     : 'Sleep';
 
@@ -95,22 +118,23 @@ export default function ExpandedPlayer() {
       aria-modal="true"
       aria-label="Podcast player"
       ref={modalRef}
-      className="fw-sheet-safe"
+      className="fw-sheet-safe fw-listen-expanded"
       style={{
         position: 'fixed',
         inset: 0,
         zIndex: 1100,
-        background: '#F4EFE3',
+        background: '#F5F4F1',
         display: 'flex',
         flexDirection: 'column',
-        padding: '24px 24px 48px',
+        padding: '20px 20px calc(30px + env(safe-area-inset-bottom, 0px))',
         overflowY: 'auto',
         overscrollBehavior: 'contain',
         WebkitOverflowScrolling: 'touch',
         }}
     >
       {/* Top row: close */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+      <div className="fw-listen-expanded__head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <span>Listen · now playing</span>
         <button
           data-expanded-close
           type="button"
@@ -120,8 +144,8 @@ export default function ExpandedPlayer() {
             width: 44,
             height: 44,
             borderRadius: 9999,
-            background: 'rgba(0,0,0,0.06)',
-            border: 'none',
+            background: '#fff',
+            border: '1px solid #DFE5E1',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -134,15 +158,16 @@ export default function ExpandedPlayer() {
 
       {/* Album art — large square */}
       <div
+        className="fw-listen-expanded__art"
         style={{
           width: '100%',
-          maxWidth: 360,
+          maxWidth: 190,
           aspectRatio: '1/1',
-          margin: '0 auto 24px',
-          borderRadius: 16,
+          margin: '0 auto 14px',
+          borderRadius: 24,
           overflow: 'hidden',
-          background: '#D8CFBC',
-          boxShadow: '0 16px 40px -12px rgba(43,30,22,0.25)',
+          background: '#E9F0EB',
+          boxShadow: '0 12px 28px -18px rgba(49,69,58,0.35)',
         }}
         aria-hidden="true"
       >
@@ -163,14 +188,14 @@ export default function ExpandedPlayer() {
       </div>
 
       {/* Title + source */}
-      <div style={{ textAlign: 'center', marginBottom: 20, padding: '0 8px' }}>
+      <div style={{ textAlign: 'center', marginBottom: 14, padding: '0 8px' }}>
         <p
           style={{
             fontSize: 12,
             fontWeight: 600,
             textTransform: 'uppercase',
             letterSpacing: '0.6px',
-            color: '#2E261B',
+            color: '#42634C',
             margin: 0,
             marginBottom: 6,
           }}
@@ -179,9 +204,10 @@ export default function ExpandedPlayer() {
         </p>
         <h2
           style={{
-            fontSize: 22,
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontSize: 27,
             fontWeight: 500,
-            color: '#7A1A12',
+            color: '#51444E',
             margin: 0,
             lineHeight: 1.3,
             maxWidth: 480,
@@ -205,7 +231,7 @@ export default function ExpandedPlayer() {
           aria-label="Episode progress"
           style={{
             width: '100%',
-            accentColor: '#BC2E27',
+            '--fw-progress': `${pct}%`,
             cursor: 'pointer',
           }}
         />
@@ -214,18 +240,12 @@ export default function ExpandedPlayer() {
             display: 'flex',
             justifyContent: 'space-between',
             fontSize: 12,
-            color: '#2E261B',
+            color: '#51444E',
             marginTop: 4,
           }}
         >
           <span>{formatTime(position)}</span>
           <span>−{formatTime(remaining)}</span>
-        </div>
-        <div
-          aria-hidden="true"
-          style={{ marginTop: 2, fontSize: 12, color: '#2E261B', textAlign: 'center', opacity: 0.6 }}
-        >
-          {Math.round(pct)}%
         </div>
       </div>
 
@@ -257,8 +277,8 @@ export default function ExpandedPlayer() {
             ...ctrlButton,
             width: 72,
             height: 72,
-            background: '#7A1A12',
-            color: '#F4EFE3',
+            background: '#51444E',
+            color: '#FFFFFF',
             borderRadius: 9999,
           }}
         >
@@ -305,9 +325,9 @@ export default function ExpandedPlayer() {
           <button
             type="button"
             onClick={() => setSleepMenuOpen((v) => !v)}
-            aria-label={sleepTimerMin ? `Sleep in ${sleepLabel}` : 'Set sleep timer'}
+            aria-label={sleepAtEnd ? 'Sleep at end of story' : sleepTimerMin ? `Sleep in ${sleepLabel}` : 'Set sleep timer'}
             aria-expanded={sleepMenuOpen}
-            style={{ ...pillButton, ...(sleepTimerMin ? activePill : null) }}
+            style={{ ...pillButton, ...(sleepTimerMin || sleepAtEnd ? activePill : null) }}
           >
             <Moon size={14} aria-hidden="true" />
             <span>{sleepLabel}</span>
@@ -321,14 +341,16 @@ export default function ExpandedPlayer() {
                 bottom: '100%',
                 left: '50%',
                 transform: 'translate(-50%, -8px)',
-                background: '#F4EFE3',
-                border: '1px solid var(--ink-line, #d8cfc4)',
+                background: '#FFFFFF',
+                border: '1px solid #DFE5E1',
                 borderRadius: 12,
                 padding: 8,
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 4,
-                minWidth: 140,
+                minWidth: 170,
+                maxHeight: 'min(55dvh, 380px)',
+                overflowY: 'auto',
                 boxShadow: '0 12px 24px -10px rgba(43,30,22,0.2)',
                 zIndex: 10,
               }}
@@ -350,24 +372,24 @@ export default function ExpandedPlayer() {
                 <button
                   type="button"
                   role="menuitem"
-                  onClick={() => { setSleepTimer(Math.max(1, (duration - position) / 60)); setSleepMenuOpen(false); }}
+                  onClick={() => { setSleepAtEnd(); setSleepMenuOpen(false); }}
                   style={menuItem}
                 >
                   End of story
                 </button>
               )}
-              {sleepTimerMin && (
+              {(sleepTimerMin || sleepAtEnd) && (
                 <button
                   type="button"
                   role="menuitem"
                   onClick={() => { setSleepTimer(null); setSleepMenuOpen(false); }}
-                  style={{ ...menuItem, color: '#BC2E27' }}
+                  style={{ ...menuItem, color: '#7A1A12' }}
                 >
                   Cancel timer
                 </button>
               )}
               {/* Tell her it won't cut — the promise is the point */}
-              <span style={{ fontFamily: "'Cormorant Garamond',Georgia,serif", fontStyle: 'italic', fontSize: 12, color: '#2E261B', textAlign: 'center', padding: '4px 2px 0', borderTop: '1px solid #D8CFBC', marginTop: 2 }}>
+              <span style={{ fontFamily: "'Cormorant Garamond',Georgia,serif", fontStyle: 'italic', fontSize: 14, color: '#51444E', textAlign: 'center', padding: '4px 2px 0', borderTop: '1px solid #DFE5E1', marginTop: 2 }}>
                 Fades out gently — never a hard stop.
               </span>
             </div>
@@ -382,11 +404,12 @@ export default function ExpandedPlayer() {
             display: 'inline-flex',
             alignItems: 'center',
             gap: 6,
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: 500,
-            color: '#2E261B',
+            color: '#51444E',
             textDecoration: 'none',
             padding: '6px 10px',
+            minHeight: 44,
           }}
         >
           <ExternalLink size={14} aria-hidden="true" />
@@ -400,7 +423,7 @@ export default function ExpandedPlayer() {
         <p
           role="alert"
           style={{
-            fontSize: 12,
+            fontSize: 14,
             color: '#BC2E27',
             textAlign: 'center',
             margin: '16px auto 0',
@@ -434,8 +457,8 @@ const ctrlLabel = {
   right: -2,
   fontSize: 12,
   fontWeight: 700,
-  background: '#D8CFBC',
-  color: '#7A1A12',
+  background: '#E8EEE9',
+  color: '#51444E',
   padding: '1px 4px',
   borderRadius: 4,
   pointerEvents: 'none',
@@ -447,30 +470,31 @@ const pillButton = {
   gap: 6,
   padding: '8px 14px',
   borderRadius: 9999,
-  background: '#D8CFBC',
-  color: '#7A1A12',
-  border: 'none',
+  background: '#FFFFFF',
+  color: '#51444E',
+  border: '1px solid #DFE5E1',
   cursor: 'pointer',
   fontSize: 12,
   fontWeight: 600,
-  minHeight: 36,
+  minHeight: 44,
 };
 
 const activePill = {
-  background: '#7A1A12',
-  color: '#F4EFE3',
+  background: '#51444E',
+  color: '#FFFFFF',
 };
 
 const menuItem = {
   display: 'block',
   width: '100%',
-  padding: '8px 10px',
+  padding: '10px 12px',
   background: 'transparent',
   border: 'none',
   textAlign: 'left',
   fontSize: 13,
   fontWeight: 500,
-  color: '#7A1A12',
+  color: '#51444E',
   cursor: 'pointer',
-  borderRadius: 8,
+  borderRadius: 12,
+  minHeight: 44,
 };

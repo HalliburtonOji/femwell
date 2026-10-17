@@ -86,7 +86,7 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, 
         <p style={{ fontFamily: SERIF, color: C.slate, margin: "0 0 12px", lineHeight: 1.45 }}>
           {active ? "Your last listen is ready where you left it." : isCheckedRoundtable(featured) ? "Mel, AJ and Elizabeth on friendship and reinvention. Forty-five minutes; includes Dove sponsorship." : featured.audioSrc ? "An episode, ready here in the app." : featured.type === "video" ? "A watch, ready here in the app." : "This show opens at its source."}
         </p>
-        <CoverCard presentation={presentation} previewText="" item={featured} onOpen={() => onOpen?.(featured)}/>
+        <CoverCard presentation={presentation} mediaPresentation="focused" previewText="" item={featured} onOpen={() => onOpen?.(featured)}/>
       </>}
       {alternate && <div style={{ marginTop: 16 }}>
         <p style={{ fontFamily: SERIF, color: C.slate, margin: "0 0 6px", lineHeight: 1.4 }}>Want {alternate.type === "video" ? "something to watch" : "another voice"}?</p>

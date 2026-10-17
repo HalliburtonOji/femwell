@@ -4,6 +4,7 @@
 // by length and kind; (2) Shows to follow — the 12 curated external shows as honest Spotify/
 // Apple link-outs. Reached from the Lifestyle "Listen & watch" board. No new entity/function.
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Headphones, Film, Clock, ExternalLink } from "lucide-react";
 import { T, SERIF, UI, PAPER_BG } from "@/components/journal/Editorial";
@@ -65,13 +66,13 @@ function MediaTile({ item, calm = false }) {
     <div style={{ display: "flex", flexDirection: "column", border: `1px solid ${calm ? "#e6e3dc" : T.paperDeep}`, borderRadius: calm ? 20 : 16, overflow: "hidden", background: calm ? "#fff" : T.paperHi, boxShadow: calm ? "0 8px 28px rgba(58,46,57,.05)" : "0 2px 10px rgba(58,44,26,.07)" }}>
       {item.kind === "video"
         ? <FloraYouTube videoId={item.youtubeId} item={{ id: item.id, title: item.title, category: item.category, cw: item.kind === "audio" ? "sage" : "gold" }} accent={accent} />
-        : <div style={{ padding: 11 }}><FloraAudio src={item.audioSrc} label={item.title} accent={accent} initialDuration={item.seconds} item={{ id: item.id, title: item.title, sourceName: item.source }} /></div>}
+        : <div style={{ padding: 11 }}><FloraAudio presentation={calm ? "focused" : undefined} src={item.audioSrc} label={item.title} accent={accent} initialDuration={item.seconds} item={{ id: item.id, title: item.title, sourceName: item.source, _raw: item.raw }} /></div>}
       <div style={{ padding: "10px 12px 12px", display: "flex", flexDirection: "column", gap: 4 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: accent }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: calm ? 12 : 10, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: accent }}>
           {item.kind === "audio" ? <Headphones size={11} /> : <Film size={11} />}{item.kind === "audio" ? "Listen" : "Watch"}
         </div>
         <div style={{ fontFamily: calm ? '"FemWell Editorial","Cormorant Garamond",Georgia,serif' : SERIF, fontWeight: 600, fontSize: calm ? 21 : 15.5, lineHeight: 1.2, color: calm ? "#51444e" : OXBLOOD }}>{item.title}</div>
-        <div style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 600, color: T.muted, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+        <div style={{ fontFamily: UI, fontSize: calm ? 12 : 11.5, fontWeight: 600, color: calm ? "#51444e" : T.muted, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
           {item.source && <span>{item.source}</span>}
           {item.mins ? <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}><Clock size={11} /> {durLabel(item.mins)}</span> : null}
         </div>
@@ -88,10 +89,10 @@ function ShowTile({ show, calm = false }) {
     <div style={{ display: "flex", flexDirection: "column", border: `1px solid ${calm ? "#e6e3dc" : T.paperDeep}`, borderRadius: calm ? 20 : 16, overflow: "hidden", background: calm ? "#fff" : T.paperHi, boxShadow: calm ? "0 8px 28px rgba(58,46,57,.05)" : "0 2px 10px rgba(58,44,26,.07)" }}>
       <FloraCover title={show.show} category="listen podcast rest" colorway="plum" seed={show.id} height={128} roundTop showTitle={false} idx={`show-${show.id}`} />
       <div style={{ padding: "11px 13px 13px", display: "flex", flexDirection: "column", gap: 5, flex: 1 }}>
-        <div style={{ fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: accent }}>{show.show}</div>
+        <div style={{ fontFamily: UI, fontSize: calm ? 12 : 10, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: accent }}>{show.show}</div>
         <div style={{ fontFamily: calm ? '"FemWell Editorial","Cormorant Garamond",Georgia,serif' : SERIF, fontWeight: 600, fontSize: calm ? 21 : 15.5, lineHeight: 1.2, color: calm ? "#51444e" : OXBLOOD }}>{show.title}</div>
         {show.summary && <div style={{ fontFamily: SERIF, fontSize: 13.5, color: T.inkSoft, lineHeight: 1.45, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{show.summary}</div>}
-        {show.duration && <div style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 600, color: T.muted, display: "inline-flex", alignItems: "center", gap: 4 }}><Clock size={11} /> {show.duration}</div>}
+        {show.duration && <div style={{ fontFamily: UI, fontSize: calm ? 12 : 11.5, fontWeight: 600, color: calm ? "#51444e" : T.muted, display: "inline-flex", alignItems: "center", gap: 4 }}><Clock size={11} /> {show.duration}</div>}
         <div style={{ display: "flex", gap: 7, marginTop: "auto", paddingTop: 4, flexWrap: "wrap" }}>
           {plat.spotify && <a href={plat.spotify} target="_blank" rel="noopener noreferrer" style={linkBtn(accent)}>Spotify <ExternalLink size={11} /></a>}
           {plat.apple && <a href={plat.apple} target="_blank" rel="noopener noreferrer" style={linkBtn(accent)}>Apple <ExternalLink size={11} /></a>}
@@ -103,6 +104,7 @@ function ShowTile({ show, calm = false }) {
 const linkBtn = (accent) => ({ display: "inline-flex", alignItems: "center", gap: 4, textDecoration: "none", fontFamily: UI, fontSize: 12, fontWeight: 700, color: accent, background: `${accent}12`, border: `1px solid ${accent}44`, borderRadius: 999, padding: "6px 11px" });
 
 export default function WatchListen() {
+  const navigate = useNavigate();
   const params = new URLSearchParams(window.location.search);
   const calm = params.get("appearance") === "calm";
   const returnToMain = params.get("from") === "lifestyle-main";
@@ -115,6 +117,8 @@ export default function WatchListen() {
   });
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   useEffect(() => {
     let alive = true;
@@ -128,21 +132,24 @@ export default function WatchListen() {
       // video library on its OWN query rather than leaving it to the engagement cap.
       // two video slices (top-engagement AND most-recent) so the library isn't just one ranked
       // window — deduped by video_id below (measured: 919 rows → 800 distinct).
-      const [pods, vids, vidsNew, rows] = await Promise.all([
-        base44.entities.LifestyleItems.filter({ media_type: "PODCAST", status: "PUBLISHED" }, "-created_date", 120).catch(() => []),
-        base44.entities.LifestyleItems.filter({ media_type: "VIDEO", status: "PUBLISHED" }, "-engagement_score", 200).catch(() => []),
-        base44.entities.LifestyleItems.filter({ media_type: "VIDEO", status: "PUBLISHED" }, "-created_date", 200).catch(() => []),
-        base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 160).catch(() => []),
+      // Keep the mixed slice: PUBLISHED PRACTICE rows can carry playable audio
+      // without media_type PODCAST. Removing this read would hide that lane.
+      const results = await Promise.allSettled([
+        base44.entities.LifestyleItems.filter({ media_type: "PODCAST", status: "PUBLISHED" }, "-created_date", 120),
+        base44.entities.LifestyleItems.filter({ media_type: "VIDEO", status: "PUBLISHED" }, "-engagement_score", 200),
+        base44.entities.LifestyleItems.filter({ media_type: "VIDEO", status: "PUBLISHED" }, "-created_date", 200),
+        base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 160),
       ]);
       if (!alive) return;
+      const [pods, vids, vidsNew, rows] = results.map(result => result.status === "fulfilled" && Array.isArray(result.value) ? result.value : []);
       const out = [];
       const seen = new Set();
       // videos dedup on video_id (measured: 919 rows → 800 distinct; 106 ids repeat)
       const push = (o, dedupKey) => { const k = dedupKey || o?.id; if (o && o.title && !seen.has(k)) { seen.add(k); out.push(o); } };
-      [...(Array.isArray(pods) ? pods : []), ...(Array.isArray(vids) ? vids : []), ...(Array.isArray(vidsNew) ? vidsNew : []), ...(Array.isArray(rows) ? rows : [])].forEach((r) => {
+      [...pods, ...vids, ...vidsNew, ...rows].forEach((r) => {
         const m = String(r.media_type || "").toUpperCase();
         if (r.audio_url && !/VIDEO/.test(m)) {
-          push({ id: r.id, kind: "audio", title: cleanTitle(r.title), source: r.source_name || r.channel_name || "FemWell", audioSrc: r.audio_url, seconds: Number(r.duration_seconds) || 0, mins: minutesOf(r), category: "listen podcast rest" });
+          push({ id: r.id, kind: "audio", title: cleanTitle(r.title), source: r.source_name || r.channel_name || "FemWell", audioSrc: r.audio_url, seconds: Number(r.duration_seconds) || 0, mins: minutesOf(r), category: "listen podcast rest", raw: r });
         } else if (m === "VIDEO" && r.video_id && r.is_embeddable !== false) {
           // hook: a real summary where we have one (138), else the channel — never padded
           push({ id: r.id, kind: "video", title: cleanTitle(r.title), source: r.channel_name || r.source_name || "", youtubeId: r.video_id, mins: minutesOf(r), category: "creative watch make" }, `v-${r.video_id}`);
@@ -150,10 +157,10 @@ export default function WatchListen() {
       });
       // fold in the curated, verified-embeddable videos (our whole-life watch lane)
       LIFESTYLE_VIDEOS.forEach((v) => push({ id: v.id, kind: "video", title: cleanTitle(v.title), source: v.channel_name || "", youtubeId: v.video_id, mins: minutesOf(v), category: "creative watch make" }));
-      if (alive) { setItems(out); setLoading(false); }
+      if (alive) { setItems(out); setLoadError(results.some(result => result.status === "rejected" || !Array.isArray(result.value))); setLoading(false); }
     })();
     return () => { alive = false; };
-  }, []);
+  }, [loadAttempt]);
 
   const gold = cwOf("gold").petal;
   const byKind = useMemo(() => items.filter((it) => kind === "all" || it.kind === kind), [items, kind]);
@@ -175,7 +182,7 @@ export default function WatchListen() {
     <div className={calm ? "fw-calm-media-directory" : undefined} style={{ ...(calm ? {backgroundColor:"#f5f4f1"} : PAPER_BG), minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}>
       {calm && <style>{`.fw-calm-media-directory .fw-calm-media-hero{position:relative;overflow:hidden;min-height:220px;padding:105px 8px 24px;border-bottom:1px solid #b9cabe}.fw-calm-media-directory .fw-calm-media-hero:before{content:"";position:absolute;top:-12px;right:-10px;width:195px;height:175px;background:url('/images/flora-dream/specimen-bluebell-v2.webp') right top/contain no-repeat;opacity:.5;mask-image:linear-gradient(180deg,#000 10%,transparent 100%);pointer-events:none}.fw-calm-media-directory .fw-calm-media-hero>*{position:relative}.fw-calm-media-directory .fw-calm-media-hero h1{font:400 clamp(44px,11vw,58px)/.98 Ephesis,cursive;color:#7a1a12;margin:0 0 12px}.fw-calm-media-directory .fw-calm-media-hero p{font:500 15px/1.4 system-ui;color:#51444e;margin:0;max-width:290px}.fw-calm-media-directory .fw-calm-media-hero small{display:block;font:700 12px/1.3 system-ui;letter-spacing:.13em;text-transform:uppercase;color:#42634c;margin-bottom:10px}.fw-calm-media-directory .fw-wl-filters{flex-wrap:wrap;overflow:visible!important}.fw-calm-media-directory :is(button,a):focus-visible{outline:3px solid #6f8f77;outline-offset:3px}`}</style>}
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "12px 16px 0" }}>
-        <button onClick={() => window.location.assign(returnToMain ? "/Lifestyle?section=listen" : calm ? "/CalmLifestyleDemo?section=listen" : "/Lifestyle")} aria-label="Back" className="fw-elite-press"
+        <button onClick={() => navigate(returnToMain ? "/Lifestyle?section=listen" : calm ? "/CalmLifestyleDemo?section=listen" : "/Lifestyle")} aria-label="Back" className="fw-elite-press"
           style={{ width: 44, height: 44, borderRadius: 999, border: `1px solid ${calm ? "#e6e3dc" : T.paperDeep}`, background: calm ? "#fff" : T.paperHi, color: calm ? "#51444e" : OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer", marginBottom: 8 }}>
           <ArrowLeft size={18} />
         </button>
@@ -194,6 +201,10 @@ export default function WatchListen() {
 
         {tab === "media" ? (
           <>
+            {loadError && <div role="alert" style={{ margin: "10px 0 14px", padding: "12px 14px", border: "1px solid #b9cabe", borderRadius: 18, background: "#fff", color: "#51444e", font: "500 14px/1.4 system-ui" }}>
+              Some listens and watches couldn't load. The ones below are available.
+              <button type="button" onClick={() => { setLoading(true); setLoadAttempt(n => n + 1); }} style={{ marginLeft: 8, minHeight: 44, border: 0, background: "transparent", color: "#42634c", font: "700 14px system-ui", textDecoration: "underline", cursor: "pointer" }}>Try again</button>
+            </div>}
             {/* filters — length (only where durations exist) + kind */}
             {lengthApplies && (
               <div style={{ display: "flex", gap: 7, overflowX: "auto", padding: "4px 0 6px", scrollbarWidth: "none" }} className="fw-wl-filters">
@@ -207,10 +218,10 @@ export default function WatchListen() {
             {loading ? (
               <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, color: T.muted, textAlign: "center", padding: "30px 0" }}>Gathering what's worth your time…</p>
             ) : shown.length === 0 ? (
-              <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, color: T.muted, textAlign: "center", padding: "30px 0" }}>Nothing at that length yet — try another filter.</p>
+              <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, color: T.muted, textAlign: "center", padding: "30px 0" }}>{loadError ? "The library couldn't load. Try again." : "Nothing at that length yet — try another filter."}</p>
             ) : (
               <>
-                <div style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.muted, margin: "0 0 10px" }}>{shown.length} to {kind === "audio" ? "hear" : kind === "video" ? "watch" : "watch & hear"}</div>
+                <div style={{ fontFamily: UI, fontSize: calm ? 12 : 11.5, fontWeight: 700, color: calm ? "#51444e" : T.muted, margin: "0 0 10px" }}>{shown.length} to {kind === "audio" ? "hear" : kind === "video" ? "watch" : "watch & hear"}</div>
                 <div style={{ display: "grid", gridTemplateColumns: calm ? "1fr" : "1fr 1fr", gap: calm ? 14 : 12 }}>
                   {(calm ? shown.slice(0,visibleCount) : shown).map((it) => <MediaTile key={it.id} item={it} calm={calm} />)}
                 </div>

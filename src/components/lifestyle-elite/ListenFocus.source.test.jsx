@@ -5,7 +5,7 @@ import ListenFocus from "./ListenFocus";
 
 vi.mock("@/hooks/usePodcastPlayer", () => ({ usePodcastPlayer: () => null }));
 vi.mock("@/components/brand/expandCards", () => ({
-  CoverCard: ({ item }) => <div>{item.title}</div>,
+  CoverCard: ({ item, mediaPresentation }) => <div data-media-presentation={mediaPresentation}>{item.title}</div>,
   FloraAudio: () => <div>Playable audio</div>,
   FloraYouTube: () => <div>Playable video</div>,
   resolveCard: item => item,
@@ -13,6 +13,12 @@ vi.mock("@/components/brand/expandCards", () => ({
 vi.mock("./SelectedLifestyleHeader", () => ({ SelectedRoomDetail: () => null }));
 
 describe("Listen source action", () => {
+  it("carries focused audio styling into the main featured folio player", () => {
+    render(<ListenFocus calmLayout presentation="folio"
+      audioCards={[{ id:"listen-1", type:"audio", title:"A real episode", audioSrc:"https://example.com/episode.mp3" }]} />);
+    expect(screen.getByText("A real episode").getAttribute("data-media-presentation")).toBe("focused");
+  });
+
   it("opens an external alternate video on the first source-labelled tap and keeps details separate", () => {
     const source = vi.fn(), details = vi.fn();
     render(<ListenFocus calmLayout presentation="folio"

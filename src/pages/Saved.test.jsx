@@ -154,6 +154,7 @@ describe("Saved card dates and pending removal",()=>{
   it("keeps exact saved editions while their Ideas route uses clean room materials",()=>{
     expect(calmSavedDestination("/LifestyleDetail?id=story-1")).toBe("/LifestyleDetail?id=story-1&appearance=calm");
     expect(calmSavedDestination("/FictionReader?id=story-1",{returnToMain:true})).toBe("/FictionReader?id=story-1&appearance=calm&from=lifestyle-main");
+    expect(calmSavedDestination("/FictionReader?id=story-1",{returnToMain:true,savedTab:"LIFESTYLE"})).toBe("/FictionReader?id=story-1&appearance=calm&from=lifestyle-main&via=saved&saved_tab=LIFESTYLE");
     expect(calmSavedDestination("/ReaderMarginDemo?gutenberg_id=105",{returnToMain:true,savedTab:"LIFESTYLE"})).toBe("/BookReader?gutenberg_id=105&appearance=calm&from=lifestyle-main&via=saved&saved_tab=LIFESTYLE");
     expect(calmSavedDestination("/ReaderMarginDemo?gutenberg_id=105",{returnToMain:true})).toBe("/BookReader?gutenberg_id=105&appearance=calm&from=lifestyle-main");
     expect(calmSavedDestination("/ReaderMarginDemo?gutenberg_id=105",{returnToMain:true,originSection:"yours"})).toBe("/BookReader?gutenberg_id=105&appearance=calm&from=lifestyle-main&return_section=yours");

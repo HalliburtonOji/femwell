@@ -1,0 +1,73 @@
+.fw-listen-expanded {
+  isolation: isolate;
+  color: #191510;
+}
+.fw-listen-expanded::before {
+  content: "";
+  position: absolute;
+  top: -34px;
+  right: -42px;
+  width: min(62vw, 270px);
+  height: 245px;
+  background: url('/images/flora-dream/specimen-bluebell-v2.webp') right top / contain no-repeat;
+  opacity: .27;
+  mask-image: linear-gradient(180deg, #000 8%, transparent 96%);
+  pointer-events: none;
+  z-index: -1;
+}
+.fw-listen-expanded__head,
+.fw-listen-expanded__art { flex-shrink: 0; }
+.fw-listen-expanded__head span {
+  font: 700 12px/1.4 system-ui, sans-serif;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: #42634c;
+}
+.fw-listen-expanded :is(button,a,input):focus-visible,
+.fw-listen-mini :is(button,a):focus-visible {
+  outline: 3px solid #42634c;
+  outline-offset: 3px;
+}
+.fw-listen-expanded input[type="range"] {
+  min-height: 44px;
+  height: 44px;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  background: linear-gradient(90deg, #42634c var(--fw-progress), #dfe5e1 var(--fw-progress));
+  background-size: 100% 6px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.fw-listen-expanded input[type="range"]::-webkit-slider-runnable-track { height: 6px; background: transparent; }
+.fw-listen-expanded input[type="range"]::-moz-range-track { height: 6px; background: transparent; }
+.fw-listen-expanded input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -7px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  background: #42634c;
+  box-shadow: 0 1px 6px rgba(40,60,45,.25);
+}
+.fw-listen-expanded input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  background: #42634c;
+  box-shadow: 0 1px 6px rgba(40,60,45,.25);
+}
+.fw-listen-mini { isolation: isolate; }
+.fw-listen-mini__fallback {
+  width: 100%;
+  height: 100%;
+  background: #e8eee9 url('/images/flora-dream/specimen-bluebell-v2.webp') center 24% / 72px auto no-repeat;
+}
+@media (max-height: 700px) {
+  .fw-listen-expanded__art { max-width: 142px !important; margin-bottom: 8px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fw-listen-expanded *, .fw-listen-mini * { scroll-behavior: auto !important; }
+}

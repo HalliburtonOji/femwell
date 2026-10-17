@@ -97,9 +97,12 @@ function pagesToChapters(pages, item) {
 export default function FictionReader() {
   const navigate = useNavigate();
   const params = new URLSearchParams(window.location.search);
-  const calm = params.get("appearance") === "calm";
-  const backTo = params.get("from") === "lifestyle-main" ? "/Lifestyle?section=books" : calm ? "/CalmLifestyleDemo?section=books" : "/Lifestyle?section=books";
-  const goBack = () => window.history.length > 1 ? navigate(-1) : navigate(backTo);
+  const calm = params.get("appearance") !== "legacy";
+  const fromMain = params.get("from") === "lifestyle-main";
+  const savedTab = params.get("saved_tab");
+  const fromSaved = params.get("via") === "saved" && ["ADVICE", "LIFESTYLE", "CONTENT", "PROGRAM", "JOURNAL", "EVENT"].includes(savedTab);
+  const backTo = fromSaved ? `/Saved?tab=${savedTab}&appearance=calm${fromMain ? "&from=lifestyle-main" : ""}` : fromMain ? "/Lifestyle?section=books" : calm ? "/CalmLifestyleDemo?section=books" : "/Lifestyle?section=books";
+  const goBack = () => fromMain || fromSaved || window.history.length <= 1 ? navigate(backTo) : navigate(-1);
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -226,7 +229,7 @@ function CoverPage({ item, pageCount, chapterCount, onOpen, calm = false }) {
       <div style={{ ...coverArtStyle, background: gradient }}>
         <span style={{ ...coverInitialStyle, color: accent }}>{initial}</span>
         <div style={coverTextStyle}>
-          <p style={coverEyebrowStyle}>FemWell Fiction</p>
+          <p style={calm ? { ...coverEyebrowStyle, fontSize: 12 } : coverEyebrowStyle}>FemWell Fiction</p>
           <h2 className="fw-heading" style={coverTitleStyle}>{item.title}</h2>
           {subtitle && (
             <p style={coverSubtitleStyle}>{subtitle}</p>
@@ -237,7 +240,7 @@ function CoverPage({ item, pageCount, chapterCount, onOpen, calm = false }) {
       {tags.length > 0 && (
         <div style={tagsRowStyle}>
           {tags.map((t) => (
-            <span key={t} style={tagPillStyle}>{t}</span>
+            <span key={t} style={calm ? { ...tagPillStyle, fontSize: 12 } : tagPillStyle}>{t}</span>
           ))}
         </div>
       )}
@@ -253,7 +256,7 @@ function Frame({ children, onBack, calm = false }) {
   return (
     <div className={calm ? "fw-clean-fiction-frame" : undefined} style={{ minHeight: "100vh", paddingBottom: 80, background: calm ? "#F5F4F1" : "#ECE7DA" }}>
       <div style={calm ? {...frameHeaderStyle,background:"#fff",borderBottom:"1px solid #EAE7E0"} : frameHeaderStyle}>
-        <div style={frameHeaderInnerStyle}>
+        <div style={calm ? { ...frameHeaderInnerStyle, paddingTop: 72 } : frameHeaderInnerStyle}>
           <button
             type="button"
             onClick={onBack}

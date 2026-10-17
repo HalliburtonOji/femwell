@@ -357,17 +357,33 @@ describe('acknowledged owner-safe listen persistence', () => {
     await act(async () => { audio.currentTime = 43; context.pause(); await flush(); });
     await waitFor(() => expect(context.progressError).toBeTruthy());
     act(() => { audio.currentTime = 99; });
+    sdk.update.mockImplementationOnce(async (id, payload) => ({ id, ...payload }));
     await act(async () => { await context.retryProgress(); await flush(); });
     expect(sdk.update).toHaveBeenLastCalledWith('listen-episode-a', expect.objectContaining({ position_sec: 43 }));
     expect(context.progressError).toBeNull();
   });
 
   it('should expose an unacknowledged write as unsynced until a retry is acknowledged', async () => {
-    await mount(); await begin(); act(() => audio.metadata()); sdk.create.mockResolvedValueOnce(undefined);
+    await mount(); await begin(); act(() => audio.metadata());
+    sdk.create.mockResolvedValueOnce(undefined).mockImplementationOnce(async payload => ({ id: 'created-listen', ...payload }));
     await act(async () => { audio.currentTime = 43; context.pause(); await flush(); });
     await waitFor(() => expect(context.progressError).toBeTruthy());
     await act(async () => { await context.retryProgress(); await flush(); });
     expect(sdk.create).toHaveBeenLastCalledWith(expect.objectContaining({ position_sec: 43, user_id: 'owner' }));
+    expect(context.progressError).toBeNull();
+  });
+
+  it('should retain the pending place when an unchanged SDK row is returned as a successful update', async () => {
+    sdk.filter.mockResolvedValue([saved()]);
+    await mount(); const pending = await begin();
+    await act(async () => { await pending.promise; audio.metadata(); await flush(); });
+    sdk.update.mockResolvedValue(saved());
+    await act(async () => { audio.currentTime = 43; context.pause(); await flush(); });
+    expect(context.progressError).toBe('Your place hasn’t synced yet.');
+    expect(sdk.filter).toHaveBeenCalledTimes(3); // resume, pre-write, exact read-back
+    sdk.update.mockImplementationOnce(async (id, payload) => ({ id, ...payload }));
+    await act(async () => { await context.retryProgress(); await flush(); });
+    expect(sdk.update).toHaveBeenLastCalledWith('listen-episode-a', expect.objectContaining({ position_sec: 43 }));
     expect(context.progressError).toBeNull();
   });
 });
@@ -455,6 +471,25 @@ describe('truthful transport state and retained capabilities', () => {
     expect(audio.volume).toBe(1); expect(context.sleepFading).toBe(false);
     act(() => context.setSleepTimer(1)); act(() => vi.advanceTimersByTime(60000));
     expect(audio.paused).toBe(true); expect(context.sleepTimerMin).toBeNull();
+    expect(audio.volume).toBe(1);
+  });
+
+  it('should bind End of story to the episode rather than wall-clock time or the next episode', async () => {
+    await mount(); await begin(); act(() => audio.metadata());
+    act(() => { context.setPlaybackRate(0.8); context.setSleepAtEnd(); });
+    expect(context.sleepAtEnd).toBe(true);
+    act(() => { audio.currentTime = 165; audio.dispatchEvent(new Event('timeupdate')); });
+    expect(context.sleepFading).toBe(true);
+    expect(audio.volume).toBeCloseTo(0.75);
+    await event('ended');
+    expect(context.sleepAtEnd).toBe(false);
+    expect(audio.volume).toBe(1);
+    await begin(episode('episode-b')); act(() => audio.metadata());
+    expect(context.sleepAtEnd).toBe(false);
+    act(() => { context.setSleepAtEnd(); audio.currentTime = 170; audio.dispatchEvent(new Event('timeupdate')); });
+    expect(audio.volume).toBeLessThan(1);
+    await begin(episode('episode-c'));
+    expect(context.sleepAtEnd).toBe(false);
     expect(audio.volume).toBe(1);
   });
 
