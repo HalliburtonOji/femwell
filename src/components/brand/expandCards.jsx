@@ -818,7 +818,7 @@ export function FocusedCardContents({ item: raw, room }) {
     </>}
     {warnings.length > 0 && <details className="fw-focused-depth"><summary>Worth knowing</summary>{(Array.isArray(warnings) ? warnings : [warnings]).map((text,i)=><p key={i}>{text}</p>)}</details>}
     {!book && item.takeaways?.length > 0 && <details className="fw-focused-depth"><summary>A few things to keep</summary><ul>{item.takeaways.map((text,i)=><li key={i}><FocusedText text={text}/></li>)}</ul></details>}
-    {!book && !authoredPlaceholder && (item.external || (!item.audioSrc && !item.videoSrc && !item.youtubeId)) && /^https?:\/\//i.test(sourceUrl || "") && <a className="fw-focused-button" href={sourceUrl} target="_blank" rel="noopener noreferrer">{item.type === "video" ? "Watch" : item.type === "audio" ? "Listen" : "Read"} at {item.sourceName || "the source"}<ExternalLink size={15}/></a>}
+    {!book && !authoredPlaceholder && (room === "good" || item.external || (!item.audioSrc && !item.videoSrc && !item.youtubeId)) && /^https?:\/\//i.test(sourceUrl || "") && <a className="fw-focused-button" href={sourceUrl} target="_blank" rel="noopener noreferrer">{item.type === "video" ? "Watch" : item.type === "audio" ? "Listen" : "Read"} at {item.sourceName || "the source"}<ExternalLink size={15}/></a>}
     {item.meta.some(([,label])=>label && !/duration unavailable/i.test(label)) && <details className="fw-focused-depth"><summary>About this {book ? "book" : "piece"}</summary><div className="fw-focused-note">{item.meta.filter(([,label])=>label && !/duration unavailable/i.test(label)).map(([,label],i)=><p key={i}>{label}</p>)}</div></details>}
   </div>;
 }

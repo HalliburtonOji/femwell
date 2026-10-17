@@ -13,18 +13,19 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Shirt, Sparkles, Sun, HeartHandshake, Palette, Wind, Clock, MessageCircle } from "lucide-react";
-import { T, SERIF, UI, PAPER_BG, Eyebrow } from "@/components/journal/Editorial";
+import { T, SERIF, UI } from "@/components/journal/Editorial";
 import { OXBLOOD } from "@/components/brand/SliderKit";
-import { FwFloraHero } from "@/components/brand/PageTop";
-import { SummaryCard } from "@/components/brand/Card";
-import { CoverCard, ExpandDetailCard, decodeEntities } from "@/components/brand/expandCards";
+import { ExpandDetailCard, decodeEntities } from "@/components/brand/expandCards";
+import { GoodLifeSection as Section, GoodLifeShelf as Shelf } from "./GoodLifeRoomParts";
 import { cwOf } from "@/components/brand/flora";
 import { pickProfile } from "@/utils/userProfile";
-import { computeCycleDay, phaseForDay } from "@/hooks/useCycleDay";
+import { computeCycleDay } from "@/hooks/useCycleDay";
 import { createPageUrl } from "@/utils";
 import { fmtDuration } from "@/utils/duration";
 import { isClickbait } from "@/utils/clickbait";
 import { cleanTitle } from "@/utils/cleanTitle";
+import { useGoodLifeKeep } from "@/components/lifestyle-elite/useGoodLifeKeep";
+import "./GoodLifeRoomsClean.css";
 
 // deterministic per-calendar-day slice — the same rotation helper the shell uses, so a
 // woman sees a fresh-but-stable handful each day (no persistence, no new entity).
@@ -55,10 +56,10 @@ const DIET_DENY = ["glp-1", "glp1", "ozempic", "wegovy", "lose weight", "weight 
 // mood → the vibe she wants to feel today (self-directed, never prescriptive), each with a
 // warm line and the fashion keywords that surface matching reads.
 const MOODS = [
-  { key: "bright", label: "Bright & bold", Icon: Sun, cw: "gold", line: "Colour, a statement, the thing you keep saving and never wearing. Today's the day.", kws: ["colour", "bold", "print", "bright", "statement", "red", "dress"] },
-  { key: "soft", label: "Soft & cosy", Icon: Wind, cw: "blush", line: "Cocoon dressing — nothing to prove, everything to feel good in.", kws: ["loungewear", "knit", "cosy", "co-ord", "soft", "comfort", "track"] },
-  { key: "sharp", label: "Pulled-together", Icon: Shirt, cw: "plum", line: "The uniform that makes the day feel handled. Clean lines, one good piece.", kws: ["tailoring", "capsule", "office", "chic", "denim", "elegant", "blazer"] },
-  { key: "play", label: "Playful", Icon: Sparkles, cw: "sage", line: "Try the thing. Clash the colours. Dressing is allowed to be fun.", kws: ["trend", "vinted", "fun", "print", "summer", "accessor"] },
+  { key: "bright", label: "Bright & bold", Icon: Sun, cw: "gold", line: "Wear the colour you've been saving.", kws: ["colour", "bold", "print", "bright", "statement", "red", "dress"] },
+  { key: "soft", label: "Soft & cosy", Icon: Wind, cw: "blush", line: "Comfort is a look. A good one.", kws: ["loungewear", "knit", "cosy", "co-ord", "soft", "comfort", "track"] },
+  { key: "sharp", label: "Pulled-together", Icon: Shirt, cw: "plum", line: "One good piece can do a lot.", kws: ["tailoring", "capsule", "office", "chic", "denim", "elegant", "blazer"] },
+  { key: "play", label: "Playful", Icon: Sparkles, cw: "sage", line: "Clash the colours. See what happens.", kws: ["trend", "vinted", "fun", "print", "summer", "accessor"] },
 ];
 
 // skin genuinely shifts across the cycle (cited: oestrogen glow follicular/ovulatory,
@@ -74,10 +75,15 @@ const SKIN_LABEL = { menstrual: "Bleed week", follicular: "Follicular", ovulator
 
 export default function Mirror() {
   const [items, setItems] = useState([]);
+  const [itemsStatus, setItemsStatus] = useState("loading");
+  const [retryKey, setRetryKey] = useState(0);
   const [phase, setPhase] = useState(null);
   const [firstName, setFirstName] = useState("");
   const [mood, setMood] = useState(MOODS[0]);
   const [expanded, setExpanded] = useState(null);
+  const [ownerId, setOwnerId] = useState(null);
+  const [ritualOpen, setRitualOpen] = useState(false);
+  const { saved, saveError, onSave } = useGoodLifeKeep(ownerId, expanded);
   const blush = cwOf("blush").petal;
 
   useEffect(() => {
@@ -86,12 +92,13 @@ export default function Mirror() {
       try {
         // fashion/beauty/body content — one broad pull, filtered client-side to the measured pools
         const rows = await base44.entities.LifestyleItems
-          .filter({ status: "PUBLISHED" }, "-engagement_score", 400).catch(() => []);
-        if (alive) setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r)));
-      } catch { /* render gracefully */ }
+          .filter({ status: "PUBLISHED" }, "-engagement_score", 400);
+        if (alive) { setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r))); setItemsStatus("ready"); }
+      } catch { if (alive) setItemsStatus("error"); }
       try {
         const u = await base44.auth.me().catch(() => null);
         if (u?.id) {
+          if (alive) setOwnerId(u.id);
           const profs = await base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []);
           const p = pickProfile(profs);
           if (alive && p) {
@@ -104,7 +111,7 @@ export default function Mirror() {
       } catch { /* anon — fine */ }
     })();
     return () => { alive = false; };
-  }, []);
+  }, [retryKey]);
 
   // the measured content pools
   const pools = useMemo(() => {
@@ -119,13 +126,17 @@ export default function Mirror() {
   // adapter: a real LifestyleItem → the shared CoverCard item shape
   const toCard = useCallback((r, kind, cw) => ({
     id: r.id,
+    type: String(r.media_type || "").toUpperCase() === "VIDEO" ? "video" : String(r.media_type || "").toUpperCase() === "PODCAST" ? "audio" : "article",
+    _raw: { ...r, source_url: r.source_url || r.episode_url }, sourceName: r.source_name || r.channel_name || "FemWell", actions: [],
     title: decodeEntities(r.title || ""),
     subtitle: r.subtitle || r.source_name || r.channel_name || "",
     summary: (r.summary || r.excerpt || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
     category: r.category || "Beauty",
     cw, Icon: kind === "skin" ? "Sparkles" : kind === "body" ? "HeartHandshake" : "Shirt",
-    kind: kind === "skin" ? "Skin · Read" : kind === "body" ? "Reflection · Read" : "Style · Read",
+    kind: String(r.media_type || "").toUpperCase() === "VIDEO" ? "Watch · Mirror" : String(r.media_type || "").toUpperCase() === "PODCAST" ? "Listen · Mirror" : kind === "skin" ? "Skin · Read" : kind === "body" ? "Reflection · Read" : "Style · Read",
     meta: [["Clock", fmtDuration(r) || "a few minutes"]],
+    ...(String(r.media_type || "").toUpperCase() === "VIDEO" && r.video_id && r.is_embeddable !== false ? { youtubeId: r.video_id } : {}),
+    ...(String(r.media_type || "").toUpperCase() === "PODCAST" && r.audio_url ? { audioSrc: r.audio_url, playerLabel: decodeEntities(r.title || "") } : {}),
   }), []);
 
   const moodPicks = useMemo(() => {
@@ -139,77 +150,59 @@ export default function Mirror() {
   const bodyCards = useMemo(() => rotateDaily(pools.body, 4).map((r) => toCard(r, "body", "sage")), [pools.body, toCard]);
 
   const summaryRows = useMemo(() => [
-    { Icon: Shirt, label: "Today", text: firstName ? `${firstName}, dress for how you want to FEEL today — pick a mood below.` : "Dress for how you want to feel today — pick a mood below." },
+    { Icon: Shirt, label: "Today", text: firstName ? `${firstName}, choose the feeling first. The clothes can follow.` : "Choose the feeling first. The clothes can follow." },
     phase ? { Icon: Sparkles, label: "Your skin", text: `${SKIN_LABEL[phase]}: ${SKIN_NOTE[phase]}` } : { Icon: Sparkles, label: "Your skin", text: "Add your cycle dates and this reads your skin week by week." },
-    { Icon: Palette, label: "For the joy of it", text: "Fashion and beauty as self-expression — never a flaw to fix, never a number." },
+    { Icon: Palette, label: "For the joy of it", text: "Style can be play. No fixing required." },
   ], [firstName, phase]);
 
-  const Section = ({ Icon, title, sub, accent, children }) => (
-    <section style={{ marginTop: 26 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 2px 4px" }}>
-        <span style={{ width: 30, height: 30, borderRadius: 9, background: `${accent}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><Icon size={16} color={accent} /></span>
-        <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, fontWeight: 600, color: OXBLOOD }}>{title}</div>
-      </div>
-      {sub && <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 2px 12px" }}>{sub}</p>}
-      {children}
-    </section>
-  );
-
-  const Shelf = ({ cards, empty }) => (
-    cards.length ? (
-      <div className="fw-mirror-shelf" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 0 8px 16px", margin: "0 -16px", scrollbarWidth: "none", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)" }}>
-        <style>{`.fw-mirror-shelf::-webkit-scrollbar{display:none}`}</style>
-        {cards.map((it) => <div key={it.id} style={{ flex: "0 0 89vw", maxWidth: 400, height: 360 }}><CoverCard item={it} compact onOpen={() => setExpanded(it)} /></div>)}
-      </div>
-    ) : <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "0 2px" }}>{empty}</p>
-  );
-
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
+    <div className="fw-good-clean fw-mirror-clean" style={{ minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "12px 16px 0" }}>
-        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/Lifestyle")} aria-label="Back" className="fw-elite-press"
-          style={{ width: 40, height: 40, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paperHi, color: OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer" }}><ArrowLeft size={19} /></button>
+        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/Lifestyle?section=good")} aria-label="Back to Good life" className="fw-elite-press"
+          style={{ width: 44, height: 44, borderRadius: 999, border: "1px solid #EAE7E0", background: "#fff", color: OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer" }}><ArrowLeft size={19} /></button>
 
-        <FwFloraHero title="Mirror" line="Fashion, beauty and how you meet yourself — for the joy of it, never a flaw to fix."
-          colorway="blush" bloom="camellia" flankL="rose" flankR="iris" titleColor={OXBLOOD} creature="butterfly" />
-
-        <div style={{ marginTop: 6 }}><SummaryCard eyebrow="In the mirror today" accent={blush} rows={summaryRows} /></div>
+        <header className="fw-good-hero fw-mirror-hero">
+          <span className="fw-good-path">GOOD LIFE / MIRROR</span>
+          <span className="fw-mirror-glass" aria-hidden="true" />
+          <span className="fw-mirror-petals" aria-hidden="true" />
+          <h1>Mirror</h1><p>Dress for the feeling. The rest can wait.</p>
+        </header>
+        <details className="fw-good-context"><summary>A note for today <span aria-hidden="true">+</span></summary><div className="fw-good-context-body">{summaryRows.map(({Icon,label,text}) => <div key={label} className="fw-good-context-row"><Icon size={16} aria-hidden="true"/><div><strong>{label}</strong><p>{text}</p></div></div>)}</div></details>
 
         {/* A · WHAT TO WEAR TO HOW YOU FEEL — the daily return hook */}
-        <Section Icon={Shirt} title="What to wear to how you feel" accent={cwOf(mood.cw).petal}
-          sub="Not your body type, not the occasion — how you want to FEEL. Pick a mood; the wardrobe follows.">
+        <Section Icon={Shirt} title="Dress for the feeling" accent={cwOf(mood.cw).petal}>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
             {MOODS.map((m) => { const on = m.key === mood.key; const c = cwOf(m.cw).petal; return (
-              <button key={m.key} onClick={() => setMood(m)} className="fw-elite-press"
-                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 13px", borderRadius: 999, cursor: "pointer", background: on ? c : `${c}14`, border: `1px solid ${on ? c : c + "55"}`, color: on ? "#fff" : c, fontFamily: UI, fontSize: 13, fontWeight: 700 }}>
+              <button key={m.key} onClick={() => setMood(m)} className="fw-elite-press" aria-pressed={on}
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, minHeight: 44, padding: "8px 13px", borderRadius: 999, cursor: "pointer", background: on ? "#51444e" : `${c}14`, border: `1px solid ${on ? "#51444e" : c + "55"}`, color: on ? "#fff" : "#51444e", fontFamily: UI, fontSize: 13, fontWeight: 700 }}>
                 <m.Icon size={14} /> {m.label}
               </button>
             ); })}
           </div>
-          <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, color: T.muted, lineHeight: 1.5, margin: "0 2px 12px" }}>{mood.line}
-            {phase && (mood.key === "soft" && phase === "luteal" ? " — and your luteal week agrees; comfort is not a compromise." :
-              mood.key === "bright" && (phase === "follicular" || phase === "ovulatory") ? " — and there's an outward, bright energy to your week to match." : "")}
-          </p>
-          <Shelf cards={moodPicks} empty="Style reads land here as the wardrobe fills out." />
+          <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, color: T.muted, lineHeight: 1.5, margin: "0 2px 12px" }}>{mood.line}{phase === "luteal" && mood.key === "soft" ? " Comfort is a fine choice this week." : phase && ["follicular", "ovulatory"].includes(phase) && mood.key === "bright" ? " If this week feels brighter, follow it." : ""}</p>
+          <Shelf room="mirror" onOpen={setExpanded} cards={moodPicks} empty={itemsStatus === "error" ? "" : itemsStatus === "loading" ? "Finding a style read…" : "No style read here right now. Try another feeling."} />
+          {itemsStatus === "error" && <div className="fw-good-load-error" role="alert">The reads didn't arrive. <button type="button" onClick={() => { setItemsStatus("loading"); setRetryKey(value => value + 1); }}>Try again</button></div>}
         </Section>
 
+        <details className="fw-good-library"><summary>Explore more · skin, style &amp; reflection <span aria-hidden="true">+</span></summary>
         {/* B · YOUR SKIN THIS WEEK — real skincare + a cycle-aware editorial note (not phase-filtered: 0/60 tagged) */}
         <Section Icon={Sparkles} title="Your skin this week" accent={blush}
           sub={phase ? SKIN_NOTE[phase] : "Add your cycle dates and this shapes to your skin, week by week. For now, a few good reads."}>
-          <Shelf cards={skinCards} empty="Skincare reads land here as the library fills out." />
+          <Shelf room="mirror" onOpen={setExpanded} cards={skinCards} empty={itemsStatus === "error" ? "" : "No skin read just now."} />
         </Section>
 
         {/* C · STYLE, THIS WEEK — the deep clean-fashion pool (208), rotated daily */}
         <Section Icon={Palette} title="Style, this week" accent={cwOf("plum").petal}
           sub="A small, chosen handful from the week in fashion — no endless scroll, no logistics.">
-          <Shelf cards={styleCards} empty="Fashion reads land here as the library fills out." />
+          <Shelf room="mirror" onOpen={setExpanded} cards={styleCards} empty={itemsStatus === "error" ? "" : "No fashion read just now."} />
         </Section>
 
         {/* D · KIND TO YOUR REFLECTION — body NEUTRAL (diet-culture denylisted), never forced positivity */}
         <Section Icon={HeartHandshake} title="Kind to your reflection" accent={cwOf("sage").petal}
           sub="Not 'love every inch' — just a body that's yours, changing across the month, worth meeting gently.">
-          <Shelf cards={bodyCards} empty="Gentle reads land here as the library fills out." />
+          <Shelf room="mirror" onOpen={setExpanded} cards={bodyCards} empty={itemsStatus === "error" ? "" : "No reflection read just now."} />
         </Section>
+        </details>
 
         {/* E · CARRY IT ON — cross-surface (Community style room · Jess as a getting-ready friend) */}
         <Section Icon={MessageCircle} title="Carry it on" accent={cwOf("gold").petal} sub="Mirror doesn't end here.">
@@ -229,12 +222,13 @@ export default function Mirror() {
                   </span>
                 </>
               );
-              const style = { display: "flex", alignItems: "center", gap: 11, width: "100%", textAlign: "left", background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${c}`, borderRadius: 13, padding: "11px 13px", cursor: "pointer", textDecoration: "none" };
+              const style = { display: "flex", alignItems: "center", gap: 11, width: "100%", textAlign: "left", background: "#fff", border: "1px solid #EAE7E0", borderLeft: `3px solid ${c}`, borderRadius: 16, padding: "11px 13px", cursor: "pointer", textDecoration: "none" };
               return r.href
                 ? <a key={r.label} href={r.href} className="fw-elite-press" style={style}>{inner}</a>
-                : <div key={r.label} style={{ ...style, cursor: "default" }}>{inner}</div>;
+                : <button key={r.label} type="button" onClick={() => setRitualOpen(value => !value)} aria-expanded={ritualOpen} className="fw-elite-press" style={style}>{inner}</button>;
             })}
           </div>
+          {ritualOpen && <div className="fw-good-ritual" role="region" aria-label="Three-minute getting-ready ritual"><p>Play one song. Pick one thing you like today. Then go.</p><button type="button" onClick={() => setRitualOpen(false)}>Done for now</button></div>}
         </Section>
 
         <div style={{ textAlign: "center", margin: "28px 0 0" }}>
@@ -244,7 +238,7 @@ export default function Mirror() {
         </div>
       </div>
 
-      {expanded && <ExpandDetailCard item={expanded} onClose={() => setExpanded(null)} />}
+      {expanded && <ExpandDetailCard item={expanded} onClose={() => setExpanded(null)} presentation="focused" room="good" saved={saved} onSave={onSave} error={saveError} />}
     </div>
   );
 }
