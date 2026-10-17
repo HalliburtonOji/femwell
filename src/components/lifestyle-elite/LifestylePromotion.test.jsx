@@ -9,6 +9,20 @@ vi.mock('@/components/lifestyle/DailyStoryReader',()=>({default:({goToChapter,on
 vi.mock('./SelectedLifestyleHeader',()=>({default:({active})=><h1>{active.title}</h1>,SelectedRoomDetail:()=>null}));
 beforeEach(()=>{mock.empty.mockResolvedValue([]);mock.chapters.mockResolvedValue([]);mock.readings.mockResolvedValue([]);vi.spyOn(globalThis,'fetch').mockResolvedValue({ok:true,json:async()=>({results:[]})});window.history.replaceState({},'', '/Lifestyle');});
 describe('approved main Lifestyle parity',()=>{
+  it('keeps the Everything Sky detail honest and opens the selected Sky room',async()=>{
+    render(<Lifestyle/>);
+    const nav=await screen.findByRole('navigation',{name:'Lifestyle sections'});
+    fireEvent.click(screen.getByRole('button',{name:'Everything',exact:true}));
+    const overview=await screen.findByRole('region',{name:'For you today'});
+    const skyEntry=within(overview).getByText('Your sky',{exact:true}).closest('.fw-selected-overview__entries > div');
+    fireEvent.click(within(skyEntry).getByRole('button',{name:'Details & tools'}));
+    const sheet=screen.getByRole('dialog',{name:/sky|moon/i});
+    expect(within(sheet).queryByRole('button',{name:'Save',exact:true})).not.toBeInTheDocument();
+    fireEvent.click(within(sheet).getByRole('button',{name:'Set up your sky'}));
+    await waitFor(()=>expect(within(nav).getByRole('button',{name:'Sky',exact:true})).toHaveAttribute('aria-pressed','true'));
+    expect(window.location.search).toContain('section=sky');
+    expect(screen.queryByText('This source has no saveable item yet')).not.toBeInTheDocument();
+  });
   it('names the exact joy action as planning and opens the existing time choice',async()=>{
     window.history.replaceState({},'', '/Lifestyle?section=good&joy=try-11gq3zo');render(<Lifestyle/>);
     const joy=await screen.findByRole('dialog',{name:/Read one poem, out loud, to no one/});

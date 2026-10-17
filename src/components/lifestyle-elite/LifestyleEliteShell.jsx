@@ -539,6 +539,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
   const [focusSection, setFocusSection] = useState(null);
   const [roomRevision, setRoomRevision] = useState(0);
   const [skyActionRequest, setSkyActionRequest] = useState(null);
+  const selectRoomRef = useRef(null);
   const [skyActionState, setSkyActionState] = useState({ loading: true, hasChart: false });
 
   // real content (grouped per type, mirrors LifestyleForYou)
@@ -1114,7 +1115,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
   }, [grouped, rowCard, openExternal, calmLayout]);
   const shelfBookCards = useMemo(() => {
     const daily = story ? [{
-      id: "daily-chapter", type: "daily_story", title: story.series_title || story.title || "Today's chapter",
+      id: "daily-chapter", type: "daily_story", saveable: false, title: story.series_title || story.title || "Today's chapter",
       subtitle: story.cliffhanger ? `"${story.cliffhanger}"` : "Today's chapter is ready.",
       meta: [["Feather", story.day_number ? `Day ${story.day_number}` : "Today"], ["Clock", "A few minutes"]],
       chips: ["daily story"], excerpt: stripHtml(story.segment_text || "").slice(0, 220) || undefined,
@@ -1126,7 +1127,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
   // §3 BOOKS — 2 taps, not 3: tap the card and you're READING (the pane paginates the
   // opening pages via the existing fetchGutenbergBook fn); the FULL reader is one clear option.
   const classicCards = useMemo(() => (gutenberg || []).slice(0, 6).map((b) => ({
-    id: b.id, type: "book", title: b.title, subtitle: b.author || "Public domain",
+    id: b.id, type: "book", saveable: false, title: b.title, subtitle: b.author || "Public domain",
     summary: b.summary || "A free, public-domain classic — start reading here, or open the full reader for chapters, reflections and the club.",
     meta: [["Book", b.tag || "Public domain"], ["Star", b.stars ? "★".repeat(b.stars) : "A classic"]],
     chips: ["free", "classic", ...(b.subjects || []).map((x) => String(x).split("--")[0].trim().toLowerCase()).filter(Boolean)].slice(0, 4),
@@ -1136,14 +1137,14 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
     actions: [{ label: "Open reader", Icon: "Book", primary: true, onClick: () => openItem(b) }],
   })), [gutenberg, openItem]);
   const dailyStoryCards = useMemo(() => (story ? (() => { const t = storyTaster(story.segment_text); return [{
-    id: "story-today", type: "daily_story", title: story.series_title || story.title || "Today's chapter",
+    id: "story-today", type: "daily_story", saveable: false, title: story.series_title || story.title || "Today's chapter",
     subtitle: story.cliffhanger ? `"${story.cliffhanger}"` : "Today's chapter is ready to read.",
     meta: [["Feather", story.day_number ? `Day ${story.day_number}` : "Today"], ["Clock", "A few minutes"]],
     chips: ["daily story", "fiction"], excerpt: t.excerpt,
     body: t.body.length ? t.body : ["Today's chapter is being written — check back soon."],
     actions: [{ label: "Read today's chapter", Icon: "Feather", primary: true, onClick: () => { setExpanded(null); openTodaysChapter(); } }],
   }]; })() : [{
-    id: "story-soon", type: "daily_story", title: "Today's chapter is on its way",
+    id: "story-soon", type: "daily_story", saveable: false, title: "Today's chapter is on its way",
     subtitle: "A new chapter lands each morning.", meta: [["Clock", "Back tomorrow"]], chips: ["daily story"],
     body: ["Your serialised story is being written — it'll be here shortly."], actions: [],
   }]), [story, openTodaysChapter]);
@@ -1157,7 +1158,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
     const moonLine = moonToday ? `${moonToday.name} · ${moonToday.illumination}% lit` : (horoscope?.moon_phase || "The sky");
     const hasReading = !!(horoscope && (horoscope.narrative || horoscope.headline));
     return [{
-      id: "sky-today", type: "horoscope",
+      id: "sky-today", type: "horoscope", saveable: false,
       title: cleanTitle(horoscope?.headline) || (moonToday ? `The moon is ${moonToday.name.toLowerCase()}` : "Your sky today"),
       subtitle: hasReading
         ? moonLine
@@ -1173,22 +1174,22 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
       ],
       // opens the REAL reader (triad · cycle-moon dial · sky diary · ask the sky …),
       // which also carries the birth-chart onboarding. Was a shallow headline sheet.
-      actions: [{ label: hasReading ? "Open your sky" : "Set up your sky", Icon: "Moon", primary: true, onClick: () => { setExpanded(null); setSkyOpen(true); } }],
+      actions: [{ label: hasReading ? "Open your sky" : "Set up your sky", Icon: "Moon", primary: true, onClick: () => { setExpanded(null); if (focusedPreview) { selectRoomRef.current?.("sky"); setSkyActionRequest({ type: hasReading ? "reading" : "chart" }); } else setSkyOpen(true); } }],
     }];
-  }, [horoscope, phaseKey, moonToday]);
+  }, [horoscope, phaseKey, moonToday, focusedPreview]);
   const ritualCards = useMemo(() => {
     // rotate a fresh handful of "a day for you" ideas + "try this" joys each day (Track A)
     const dayPool = [{ title: A_DAY.title, line: A_DAY.line }, ...A_DAY.alts.map((a) => ({ title: a, line: "A day that's just yours — guilt-free." }))];
     const aday = rotateDaily(dayPool, 3)
       .map((d) => ({
-        id: authoredJoyId("aday", d.title), type: "ritual", title: d.title, subtitle: d.line,
+        id: authoredJoyId("aday", d.title), type: "ritual", saveable: false, title: d.title, subtitle: d.line,
         meta: [["Sun", "A day for you"], ["Heart", "No streaks, no pressure"]], chips: ["a day for you"],
         body: ["Leisure is the point — this lands softly in your planner, and nothing nags you if the day goes another way."],
         why: whyFor(d.title), doable: { label: "Save it for the day", title: d.title, kind: "day" },
         actions: [{ label: "Save it for the day", Icon: "Star", primary: true, onClick: () => { savePlannerDay(d.title); setExpanded(null); } }],
       }));
     const trys = rotateDaily(TRY_THIS, 3).map((t) => ({
-      id: authoredJoyId("try", t.title), type: "ritual", title: t.title, subtitle: "Small, doable, just for today.", cw: t.cw,
+      id: authoredJoyId("try", t.title), type: "ritual", saveable: false, title: t.title, subtitle: "Small, doable, just for today.", cw: t.cw,
       meta: [["Wind", "A small thing"], ["Heart", "No streaks"]], chips: ["try this"],
       body: ["Tap to keep it — it lands softly in your planner. Try it when you fancy it; leave it if you don't."],
       why: whyFor(t.title), doable: { label: "Keep it for today", title: t.title, kind: "try" },
@@ -1203,7 +1204,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
       selectedPresentation ? "You don’t have to make a project of your day off." : phaseKey ? `Your ${phaseLabel(phaseKey).toLowerCase()} week asks for a gentler pace. That's not falling behind.` : "A gentler pace today isn't falling behind.",
     ];
     return slips.map((sl) => ({
-      id: authoredJoyId("slip", sl), type: "quote", title: sl, subtitle: "A permission slip, not a to-do.",
+      id: authoredJoyId("slip", sl), type: "quote", saveable: false, title: sl, subtitle: "A permission slip, not a to-do.",
       meta: [["Heart", "Permission"]], chips: ["permission"], quote: { text: sl, attrib: "FemWell" },
       body: ["No streaks here — leisure is the point, and guilt isn't invited."],
       why: whyFor(sl), doable: { label: "Book a quiet hour", title: "A quiet hour, just for you", kind: "day" },
@@ -1451,6 +1452,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
       }
     }
   };
+  selectRoomRef.current = selectRoom;
   const focusBoard = focus ? focus.board : null;
   const forYouShown = focus ? forYouItems.filter((it) => focus.forYou.includes(it.forYouSection)) : forYouItems;
 
