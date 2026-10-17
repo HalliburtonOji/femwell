@@ -14,12 +14,13 @@
 // clutter/cortisol finding is NEVER weaponised into "tidy up, ladies" — cosiness is not a chore.
 import { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, Home, Flame, CookingPot, HeartHandshake, Lamp, MessageCircle, Feather, CalendarHeart, Sparkles } from "lucide-react";
-import { T, SERIF, UI, PAPER_BG } from "@/components/journal/Editorial";
+import { ArrowLeft, Home, Flame, CookingPot, HeartHandshake, Lamp, Feather, CalendarHeart, Sparkles } from "lucide-react";
+import { T, SERIF, UI } from "@/components/journal/Editorial";
 import { OXBLOOD } from "@/components/brand/SliderKit";
-import { FwFloraHero } from "@/components/brand/PageTop";
-import { SummaryCard } from "@/components/brand/Card";
-import { CoverCard, ExpandDetailCard, decodeEntities } from "@/components/brand/expandCards";
+import { ExpandDetailCard, decodeEntities } from "@/components/brand/expandCards";
+import { GoodLifeSection as Section, GoodLifeShelf as Shelf } from "./GoodLifeRoomParts";
+import { useGoodLifeKeep } from "@/components/lifestyle-elite/useGoodLifeKeep";
+import "./GoodLifeRoomsClean.css";
 import { cwOf } from "@/components/brand/flora";
 import { pickProfile } from "@/utils/userProfile";
 import { createPageUrl } from "@/utils";
@@ -79,18 +80,23 @@ export default function Nest() {
   const [items, setItems] = useState([]);
   const [firstName, setFirstName] = useState("");
   const [expanded, setExpanded] = useState(null);
+  const [itemsStatus, setItemsStatus] = useState("loading");
+  const [retryKey, setRetryKey] = useState(0);
+  const [ownerId, setOwnerId] = useState(null);
+  const { saved, saveError, onSave } = useGoodLifeKeep(ownerId, expanded);
   const gold = cwOf("gold").petal;
 
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
-        const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500).catch(() => []);
-        if (alive) setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r)));
-      } catch { /* graceful */ }
+        const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500);
+        if (alive) { setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r))); setItemsStatus("ready"); }
+      } catch { if (alive) setItemsStatus("error"); }
       try {
         const u = await base44.auth.me().catch(() => null);
         if (u?.id) {
+          if (alive) setOwnerId(u.id);
           const profs = await base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []);
           const p = pickProfile(profs);
           const nm = String(p?.display_name || u.full_name || "").trim().split(/\s+/)[0] || "";
@@ -99,7 +105,7 @@ export default function Nest() {
       } catch { /* anon */ }
     })();
     return () => { alive = false; };
-  }, []);
+  }, [retryKey]);
 
   const homeCards = useMemo(() => rotateDaily(items.filter((r) => !isFiction(r) && !hasAny(r, NOT) && !hasAny(r, DIET) && hasAny(r, HOME_KW)), 8).map((r) => toCard(r, "gold")), [items]);
   const stoveCards = useMemo(() => rotateDaily(items.filter((r) => !isFiction(r) && !hasAny(r, NOT) && !hasAny(r, DIET) && hasAny(r, FOOD_KW)), 8).map((r) => toCard(r, "crimson")), [items]);
@@ -110,6 +116,7 @@ export default function Nest() {
     const isVid = mt === "VIDEO" && r.video_id && r.is_embeddable !== false;
     const isAudio = (mt === "PODCAST" || mt === "CLIP") && r.audio_url;
     return {
+      type: mt === "VIDEO" ? "video" : isAudio ? "audio" : "article", _raw: { ...r, source_url: r.source_url || r.episode_url }, sourceName: r.source_name || r.channel_name || "FemWell", actions: [],
       id: r.id, title: decodeEntities(r.title || ""),
       subtitle: r.source_name || r.channel_name || r.subtitle || "",
       summary: (r.summary || r.excerpt || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
@@ -122,46 +129,33 @@ export default function Nest() {
   }
   const summaryRows = useMemo(() => [
     { Icon: Home, label: "Today", text: firstName ? `${firstName}, make it cosy — for you, not for anyone coming over. A soft place to land is a real thing to make.` : "Make it cosy — for you, not for anyone coming over. A soft place to land is a real thing to make." },
-    { Icon: Flame, label: "This is for you", text: "There's genuine research that a home you find restful lifts a woman's mood and calms her stress across the day. Not a tidy home — a KIND one. There's a difference." },
+    { Icon: Flame, label: "This is for you", text: "One small study linked how women described their homes with mood and daily cortisol patterns. It does not mean tidying fixes stress. This room is for comfort, not chores." },
     { Icon: Lamp, label: "No budget required", text: "Cosiness isn't a shopping list or a Pinterest board. It's a lamp instead of the big light, a blanket, thick socks. It works in a rented room and a shared house just the same." },
   ], [firstName]);
 
-  const Section = ({ Icon, title, sub, accent, children }) => (
-    <section style={{ marginTop: 26 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 2px 4px" }}>
-        <span style={{ width: 30, height: 30, borderRadius: 9, background: `${accent}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><Icon size={16} color={accent} /></span>
-        <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, fontWeight: 600, color: OXBLOOD }}>{title}</div>
-      </div>
-      {sub && <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 2px 12px" }}>{sub}</p>}
-      {children}
-    </section>
-  );
-  const Shelf = ({ cards, empty }) => (
-    cards.length ? (
-      <div className="fw-nest-shelf" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 0 8px 16px", margin: "0 -16px", scrollbarWidth: "none", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)" }}>
-        <style>{`.fw-nest-shelf::-webkit-scrollbar{display:none}`}</style>
-        {cards.map((it) => <div key={it.id} style={{ flex: "0 0 89vw", maxWidth: 400, height: 366 }}><CoverCard item={it} compact onOpen={() => setExpanded(it)} /></div>)}
-      </div>
-    ) : <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "0 2px" }}>{empty}</p>
-  );
 
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
+    <div className="fw-good-clean fw-nest-clean" style={{ minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "12px 16px 0" }}>
-        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/Lifestyle")} aria-label="Back" className="fw-elite-press"
-          style={{ width: 40, height: 40, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paperHi, color: OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer" }}><ArrowLeft size={19} /></button>
+        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/Lifestyle?section=good")} aria-label="Back to Good life" className="fw-elite-press"
+          style={{ width: 44, height: 44, borderRadius: 999, border: "1px solid #EAE7E0", background: "#fff", color: OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer" }}><ArrowLeft size={19} /></button>
 
-        <FwFloraHero title="Nest" line="Home as a soft place to land — cosy for your own comfort, never to be presentable. No budget, no Pinterest, no chores."
-          colorway="gold" bloom="marigold" flankL="primrose" flankR="honeysuckle" titleColor={OXBLOOD} creature="bee" />
-
-        <div style={{ marginTop: 6 }}><SummaryCard eyebrow="Home today" accent={gold} rows={summaryRows} /></div>
+        <header className="fw-good-hero fw-nest-hero"><span className="fw-good-path">GOOD LIFE / NEST</span><span className="fw-nest-jasmine" aria-hidden="true"/><span className="fw-nest-lamp" aria-hidden="true"/><h1>Nest</h1><p>Make the place feel like yours. No house tour required.</p></header>
+        <details className="fw-good-context"><summary>A note for today <span aria-hidden="true">+</span></summary><div className="fw-good-context-body">{summaryRows.map(({ Icon, label, text }) => <div key={label} className="fw-good-context-row"><Icon size={16} aria-hidden="true"/><div><strong>{label}</strong><p>{text}</p></div></div>)}</div></details>
 
         {/* A · SMALL COSY RITUALS — the editorial spine (real content is thin, and that's honest) */}
         <Section Icon={Flame} title="Small cosy rituals" accent={gold}
-          sub="Tiny, free, no-effort ways to make the place kinder tonight. Pick one, or none — this is a permission slip, not a to-do list.">
+          sub="One idea for tonight. No list to finish.">
+          {rituals[0] && <div className="fw-nest-one"><Lamp size={22} aria-hidden="true"/><p>{rituals[0]}</p></div>}
+        </Section>
+
+        <a href={createPageUrl("Community?room=lighter")} className="fw-elite-press fw-nest-door"><HeartHandshake size={21} aria-hidden="true"/><span><strong>Lighter Side</strong><small>Swap the cosy bits in Community</small></span><span aria-hidden="true">→</span></a>
+
+        <details className="fw-good-library"><summary>More cosy ideas · home · something on the stove <span aria-hidden="true">+</span></summary>
+        <Section Icon={Lamp} title="A few more small rituals" accent={gold}>
           <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-            {rituals.map((r, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${gold}`, borderRadius: 13, padding: "12px 14px" }}>
+            {rituals.slice(1).map((r, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, background: "#fff", border: "1px solid #EAE7E0", borderLeft: `3px solid ${gold}`, borderRadius: 16, padding: "12px 14px" }}>
                 <span style={{ width: 30, height: 30, borderRadius: 9, background: `${gold}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><Lamp size={15} color={gold} /></span>
                 <span style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.5 }}>{r}</span>
               </div>
@@ -172,29 +166,21 @@ export default function Nest() {
         {/* B · A COSY HOME — the ~20 genuine home items */}
         <Section Icon={Home} title="A cosy home" accent={cwOf("sage").petal}
           sub="Warmth, softness, small touches — for renters, tiny flats and shared houses just as much as anyone. No perfectionism invited.">
-          <Shelf cards={homeCards} empty="Home reads land here as the library fills out." />
+          <Shelf room="nest" cards={homeCards} onOpen={setExpanded} empty={itemsStatus === "error" ? "" : itemsStatus === "loading" ? "Finding home reads…" : "No home read just now."} />
         </Section>
 
         {/* C · SOMETHING ON THE STOVE — joy-recipes ONLY; diet-culture hard-excluded */}
         <Section Icon={CookingPot} title="Something on the stove" accent={cwOf("crimson").petal}
           sub="Food as comfort and pleasure — a stew, a bake, a proper Sunday something. Nothing to count, nothing to atone for.">
-          <Shelf cards={stoveCards} empty="Comfort cooking lands here as the library fills out." />
+          <Shelf room="nest" cards={stoveCards} onOpen={setExpanded} empty={itemsStatus === "error" ? "" : itemsStatus === "loading" ? "Finding something for the stove…" : "No cooking read just now."} />
         </Section>
+        {itemsStatus === "error" && <div className="fw-good-load-error" role="alert">The reads didn't arrive. <button type="button" onClick={() => { setItemsStatus("loading"); setRetryKey(value => value + 1); }}>Try again</button></div>}
 
-        {/* D · A SOFT PLACE FOR PEOPLE — Community doorway (not a shelf) */}
-        <Section Icon={HeartHandshake} title="A soft place for people" accent={cwOf("plum").petal}
-          sub="A home is also who you let in. Swap the small stuff — what's cooking, what's cosy — with people who get it.">
-          <a href={createPageUrl("Community")} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 12, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${cwOf("plum").petal}`, borderRadius: 14, padding: "14px 16px", cursor: "pointer", textDecoration: "none" }}>
-            <span style={{ width: 40, height: 40, borderRadius: 11, background: `${cwOf("plum").petal}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><MessageCircle size={20} color={cwOf("plum").petal} /></span>
-            <span style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: T.ink, display: "block", lineHeight: 1.2 }}>Home &amp; hearth, in Community</span>
-              <span style={{ fontFamily: UI, fontSize: 12.5, color: T.muted }}>The comfort-swap: what you're cooking, what's keeping you cosy, no showing off.</span>
-            </span>
-          </a>
-        </Section>
+        </details>
 
         {/* E · CARRY IT ON */}
-        <Section Icon={Sparkles} title="Carry it on" accent={gold} sub="Nest doesn't end here.">
+        <details className="fw-good-library"><summary>Carry it on · Planner, Jess, Journal <span aria-hidden="true">+</span></summary>
+        <Section Icon={Sparkles} title="Carry it on" accent={gold}>
           <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
             {[
               { Icon: CalendarHeart, cw: "gold", label: "Book a slow evening in", sub: "Nothing planned, nowhere to be — put it in the Planner like the treat it is.", href: createPageUrl("Planner") },
@@ -203,7 +189,7 @@ export default function Nest() {
             ].map((r) => {
               const c = cwOf(r.cw).petal;
               return (
-                <a key={r.label} href={r.href} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", textAlign: "left", background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${c}`, borderRadius: 13, padding: "11px 13px", cursor: "pointer", textDecoration: "none" }}>
+                <a key={r.label} href={r.href} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", textAlign: "left", background: "#fff", border: "1px solid #EAE7E0", borderLeft: `3px solid ${c}`, borderRadius: 16, padding: "11px 13px", cursor: "pointer", textDecoration: "none" }}>
                   <span style={{ width: 34, height: 34, borderRadius: 10, background: `${c}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><r.Icon size={16} color={c} /></span>
                   <span style={{ flex: 1, minWidth: 0 }}>
                     <span style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink, display: "block", lineHeight: 1.2 }}>{r.label}</span>
@@ -214,15 +200,16 @@ export default function Nest() {
             })}
           </div>
         </Section>
+        </details>
 
         <div style={{ textAlign: "center", margin: "28px 0 0" }}>
           <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, maxWidth: 340, lineHeight: 1.55, margin: "0 auto" }}>
-            Your home doesn't have to be finished, tidy, or anyone's idea of nice. It just has to be kind to the one person who lives your life — you.
+            A kind room is plenty.
           </p>
         </div>
       </div>
 
-      {expanded && <ExpandDetailCard item={expanded} onClose={() => setExpanded(null)} />}
+      {expanded && <ExpandDetailCard item={expanded} onClose={() => setExpanded(null)} presentation="focused" room="good" saved={saved} onSave={onSave} error={saveError} />}
     </div>
   );
 }

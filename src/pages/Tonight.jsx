@@ -90,7 +90,14 @@ export default function Tonight() {
       } catch { /* graceful */ }
       // the nightly assembly — a chapter + the sky, both refresh on their own
       try { const ds = await base44.entities.DailyStory.filter({ is_active: true }, "-day_number", 1).catch(() => []); if (alive && ds?.[0]) setStory(ds[0]); } catch { /* no story tonight */ }
-      try { const ho = await base44.entities.HoroscopeReading.filter({}, "-reading_date", 1).catch(() => []); if (alive && ho?.[0]) setSky(ho[0]); } catch { /* no sky tonight */ }
+      try {
+        const skyOwner = await base44.auth.me().catch(() => null);
+        if (skyOwner?.id) {
+          const ho = await base44.entities.HoroscopeReading.filter({ user_id: skyOwner.id }, "-reading_date", 1);
+          const ownReading = Array.isArray(ho) ? ho.find(row => row?.user_id === skyOwner.id) : null;
+          if (alive) setSky(ownReading || null);
+        }
+      } catch { /* no personal sky tonight */ }
       try {
         const u = await base44.auth.me().catch(() => null);
         if (u?.id) {

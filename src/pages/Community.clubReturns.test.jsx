@@ -44,6 +44,11 @@ it("same-URL browser Back still returns Community home without reopening the req
   await waitFor(()=>expect(screen.queryByText("Book past-a")).not.toBeInTheDocument());
   expect(screen.queryByText(/Finding the club book/)).not.toBeInTheDocument();
 });
+it("opens the existing Games Room from Delight's exact Community link", async()=>{
+  window.history.replaceState({},"","/Community?view=games");
+  render(<MemoryRouter initialEntries={["/Community?view=games"]}><CommunityInner/></MemoryRouter>);
+  expect(await screen.findByText("The Games Room")).toBeVisible();
+});
 it("pick changes never carry another checkpoint's draft or notes into reused index zero",async()=>{
   localStorage.setItem("fw_club_past-a","0"); localStorage.setItem("fw_club_past-b","0");
   const mounted=render(<MemoryRouter><BookClubView requestedPickKey="past-a"/></MemoryRouter>);

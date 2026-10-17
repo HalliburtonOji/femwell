@@ -2,12 +2,12 @@ import React from "react";
 import { beforeEach, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
-const api = vi.hoisted(() => ({ me: vi.fn(), items: vi.fn(), profiles: vi.fn(), saved: vi.fn(), createProfile: vi.fn(), updateProfile: vi.fn(), remove: vi.fn() }));
+const api = vi.hoisted(() => ({ me: vi.fn(), items: vi.fn(), profiles: vi.fn(), saved: vi.fn(), createProfile: vi.fn(), updateProfile: vi.fn(), remove: vi.fn(), stories: vi.fn(), readings: vi.fn() }));
 vi.mock("@/api/base44Client", () => ({ base44: {
   auth: { me: api.me },
   entities: {
     LifestyleItems: { filter: api.items }, UserProfile: { filter: api.profiles, create: api.createProfile, update: api.updateProfile },
-    SavedItems: { filter: api.saved, delete: api.remove },
+    SavedItems: { filter: api.saved, delete: api.remove }, DailyStory: { filter: api.stories }, HoroscopeReading: { filter: api.readings },
   },
 } }));
 vi.mock("@/hooks/usePodcastPlayer", () => ({ usePodcastPlayer: () => null }));
@@ -16,6 +16,9 @@ import Mirror from "./Mirror";
 import Move from "./Move";
 import Kindred from "./Kindred";
 import Curious from "./Curious";
+import Delight from "./Delight";
+import Nest from "./Nest";
+import Tonight from "./Tonight";
 
 const mirrorRead = { id: "mirror-read", status: "PUBLISHED", category: "Fashion", media_type: "ARTICLE", title: "Colour in your wardrobe", summary: "An honest style idea.", lede: "A real first paragraph.\n\nA useful second paragraph.", content_url: "https://publisher.example/style", source_name: "Style Journal" };
 const moveRead = { id: "move-read", status: "PUBLISHED", category: "Fitness", media_type: "ARTICLE", title: "Dance for the pleasure of it", summary: "Movement without a target.", lede: "Start with a song.\n\nStop whenever you like.", content_url: "https://publisher.example/move", source_name: "Movement Journal" };
@@ -30,6 +33,8 @@ beforeEach(() => {
   api.createProfile.mockImplementation(async data => { profile = { id: "profile-a", ...data }; return profile; });
   api.updateProfile.mockImplementation(async (_id, data) => { profile = { ...profile, ...data }; return profile; });
   api.remove.mockResolvedValue(undefined);
+  api.stories.mockResolvedValue([]);
+  api.readings.mockResolvedValue([]);
 });
 
 it.each([
@@ -155,4 +160,70 @@ it("distinguishes a failed Curious podcast query from an empty podcast shelf and
   expect(await screen.findByRole("alert")).toHaveTextContent("The listens didn't arrive.");
   fireEvent.click(screen.getByRole("button", { name: "Try again" }));
   await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
+});
+
+it("keeps Delight's mood choice, full watch, play door and optional shelves", async () => {
+  const watch = { id: "delight-watch", status: "PUBLISHED", category: "Entertainment", media_type: "ARTICLE", title: "A very funny TV show", summary: "A show for tonight.", lede: "A full and funny look at it.", content_url: "https://publisher.example/show", source_name: "Screen Review" };
+  api.items.mockResolvedValue([watch]);
+  render(<Delight />);
+  await waitFor(() => expect(document.querySelector(".fw-del-shelf .fw-folio-card__open")).not.toBeNull());
+  expect(screen.getByRole("link", { name: /Fancy a game/ })).toHaveAttribute("href", "/Community?view=games");
+  fireEvent.click(screen.getByRole("button", { name: /A laugh/ }));
+  expect(screen.getByRole("button", { name: /A laugh/ })).toHaveAttribute("aria-pressed", "true");
+  fireEvent.click(screen.getByText(/Today's extra pick/));
+  expect(screen.getByText("One purely joyful thing")).toBeVisible();
+  fireEvent.click(document.querySelector(".fw-del-shelf .fw-folio-card__open"));
+  expect(await screen.findByText("A full and funny look at it.")).toBeVisible();
+  expect(screen.getByRole("link", { name: "Read at Screen Review" })).toHaveAttribute("href", watch.content_url);
+});
+
+it("shows Delight's failed content request and retains the game door", async () => {
+  api.items.mockRejectedValueOnce(new Error("read failed"));
+  render(<Delight />);
+  expect(await screen.findByRole("alert")).toHaveTextContent("The picks didn't arrive.");
+  expect(screen.getByRole("link", { name: /Fancy a game/ })).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+  await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
+});
+
+it("does not bury Delight's only matching music pick under unrelated television", async () => {
+  const music = { id: "music-one", media_type: "ARTICLE", category: "Entertainment", title: "A new music album", summary: "Listen to this album.", lede: "A real music read." };
+  const tv = [1, 2, 3, 4].map(id => ({ id: `tv-${id}`, media_type: "ARTICLE", category: "Entertainment", title: `A funny TV show ${id}`, summary: "A show to watch." }));
+  api.items.mockResolvedValue([...tv, music]);
+  render(<Delight />);
+  fireEvent.click(screen.getByRole("button", { name: "Music" }));
+  await waitFor(() => expect(document.querySelectorAll(".fw-del-shelf .fw-folio-card__open").length).toBeGreaterThan(0));
+  expect(document.querySelector(".fw-del-shelf .fw-folio-card__title")).toHaveTextContent("A new music album");
+});
+
+it("keeps Nest's direct ritual, complete home source and Community door", async () => {
+  const home = { id: "nest-home", status: "PUBLISHED", category: "Home", media_type: "ARTICLE", title: "A cosy home tonight", summary: "A small space.", lede: "A real home thought.", content_url: "https://publisher.example/home", source_name: "Home Review" };
+  api.items.mockResolvedValue([home]);
+  render(<Nest />);
+  expect(screen.getByRole("link", { name: /Lighter Side/ })).toHaveAttribute("href", "/Community?room=lighter");
+  expect(document.querySelector(".fw-nest-one")).not.toBeNull();
+  fireEvent.click(screen.getByText(/More cosy ideas/));
+  await waitFor(() => expect(document.querySelector(".fw-nest-shelf .fw-folio-card__open")).not.toBeNull());
+  expect(document.querySelectorAll(".fw-nest-clean .fw-good-library section").length).toBeGreaterThanOrEqual(3);
+  fireEvent.click(document.querySelector(".fw-nest-shelf .fw-folio-card__open"));
+  expect(await screen.findByText("A real home thought.")).toBeVisible();
+  expect(screen.getByRole("link", { name: "Read at Home Review" })).toHaveAttribute("href", home.content_url);
+});
+
+it("keeps Nest's ritual and Retry when the library fails", async () => {
+  api.items.mockRejectedValueOnce(new Error("read failed"));
+  render(<Nest />);
+  expect(document.querySelector(".fw-nest-one")).not.toBeNull();
+  fireEvent.click(screen.getByText(/More cosy ideas/));
+  expect(await screen.findByRole("alert")).toHaveTextContent("The reads didn't arrive.");
+  fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+  await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
+});
+
+it("never shows another account's nightly horoscope in Tonight", async () => {
+  api.readings.mockResolvedValue([{ id: "other-sky", user_id: "reader-b", moon_phase: "Private moon", power_title: "Another woman's reading" }]);
+  render(<Tonight />);
+  await waitFor(() => expect(api.readings).toHaveBeenCalledWith({ user_id: "reader-a" }, "-reading_date", 1));
+  expect(screen.queryByText("Another woman's reading")).toBeNull();
+  expect(screen.queryByText("The night sky")).toBeNull();
 });

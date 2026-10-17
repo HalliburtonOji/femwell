@@ -3214,6 +3214,7 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
       // own thread). Used by the reader's "Discuss this book in the Book Club" link.
       if (sp.get("view") === "bookclub") setView("bookclub");
       if (sp.get("view") === "mentor") setView("mentor");
+      if (sp.get("view") === "games") setView("games");
     } catch { /* ignore */ }
   }, []);
 

@@ -21,6 +21,20 @@
 .fw-curious-clean .fw-curious-bluebell{position:absolute;z-index:0;top:-27px;right:-81px;width:265px;height:265px;background:url('/images/flora-dream/specimen-bluebell-v2.webp') center/contain no-repeat;opacity:.48;filter:saturate(.73);mix-blend-mode:multiply;mask-image:radial-gradient(ellipse 48% 53% at 52% 40%,#000 22%,transparent 100%);pointer-events:none}
 .fw-curious-clean .fw-curious-orbit{position:absolute;z-index:1;top:25px;right:11px;width:154px;height:154px;border:1px solid #8da2b4;border-left-color:transparent;border-bottom-color:transparent;border-radius:50%;transform:rotate(25deg);opacity:.8;pointer-events:none}
 .fw-curious-clean .fw-curious-orbit:after{content:"";position:absolute;top:10px;right:34px;width:6px;height:6px;border-radius:50%;background:#a8893f}
+.fw-delight-clean .fw-delight-hero{border-color:#e4d6be;background:radial-gradient(circle at 84% 20%,#f8edcc,transparent 48%)}
+.fw-delight-clean .fw-delight-petals{position:absolute;z-index:0;top:-33px;right:-82px;width:260px;height:250px;background:url('/images/flora-dream/living-petals-v1.webp') center/contain no-repeat;opacity:.64;filter:saturate(.83);mix-blend-mode:multiply;mask-image:radial-gradient(ellipse 53% 50% at 54% 42%,#000 24%,transparent 100%);pointer-events:none;transform:rotate(14deg)}
+.fw-delight-clean .fw-delight-halo{position:absolute;top:18px;right:14px;width:157px;height:157px;border:1px solid #c7a34f;border-bottom-color:transparent;border-left-color:transparent;border-radius:50%;transform:rotate(-26deg);pointer-events:none}
+.fw-delight-clean .fw-good-section>div:first-child{padding-bottom:7px;border-bottom:1px solid #e8dcc8}
+.fw-delight-clean .fw-delight-play,.fw-nest-clean .fw-nest-door{display:flex;align-items:center;gap:13px;margin-top:25px;padding:16px;border:1px solid #ded4c3;border-radius:18px;background:#fff;color:#51444e;text-decoration:none}
+.fw-delight-clean .fw-delight-play>span:nth-child(2),.fw-nest-clean .fw-nest-door>span:nth-child(2){display:grid;flex:1;gap:3px}
+.fw-delight-clean .fw-delight-play strong,.fw-nest-clean .fw-nest-door strong{color:#7a1a12;font:italic 600 22px/1.2 "FemWell Editorial","Cormorant Garamond",Georgia,serif}
+.fw-delight-clean .fw-delight-play small,.fw-nest-clean .fw-nest-door small{font:600 13px/1.35 ui-sans-serif,system-ui,sans-serif}
+.fw-nest-clean .fw-nest-hero{border-color:#ddd7ca;background:radial-gradient(ellipse at 89% 18%,#efe8d5,transparent 49%)}
+.fw-nest-clean .fw-nest-jasmine{position:absolute;z-index:0;top:-22px;right:-108px;width:280px;height:270px;background:url('/images/flora-dream/specimen-jasmine-v2.webp') center/contain no-repeat;opacity:.43;filter:saturate(.65);mix-blend-mode:multiply;mask-image:radial-gradient(ellipse 50% 50% at 50% 45%,#000 24%,transparent 100%);pointer-events:none}
+.fw-nest-clean .fw-nest-lamp{position:absolute;z-index:0;top:23px;right:2px;width:174px;height:174px;border-radius:50%;background:radial-gradient(circle,#fff3cc99 2%,#ead7a022 47%,transparent 72%);pointer-events:none}
+.fw-nest-clean .fw-good-section>div:first-child{padding-bottom:7px;border-bottom:1px solid #e5dfd2}
+.fw-nest-clean .fw-nest-one{display:flex;align-items:center;gap:14px;padding:20px;border:1px solid #ded4c3;border-radius:18px;background:linear-gradient(140deg,#fff,#f7f2e6);color:#8d6c27}
+.fw-nest-clean .fw-nest-one p{margin:0;color:#51444e;font:italic 600 20px/1.35 "FemWell Editorial","Cormorant Garamond",Georgia,serif}
 .fw-kindred-clean .fw-good-section>div:first-child{padding-bottom:7px;border-bottom:1px solid #e5d9d9}
 .fw-curious-clean .fw-good-section>div:first-child{padding-bottom:7px;border-bottom:1px solid #dce4e8}
 .fw-curious-clean .fw-cur-rabbit .fw-folio-card{border:1px solid #dce4e8;border-radius:18px;background:#fff;box-shadow:none;padding:18px}
