@@ -89,7 +89,9 @@ export default function FocusedLifestyleRooms({ active, onClose, user, profile, 
     return topic.key === "skin" ? skin : topic.key === "body" ? body : topic.key === "all" ? skin || body || fashion : fashion;
   });
   const matches=topic.kws?.length ? pool.filter(row=>d.hasAny(row,topic.kws)) : pool;
-  const candidates=room === "Kindred" && topic.key === "solitude" ? [] : matches.length>=2 ? matches : pool;
+  // A chosen topic stays chosen even when it has one or no matching pieces.
+  // The existing All reads choice exposes the rest of the eligible room.
+  const candidates=room === "Kindred" && topic.key === "solitude" ? [] : matches;
   const first=d.rotateDaily(candidates,6), ordered=[...first,...candidates.filter(row=>!first.some(other=>other.id===row.id))];
   const rows=ordered.slice(0,visibleCounts[`${room}:${topic.key}`] || 3);
   const prompts=promptPool(room), prompt=prompts[(d.dayOffset()+(turns[room]||0))%prompts.length];
@@ -132,7 +134,7 @@ export default function FocusedLifestyleRooms({ active, onClose, user, profile, 
         <ul className="fw-focused-room-list">{rows.map(row=><li key={row.id}><button onClick={()=>open(row)}><span style={{flex:1}}>{resolveCard({title:cleanTitle(row.title)}).title}<small>{row.source_name || row.channel_name || row.author_name}</small></span><ArrowRight size={16}/></button></li>)}</ul>
         {ordered.length>rows.length && <button className="fw-focused-button" onClick={()=>setVisibleCounts(values=>({...values,[`${room}:${topic.key}`]:(values[`${room}:${topic.key}`] || 3)+6}))}>More in this room</button>}
         {libraryHasMore && <details className="fw-focused-depth"><summary>Browse the wider library</summary><button className="fw-focused-button" disabled={loading} onClick={loadMoreLibrary}>{loading ? "Loading…" : "Load more published pieces"}</button></details>}
-        {!rows.length && !loading && !libraryError && topic.key!=="solitude" && <p className="fw-focused-note">No published pieces here yet. Try another topic.</p>}
+        {!rows.length && !loading && !libraryError && topic.key!=="solitude" && <p role="status" className="fw-focused-note">{topic.key === "all" ? "No published pieces here yet." : `No ${topic.label.toLowerCase()} in this selection. Try All reads in this room${libraryHasMore ? " or load more" : ""}.`}</p>}
       </section>}
       <details className="fw-focused-depth"><summary>Carry it on</summary><div className="fw-focused-room-links">{CONNECT[room].map(destination=>destination === "Jess" ? <button key={destination} className="fw-focused-button" onClick={()=>{onClose();window.dispatchEvent(new CustomEvent("fw_open_assistant",{detail:{prompt:`I’d like to talk about ${room.toLowerCase()}.`}}));}}>Ask Jess</button> : <a key={destination} className="fw-focused-button" href={`/${destination}`}>{destination}</a>)}</div></details>
     </>}

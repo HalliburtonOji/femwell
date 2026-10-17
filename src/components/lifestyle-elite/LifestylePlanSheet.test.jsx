@@ -18,6 +18,35 @@ it('returns an Ideas book plan to the same clean reader edition after Planner re
   expect(lifestyleReturnLink(planned)).toEqual({href:'/ReaderMarginDemo?gutenberg_id=1342',label:'Open this book'});
   expect(lifestyleReturnLink({...planned,notes:'d:15;From Lifestyle'}).href).toBe('/BookReader?gutenberg_id=1342');
 });
+it('returns a main Lifestyle book plan to its canonical clean reader and main Books',()=>{
+  const planned=plannedRows({source:'books',title:'Read Pride and Prejudice',ref:'gutenberg:1342',mainCalm:true},'2026-10-17','19:00',30,7)[0];
+  expect(planned.notes).toBe('d:30;From Lifestyle;view:main-calm');
+  expect(lifestyleReturnLink(planned)).toEqual({href:'/BookReader?gutenberg_id=1342&appearance=calm&from=lifestyle-main',label:'Open this book'});
+});
+it('keeps the opened plan modal, returns focus and restores page scroll when closed',async()=>{
+  const opener=document.createElement('button');opener.textContent='Plan an hour';document.body.append(opener);opener.focus();
+  const finish=vi.fn();const {unmount}=render(<LifestylePlanSheet ownerId="owner" request={{title:'Tea',ref:'joy:tea'}} onFinish={finish}/>);
+  const dialog=screen.getByRole('dialog',{name:'Plan a time'});
+  expect(dialog).toHaveAttribute('open');expect(screen.getByRole('heading',{name:'Plan a time'})).toHaveFocus();
+  expect(document.body.style.overflow).toBe('hidden');
+  fireEvent(dialog,new Event('cancel',{bubbles:false,cancelable:true}));expect(finish).toHaveBeenCalledWith(false);
+  unmount();await waitFor(()=>expect(opener).toHaveFocus());
+  expect(document.body.style.overflow).toBe('');opener.remove();
+});
+it('suspends a cached Lifestyle plan on route exit and reopens the same draft on return',()=>{
+  const finish=vi.fn();const request={title:'Tea',ref:'joy:tea'};
+  const {rerender,unmount}=render(<LifestylePlanSheet active ownerId="owner" request={request} onFinish={finish}/>);
+  fireEvent.change(screen.getByLabelText('Time'),{target:{value:'18:45'}});
+  const dialog=screen.getByRole('dialog',{name:'Plan a time'});
+  expect(dialog).toHaveAttribute('open');expect(document.body.style.overflow).toBe('hidden');
+  rerender(<LifestylePlanSheet active={false} ownerId="owner" request={request} onFinish={finish}/>);
+  expect(dialog).not.toHaveAttribute('open');expect(document.body.style.overflow).toBe('');
+  expect(screen.getByLabelText('Time')).toHaveValue('18:45');expect(finish).not.toHaveBeenCalled();
+  rerender(<LifestylePlanSheet active ownerId="owner" request={request} onFinish={finish}/>);
+  expect(dialog).toHaveAttribute('open');expect(screen.getByLabelText('Time')).toHaveValue('18:45');
+  expect(screen.getByRole('heading',{name:'Plan a time'})).toHaveFocus();
+  unmount();expect(document.body.style.overflow).toBe('');
+});
 it('keeps a failed chosen-time draft and never writes accepted checkpoint twice',async()=>{
   api.create.mockImplementationOnce(async row=>({...row,id:'one'})).mockRejectedValueOnce(new Error('offline')).mockImplementationOnce(async row=>({...row,id:'two'}));
   render(<LifestylePlanSheet ownerId="owner" request={{source:'books',club:{title:'Book',pick_key:'edition',checkpoints:[{label:'First'},{label:'Second'}]}}} onFinish={vi.fn()}/>);

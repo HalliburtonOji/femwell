@@ -816,7 +816,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
   // existing entity (no planner dispatcher exists); source+ref let the planner deep-link back.
   const scheduleReading = useCallback(async (arg) => {
     if (!user?.id || !arg) return false;
-    if (selectedPresentation) return startPlan({...arg,source:"books",preview:calmLayout});
+    if (selectedPresentation) return startPlan({...arg,source:"books",mainCalm:calmLayout && contentRoute === "/Lifestyle",preview:calmLayout && contentRoute !== "/Lifestyle"});
     const mk = (title, date, ref, notes, time) => base44.entities.PlannerItems.create({
       user_id: user.id, title, date, time: time || "21:00", category: "personal", repeat: "once",
       notes, source: "books", ref, is_completed: false, created_at: nowISO(), updated_at: nowISO(),
@@ -835,7 +835,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
         flash("Tonight at 9 — it's in your planner");
       }
     } catch { flash("Couldn't reach your planner just now"); }
-  }, [user, flash, selectedPresentation, startPlan, calmLayout]);
+  }, [user, flash, selectedPresentation, startPlan, calmLayout, contentRoute]);
 
   // ── A day for you → PlannerItems.create (a gentle planned day-off block) ──
   const savePlannerDay = useCallback(async (title) => {
@@ -1520,8 +1520,8 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
               } />}
               {foldVariant ? <FirstFoldNavigation cards={heroCards} activeIndex={selectedPresentation && !focus ? -1 : heroCard}
                 onSelect={(card, index) => selectRoom(card.id, index)}
-                phaseLine={phaseKey ? `${phaseLabel(phaseKey)}${cycleDay ? ` · Day ${cycleDay}` : ""} · ${ph.day}` : "A few good things today"}
-                compactPhaseLine={phaseKey ? `${phaseLabel(phaseKey)}${cycleDay ? ` · day ${cycleDay}` : ""}` : "A few good things today"}
+                phaseLine={phaseKey ? `${phaseLabel(phaseKey)}${cycleDay ? ` · Day ${cycleDay}` : ""} · ${ph.day}` : ""}
+                compactPhaseLine={phaseKey ? `${phaseLabel(phaseKey)}${cycleDay ? ` · day ${cycleDay}` : ""}` : ""}
                 phaseDetail={phaseKey ? ph.day : undefined} calmLayout={calmLayout}
                 focusLabel={focus?.label} onClear={() => selectRoom(null)} /> : <>
               <div className="fw-hero-ctl" style={clean ? { display: "flex", gap: 7, padding: "14px 0 0" } : { display: "flex", gap: 8, overflowX: "auto", padding: "12px 2px 2px", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 22px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 22px), transparent 100%)" }}>
@@ -1925,7 +1925,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
           unreachable while this was dark, so no new user could set up a chart at all.
           It self-loads (useBirthChart) and fires generateHoroscopeReading on open, which is
           why readings stopped on 2026-06-20: nothing had mounted this since. */}
-      {planRequest && <LifestylePlanSheet key={user?.id} ownerId={user?.id} request={planRequest} onFinish={finishPlan}/>}
+      {planRequest && <LifestylePlanSheet key={user?.id} active={routeActive} ownerId={user?.id} request={planRequest} onFinish={finishPlan}/>}
       {skyOpen && (
         <div style={{ position: "fixed", inset: 0, zIndex: 1200, ...CLEAN_BG, overflowY: "auto" }}>
           <div style={{ position: "sticky", top: 0, zIndex: 3, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: `linear-gradient(180deg, ${C.ground}, ${C.ground}00)` }}>

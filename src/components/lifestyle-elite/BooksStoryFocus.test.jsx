@@ -63,6 +63,28 @@ it("keeps the previous selected shelf status during a pending write and retains 
   fireEvent.click(screen.getByRole("button",{name:"Try again"})); await waitFor(()=>expect(screen.getByRole("button",{name:"Reading",pressed:true})).toBeVisible());
   expect(state.status).toHaveBeenCalledTimes(2);
 });
+it("shows an owned shelf edition, opens its exact reader and changes its real status", async () => {
+  const owned=[{key:"g:1342",gutenberg_id:"1342",title:"Pride and Prejudice",author:"Jane Austen",status:"reading"}];
+  state.load.mockResolvedValue(owned);state.local.mockReturnValue(owned);
+  state.status.mockResolvedValue([{...owned[0],status:"finished"}]);
+  const openBook=vi.fn();render(<BooksStoryFocus calmLayout userId="alice" onOpenBook={openBook}/>);
+  fireEvent.click(screen.getByText("Your shelf & free classics",{selector:"summary"}));
+  expect(await screen.findByText("Pride and Prejudice")).toBeVisible();
+  fireEvent.click(screen.getByRole("button",{name:"Read this edition"}));
+  expect(openBook).toHaveBeenLastCalledWith(expect.objectContaining({_gutenbergId:"1342",_book:"gutenberg"}));
+  fireEvent.change(screen.getByRole("combobox",{name:"Reading status for Pride and Prejudice"}),{target:{value:"finished"}});
+  await waitFor(()=>expect(state.status).toHaveBeenCalledWith("alice","g:1342","finished"));
+});
+it("does not offer a false reader for an owned manual book",async()=>{
+  const owned=[{key:"manual:one",gutenberg_id:null,title:"My own paperback",author:"A Writer",status:"want"}];
+  state.load.mockResolvedValue(owned);state.local.mockReturnValue(owned);
+  render(<BooksStoryFocus calmLayout userId="alice"/>);
+  fireEvent.click(screen.getByText("Your shelf & free classics",{selector:"summary"}));
+  expect(await screen.findByText("My own paperback")).toBeVisible();
+  expect(screen.getByText("No in-app edition linked")).toBeVisible();
+  expect(screen.queryByRole("button",{name:"Read this edition"})).not.toBeInTheDocument();
+  expect(screen.getByRole("combobox",{name:"Reading status for My own paperback"})).toHaveValue("want");
+});
 it("does not substitute seed when the club cannot be read", async () => {
   state.club.mockRejectedValueOnce(new Error("offline")); render(<BooksStoryFocus/>);
   expect(await screen.findByRole("alert")).toHaveTextContent("Couldn't refresh the book club"); expect(screen.queryByText("Little Women")).not.toBeInTheDocument();
@@ -83,11 +105,13 @@ it("does not promise a monthly drop from evergreen books and keeps the full club
   const openBook=vi.fn(); render(<BooksStoryFocus calmLayout userId="alice" onOpenBook={openBook}/>);
   expect(screen.getByText("A book you can start")).toBeVisible();
   expect(screen.queryByText("October's book")).not.toBeInTheDocument();
+  fireEvent.click(screen.getByText("Browse 1 more books"));
   expect(screen.getByText("Moby-Dick")).toBeVisible();
   expect(screen.getByRole("link",{name:/Start chapter 1 · Gutenberg/})).toHaveAttribute("href",state.monthSet.reveal.chapter_start_url);
   fireEvent.click(screen.getByRole("button",{name:/Read here · chapter 1/}));
   expect(openBook).toHaveBeenLastCalledWith(expect.objectContaining({_gutenbergId:"2701"}));
   await screen.findByText("Jane Eyre");
+  fireEvent.click(screen.getByText("Read with the book club",{selector:"summary"}));
   expect(screen.getByRole("button",{name:"Open the book club"})).toBeVisible();
   expect(screen.getByText("The complete club invitation stays here.")).not.toBeVisible();
   fireEvent.click(screen.getByText("About the read & content notes"));

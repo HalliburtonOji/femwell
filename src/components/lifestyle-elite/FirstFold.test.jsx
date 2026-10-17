@@ -42,6 +42,14 @@ describe("First fold navigation and complete summaries", () => {
     fireEvent.click(screen.getByRole("button", { name: "Everything" }));
     expect(clear).toHaveBeenCalledTimes(1);
   });
+  it("does not add a generic status row when there is no cycle context or focus",()=>{
+    const cards = ["Read", "Listen", "Books", "Sky", "Good life", "Yours"].map((label, index)=>({ id: String(index), label, Icon, cw: "plum" }));
+    const {container,rerender}=render(<FirstFoldNavigation cards={cards} activeIndex={0} onSelect={vi.fn()} phaseLine="" calmLayout/>);
+    expect(container.querySelector('.fw-ff-status')).not.toBeInTheDocument();
+    rerender(<FirstFoldNavigation cards={cards} activeIndex={0} onSelect={vi.fn()} phaseLine="" focusLabel="Read" onClear={vi.fn()} calmLayout/>);
+    expect(container.querySelector('.fw-ff-status')).toHaveTextContent('Showing Read');
+    expect(screen.getByRole('button',{name:'Everything'})).toBeVisible();
+  });
 
   it("should render all three full glance rows and invoke only the matching row action", () => {
     const rows = ["Sky", "Read", "Books"].map(label=>({ Icon, label, text: `${label}: an intentionally long complete summary, with context and the final invitation still present.`, onClick: vi.fn() }));

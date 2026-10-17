@@ -118,8 +118,9 @@
 .fw-sky-worlds[data-world=petal-press] .fw-selected-material[data-material-section=read]{top:auto;bottom:-22px;right:-10px}
 .fw-sky-worlds[data-world=petal-press] .fw-selected-material[data-material-section=good]{top:auto;bottom:-18px;right:4px}
 .fw-sky-worlds[data-world=petal-press] .fw-selected-material[data-material-section=yours]{top:24px;right:auto;left:-32px;opacity:.7}
-.fw-lifestyle-plan-backdrop{position:fixed;inset:0;z-index:1500;background:#19151055;display:flex;align-items:flex-end;justify-content:center}
-.fw-lifestyle-plan{position:relative;width:min(100%,460px);max-height:90dvh;overflow:auto;background:#fff;color:#191510;padding:28px 20px max(110px,env(safe-area-inset-bottom));border-radius:24px 24px 0 0;box-shadow:0 -8px 36px #19151020;font:500 17px/1.5 'FemWell Editorial','Cormorant Garamond',Georgia,serif}
+/* Native modal top layer covers the floating nav, so its safe area only needs the device inset. */
+.fw-lifestyle-plan{--fw-sheet-safe:max(28px,env(safe-area-inset-bottom));position:fixed;inset:auto 0 0;z-index:1500;box-sizing:border-box;margin:0 auto;border:0;width:min(100%,460px);max-height:90dvh;overflow:auto;background:#fff;color:#191510;padding:28px 20px var(--fw-sheet-safe);border-radius:24px 24px 0 0;box-shadow:0 -8px 36px #19151020;font:500 17px/1.5 'FemWell Editorial','Cormorant Garamond',Georgia,serif}
+.fw-lifestyle-plan::backdrop{background:#19151055}
 .fw-lifestyle-plan h2{font:italic 600 30px/1.2 'FemWell Editorial','Cormorant Garamond',Georgia,serif;color:#7a1a12;margin:14px 0}
 .fw-plan-close{position:absolute;right:10px;top:8px;width:44px;height:44px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer}
 .fw-plan-eyebrow{display:flex;gap:8px;align-items:center;font:600 12px/1.4 system-ui;color:#51444e;text-transform:uppercase;letter-spacing:.06em;padding-right:32px}

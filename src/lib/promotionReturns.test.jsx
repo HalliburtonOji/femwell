@@ -59,6 +59,7 @@ describe("canonical source returns with exact identity", () => {
   });
   it("does not reinterpret other source namespaces", () => {
     expect(lifestyleReturnLink({ source: "books", ref: "gutenberg:11" })?.href).toBe("/BookReader?gutenberg_id=11");
+    expect(lifestyleReturnLink({ source: "books", ref: "gutenberg:1342", notes: "d:30;From Lifestyle;view:main-calm" })?.href).toBe("/BookReader?gutenberg_id=1342&appearance=calm&from=lifestyle-main");
     expect(lifestyleReturnLink({ source: "books", ref: "club:daily-read-11" })?.href).toBe("/Community?club=daily-read-11");
     expect(lifestyleReturnLink({ source: "sky-lesson", ref: "sky-reading:owned" })).toBeNull();
     expect(lifestyleReturnLink({ source: "unrecognised", ref: edition })).toBeNull();

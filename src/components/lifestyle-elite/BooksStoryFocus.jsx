@@ -32,6 +32,7 @@ import { C } from "@/components/brand/cleanTokens";
 import { Eyebrow, Title, Body, Card, Summary, Cta, Quiet, Foot, Leaf, Fleuron } from "@/components/brand/cleanKit";
 import { CalmOptional } from "./CalmLifestyle";
 import { RestingBook } from "./ReadingRoomHeader";
+import { exactGutenbergId } from "./finishLifestyle";
 
 const clean = (s) => String(s || "").replace(/<[^>]+>/g, "").replace(/\*(.+?)\*/g, "$1").replace(/\s+/g, " ").trim();
 const paras = (s) => String(s || "").replace(/<[^>]+>/g, "").split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
@@ -171,7 +172,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
     const sourceOwner = userId;
     const generation = owner.current.generation;
     try {
-      const existing = onShelf(bk.gutenberg_id);
+      const existing = visibleShelf.find(book => (bk.key && book.key === bk.key) || (bk.gutenberg_id && book.gutenberg_id === String(bk.gutenberg_id)));
       const rows = existing ? await setStatus(userId, existing.key, status) : await addBook(userId, { title: bk.title, author: bk.author, gutenberg_id: bk.gutenberg_id, status, source: "curated" });
       if (owner.current.id === sourceOwner && generation === owner.current.generation) { setShelf(rows); setShelfRetry(null); }
     } catch { if (owner.current.id === sourceOwner && generation === owner.current.generation) { setShelfError(`Couldn't change ${bk.title} on your shelf. Try again.`); setShelfRetry({ book: bk, status }); } }
@@ -408,7 +409,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
               {[["want","Want to read"],["reading","Reading"],["finished","Finished"],["set_aside","Set aside"]].map(([value,label]) => <button key={value} aria-pressed={onShelf(set.featured.gutenberg_id)?.status === value} disabled={shelfBusy || shelfLoading} onClick={() => shelve(set.featured,value)} className="fw-elite-press" style={{...doorBtnStyle(),flex:"1 1 130px"}}>{label}</button>)}
             </div>}
             {!userId && onShelf(set.featured.gutenberg_id) && <p style={{fontFamily:UI,fontSize:13,color:C.slate}}>Kept on this device.</p>}
-            {shelfScope === userId && shelfError && <div role="alert" style={{fontFamily:UI,fontSize:13,color:C.crimson,marginTop:10}}><p>{shelfError}</p><button disabled={shelfBusy || shelfLoading} onClick={() => shelfRetry ? shelve(shelfRetry.book,shelfRetry.status) : refreshShelf()} style={doorBtnStyle()}>Try again</button></div>}
+            {shelfScope === userId && shelfError && (!shelfRetry || shelfRetry.book?.gutenberg_id === set.featured.gutenberg_id) && <div role="alert" style={{fontFamily:UI,fontSize:13,color:C.crimson,marginTop:10}}><p>{shelfError}</p><button disabled={shelfBusy || shelfLoading} onClick={() => shelfRetry ? shelve(shelfRetry.book,shelfRetry.status) : refreshShelf()} style={doorBtnStyle()}>Try again</button></div>}
             <Quiet onClick={() => { passBook(set.featured.gutenberg_id); setPassTick((t) => t + 1); }}>Not for me — show me another ›</Quiet>
           </Card>
         ) : (
@@ -495,7 +496,29 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
       <section id="book-library" ref={libraryRef} className={room ? "fw-room-catalogue fw-room-library" : undefined} style={{marginTop:24,scrollMarginTop:64}}>
         <Eyebrow cw="sky">Your shelf &amp; free classics</Eyebrow>
         {!calmLayout && onChapterDetails && <Quiet onClick={onChapterDetails}>Today’s chapter · notes &amp; reflection ›</Quiet>}
-        {[["On the shelf",shelfBookCards],["Free classics",classicCards]].map(([label,items]) => <div key={label} style={{marginTop:16}}><Title size={20}>{label}</Title>{items.length ? items.map(item => <div key={item.id} style={{borderBottom:`1px solid ${C.hair}`,padding:"8px 0"}}><button type="button" className="fw-elite-press" onClick={() => onOpenBook?.(item)} style={{display:"flex",alignItems:"center",gap:12,width:"100%",minHeight:64,textAlign:"left",background:"transparent",border:0,color:C.ink,cursor:"pointer"}}><Cover title={item.title} w={36} h={50} room={room}/><span style={{flex:1,minWidth:0}}><span style={{display:"block",fontFamily:SERIF,fontSize:18}}>{item.title}</span><span style={{display:"block",fontFamily:UI,fontSize:12,color:C.slate}}>{item.subtitle || item.summary}</span></span><ChevronRight size={16}/></button>{onBookDetails && <Quiet onClick={() => onBookDetails(item)}>Details &amp; tools ›</Quiet>}</div>) : <p style={{fontFamily:SERIF,color:C.slate}}>Nothing on this shelf yet.</p>}</div>)}
+        <div style={{marginTop:16}}>
+          <Title size={20}>Your reading shelf</Title>
+          {shelfLoading && <p role="status" style={{fontFamily:UI,fontSize:13,color:C.slate}}>Finding your books…</p>}
+          {!shelfLoading && !visibleShelf.length && !shelfError && <p style={{fontFamily:SERIF,color:C.slate}}>Nothing kept here yet. You can add the featured book above.</p>}
+          {!shelfLoading && visibleShelf.map(book => {
+            const edition=exactGutenbergId(book.gutenberg_id);
+            return <div key={book.key} style={{display:"flex",alignItems:"flex-start",gap:12,borderBottom:`1px solid ${C.hair}`,padding:"12px 0"}}>
+              <Cover title={book.title} w={36} h={50} room={room}/>
+              <div style={{flex:1,minWidth:0}}>
+                <strong style={{display:"block",fontFamily:SERIF,fontSize:18,lineHeight:1.25,color:C.ink}}>{book.title}</strong>
+                <span style={{display:"block",fontFamily:UI,fontSize:13,color:C.slate}}>{book.author || "Your book"}</span>
+                {edition ? <button type="button" className="fw-elite-press" onClick={()=>onOpenBook?.({_book:"gutenberg",_gutenbergId:edition,title:book.title,author:book.author})} style={{display:"inline-flex",alignItems:"center",gap:5,minHeight:44,padding:"8px 0",border:0,background:"transparent",fontFamily:UI,fontSize:13,fontWeight:700,color:C.ink,cursor:"pointer"}}>Read this edition <ChevronRight size={15}/></button> : <span style={{display:"block",fontFamily:UI,fontSize:13,color:C.slate,margin:"7px 0"}}>No in-app edition linked</span>}
+                <label style={{display:"flex",alignItems:"center",gap:8,fontFamily:UI,fontSize:13,color:C.slate}}>Reading status
+                  <select aria-label={`Reading status for ${book.title}`} value={book.status} disabled={shelfBusy || shelfLoading} onChange={event=>shelve(book,event.target.value)} style={{minHeight:44,minWidth:118,maxWidth:"100%",border:`1px solid ${C.hair}`,borderRadius:12,background:C.surface,color:C.ink,fontFamily:UI,fontSize:13,padding:"8px 10px"}}>
+                    <option value="want">Want to read</option><option value="reading">Reading</option><option value="finished">Finished</option><option value="set_aside">Set aside</option>
+                  </select>
+                </label>
+              </div>
+            </div>;
+          })}
+          {!shelfLoading && shelfError && shelfRetry && shelfRetry.book?.gutenberg_id !== set.featured?.gutenberg_id && <div role="alert" style={{fontFamily:UI,fontSize:13,color:C.crimson,marginTop:10}}><p>{shelfError}</p><button disabled={shelfBusy} onClick={()=>shelve(shelfRetry.book,shelfRetry.status)} style={doorBtnStyle()}>Try again</button></div>}
+        </div>
+        {[["FemWell chapters",shelfBookCards],["Free classics",classicCards]].map(([label,items]) => <div key={label} style={{marginTop:16}}><Title size={20}>{label}</Title>{items.length ? items.map(item => <div key={item.id} style={{borderBottom:`1px solid ${C.hair}`,padding:"8px 0"}}><button type="button" className="fw-elite-press" onClick={() => onOpenBook?.(item)} style={{display:"flex",alignItems:"center",gap:12,width:"100%",minHeight:64,textAlign:"left",background:"transparent",border:0,color:C.ink,cursor:"pointer"}}><Cover title={item.title} w={36} h={50} room={room}/><span style={{flex:1,minWidth:0}}><span style={{display:"block",fontFamily:SERIF,fontSize:18}}>{item.title}</span><span style={{display:"block",fontFamily:UI,fontSize:12,color:C.slate}}>{item.subtitle || item.summary}</span></span><ChevronRight size={16}/></button>{onBookDetails && <Quiet onClick={() => onBookDetails(item)}>Details &amp; tools ›</Quiet>}</div>) : <p style={{fontFamily:SERIF,color:C.slate}}>Nothing published here yet.</p>}</div>)}
       </section>
       </CalmOptional>
 
