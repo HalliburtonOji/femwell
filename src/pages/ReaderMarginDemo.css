@@ -51,6 +51,8 @@ main.pb-36:has(.fw-book-preview) {
   font-size: clamp(32px, 6vw, 44px);
   font-weight: 500;
   line-height: 1.08;
+  text-shadow: none !important;
+  filter: none !important;
   overflow-wrap: anywhere;
 }
 .fw-book-preview .fw-book-source,

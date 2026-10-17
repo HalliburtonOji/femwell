@@ -2,7 +2,7 @@ import React, { StrictMode } from "react";
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
+import { MemoryRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 
 const api = vi.hoisted(() => ({ picks: vi.fn(), checkpoints: vi.fn(), invoke: vi.fn(), me: vi.fn(), progress: vi.fn() }));
@@ -13,7 +13,7 @@ vi.mock("@/api/base44Client", () => ({ base44: {
 // Exercise the actual route and actual reflection card. This reader boundary lets tests
 // drive chapter/marks events without relying on jsdom's nonexistent pagination layout.
 vi.mock("@/components/lifestyle/DailyStoryReader", async (importOriginal) => ({ ...(await importOriginal()), default: (props) => (
-  <article aria-label="Controlled book reader" data-book-id={props.bookId} data-clean-preview={props.cleanPreview ? "true" : "false"}>
+  <article aria-label="Controlled book reader" data-book-id={props.bookId} data-clean-preview={props.cleanPreview ? "true" : "false"} data-finish-progress={props.onChapterFinished ? "true" : "false"}>
     {props.source.items.map(item => <section key={item.id}><h3>{item.heading}</h3><p>{item.body}</p><small>{item.attribution}</small></section>)}
     <button onClick={() => props.onChapterReached(0)}>Reach first chapter</button>
     <button onClick={() => props.onChapterReached(1)}>Reach second chapter</button>
@@ -42,7 +42,7 @@ function deferred() {
 }
 function open(id = 105, strict = false, cleanPreview = false, suffix = "") {
   window.history.replaceState({}, "", `/BookReader?gutenberg_id=${id}${suffix}`);
-  const element = <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><BookReader cleanPreview={cleanPreview} /></MemoryRouter>;
+  const element = <MemoryRouter initialEntries={[`/BookReader?gutenberg_id=${id}${suffix}`]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><BookReader cleanPreview={cleanPreview} /></MemoryRouter>;
   return render(strict ? <StrictMode>{element}</StrictMode> : element);
 }
 const clubLink = () => screen.queryByRole("link", { name: "Discuss this book in the Book Club" });
@@ -207,15 +207,49 @@ describe("Ideas-only reader margin preview", () => {
     expect(api.invoke).toHaveBeenCalledExactlyOnceWith("fetchGutenbergBook", { gutenberg_id: 37106 });
   });
 
-  it("preserves the original frame and note wording on the canonical main reader", async () => {
+  it("opens an old direct link on clean ground while preserving its chapter-reached progress contract", async () => {
     open(37106);
     const reader = await screen.findByRole("article", { name: "Controlled book reader" });
-    expect(reader).toHaveAttribute("data-clean-preview", "false");
-    expect(reader.closest(".fw-book-preview")).toBeNull();
+    expect(reader).toHaveAttribute("data-clean-preview", "true");
+    expect(reader).toHaveAttribute("data-finish-progress", "false");
+    expect(reader.closest(".fw-book-preview")).not.toBeNull();
     expect(screen.queryByText("Ideas · reader preview")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Reach first chapter" }));
+    expect(api.progress).toHaveBeenCalledWith("37106", 0, undefined);
     fireEvent.click(screen.getByRole("button", { name: "Reflect on where you are" }));
-    expect(screen.getByRole("button", { name: "Keep this for me" })).toBeVisible();
     expect(screen.getByText(/You're in Chapter 1 of Persuasion/)).toBeVisible();
+  });
+
+  it("returns a freshly opened direct book link to main Books instead of leaving the app", async () => {
+    const search = "gutenberg_id=105";
+    window.history.replaceState({ idx: 0 }, "", `/BookReader?${search}`);
+    function Destination() { const location = useLocation(); return <output aria-label="Returned route">{location.pathname + location.search}</output>; }
+    render(<MemoryRouter initialEntries={[`/BookReader?${search}`]}><Routes>
+      <Route path="/BookReader" element={<BookReader />} />
+      <Route path="/Lifestyle" element={<Destination />} />
+    </Routes></MemoryRouter>);
+    await screen.findByRole("article", { name: "Controlled book reader" });
+    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+    expect(screen.getByLabelText("Returned route")).toHaveTextContent("/Lifestyle?section=books");
+  });
+
+  it("replaces the complete edition when a same-document book query changes and ignores the old late source", async () => {
+    const oldSource = deferred();
+    api.invoke.mockImplementationOnce(() => oldSource.promise).mockResolvedValueOnce({ data: {
+      title: "Little Women", author: "Louisa May Alcott", text: fullText,
+      source_url: "https://www.gutenberg.org/ebooks/514",
+    } });
+    function Switch() { const navigate = useNavigate(); return <button onClick={() => navigate("/BookReader?gutenberg_id=514&from=community-bookclub&club_pick=archived")}>Open another edition</button>; }
+    window.history.replaceState({}, "", "/BookReader?gutenberg_id=105");
+    render(<MemoryRouter initialEntries={["/BookReader?gutenberg_id=105"]}><Switch /><BookReader /></MemoryRouter>);
+    await waitFor(() => expect(api.invoke).toHaveBeenCalledWith("fetchGutenbergBook", { gutenberg_id: 105 }));
+    fireEvent.click(screen.getByRole("button", { name: "Open another edition" }));
+    const reader = await screen.findByRole("article", { name: "Controlled book reader" });
+    expect(reader).toHaveAttribute("data-book-id", "514");
+    expect(screen.getByRole("heading", { name: "Little Women" })).toBeVisible();
+    await act(async () => oldSource.resolve({ data: { title: "Persuasion", author: "Jane Austen", text: fullText } }));
+    expect(screen.getByRole("heading", { name: "Little Women" })).toBeVisible();
+    expect(api.invoke).toHaveBeenCalledWith("fetchGutenbergBook", { gutenberg_id: 514 });
   });
 
   it("retains the clean frame through actual loading, structured error and explicit retry", async () => {
@@ -329,7 +363,7 @@ describe("BookReader canonical club identity", () => {
     expect(api.picks).toHaveBeenCalledWith({ active: true }, "-created_date", 1);
     expect(api.checkpoints).toHaveBeenCalledWith({ pick_key: active.pick_key }, "index", 150);
     expect(api.invoke).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole("link", { name: "Read at gutenberg.org" })).toHaveAttribute("href", "https://www.gutenberg.org/ebooks/105");
+    expect(screen.getByRole("link", { name: "Project Gutenberg" })).toHaveAttribute("href", "https://www.gutenberg.org/ebooks/105");
   });
 
   it("routes 514 to its own corner when 105 is active, while preserving 514's authored prompts and marks", async () => {

@@ -996,6 +996,10 @@ Every current Lifestyle article link, including an older unflagged Today or save
 
 ---
 
+### 10.5.52 ONE BOOK, ONE CURRENT GROUND — 17 October 2026
+
+A full Lifestyle book opens on the same clean folio whether it came from main Books, Today, a saved item, a Community shelf, a planned reading block or an old direct link. The app shell and BookReader agree on the background; never dress a burnt paper frame with a clean overlay. Keep the whole sourced text, title pages/preface, chapter IDs and position, settings, margins, physical/daily marks, private notes, authored checkpoint, support/warnings, club/corner, source exit, loading/error/retry and exact origin return. A visual migration does not silently change when reading progress is recorded: unflagged direct entries retain their established chapter-reached contract, and already-clean main/club entries retain their deliberate chapter-finished contract until that separate product decision is resolved. Keep a labelled historical Ideas preview reachable. Inspect the actual 360/390/430 reader, nested settings/reflection and Back, then independently critique it. No Planner-page redesign or automation restart.
+
 # PART II — THE OPERATING BRAIN (how we build) · §11–§18
 > **§1–§10 above are THE BRAND — what FemWell *is* and looks like. §11–§18 are THE OPERATING BRAIN — the workflows, constraints and proof-standards a future session reads to understand how everything works and how to build.** All of it was earned on the Lifestyle page + its 11 whole-life boards: **Lifestyle is the reference implementation.** These sections are an INDEX, not a dump — where a detailed doc already exists, they point to it (see §18 THE DOC MAP), and only carry fresh prose where no canonical doc does. **§11** = the lifecycle (the process) · **§12–§15** = the standards each step meets (content · interaction · engineering · QA) · **§16–§17** = the data model + change discipline · **§18** = the index to everything.
 
