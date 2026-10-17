@@ -1,8 +1,8 @@
-// UniversalCalendarDemo — DEMO-FIRST preview of the "One Universal Calendar + Calendar-as-Logger"
-// system (plan doc: femwell-handoff/UNIVERSAL-CALENDAR-LOGGER.html). Reachable from the IDEAS pill.
+// Universal calendar — live root overlay opened from Layout on every app route.
+// Earlier demo design is archived in femwell-handoff/UNIVERSAL-CALENDAR-LOGGER.html.
+// The actions below write to Base44 entities only after fresh owner checks and receipts.
 //
-// Shows the WHOLE flow, tappable/testable, seeded (NO base44 writes — demo only, live pages/logger
-// untouched):
+// Retained flow:
 //   • ONE universal FwCalendar (cream / flora / oxblood, real card chrome) — the calendar used everywhere
 //   • the persistent CALENDAR ICON top-bar-right entry (replaces the "+" FAB)
 //   • the opened calendar's general "Log for today" button
@@ -17,33 +17,25 @@
 // gate by data type; Planner 2nd-FAB folded into day-view + Event chip; demo-first.
 //
 // Brand: Editorial cream/plum tokens (T), Cormorant + system-sans, Lucide icons, NO EMOJI.
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-  format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths,
-  isSameMonth, isSameDay, parseISO,
+  format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays,
+  isSameMonth, parseISO,
 } from "date-fns";
 import {
   CalendarDays, X, ArrowLeft, ChevronLeft, ChevronRight, Utensils, Droplets, Smile,
   Stethoscope, StickyNote, Footprints, Pill, CalendarClock, Bell, Check, Search,
   ScanBarcode, Mic, Camera, Pen, Clock, Lock, Image as ImageIcon, ChevronDown,
-  Sparkles, ListChecks, Loader2, Upload, Trash2, WandSparkles, ArrowRight, CornerUpLeft,
+  ListChecks, Loader2, Trash2, WandSparkles, ArrowRight, CornerUpLeft,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { T, SERIF, UI, SCRIPT, PAPER_BG, Heart, useEditorialFonts } from "@/components/journal/Editorial";
+import { useAuth } from "@/lib/AuthContext";
+import { T, SERIF, UI, SCRIPT, useEditorialFonts } from "@/components/journal/Editorial";
 import { FlowerGlyph, CornerSprig } from "@/components/brand/flora";
 import SwipeMonths from "./SwipeMonths";
-import { commitEntries as commitReal, writeMealLog, writeHydration, writePeriod, loadProfile, loadMonthEntries } from "./loggerWrites";
+import { commitEntries as commitReal, writePeriod, loadProfile, loadMonthEntries } from "./loggerWrites";
 
-// real FemWell card chrome — the FwCard recipe (Card.jsx): warm 165deg cream→accent
-// gradient, paperDeep hairline + a 4px accent left-rim, radius 20, the layered editorial
-// shadow. Reused for the calendar + the food logger so they read unmistakably on-brand.
-const fwChrome = (accent = OX) => ({
-  position: "relative", overflow: "hidden",
-  background: `linear-gradient(165deg, ${T.paperHi} 0%, ${accent}12 100%)`,
-  border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${accent}`, borderRadius: 20,
-  boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)",
-});
-// two corner sprigs (tr + bl) — the botanical frame, quiet
+// Two quiet corner sprigs remain; the old bordered paper-card treatment is retired.
 function CornerVines({ color = T.gold }) {
   return (
     <>
@@ -108,8 +100,8 @@ const TYPES = [
   { id: "event",    label: "Event",    Icon: CalendarClock,tone: "#A6862B",log: true,  plan: true,  planLabel: "Plan an event" },
   { id: "reminder", label: "Reminder", Icon: Bell,         tone: T.muted,  log: false, plan: true,  planLabel: "Set a reminder" },
 ];
-const TYPE = Object.fromEntries(TYPES.map(t => [t.id, t]));
-const DOT = { meal: T.gold, water: "#5E93B8", mood: T.sage, symptom: T.crimson, note: "#8E6E8E", habit: T.sage, med: T.blush, event: "#A6862B", reminder: T.muted, period: T.crimson };
+const TYPE = { ...Object.fromEntries(TYPES.map(t => [t.id, t])), task: { label: "Task" }, period: { label: "Period" } };
+const DOT = { meal: T.gold, water: "#5E93B8", mood: T.sage, symptom: T.crimson, note: "#8E6E8E", habit: T.sage, med: T.blush, event: "#A6862B", reminder: T.muted, period: T.crimson, task: T.plum || "#8E6E8E" };
 const PHASE_LABEL = { menstrual: "Menstrual", follicular: "Follicular", ovulatory: "Ovulatory", luteal: "Luteal" };
 // cycle-day from the same anchor the whole app uses (UserProfile.last_period_start_date)
 function cycleDayFor(dateStr) {
@@ -123,7 +115,8 @@ function cycleDayFor(dateStr) {
 
 const iso = (d) => format(d, "yyyy-MM-dd");
 const TODAY = new Date(); TODAY.setHours(0, 0, 0, 0);
-const TODAY_STR = iso(TODAY);
+let TODAY_STR = iso(TODAY);
+const localTodayKey = () => iso(new Date());
 
 // LIVE cycle phase — computed from the user's real UserProfile (set by CalendarOverlay
 // after auth). Falls back to no tint when we don't have period data (never a wrong colour).
@@ -194,7 +187,7 @@ function MonthGrid({ month, entries, onSelectDate }) {
 // that slides in the carousel — the entire card moves, not the inner grid. ──
 function FwCalendarCard({ month, entries, onSelectDate, onPrev, onNext }) {
   return (
-    <div style={{ ...fwChrome(OX), padding: "16px 15px 14px", width: "100%", boxSizing: "border-box" }}>
+    <div style={{ position: "relative", overflow: "hidden", background: "transparent", padding: "10px 4px 8px", width: "100%", boxSizing: "border-box", borderRadius: 20 }}>
       <CornerVines />
       <div style={{ position: "relative", zIndex: 1 }}>
         {/* header — Ephesis month title in oxblood + a flora glyph; arrows fire the same slide */}
@@ -205,14 +198,14 @@ function FwCalendarCard({ month, entries, onSelectDate, onPrev, onNext }) {
               <FlowerGlyph variant="camellia" size={22} color={T.gold} idx="cal-flower" />
               <span style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: 40, color: OX, lineHeight: 0.9 }}>{format(month, "MMMM")}</span>
             </div>
-            <div style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 1.6, textTransform: "uppercase", color: T.gold, marginTop: 4 }}>{format(month, "yyyy")} · your month</div>
+            <div style={{ fontFamily: UI, fontSize: 12, letterSpacing: 1.2, textTransform: "uppercase", color: T.gold, marginTop: 5 }}>{format(month, "yyyy")}</div>
           </div>
           <button onClick={onNext} style={navBtn} aria-label="Next month"><ChevronRight size={16} color={OX} /></button>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", marginBottom: 5 }}>
           {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
-            <div key={i} style={{ textAlign: "center", fontFamily: UI, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.5, color: T.gold }}>{d}</div>
+            <div key={i} style={{ textAlign: "center", fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.5, color: T.gold }}>{d}</div>
           ))}
         </div>
 
@@ -220,7 +213,7 @@ function FwCalendarCard({ month, entries, onSelectDate, onPrev, onNext }) {
 
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginTop: 13, paddingTop: 11, borderTop: `1px solid ${T.gold}44` }}>
           {[["Period", T.crimson], ["Follicular", T.sage], ["Ovulatory", T.gold], ["Meal", T.gold], ["Plan (ring)", "#A6862B"]].map(([l, c]) => (
-            <span key={l} style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: UI, fontSize: 9.5, fontWeight: 600, color: T.muted }}>
+            <span key={l} style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted }}>
               <span style={{ width: 6, height: 6, borderRadius: "50%", background: c }} />{l}
             </span>
           ))}
@@ -259,61 +252,132 @@ function FwCalendar({ month, onMonthChange, onSelectDate, entries }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function CalendarOverlay() {
   useEditorialFonts();
+  const { user: authUser } = useAuth();
+  const authOwner = useRef(authUser?.id || null);
+  authOwner.current = authUser?.id || null;
   const [month, setMonth] = useState(startOfMonth(TODAY));
   const [calOpen, setCalOpen] = useState(false);
   const [sheet, setSheet] = useState(null);
   const [entries, setEntries] = useState({});
   const [toast, setToast] = useState("");
+  const [saveError, setSaveError] = useState("");
   const [userId, setUserId] = useState(null);
-  const [phaseTick, setPhaseTick] = useState(0); // bump to re-tint after a period log
+  const commitBusy = useRef(false);
+  const blockedSignature = useRef(null);
+  const opener = useRef(null);
+  const openGeneration = useRef(0);
+  const [, setPhaseTick] = useState(0); // bump to re-tint after a period log
 
   const flash = (msg) => { setToast(msg); setTimeout(() => setToast(""), 1900); };
-  const reload = async (id = userId) => { if (id) { try { setEntries(await loadMonthEntries(id)); } catch { /* ignore */ } } };
-  const reloadProfile = async (id = userId) => { if (id) { try { setLiveProfile(await loadProfile(id)); setPhaseTick((t) => t + 1); } catch { /* ignore */ } } };
+  const reload = async (id = userId, generation = openGeneration.current) => {
+    if (id) try { const next = await loadMonthEntries(id); if (generation === openGeneration.current) setEntries(next); } catch { /* markers may lag; save receipt is separate */ }
+  };
+  const reloadProfile = async (id = userId, generation = openGeneration.current) => {
+    if (id) try { const next = await loadProfile(id); if (generation === openGeneration.current) { setLiveProfile(next); setPhaseTick((t) => t + 1); } } catch { /* phase may lag */ }
+  };
 
-  // auth + profile (for phase tint) + first entries load
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const me = await base44.auth.me();
-        if (!alive || !me?.id) return;
-        setUserId(me.id);
-        try { setLiveProfile(await loadProfile(me.id)); setPhaseTick((t) => t + 1); } catch { /* ignore */ }
-        reload(me.id);
-      } catch { /* anonymous — overlay still opens, writes just no-op */ }
-    })();
-    return () => { alive = false; };
-  }, []);
+  // Load only when opened; this root component otherwise made ten 300-row reads
+  // on every route, before anyone tapped Calendar.
+  const freshOwner = async (generation = openGeneration.current) => {
+    let id = null;
+    try { id = (await base44.auth.me())?.id || null; } catch { /* anonymous */ }
+    if (generation !== openGeneration.current) return null;
+    if (id && id !== authOwner.current) id = null;
+    if (id !== userId) {
+      setUserId(id);
+      setEntries({});
+      setLiveProfile(null);
+      setPhaseTick((t) => t + 1);
+    }
+    return id;
+  };
 
   // log a period / cycle event → writes CycleEvents (+ bumps the profile anchor) so the
   // gradient + phase legend reflect real cycle data everywhere.
   const commitPeriod = async ({ date, type, flow }) => {
-    if (userId) { await writePeriod(userId, date, { type, flow }); await reloadProfile(); await reload(); }
-    flash(type === "PeriodStart" ? "Period logged — cycle updated" : type === "PeriodEnd" ? "Period end logged" : "Spotting logged");
-    closeAll();
+    if (commitBusy.current) { setSaveError("A previous save is still finishing. Wait a moment before trying again."); return; }
+    if (blockedSignature.current) { setSaveError("A save was not confirmed. Check this day before trying again."); return; }
+    commitBusy.current = true;
+    const generation = openGeneration.current;
+    setSaveError("");
+    try {
+      if (localTodayKey() !== TODAY_STR) { setSaveError("A new day has begun. Reopen the calendar before saving."); return; }
+      const id = await freshOwner(generation);
+      if (generation !== openGeneration.current) return;
+      if (!id) { setSaveError(authOwner.current ? "Your account changed or session is not ready. Reopen the calendar before saving." : "Sign in to save this period. Your choice is still here."); return; }
+      if (userId && id !== userId) { setSaveError("Your account changed. Reopen the calendar before saving."); return; }
+      await writePeriod(id, date, { type, flow }, () => authOwner.current === id);
+      if (generation !== openGeneration.current) return;
+      if (authOwner.current !== id) throw new Error("Account changed during save");
+      await reloadProfile(id, generation); await reload(id, generation);
+      if (generation !== openGeneration.current) return;
+      flash(type === "PeriodStart" ? "Period logged — cycle updated" : type === "PeriodEnd" ? "Period end logged" : "Spotting logged");
+      closeAll();
+    } catch { if (generation === openGeneration.current) { blockedSignature.current = true; setSaveError("This period save was not confirmed. Check the day before trying again."); } }
+    finally { commitBusy.current = false; }
   };
 
   // the top-bar calendar icon (in Layout) opens the calendar via this event
   useEffect(() => {
-    const open = () => { setCalOpen(true); reload(); };
+    const open = async () => {
+      const generation = ++openGeneration.current;
+      if (localTodayKey() !== TODAY_STR) {
+        TODAY.setTime(new Date().setHours(0, 0, 0, 0));
+        TODAY_STR = iso(TODAY);
+        setMonth(startOfMonth(TODAY));
+      }
+      opener.current = document.activeElement;
+      setSaveError(""); blockedSignature.current = null;
+      setEntries({}); setLiveProfile(null); setPhaseTick((t) => t + 1);
+      setCalOpen(true);
+      const id = await freshOwner(generation);
+      if (id && generation === openGeneration.current) { await reloadProfile(id, generation); await reload(id, generation); }
+    };
     window.addEventListener("fw_open_calendar", open);
     return () => window.removeEventListener("fw_open_calendar", open);
   }, [userId]);
 
   const openDay = (date, isFuture) => { setCalOpen(false); setSheet({ stage: "day", mode: isFuture ? "plan" : "log", date }); };
-  const closeAll = () => { setSheet(null); setCalOpen(false); };
+  const closeAll = () => { const generation = ++openGeneration.current; const target = opener.current; setSheet(null); setCalOpen(false); setSaveError(""); blockedSignature.current = null; requestAnimationFrame(() => { if (generation === openGeneration.current) target?.focus?.(); }); };
 
   // REAL batch commit → base44, then refresh dots.
-  const commitAndReload = async (list) => { await commitReal(userId, list); await reload(); };
+  const commitAndReload = async (list, label) => {
+    if (commitBusy.current) { setSaveError("A previous save is still finishing. Wait a moment before trying again."); return; }
+    if (blockedSignature.current) { setSaveError("A save was not confirmed. Check this day before trying again."); return; }
+    commitBusy.current = true;
+    const generation = openGeneration.current;
+    setSaveError("");
+    try {
+      if (localTodayKey() !== TODAY_STR) { setSaveError("A new day has begun. Reopen the calendar before saving."); return; }
+      const id = await freshOwner(generation);
+      if (generation !== openGeneration.current) return;
+      if (!id) { setSaveError(authOwner.current ? "Your account changed or session is not ready. Reopen the calendar before saving." : "Sign in to save. Your entry is still here."); return; }
+      if (userId && id !== userId) { setSaveError("Your account changed. Reopen the calendar before saving."); return; }
+      const result = await commitReal(id, list, () => authOwner.current === id);
+      if (generation !== openGeneration.current) return;
+      if (result.error) {
+        if (result.attempted || result.saved) blockedSignature.current = true;
+        setSaveError(result.saved
+          ? `${result.saved} saved; the next entry was not confirmed. Check this day before trying again.`
+          : "This save was not confirmed. Check this day before trying again.");
+        await reload(id, generation);
+        return;
+      }
+      if (authOwner.current !== id) { blockedSignature.current = true; setSaveError("Your account changed during this save. Check the day before trying again."); return; }
+      await reload(id, generation);
+      if (generation !== openGeneration.current) return;
+      flash(label); closeAll();
+    } catch { if (generation === openGeneration.current) { blockedSignature.current = true; setSaveError("This save was not confirmed. Check the day before trying again."); } }
+    finally { commitBusy.current = false; }
+  };
 
   return (
     <>
       {/* ── the calendar SHEET (opened via the top-bar icon) ── */}
       {calOpen && (
-        <Backdrop onClose={() => setCalOpen(false)}>
-          <Sheet>
-            <SheetHead title="Calendar" onClose={() => setCalOpen(false)} />
+        <Backdrop onClose={closeAll}>
+          <Sheet onClose={closeAll} label="Calendar">
+            <SheetHead title="Calendar" onClose={closeAll} />
             <FwCalendar
               month={month}
               onMonthChange={(m) => setMonth(startOfMonth(m))}
@@ -349,7 +413,8 @@ export default function CalendarOverlay() {
       {/* ── the DAY sheet + rich flows ── */}
       {sheet && (
         <Backdrop onClose={closeAll}>
-          <Sheet>
+          <Sheet key={`${sheet.stage}-${sheet.date}`} onClose={closeAll} label={`${sheet.mode === "plan" ? "Plan" : "Log"} ${sheet.date}`}>
+            {saveError && <div role="alert" style={{ padding: "10px 13px", marginBottom: 12, borderRadius: 14, background: "#FFF5ED", border: `1px solid ${T.crimson}55`, color: OX, fontFamily: UI, fontSize: 13, lineHeight: 1.45 }}>{saveError}</div>}
             {sheet.stage === "day" && <DaySheet sheet={sheet} entries={entries}
               onPick={(type) => type === "meal"
                 ? setSheet({ stage: "food", mode: sheet.mode, date: sheet.date })
@@ -369,33 +434,29 @@ export default function CalendarOverlay() {
               onBack={() => setSheet({ stage: "day", mode: sheet.mode, date: sheet.date })}
               onClose={closeAll}
               onConfirm={async (p) => {
-                if (userId) {
-                  const raw = (p.items || []).map((i) => i.portion && i.portion !== "Medium" ? `${i.name} (${i.portion})` : i.name).join(", ") || "Meal";
-                  const notes = [p.notes, p.feeling ? `felt ${p.feeling}` : "", p.kcal ? `kcal:${p.kcal}` : "", p.protein ? `protein:${p.protein}g` : ""].filter(Boolean).join(" · ");
-                  await writeMealLog(userId, p.date, { raw_text: raw, meal_type: p.mealType, notes });
-                  if (p.water) await writeHydration(userId, p.date, p.water);
-                  await reload();
-                }
-                flash(`${p.date > TODAY_STR ? "Planned" : "Logged"} your ${p.mealType || "meal"}${p.water ? ` + ${p.water} water` : ""}`);
-                closeAll();
+                const raw = (p.items || []).map((i) => i.portion && i.portion !== "Medium" ? `${i.name} (${i.portion})` : i.name).join(", ") || "Meal";
+                const notes = [p.notes, p.feeling ? `felt ${p.feeling}` : "", p.kcal ? `kcal:${p.kcal}` : "", p.protein ? `protein:${p.protein}g` : ""].filter(Boolean).join(" · ");
+                const list = [{ date: p.date, type: "meal", plan: p.plan || p.date > TODAY_STR, title: raw, raw_text: raw, meal_type: p.mealType, notes },
+                  ...Array.from({ length: p.water || 0 }, () => ({ date: p.date, type: "water", plan: p.plan || p.date > TODAY_STR }))];
+                await commitAndReload(list, `${p.date > TODAY_STR ? "Planned" : "Logged"} your ${p.mealType || "meal"}${p.water ? ` + ${p.water} water` : ""}`);
               }} />}
 
             {sheet.stage === "quick" && <QuickForm sheet={sheet}
               onBack={() => setSheet({ stage: "day", mode: sheet.mode, date: sheet.date })}
               onClose={closeAll}
-              onSave={async (list, label) => { await commitAndReload(list); flash(label); closeAll(); }} />}
+              onSave={async (list, label) => { await commitAndReload(list, label); }} />}
 
             {sheet.stage === "dayrun" && <DayRunSheet sheet={sheet}
               onBack={() => setSheet({ stage: "day", mode: sheet.mode, date: sheet.date })}
               onClose={closeAll}
-              onSave={async (list) => { await commitAndReload(list); flash(`${sheet.mode === "plan" ? "Planned" : "Logged"} your day — ${list.length} ${list.length === 1 ? "thing" : "things"}`); closeAll(); }}
+              onSave={async (list) => { await commitAndReload(list, `${sheet.mode === "plan" ? "Planned" : "Logged"} your day — ${list.length} ${list.length === 1 ? "thing" : "things"}`); }}
               onSmartShot={() => setSheet({ stage: "smartshot", mode: sheet.mode, date: sheet.date })} />}
 
             {sheet.stage === "smartshot" && <SmartShotSheet sheet={sheet}
               onBack={() => setSheet({ stage: "day", mode: sheet.mode, date: sheet.date })}
               onClose={closeAll}
               onFood={({ date, meal, photoUrl }) => setSheet({ stage: "food", mode: date > TODAY_STR ? "plan" : "log", date, initialMeal: meal, photoUrl })}
-              onConfirm={async (list) => { await commitAndReload(list); const planned = list.length > 0 && list.every((x) => x.plan); flash(`${planned ? "Added" : "Logged"} ${list.length} ${planned ? "to your plan" : list.length === 1 ? "thing" : "things"}`); closeAll(); }} />}
+              onConfirm={async (list) => { const planned = list.length > 0 && list.every((x) => x.plan); await commitAndReload(list, `${planned ? "Added" : "Logged"} ${list.length} ${planned ? "to your plan" : list.length === 1 ? "thing" : "things"}`); }} />}
 
             {sheet.stage === "done" && <DoneSheet sheet={sheet} onClose={closeAll} onAnother={() => setSheet({ stage: "day", mode: sheet.mode, date: sheet.date })} />}
           </Sheet>
@@ -436,7 +497,7 @@ function QuickForm({ sheet, onBack, onClose, onSave }) {
     else if (type === "note") { if (!text.trim()) return; list = [{ date, type: "note", text: text.trim() }]; }
     else if (type === "habit") { list = [{ date, type: "habit", title: title.trim() || "Habit" }]; }
     else if (type === "med") { list = [{ date, type: "med", title: title.trim() || "Medication" }]; }
-    else if (type === "event" || type === "reminder") { list = [{ date, type: "event", title: title.trim() || (type === "reminder" ? "Reminder" : "Event"), time }]; }
+    else if (type === "event" || type === "reminder") { list = [{ date, type, title: title.trim() || (type === "reminder" ? "Reminder" : "Event"), time }]; }
     else if (type === "task") { list = [{ date, type: "task", title: title.trim() || "Task" }]; }
     else { list = [{ date, type, title: title.trim() }]; }
     onSave(list, label);
@@ -453,13 +514,13 @@ function QuickForm({ sheet, onBack, onClose, onSave }) {
         </div>
         <button onClick={onClose} style={iconBtn} aria-label="Close"><X size={15} /></button>
       </div>
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 12, background: `${t.tone}22`, color: OX }}>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 12, background: `${t.tone}22`, color: OX }}>
         <t.Icon size={11} /> {isFuture ? "PLAN" : "LOG"} · {dayWord}
       </div>
 
       {type === "mood" && (
         <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
-          {MOODS.map((m, i) => { const on = mood === i + 1; return <button key={m} onClick={() => setMood(i + 1)} style={{ flex: 1, padding: "10px 4px", borderRadius: 10, cursor: "pointer", border: `1.5px solid ${on ? OX : T.paperDeep}`, background: on ? `${T.sage}22` : T.paperHi, color: on ? OX : T.muted, fontFamily: UI, fontSize: 11.5, fontWeight: 700 }}>{m}</button>; })}
+          {MOODS.map((m, i) => { const on = mood === i + 1; return <button key={m} onClick={() => setMood(i + 1)} style={{ flex: 1, padding: "10px 4px", borderRadius: 10, cursor: "pointer", border: `1.5px solid ${on ? OX : T.paperDeep}`, background: on ? `${T.sage}22` : T.paperHi, color: on ? OX : T.muted, fontFamily: UI, fontSize: 12, fontWeight: 700 }}>{m}</button>; })}
         </div>
       )}
       {type === "symptom" && (
@@ -501,7 +562,7 @@ function QuickForm({ sheet, onBack, onClose, onSave }) {
         </>
       )}
 
-      <button onClick={save} disabled={!canSave} style={{ ...solidBtn, background: isFuture ? "#A6862B" : T.crimson, opacity: canSave ? 1 : 0.45, cursor: canSave ? "pointer" : "default" }}>
+      <button onClick={save} disabled={!canSave} style={{ ...solidBtn, background: isFuture ? "#A6862B" : T.crimson, color: isFuture ? T.ink : T.paper, opacity: canSave ? 1 : 0.45, cursor: canSave ? "pointer" : "default" }}>
         <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />{isFuture ? "Add to plan" : "Log it"} · {dayWord}
       </button>
     </>
@@ -528,11 +589,11 @@ function CycleSheet({ sheet, onBack, onClose, onSave }) {
         </div>
         <button onClick={onClose} style={iconBtn} aria-label="Close"><X size={15} /></button>
       </div>
-      <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginBottom: 12 }}>
+      <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginBottom: 12 }}>
         For <b style={{ color: OX }}>{dayWord}</b>{ph ? <> · currently <b style={{ color: OX }}>{PHASE_LABEL[ph]}</b>{cd ? `, cycle day ${cd}` : ""}</> : <> · no cycle set yet</>}
       </div>
 
-      <div style={{ ...inset, padding: 14, marginBottom: 10 }}>
+      <div style={{ ...inset, padding: 14, marginBottom: 10, background: "#FFFFFF" }}>
         <div style={{ ...eyebrow, color: T.crimson, marginBottom: 8 }}>My period started</div>
         <div style={{ ...eyebrow, marginBottom: 6 }}>Flow</div>
         <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
@@ -573,7 +634,7 @@ function DaySheet({ sheet, entries, onPick, onRunDay, onSmartShot, onCycle, onFr
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
         <div>
           <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 22, color: OX, lineHeight: 1.1 }}>{format(d, "EEEE d MMMM")}</div>
-          <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 2 }}>
+          <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 2 }}>
             {rel}{ph ? ` · ${ph} phase` : ""}
             <span style={{ marginLeft: 8, fontWeight: 800, letterSpacing: 0.6, color: mode === "plan" ? "#A6862B" : OX }}>{mode === "plan" ? "PLAN" : "LOG"}</span>
           </div>
@@ -589,7 +650,7 @@ function DaySheet({ sheet, entries, onPick, onRunDay, onSmartShot, onCycle, onFr
 
       {es.length > 0 && (
         <div style={{ ...inset, marginTop: 8 }}>
-          <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.muted, textTransform: "uppercase", letterSpacing: 0.6 }}>Already here: </span>
+          <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted, textTransform: "uppercase", letterSpacing: 0.6 }}>Already here: </span>
           {es.map((e, i) => (
             <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 4, marginRight: 10, fontFamily: SERIF, fontSize: 14, color: T.ink }}>
               <span style={{ width: 6, height: 6, borderRadius: "50%", background: DOT[e.type] }} />{TYPE[e.type]?.label}{e.plan ? " (planned)" : ""}
@@ -598,24 +659,27 @@ function DaySheet({ sheet, entries, onPick, onRunDay, onSmartShot, onCycle, onFr
         </div>
       )}
 
-      {/* ── PRIMARY: run/plan the WHOLE day in one pass (one-flow) ── */}
-      <button onClick={onRunDay} style={{ ...solidBtn, background: mode === "plan" ? "#A6862B" : T.crimson, marginTop: 14 }}>
-        <ListChecks size={16} style={{ marginRight: 8, verticalAlign: -3 }} />
-        {mode === "plan" ? "Plan the whole day" : "Run through the day"}
-      </button>
-      <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, textAlign: "center", margin: "5px 0 2px" }}>
-        One pass through {isFuture ? "meals, plans, reminders" : "meals, water, mood, symptoms, meds"} — quick, skippable, one save.
+      <div style={{ ...eyebrow, marginTop: 18, marginBottom: 9 }}>Choose one thing</div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        {available.map((t) => (
+          <button key={t.id} onClick={() => onPick(t.id)} style={{ ...typeCard, minHeight: 54, background: "#FFFFFF" }}>
+            <span style={{ ...typeChip, background: `${t.tone}22`, color: t.tone }}><t.Icon size={15} /></span>
+            <span style={{ fontFamily: UI, fontWeight: 700, fontSize: 13, color: T.ink }}>{isFuture ? (t.planLabel || t.label) : t.label}</span>
+          </button>
+        ))}
       </div>
 
-      {/* ── PRIMARY: add a photo (intent-driven — food / rota / symptom / moment) ── */}
-      <button onClick={onSmartShot} style={{ ...ghostBtn, width: "100%", marginTop: 8, borderColor: T.gold, color: OX }}>
-        <WandSparkles size={15} style={{ marginRight: 7, verticalAlign: -2, color: T.gold }} />Add a photo — {isFuture ? "plan or log from a picture" : "log from a picture"}
-      </button>
-
-      {/* ── Period & cycle (log-mode only — a period is retrospective) ── */}
+      <div style={{ display: "flex", gap: 8, marginTop: 15 }}>
+        <button onClick={onRunDay} style={{ ...ghostBtn, flex: 1, color: OX, background: "#FFFFFF", padding: "12px 8px" }}>
+          <ListChecks size={16} style={{ marginRight: 6 }} />{mode === "plan" ? "Plan the day" : "Log the day"}
+        </button>
+        <button onClick={onSmartShot} style={{ ...ghostBtn, flex: 1, color: OX, background: "#FFFFFF", padding: "12px 8px" }}>
+          <WandSparkles size={15} style={{ marginRight: 6, color: T.gold }} />Use a photo
+        </button>
+      </div>
       {!isFuture && onCycle && (
-        <button onClick={onCycle} style={{ ...ghostBtn, width: "100%", marginTop: 8, borderColor: T.crimson, color: T.crimson }}>
-          <Droplets size={14} style={{ marginRight: 7, verticalAlign: -2 }} />Log a period / cycle
+        <button onClick={onCycle} style={{ ...ghostBtn, width: "100%", marginTop: 8, color: T.crimson, background: "#FFFFFF" }}>
+          <Droplets size={14} style={{ marginRight: 7 }} />Period &amp; cycle
         </button>
       )}
 
@@ -627,37 +691,17 @@ function DaySheet({ sheet, entries, onPick, onRunDay, onSmartShot, onCycle, onFr
             <input value={free} onChange={(e) => setFree(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submitFree(); } }}
               placeholder={isFuture ? "What are you planning?" : "What do you want to note?"}
               style={{ flex: 1, boxSizing: "border-box", padding: "12px 13px", borderRadius: 12, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: SERIF, fontSize: 15, outline: "none" }} />
-            <button onClick={submitFree} disabled={!free.trim()} aria-label="Continue" style={{ ...solidBtn, width: "auto", padding: "0 16px", background: isFuture ? "#A6862B" : T.crimson, opacity: free.trim() ? 1 : 0.4, cursor: free.trim() ? "pointer" : "default" }}>
+            <button onClick={submitFree} disabled={!free.trim()} aria-label="Continue" style={{ ...solidBtn, width: "auto", padding: "0 16px", background: isFuture ? "#A6862B" : T.crimson, color: isFuture ? T.ink : T.paper, opacity: free.trim() ? 1 : 0.4, cursor: free.trim() ? "pointer" : "default" }}>
               <ArrowRight size={18} />
             </button>
           </div>
         </div>
       )}
 
-      <div style={{ ...eyebrow, marginTop: 16 }}>{isFuture ? "…or plan one thing" : "…or log one thing"}</div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-        {available.map((t) => (
-          <button key={t.id} onClick={() => onPick(t.id)} style={typeCard}>
-            <span style={{ ...typeChip, background: `${t.tone}22`, color: t.tone }}><t.Icon size={15} /></span>
-            <span style={{ fontFamily: UI, fontWeight: 700, fontSize: 13, color: T.ink }}>{isFuture ? (t.planLabel || t.label) : t.label}</span>
-          </button>
-        ))}
-      </div>
-
       {blocked.length > 0 && (
         <div style={{ marginTop: 12 }}>
-          <div style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.crimson, marginBottom: 6, display: "flex", alignItems: "center", gap: 5 }}>
-            <Lock size={11} /> Can’t log ahead
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-            {blocked.map((t) => (
-              <span key={t.id} style={{ ...pill, background: T.paper, borderColor: T.paperDeep, color: T.muted, opacity: 0.7, cursor: "not-allowed" }}>
-                <t.Icon size={12} style={{ verticalAlign: -2, marginRight: 4 }} />{t.label}
-              </span>
-            ))}
-          </div>
-          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted, marginTop: 6 }}>
-            You can’t log a headache — or mood, water, a note — for a day that hasn’t happened. Those are for today or the past.
+          <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, display: "flex", alignItems: "center", gap: 6 }}>
+            <Lock size={13} /> Mood, symptoms, water and notes can be logged after they happen.
           </div>
         </div>
       )}
@@ -691,7 +735,7 @@ function FormSheet({ sheet, onBack, onClose, onConfirm }) {
       </div>
 
       {/* mode banner */}
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, padding: "3px 10px", borderRadius: 999, marginBottom: 10,
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.8, padding: "3px 10px", borderRadius: 999, marginBottom: 10,
         background: mode === "plan" ? "rgba(166,134,43,0.16)" : "rgba(188,46,39,0.12)", color: mode === "plan" ? "#8a6e23" : OX }}>
         {mode === "plan" ? <CalendarClock size={12} /> : <Clock size={12} />}{mode === "plan" ? "PLANNING AHEAD" : "LOGGING"}
       </div>
@@ -701,14 +745,14 @@ function FormSheet({ sheet, onBack, onClose, onConfirm }) {
         <div style={{ ...dtField, flex: 2 }}>
           <CalendarDays size={13} color={T.gold} />
           <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 600, color: T.ink }}>{format(d, "EEE d MMM")}</span>
-          <span style={{ fontFamily: UI, fontSize: 11, color: T.gold, marginLeft: "auto" }}>change</span>
+          <span style={{ fontFamily: UI, fontSize: 12, color: T.gold, marginLeft: "auto" }}>change</span>
         </div>
         <div style={{ ...dtField, flex: 1, opacity: mode === "plan" || time ? 1 : 0.6 }}>
           <Clock size={13} color={T.gold} />
           <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 600, color: T.ink }}>{time || (date === TODAY_STR ? "now" : "—")}</span>
         </div>
       </div>
-      <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginBottom: 12 }}>Prefilled from where you tapped — tap to change either.</div>
+      <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginBottom: 12 }}>Prefilled from where you tapped — tap to change either.</div>
 
       {/* ── PRIMARY methods — VOICE + TYPE, front and centre (Halli LOCKED) ── */}
       <div style={{ ...eyebrow, marginBottom: 6 }}>How to {verb.toLowerCase()} — voice or type</div>
@@ -762,7 +806,7 @@ function FormSheet({ sheet, onBack, onClose, onConfirm }) {
           {/* Photo expands to LIBRARY (choose existing) OR CAMERA — library is now first */}
           {photoOpen && (
             <div style={{ ...inset, marginBottom: 6 }}>
-              <div style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.gold, marginBottom: 7 }}>Add a picture</div>
+              <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.gold, marginBottom: 7 }}>Add a picture</div>
               <div style={{ display: "flex", gap: 8 }}>
                 <button onClick={() => setPhotoPick("library")} style={photoChoice(photoPick === "library")}>
                   <ImageIcon size={17} color={OX} /><span>Choose from library</span>
@@ -793,7 +837,7 @@ function FormSheet({ sheet, onBack, onClose, onConfirm }) {
         </div>
       )}
 
-      <button onClick={() => onConfirm(isEvent ? eventRepeat : 0)} style={{ ...solidBtn, background: mode === "plan" ? "#A6862B" : T.crimson }}>
+      <button onClick={() => onConfirm(isEvent ? eventRepeat : 0)} style={{ ...solidBtn, background: mode === "plan" ? "#A6862B" : T.crimson, color: mode === "plan" ? T.ink : T.paper }}>
         <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />
         {isEvent && eventRepeat > 0 ? `Add ${eventRepeat} weekly to plan` : `${verb === "Plan" ? "Add to plan" : "Add to"} ${verb === "Plan" ? `· ${dayWord}` : dayWord}`}
       </button>
@@ -892,7 +936,7 @@ function FoodLogSheet({ sheet, onBack, onClose, onConfirm }) {
         </div>
         <button onClick={onClose} style={iconBtn} aria-label="Close"><X size={15} /></button>
       </div>
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 12, background: "rgba(168,137,63,0.16)", color: OX }}>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 12, background: "rgba(168,137,63,0.16)", color: OX }}>
         <Utensils size={11} /> {isFuture ? "PLAN" : "LOG"} · {dayWord}
       </div>
 
@@ -934,11 +978,11 @@ function FoodLogSheet({ sheet, onBack, onClose, onConfirm }) {
       )}
       {!query.trim() && (
         <>
-          <div style={{ fontFamily: UI, fontSize: 10, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.gold, margin: "2px 0 5px" }}>Favourites</div>
+          <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.gold, margin: "2px 0 5px" }}>Favourites</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
             {FOOD_FAVES.map((f) => <button key={f} onClick={() => addItem(f)} style={{ ...pill, cursor: "pointer", background: "rgba(188,46,39,0.08)", borderColor: `${T.crimson}55`, color: T.ink }}>♥ {f}</button>)}
           </div>
-          <div style={{ fontFamily: UI, fontSize: 10, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.gold, margin: "2px 0 5px" }}>Recent</div>
+          <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.gold, margin: "2px 0 5px" }}>Recent</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
             {FOOD_RECENTS.map((f) => <button key={f} onClick={() => addItem(f)} style={{ ...pill, cursor: "pointer" }}>↺ {f}</button>)}
           </div>
@@ -957,7 +1001,7 @@ function FoodLogSheet({ sheet, onBack, onClose, onConfirm }) {
               <button onClick={() => removeItem(i)} style={{ ...iconBtn, width: 24, height: 24 }}><Trash2 size={11} /></button>
             </div>
             <div style={{ display: "flex", gap: 5 }}>
-              {PORTIONS.map((p) => { const on = it.portion === p; return <button key={p} onClick={() => setPortion(i, p)} style={{ flex: 1, padding: "5px 0", borderRadius: 8, cursor: "pointer", border: `1px solid ${on ? T.gold : T.paperDeep}`, background: on ? "rgba(168,137,63,0.16)" : T.paper, color: on ? OX : T.muted, fontFamily: UI, fontSize: 11, fontWeight: 700 }}>{p}</button>; })}
+              {PORTIONS.map((p) => { const on = it.portion === p; return <button key={p} onClick={() => setPortion(i, p)} style={{ flex: 1, padding: "5px 0", borderRadius: 8, cursor: "pointer", border: `1px solid ${on ? T.gold : T.paperDeep}`, background: on ? "rgba(168,137,63,0.16)" : T.paper, color: on ? OX : T.muted, fontFamily: UI, fontSize: 12, fontWeight: 700 }}>{p}</button>; })}
             </div>
           </div>
         ))}
@@ -975,10 +1019,10 @@ function FoodLogSheet({ sheet, onBack, onClose, onConfirm }) {
       {showMacros && (
         <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
           <div style={{ ...inset, flex: 1, display: "flex", alignItems: "center", gap: 6, padding: "8px 10px" }}>
-            <input value={kcal} onChange={(e) => setKcal(e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder="0" style={{ width: "100%", border: "none", background: "none", outline: "none", fontFamily: UI, fontSize: 14, color: T.ink }} /><span style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>kcal</span>
+            <input value={kcal} onChange={(e) => setKcal(e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder="0" style={{ width: "100%", border: "none", background: "none", outline: "none", fontFamily: UI, fontSize: 14, color: T.ink }} /><span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>kcal</span>
           </div>
           <div style={{ ...inset, flex: 1, display: "flex", alignItems: "center", gap: 6, padding: "8px 10px" }}>
-            <input value={protein} onChange={(e) => setProtein(e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder="0" style={{ width: "100%", border: "none", background: "none", outline: "none", fontFamily: UI, fontSize: 14, color: T.ink }} /><span style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>g protein</span>
+            <input value={protein} onChange={(e) => setProtein(e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder="0" style={{ width: "100%", border: "none", background: "none", outline: "none", fontFamily: UI, fontSize: 14, color: T.ink }} /><span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>g protein</span>
           </div>
         </div>
       )}
@@ -996,7 +1040,7 @@ function FoodLogSheet({ sheet, onBack, onClose, onConfirm }) {
         <button onClick={() => setWater((w) => w + 1)} style={{ ...iconBtn, width: 30, height: 30 }}>+</button>
       </div>
 
-      <button onClick={save} disabled={!canSave} style={{ ...solidBtn, background: isFuture ? "#A6862B" : T.crimson, opacity: canSave ? 1 : 0.45, cursor: canSave ? "pointer" : "default" }}>
+      <button onClick={save} disabled={!canSave} style={{ ...solidBtn, background: isFuture ? "#A6862B" : T.crimson, color: isFuture ? T.ink : T.paper, opacity: canSave ? 1 : 0.45, cursor: canSave ? "pointer" : "default" }}>
         <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />{isFuture ? "Add to plan" : "Log"} {MEALS.find(([m]) => m === mealType)[1].toLowerCase()} · {dayWord}{water ? ` + ${water} water` : ""}
       </button>
     </>
@@ -1067,7 +1111,7 @@ function DayRunSheet({ sheet, onBack, onClose, onSave, onSmartShot }) {
           <button onClick={onBack} style={iconBtn} aria-label="Back"><ArrowLeft size={15} /></button>
           <div>
             <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, color: OX, lineHeight: 1.05 }}>{mode === "plan" ? "Plan the whole day" : "Run through the day"}</div>
-            <div style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>{format(d, "EEEE d MMMM")} · <b style={{ color: mode === "plan" ? "#A6862B" : OX }}>{mode === "plan" ? "PLAN" : "LOG"}</b></div>
+            <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{format(d, "EEEE d MMMM")} · <b style={{ color: mode === "plan" ? "#A6862B" : OX }}>{mode === "plan" ? "PLAN" : "LOG"}</b></div>
           </div>
         </div>
         <button onClick={onClose} style={iconBtn} aria-label="Close"><X size={15} /></button>
@@ -1085,7 +1129,7 @@ function DayRunSheet({ sheet, onBack, onClose, onSave, onSmartShot }) {
           );
         })}
       </div>
-      <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginBottom: 10 }}>
+      <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginBottom: 10 }}>
         {touched}/{SECTIONS.length} sections · {total} {total === 1 ? "thing" : "things"} · every section optional — skip freely.
       </div>
 
@@ -1094,11 +1138,11 @@ function DayRunSheet({ sheet, onBack, onClose, onSave, onSmartShot }) {
         {SECTIONS.map((s) => {
           const n = countFor(s);
           return (
-            <div key={s.id} id={`dr-${s.id}`} style={{ ...inset, padding: 12 }}>
+            <div key={s.id} id={`dr-${s.id}`} style={{ ...inset, padding: "12px 4px 14px", background: "#FFFFFF", border: "none", borderBottom: `1px solid ${T.paperDeep}`, borderRadius: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                 <span style={{ ...typeChip, width: 26, height: 26, background: `${s.tone}22`, color: s.tone }}><s.Icon size={13} /></span>
                 <span style={{ fontFamily: UI, fontWeight: 700, fontSize: 13.5, color: T.ink }}>{s.label}</span>
-                {n > 0 && <span style={{ marginLeft: "auto", fontFamily: UI, fontSize: 10.5, fontWeight: 700, color: T.sage }}><Check size={11} style={{ verticalAlign: -1 }} /> {n}</span>}
+                {n > 0 && <span style={{ marginLeft: "auto", fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.sage }}><Check size={11} style={{ verticalAlign: -1 }} /> {n}</span>}
               </div>
 
               {s.kind === "multi" && (
@@ -1136,7 +1180,7 @@ function DayRunSheet({ sheet, onBack, onClose, onSave, onSmartShot }) {
                     const on = data[s.id] === i + 1;
                     return (
                       <button key={lab} onClick={() => set(s.id, on ? null : i + 1)} style={{ flex: 1, padding: "8px 0", borderRadius: 10, cursor: "pointer",
-                        border: `1.5px solid ${on ? s.tone : T.paperDeep}`, background: on ? `${s.tone}22` : T.paperHi, color: on ? OX : T.muted, fontFamily: UI, fontSize: 11, fontWeight: 700 }}>{lab}</button>
+                        border: `1.5px solid ${on ? s.tone : T.paperDeep}`, background: on ? `${s.tone}22` : T.paperHi, color: on ? OX : T.muted, fontFamily: UI, fontSize: 12, fontWeight: 700 }}>{lab}</button>
                     );
                   })}
                 </div>
@@ -1154,7 +1198,7 @@ function DayRunSheet({ sheet, onBack, onClose, onSave, onSmartShot }) {
 
       {/* ONE save at the end — in-flow footer (sits at the end of the day's sections) */}
       <div style={{ paddingTop: 14, marginTop: 8, borderTop: `1px solid ${T.paperDeep}` }}>
-        <button onClick={save} disabled={total === 0} style={{ ...solidBtn, background: mode === "plan" ? "#A6862B" : T.crimson, opacity: total === 0 ? 0.45 : 1, cursor: total === 0 ? "default" : "pointer" }}>
+        <button onClick={save} disabled={total === 0} style={{ ...solidBtn, background: mode === "plan" ? "#A6862B" : T.crimson, color: mode === "plan" ? T.ink : T.paper, opacity: total === 0 ? 0.45 : 1, cursor: total === 0 ? "default" : "pointer" }}>
           <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />
           {mode === "plan" ? "Save the plan" : "Save the day"}{total > 0 ? ` · ${total} ${total === 1 ? "thing" : "things"}` : ""}
         </button>
@@ -1428,7 +1472,13 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
 
   const saveSingle = () => {
     const route = INTENT_ROUTES[cls.detected] || INTENT_ROUTES.other;
-    onConfirm([{ date: target.date, type: route.type, plan: target.mode === "plan" }]);
+    const title = titleEdit.trim();
+    const text = [title, intentText.trim()].filter(Boolean).join(" — ");
+    onConfirm([{
+      date: target.date, type: route.type, plan: target.mode === "plan", title,
+      ...(route.type === "symptom" ? { symptoms: [finalAnswer || title || "Symptom"], notes: intentText.trim() } : {}),
+      ...(route.type === "note" ? { text } : {}),
+    }]);
   };
   const setRow = (i, patch) => setRows((p) => p.map((x, j) => j === i ? { ...x, ...patch } : x));
   const selectedRows = rows.filter((r) => r.include && r.date);
@@ -1474,8 +1524,8 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
             <button onClick={() => pick(renderSampleReceipt(), "receipt")} style={{ ...ghostBtn, flex: 1, borderColor: T.gold, color: OX }}><Utensils size={13} style={{ marginRight: 6, verticalAlign: -2 }} />Receipt</button>
             <button onClick={() => pick(renderSampleRota(), "rota")} style={{ ...ghostBtn, flex: 1, borderColor: T.gold, color: OX }}><CalendarClock size={13} style={{ marginRight: 6, verticalAlign: -2 }} />Work rota</button>
           </div>
-          <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 10, lineHeight: 1.5 }}>
-            Reads with the app's existing photo AI (the same one meal-snap uses) — no new service. You always review before anything is saved.
+          <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 10, lineHeight: 1.5 }}>
+            We'll suggest what the picture says. Check it before anything is saved.
           </div>
         </>
       )}
@@ -1506,7 +1556,7 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
 
       {stage === "guard" && guard && (
         <div style={{ ...inset, padding: 16, borderColor: T.gold }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.6, color: "#8a6e23", marginBottom: 8 }}><CalendarClock size={13} /> QUICK CHECK</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.6, color: "#8a6e23", marginBottom: 8 }}><CalendarClock size={13} /> QUICK CHECK</div>
           <div style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.45, marginBottom: 14 }}>{guard.msg}</div>
           <div style={{ display: "flex", gap: 8 }}>
             {guard.kind === "retro_on_future" ? (
@@ -1516,7 +1566,7 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
               </>
             ) : (
               <>
-                <button onClick={() => resolveGuard("plan")} style={{ ...solidBtn, flex: 1, background: "#A6862B" }}>Yes, plan these</button>
+                <button onClick={() => resolveGuard("plan")} style={{ ...solidBtn, flex: 1, background: "#A6862B", color: T.ink }}>Yes, plan these</button>
                 <button onClick={() => resolveGuard("note")} style={{ ...ghostBtn, flex: 1 }}>Just note today</button>
               </>
             )}
@@ -1526,7 +1576,7 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
 
       {stage === "followups" && cls && (
         <>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 10, background: `${route.tone}22`, color: OX }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 10, background: `${route.tone}22`, color: OX }}>
             <route.Icon size={12} /> {route.label.toUpperCase()} · {target.mode === "plan" ? "PLAN" : "LOG"} · {target.date === TODAY_STR ? "today" : format(parseISO(target.date), "EEE d MMM")}
           </div>
           {degraded && <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted, marginBottom: 8 }}>Couldn't fully read the picture — going by what you said.</div>}
@@ -1542,7 +1592,7 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
                   color: on ? T.paper : OX, borderColor: on ? OX : isRec ? T.gold : T.paperDeep,
                   fontWeight: isRec || on ? 800 : 600,
                 }}>
-                  {o}{isRec ? <span style={{ marginLeft: 5, fontSize: 8.5, fontWeight: 800, letterSpacing: 0.4, opacity: 0.85 }}>★ MOST LIKELY</span> : null}
+                  {o}{isRec ? <span style={{ marginLeft: 5, fontSize: 12, fontWeight: 800, letterSpacing: 0.4, opacity: 0.85 }}>Likely</span> : null}
                 </button>
               );
             })}
@@ -1561,7 +1611,7 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
 
       {stage === "review" && cls && (
         <>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 10, background: "rgba(143,175,143,0.2)", color: "#3f6b3a" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 10, background: "rgba(143,175,143,0.2)", color: "#3f6b3a" }}>
             <Check size={12} /> REVIEW BEFORE SAVING
           </div>
           {degraded && !FOLLOWUPS[cls.detected] && <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted, marginBottom: 8 }}>Couldn't fully read the picture — going by what you said.</div>}
@@ -1570,7 +1620,7 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
               <span style={{ ...typeChip, background: `${route.tone}22`, color: route.tone }}><route.Icon size={15} /></span>
               <span style={{ fontFamily: UI, fontWeight: 800, fontSize: 12, letterSpacing: 0.4, color: OX }}>{route.label.toUpperCase()}</span>
-              <span style={{ marginLeft: "auto", fontFamily: UI, fontSize: 11, fontWeight: 700, color: target.mode === "plan" ? "#A6862B" : OX }}>{target.mode === "plan" ? "PLAN" : "LOG"} · {target.date === TODAY_STR ? "today" : format(parseISO(target.date), "EEE d MMM")}</span>
+              <span style={{ marginLeft: "auto", fontFamily: UI, fontSize: 12, fontWeight: 700, color: target.mode === "plan" ? "#A6862B" : OX }}>{target.mode === "plan" ? "PLAN" : "LOG"} · {target.date === TODAY_STR ? "today" : format(parseISO(target.date), "EEE d MMM")}</span>
             </div>
             <input value={titleEdit} onChange={(e) => setTitleEdit(e.target.value)} style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 10, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: SERIF, fontSize: 15, outline: "none", marginBottom: 8 }} />
             {FOLLOWUPS[cls.detected] && (
@@ -1579,15 +1629,15 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
           </div>
           {cls.detected === "food" ? (
             <>
-              <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, margin: "8px 0 10px" }}>Take it into the full food log to add items, portions and how it felt.</div>
+              <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, margin: "8px 0 10px" }}>Take it into the full food log to add items, portions and how it felt.</div>
               <button onClick={() => onFood({ date: target.date, meal: (finalAnswer || "").toLowerCase(), photoUrl: imageUrl })} style={{ ...solidBtn, background: T.crimson }}>
                 <Utensils size={15} style={{ marginRight: 7, verticalAlign: -2 }} />Continue to food log
               </button>
             </>
           ) : (
             <>
-              <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, margin: "8px 0 10px" }}>Nothing is saved until you tap below.</div>
-              <button onClick={saveSingle} style={{ ...solidBtn, background: target.mode === "plan" ? "#A6862B" : T.crimson }}>
+              <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, margin: "8px 0 10px" }}>Nothing is saved until you tap below.</div>
+              <button onClick={saveSingle} style={{ ...solidBtn, background: target.mode === "plan" ? "#A6862B" : T.crimson, color: target.mode === "plan" ? T.ink : T.paper }}>
                 <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />{target.mode === "plan" ? "Add to plan" : "Log it"} · {target.date === TODAY_STR ? "today" : format(parseISO(target.date), "EEE d MMM")}
               </button>
             </>
@@ -1597,7 +1647,7 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
 
       {stage === "schedule_review" && (
         <>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 8, background: "rgba(143,175,143,0.2)", color: "#3f6b3a" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 8, background: "rgba(143,175,143,0.2)", color: "#3f6b3a" }}>
             <Check size={12} /> REVIEW BEFORE SAVING · {rows.length} {rows.length === 1 ? "entry" : "entries"} · PLAN
           </div>
           {degraded && <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted, marginBottom: 8 }}>Couldn't fully read the picture — check these carefully.</div>}
@@ -1615,7 +1665,7 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
           </div>
           {scheduleKind === "fixed" && (
             <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
-              <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted }}>Repeat weekly for</span>
+              <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>Repeat weekly for</span>
               {[4, 8, 12].map((w) => (
                 <button key={w} onClick={() => setRepeatWeeks(w)} style={{ ...pill, cursor: "pointer", background: repeatWeeks === w ? OX : T.paperHi, color: repeatWeeks === w ? T.paper : T.muted, borderColor: repeatWeeks === w ? OX : T.paperDeep }}>{w} wks</button>
               ))}
@@ -1639,7 +1689,7 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
                     </button>
                     <input value={r.title} onChange={(e) => setRow(i, { title: e.target.value })}
                       style={{ flex: 1, minWidth: 0, padding: "6px 9px", borderRadius: 8, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: SERIF, fontSize: 14.5, fontWeight: 600, outline: "none" }} />
-                    {r.done && <span style={{ fontFamily: UI, fontSize: 9, fontWeight: 800, letterSpacing: 0.4, color: "#2e9e5b", background: "rgba(46,158,91,0.12)", padding: "2px 6px", borderRadius: 6 }}>ALREADY DONE</span>}
+                    {r.done && <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.4, color: "#2e9e5b", background: "rgba(46,158,91,0.12)", padding: "2px 6px", borderRadius: 6 }}>DONE</span>}
                     <button onClick={() => setRows((p) => p.filter((_, j) => j !== i))} aria-label="Remove" style={{ ...iconBtn, width: 24, height: 24, flexShrink: 0 }}><Trash2 size={11} /></button>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", paddingLeft: 30 }}>
@@ -1647,18 +1697,18 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
                     <input type="time" value={r.start || ""} onChange={(e) => setRow(i, { start: e.target.value })} style={miniField} />
                     <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>–</span>
                     <input type="time" value={r.end || ""} onChange={(e) => setRow(i, { end: e.target.value })} style={miniField} />
-                    {overnight && <span style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.3, color: "#8a6e23", background: "rgba(168,137,63,0.16)", padding: "2px 6px", borderRadius: 6 }}>OVERNIGHT · ends +1 day</span>}
-                    {!r.date && <span style={{ fontFamily: UI, fontSize: 10, color: T.crimson }}>needs a date</span>}
+                    {overnight && <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.3, color: "#8a6e23", background: "rgba(168,137,63,0.16)", padding: "2px 6px", borderRadius: 6 }}>OVERNIGHT · ends +1 day</span>}
+                    {!r.date && <span style={{ fontFamily: UI, fontSize: 12, color: T.crimson }}>needs a date</span>}
                   </div>
                 </div>
               );
             })}
           </div>
 
-          <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginBottom: 10 }}>
+          <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginBottom: 10 }}>
             Untick an entry, edit any time/date, or remove a row. Done ones are unticked. Nothing is saved until you tap below.
           </div>
-          <button onClick={saveSchedule} disabled={includedWithDate === 0} style={{ ...solidBtn, background: "#A6862B", opacity: includedWithDate === 0 ? 0.45 : 1, cursor: includedWithDate === 0 ? "default" : "pointer" }}>
+          <button onClick={saveSchedule} disabled={includedWithDate === 0} style={{ ...solidBtn, background: "#A6862B", color: T.ink, opacity: includedWithDate === 0 ? 0.45 : 1, cursor: includedWithDate === 0 ? "default" : "pointer" }}>
             <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />Add {savedCount} {savedCount === 1 ? "entry" : "entries"} to your plan{scheduleKind === "fixed" ? ` · ${repeatWeeks} wks` : ""}
           </button>
         </>
@@ -1682,12 +1732,29 @@ function Backdrop({ children, onClose }) {
     </div>
   );
 }
-function Sheet({ children }) {
+function Sheet({ children, onClose, label }) {
+  const dialog = useRef(null);
+  useEffect(() => {
+    const node = dialog.current;
+    const priorOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    requestAnimationFrame(() => node?.querySelector('button:not([disabled]), input, textarea, select')?.focus());
+    return () => { document.body.style.overflow = priorOverflow; };
+  }, []);
+  const onKeys = (event) => {
+    if (event.key === "Escape") { event.preventDefault(); onClose(); return; }
+    if (event.key !== "Tab") return;
+    const focusable = [...(dialog.current?.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex="0"]') || [])]
+      .filter((element) => element.getClientRects().length);
+    if (!focusable.length) { event.preventDefault(); dialog.current?.focus(); return; }
+    if (event.shiftKey && document.activeElement === focusable[0]) { event.preventDefault(); focusable.at(-1).focus(); }
+    else if (!event.shiftKey && document.activeElement === focusable.at(-1)) { event.preventDefault(); focusable[0].focus(); }
+  };
   return (
-    <div onClick={(e) => e.stopPropagation()} className="fw-sheet-safe" style={{
-      width: "100%", maxWidth: 460, background: T.paperHi, borderRadius: "22px 22px 0 0", padding: "16px 16px 22px",
-      boxShadow: "0 -8px 32px rgba(11,8,5,0.22)", maxHeight: "88vh", overflowY: "auto",
-      border: `1px solid ${T.paperDeep}`, borderBottom: "none",
+    <div ref={dialog} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} onKeyDown={onKeys} onClick={(e) => e.stopPropagation()} className="fw-sheet-safe" style={{
+      width: "100%", maxWidth: 460, background: "#FCFAF8", borderRadius: "26px 26px 0 0", padding: "16px 18px 22px",
+      boxShadow: "0 -12px 42px rgba(42,24,34,0.17)", maxHeight: "88vh", overflowY: "auto",
+      border: "1px solid rgba(142,110,142,0.16)", borderBottom: "none",
     }}>
       <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
         <div style={{ width: 34, height: 4, borderRadius: 999, background: T.paperDeep }} />
@@ -1699,7 +1766,7 @@ function Sheet({ children }) {
 function SheetHead({ title, onClose }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-      <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: 1.4, textTransform: "uppercase", color: T.gold }}>{title}</span>
+      <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 1.4, textTransform: "uppercase", color: T.gold }}>{title}</span>
       <button onClick={onClose} style={iconBtn} aria-label="Close"><X size={15} /></button>
     </div>
   );
@@ -1708,9 +1775,9 @@ function SheetHead({ title, onClose }) {
 // ── styles ──────────────────────────────────────────────────────────────────────
 const card = { background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: 16, boxShadow: "0 1px 0 rgba(255,255,255,0.5) inset" };
 const inset = { background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "9px 11px" };
-const eyebrow = { fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 1.4, textTransform: "uppercase", color: T.gold, marginBottom: 8 };
-const navBtn = { width: 32, height: 32, borderRadius: 9, border: "none", background: T.paper, display: "grid", placeItems: "center", cursor: "pointer" };
-const iconBtn = { width: 30, height: 30, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, display: "grid", placeItems: "center", cursor: "pointer" };
+const eyebrow = { fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 1.2, textTransform: "uppercase", color: T.gold, marginBottom: 8 };
+const navBtn = { width: 44, height: 44, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: "#FFFFFF", display: "grid", placeItems: "center", cursor: "pointer" };
+const iconBtn = { width: 44, height: 44, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: "#FFFFFF", color: T.ink, display: "grid", placeItems: "center", cursor: "pointer" };
 const solidBtn = { width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", background: T.crimson, color: T.paper, border: "none", borderRadius: 12, padding: "13px 16px", fontFamily: UI, fontSize: 13, fontWeight: 700, letterSpacing: 0.3, cursor: "pointer" };
 const ghostBtn = { display: "inline-flex", alignItems: "center", justifyContent: "center", background: "transparent", color: T.muted, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "13px 16px", fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer" };
 const pill = { display: "inline-flex", alignItems: "center", fontFamily: UI, fontSize: 12, fontWeight: 600, padding: "6px 12px", borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paperHi, color: T.muted };
@@ -1724,7 +1791,7 @@ const primaryMethod = (on, tone) => ({
   border: `1.5px solid ${on ? tone : T.paperDeep}`, background: on ? tone : T.paperHi,
   color: on ? T.paper : T.ink, fontFamily: UI, fontSize: 13.5, fontWeight: 700,
 });
-const pmSub = (on) => ({ fontFamily: UI, fontSize: 10, fontWeight: 500, color: on ? "rgba(255,255,255,0.8)" : T.muted });
+const pmSub = (on) => ({ fontFamily: UI, fontSize: 12, fontWeight: 500, color: on ? "rgba(255,255,255,0.8)" : T.muted });
 const stepBtn = { width: 40, height: 40, borderRadius: 12, border: `1px solid ${T.paperDeep}`, background: T.paperHi, color: OX, fontSize: 20, fontWeight: 700, cursor: "pointer", display: "grid", placeItems: "center", lineHeight: 1 };
 const miniField = { padding: "5px 7px", borderRadius: 8, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: "ui-sans-serif,system-ui,-apple-system,sans-serif", fontSize: 12, outline: "none", minWidth: 0 };
 const photoChoice = (on) => ({
