@@ -4,7 +4,7 @@
 // → fiction. Reads real state (what she's part-way through, her ranked feed). Tap → resumes /opens
 // the exact reader in place. Reuses the real CoverCard reader in the cream design.
 import React from "react";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Flower2 } from "lucide-react";
 import { CoverCard } from "@/components/brand/expandCards";
 import { SERIF } from "@/components/journal/Editorial";
 import { C } from "@/components/brand/cleanTokens";
@@ -12,6 +12,29 @@ import { Eyebrow, Title, Card as CleanCard, Summary, Foot } from "@/components/b
 import { SelectedRoomDetail } from "./SelectedLifestyleHeader";
 import { CalmFindRow, CalmMore } from "./CalmLifestyle";
 import { firstSentences } from "./FocusedLifestyleSheet";
+
+function ReadEditionChoice({ item, onOpen, onDetails, resume = false, compact = false }) {
+  if (!item) return null;
+  const raw = item._raw || {};
+  const archive = item.archived || /^FEMWELL_AI/i.test(String(raw.provider || ""));
+  const draftType = /NEWS/i.test(String(raw.content_type || "")) ? "News" : /GUIDE/i.test(String(raw.content_type || "")) ? "Guide" : "Essay";
+  const kind = resume ? "Continue reading" : raw.editorial_local ? `Ideas · ${draftType} · unreviewed` : archive ? "Archive · source check pending"
+    : /news/i.test(String(raw.provider || "") + String(raw.category || "")) ? "News & context"
+    : /guide/i.test(String(raw.content_type || "") + String(raw.media_type || "")) ? "Useful guide"
+    : /fiction|story/i.test(String(raw.content_type || "") + String(item.type || "")) ? "Story" : "The read";
+  const line = firstSentences(item.subtitle || item.summary || "", 1);
+  const source = raw.editorial_local ? raw.duration_label : item.sourceName || raw.source_name || raw.author_name;
+  return <div className={`fw-read-edition${compact ? " fw-read-edition--compact" : ""}`}>
+    <div className="fw-read-edition-kicker"><Flower2 size={15} aria-hidden="true"/><span>{kind}</span></div>
+    <h2>{item.title}</h2>
+    <div className="fw-read-edition-bottom">
+      {source && <span className="fw-read-edition-source">{source}</span>}
+      <button className="fw-read-edition-open" aria-label={`${resume ? "Continue" : "Read"} ${item.title}`} onClick={() => onOpen?.(item)}>{resume ? "Continue" : "Read"} <span aria-hidden="true">→</span></button>
+    </div>
+    {line && !resume && <p className="fw-read-edition-standfirst">{line}</p>}
+    {onDetails && <button className="fw-read-edition-details" onClick={() => onDetails(item)} aria-label={`Details & tools for ${item.title}`}>Details &amp; tools</button>}
+  </div>;
+}
 
 
 function ReadCard({ eyebrow, title, accent = "plum", children, style, className }) {
@@ -26,7 +49,7 @@ function ReadCard({ eyebrow, title, accent = "plum", children, style, className 
   );
 }
 
-export default function ReadFocus({ continueCards = [], articleCards = [], storyCards = [], phaseWord, onOpen, onDetails, presentation, calmLayout = false, segment = "all" }) {
+export default function ReadFocus({ continueCards = [], articleCards = [], storyCards = [], phaseWord, onOpen, onDetails, presentation, calmLayout = false, editorialPreview = false, segment = "all" }) {
   const hasAny = continueCards.length || articleCards.length || storyCards.length;
   if (!hasAny) {
     if (segment === "rest") return null;
@@ -46,10 +69,12 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
     // archive; the full article/history list stays one tap away.
     const namedResume = continueCards.find(item => !/^Project Gutenberg book \d+$/i.test(item.title || ""));
     const labelledFiction = storyCards.find(item => /fiction/i.test(item._raw?.author_name || item.sourceName || ""));
-    const editorialDraft = articleCards.find(item => item._raw?.editorial_local);
-    const primary = namedResume || continueCards[0] || featured || labelledFiction || storyCards[0];
-    const alternate = continueCards.includes(primary) ? editorialDraft || labelledFiction || featured
-      : storyCards.includes(primary) ? editorialDraft || featured : labelledFiction;
+    const completeEditorial = articleCards.find(item => item._raw?.editorial_local ||
+      (!item.archived && item.body?.length));
+    const currentFeatured = featured && !featured.archived ? featured : null;
+    const primary = namedResume || continueCards[0] || completeEditorial || labelledFiction || storyCards[0] || currentFeatured;
+    const alternate = continueCards.includes(primary) ? completeEditorial || labelledFiction || currentFeatured
+      : storyCards.includes(primary) ? completeEditorial || currentFeatured : labelledFiction;
     const second = alternate?.id === primary?.id ? null : alternate;
     const used = new Set([primary?.id, second?.id]);
     const remaining = [
@@ -58,14 +83,16 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
       ...storyCards.map(item => ({ item, label: "Read" })),
     ].filter(({ item }) => item && !used.has(item.id) && used.add(item.id));
     const primaryIsResume = continueCards.includes(primary);
-    const lead = <ReadCard className="fw-selected-reading-choice fw-selected-lead" eyebrow={primaryIsResume ? "Your saved place" : "Your next page"} accent="plum">
+    const lead = <ReadCard className="fw-selected-reading-choice fw-selected-lead" eyebrow={editorialPreview ? undefined : primaryIsResume ? "Your saved place" : "Your next page"} accent="plum">
       {presentation && <SelectedRoomDetail section="read"/>}
-      <CalmFindRow item={primary} onOpen={onOpen} onDetails={onDetails} label={primaryIsResume ? "Continue" : "Read"}/>
+      {!primary ? <p className="fw-calm-read-empty">The reading desk is between editions. Older pieces are in Browse below.</p>
+        : editorialPreview ? <ReadEditionChoice item={primary} onOpen={onOpen} onDetails={onDetails} resume={primaryIsResume}/>
+        : <CalmFindRow item={primary} onOpen={onOpen} onDetails={onDetails} label={primaryIsResume ? "Continue" : "Read"}/>}
     </ReadCard>;
     const more = <>
       {second && <div style={segment === "all" ? { marginTop: 16 } : undefined}>
-        <p style={{ fontFamily: SERIF, color: C.slate, margin: "0 0 6px", lineHeight: 1.4 }}>{second?._raw?.editorial_local ? "Or, something from the FemWell desk." : "Or take a different page."}</p>
-        <CalmFindRow item={second} onOpen={onOpen} onDetails={onDetails} label="Read"/>
+        {editorialPreview ? <ReadEditionChoice item={second} onOpen={onOpen} onDetails={onDetails} compact/>
+          : <CalmFindRow item={second} onOpen={onOpen} onDetails={onDetails} label="Read"/>}
       </div>}
       <CalmMore enabled={remaining.length > 0} title={`Browse all reading · ${remaining.length}`}>
         {remaining.map(({ item, label }) => <CalmFindRow key={item.id} item={item} onOpen={onOpen} onDetails={onDetails} label={label}/>)}
@@ -73,12 +100,11 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
     </>;
     if (segment === "lead") return lead;
     if (segment === "rest") return second || remaining.length ? <ReadCard className="fw-selected-reading-rest" eyebrow="More at the reading desk" accent="plum">{more}</ReadCard> : null;
-    return <ReadCard className="fw-selected-reading-choice" eyebrow="Your next page" title={primaryIsResume ? "Pick up here" : "Start here"} accent="plum">
+    return <ReadCard className="fw-selected-reading-choice" eyebrow="Your next page" accent="plum">
       {presentation && <SelectedRoomDetail section="read"/>}
-      <p style={{ fontFamily: SERIF, color: C.slate, margin: "0 0 12px", lineHeight: 1.45 }}>
-        {primaryIsResume ? "Your bookmark did the remembering." : storyCards.includes(primary) ? "A story from the current shelf." : primary?._raw?.editorial_local ? "An original Ideas draft. Read the whole thing; tell us if it belongs." : "A complete read from the shelf."}
-      </p>
-      <CalmFindRow item={primary} onOpen={onOpen} onDetails={onDetails} label={primaryIsResume ? "Continue" : "Read"}/>
+      {!primary ? <p className="fw-calm-read-empty">The reading desk is between editions. Older pieces are in Browse below.</p>
+        : editorialPreview ? <ReadEditionChoice item={primary} onOpen={onOpen} onDetails={onDetails} resume={primaryIsResume}/>
+        : <CalmFindRow item={primary} onOpen={onOpen} onDetails={onDetails} label={primaryIsResume ? "Continue" : "Read"}/>}
       {more}
     </ReadCard>;
   }

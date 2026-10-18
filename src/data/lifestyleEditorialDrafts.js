@@ -50,4 +50,55 @@ This is not a command to abandon chores. The bin still exists; it is very commit
 
 When evening comes, ask a kinder question than “What did I achieve?” Try “Was there a moment I was actually in?” It may be the bread, the rain, a ridiculous voice note, or the toast you ate standing up. An ordinary life has a lot of these moments. They count even when nobody liked them online.`,
   },
+  {
+    id: "ideas-read-subscription-check",
+    editorial_local: true,
+    status: "NEEDS_REVIEW",
+    media_type: "ARTICLE",
+    content_type: "GUIDE",
+    category: "Money",
+    title: "The payment you forgot about",
+    summary: "Ten quiet minutes with your regular payments. No spreadsheet personality required.",
+    author_name: "FemWell · Ideas draft",
+    source_name: "FemWell · Ideas draft",
+    duration_label: "About 2 min read",
+    source_links: [{ label: "MoneyHelper · regular payments and cancellation", url: "https://www.moneyhelper.org.uk/en/everyday-money/banking/direct-debits-and-standing-orders" }],
+    lede: `The free trial was brilliant for exactly four days. Three months later, it has a standing invitation to your bank account. It isn't a moral failure; automatic payments are designed to be easy to forget.
+
+Start in your banking app with the list called regular payments, subscriptions or scheduled payments. Look for names you don't recognise, small charges you stopped noticing and annual renewals that never appear in a normal month's spending. Write down the provider, the amount and the next payment date. That's your entire first pass.
+
+Choose one payment that no longer earns its place. If it's a subscription, check the provider's cancellation terms and cancel the service there. Stopping a Direct Debit at your bank stops that payment instruction; it does not automatically end a contract or erase money you still owe. MoneyHelper makes that distinction clear, and it matters more than the pleasing little “cancelled” badge in your app.
+
+If the amount looks wrong, check the invoice or agreement before acting. MoneyHelper says the Direct Debit Guarantee can help with a payment taken in error, but the bank and the company will need the details. Keep the date and confirmation of any cancellation. Future-you should not have to remember which chat window settled it.
+
+This is not an invitation to cut every nice thing. A subscription you use and enjoy is doing its job. The win is knowing which ones are yours on purpose. Ten minutes, one decision, kettle on.`,
+  },
+  {
+    id: "ideas-read-october-energy-cap",
+    editorial_local: true,
+    status: "NEEDS_REVIEW",
+    media_type: "ARTICLE",
+    content_type: "NEWS",
+    category: "Money",
+    title: "The energy cap changed. Your bill has its own plot.",
+    summary: "Ofgem's October figure is a typical-household illustration, not the amount every home pays.",
+    author_name: "FemWell · Ideas draft",
+    source_name: "FemWell · Ideas draft",
+    published_at: "2026-10-18",
+    expires_at: "2026-12-31",
+    duration_label: "About 2 min read",
+    source_links: [
+      { label: "Ofgem · October–December 2026 price cap", url: "https://www.ofgem.gov.uk/your-energy-supply/your-energy-bill/energy-price-cap-unit-rates-and-standing-charges" },
+      { label: "Ofgem · help with energy bills", url: "https://www.ofgem.gov.uk/your-energy-supply/your-energy-bill/get-help-your-home-or-business-energy-bills" },
+    ],
+    lede: `A headline says the energy price cap is £1,723 a year. Your bill arrives with a completely different number. Both can be true. That cap figure is Ofgem's illustration for a typical household paying by Direct Debit in England, Scotland or Wales; it is not a flat bill or a promise about your home.
+
+For 1 October to 31 December 2026, Ofgem says the typical figure rose by 4% compared with the previous cap period. The cap limits unit rates and daily standing charges on default tariffs. What you actually pay depends on how much energy you use, your region, meter and payment method. If you are on a fixed tariff, the change may not apply to your current rates.
+
+The useful two-minute move is to take your latest bill and find three things: your tariff name, the price per kilowatt hour and the daily standing charge. Compare those with Ofgem's current regional and payment-method tables, not with somebody else's total bill. If the tariff is fixed, check its end date before deciding whether to switch.
+
+If your direct debit has changed and the maths feels mysterious, ask your supplier to show the usage and account balance behind it. A direct debit is a payment plan, not a new law of physics. Ofgem says suppliers must help customers who tell them they cannot pay; that conversation can include a repayment plan.
+
+This edition covers the October–December 2026 cap. It needs another source check before the next cap period; it is not a live tariff comparison. Northern Ireland uses a different system. The best number for your household still lives on your own bill.`,
+  },
 ];

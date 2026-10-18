@@ -18,6 +18,14 @@ it('preserves the existing structured quote and attribution in focused detail',(
  expect(()=>render(<FocusedCardContents item={{...base,type:'quote',quote:{text:'Take a quiet hour',attrib:'FemWell'}}}/>)).not.toThrow();
  expect(screen.getByText('Take a quiet hour')).toBeVisible();expect(screen.getByText('FemWell')).toBeVisible();
 });
+it('gives an Ideas article a dated folio, complete body and its original fact source',()=>{
+ const article={...base,title:'The energy cap changed',sourceName:'FemWell · Ideas draft',body:['The entire article remains readable.'],_raw:{id:'ideas-energy',editorial_local:true,content_type:'NEWS',provider:'NEWS',published_at:'2026-10-18',lede:'The entire article remains readable.',source_links:[{label:'Ofgem · price cap',url:'https://www.ofgem.gov.uk/example'}]}};
+ render(<FocusedCardContents room='read-ideas' item={article}/>);
+ expect(screen.getByText('Ideas draft · News · unreviewed')).toBeVisible();
+ expect(screen.getByText('The entire article remains readable.')).toBeVisible();
+ expect(screen.getByRole('link',{name:/Ofgem · price cap/})).toHaveAttribute('href','https://www.ofgem.gov.uk/example');
+ expect(screen.queryByText(/18 October 2026/)).not.toBeInTheDocument();
+});
 it('keeps the full book blurb reachable while the first view stays brief',()=>{
  const blurb='A family meets a stranger. First impressions go badly. The rest of the novel changes everything.';
  render(<FocusedCardContents room='books' item={{...base,type:'book',summary:blurb}}/>);

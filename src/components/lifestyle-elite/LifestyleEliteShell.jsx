@@ -354,6 +354,13 @@ const contentBodyOf = (r) => {
   for (const p of paras) { if (n && n + p.length > G_BODY_MAX) break; out.push(p); n += p.length; }
   return out;
 };
+const isNewsSource = (r) => /NEWS/i.test(String(r?.content_type || "") + " " + String(r?.provider || "") + " " + String(r?.category || ""));
+const isStaleNews = (r) => {
+  if (!isNewsSource(r)) return false;
+  const checkedAt = Date.parse(r?.revalidated_at || r?.published_at || "");
+  const expiresAt = Date.parse(r?.expires_at || "");
+  return !Number.isFinite(checkedAt) || Date.now() - checkedAt > 14 * 86400000 || (Number.isFinite(expiresAt) && Date.now() > expiresAt);
+};
 const takeawaysOf = (r) => {
   const arr = Array.isArray(r?.takeaways) ? r.takeaways : [];
   return arr.map((t) => stripHtml(typeof t === "string" ? t : (t?.text || t?.point || t?.title || ""))).filter(Boolean).slice(0, 6);
@@ -947,16 +954,25 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
     const longest = (arr) => [...(arr || [])].sort((a, b) => (b.duration_seconds || 0) - (a.duration_seconds || 0));
     // The new demo's time promise uses measured durations. Longer/unknown items stay in their sections.
     const within = (rows, seconds) => byDur(rows).find(row => Number(row.duration_seconds) > 0 && Number(row.duration_seconds) <= seconds) || null;
-    // Reuse Read's complete, clearly labelled Ideas drafts in Good life. Their
-    // authored three-minute estimate is a ceiling for these time choices, not
-    // a claim that a sparse feed row or external show has been timed.
-    if (calmLayout && bandKey === "few") return { read: LIFESTYLE_EDITORIAL_DRAFTS[0], listen: within([...(grouped.audio || []), ...(grouped.video || [])], 300) };
-    if (calmLayout && bandKey === "fifteen") return { read: LIFESTYLE_EDITORIAL_DRAFTS[1], listen: within(grouped.audio, 900) };
+    // The unreviewed local pieces are a preview choice only. On main, estimate
+    // reading time from a complete source body when the row has no measured
+    // duration; a thin teaser cannot claim to fit a time band.
+    const withinRead = (seconds) => [...(grouped.article || []), ...(grouped.guide || [])]
+      .map(row => {
+        const body = contentBodyOf(row);
+        const measured = Number(row.duration_seconds);
+        const estimate = body.length ? Math.ceil(body.join(" ").split(/\s+/).filter(Boolean).length / 200) * 60 : Infinity;
+        return { row, seconds: measured > 0 ? measured : estimate };
+      })
+      .filter(choice => choice.seconds <= seconds)
+      .sort((a, b) => a.seconds - b.seconds)[0]?.row || null;
+    if (calmLayout && bandKey === "few") return { read: returnToMain ? withinRead(300) : LIFESTYLE_EDITORIAL_DRAFTS[0], listen: within([...(grouped.audio || []), ...(grouped.video || [])], 300) };
+    if (calmLayout && bandKey === "fifteen") return { read: returnToMain ? withinRead(900) : LIFESTYLE_EDITORIAL_DRAFTS[1], listen: within(grouped.audio, 900) };
     if (calmLayout && bandKey === "evening") return { read: grouped.story?.[0] || longest(grouped.article)[0] || null, listen: eveningListen(grouped.audio) };
     if (bandKey === "few") return { read: livingDemo ? timeFit([...(grouped.article || []), ...(grouped.guide || [])],300) : byDur(grouped.article)[0] || grouped.guide?.[0] || null, listen: livingDemo ? within([...(grouped.audio || []), ...(grouped.video || [])], 300) : grouped.audio?.[0] || grouped.video?.[0] || null };
     if (bandKey === "fifteen") return { read: livingDemo ? timeFit([...(grouped.article || []), ...(grouped.guide || [])],900) : grouped.article?.[1] || grouped.article?.[0] || null, listen: livingDemo ? within(grouped.audio, 900) : grouped.audio?.[0] || null };
     return { read: grouped.story?.[0] || longest(grouped.article)[0] || null, listen: longest(grouped.audio)[0] || grouped.video?.[0] || null };
-  }, [grouped, livingDemo, calmLayout]);
+  }, [grouped, livingDemo, calmLayout, returnToMain]);
 
   // ── CARD ADAPTERS (§6.7.7) — turn each live source into the shared card item.
   // We pass CONTENT only; `type` supplies the chrome (kind/Icon/colourway/scene/primary).
@@ -975,9 +991,11 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
     const g_takes = takeawaysOf(r);
     const archiveLabel = calmLayout && /^FEMWELL_AI/.test(String(r.provider || ""))
       ? /FICTION|STORY/.test(String(r.content_type || "")) ? "Generated fiction · archive" : "Archive · source review pending"
-      : null;
+      : calmLayout && isStaleNews(r) ? "News archive · date check pending" : null;
     return {
     id: r.id, type,
+    ...(archiveLabel ? { archived: true } : {}),
+    ...(/GUIDE/i.test(String(r.content_type || "")) ? { kind: "Read · Guide" } : /NEWS/i.test(String(r.content_type || "")) ? { kind: "Read · News" } : {}),
     title: r.title,
     subtitle: stripHtml(r.why_it_matters || r.summary || "") || metaOf(r),
     // §5 a real hook so a card is never empty — the substance, distinct from the short subtitle.
@@ -1026,13 +1044,26 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
     // The Ideas preview gives its lead to an actual readable source, not simply
     // the highest-engagement teaser. Existing candidate cards keep their actions.
     const ordered = calmLayout ? (() => {
-      const readable = [], thin = [];
-      for (const row of candidates) (contentBodyOf(row).length ? readable : thin).push(row);
-      return [...readable, ...thin];
+      const completeWholeLife = [], completeOther = [], archive = [], thin = [];
+      for (const row of candidates) {
+        const body = contentBodyOf(row).length > 0;
+        const generated = /^FEMWELL_AI/i.test(String(row.provider || ""));
+        const healthFirst = /cycle|fertil|ovulat|hormon|period|pregnan|skin|health/i.test(String(row.category || "") + " " + String(row.title || ""));
+        const staleNews = isStaleNews(row);
+        if (!body) thin.push(row);
+        else if (generated || staleNews) archive.push(row);
+        else if (healthFirst) completeOther.push(row);
+        else completeWholeLife.push(row);
+      }
+      return [...completeWholeLife, ...completeOther, ...archive, ...thin];
     })() : candidates;
-    const published = ordered.slice(0, 6).map((r) => rowCard(r, "article"));
-    return calmLayout ? [...LIFESTYLE_EDITORIAL_DRAFTS.map((r) => rowCard(r, "article")), ...published] : published;
-  }, [grouped, rowCard, selectedPresentation, feed, calmLayout]);
+    // Keep the complete already-fetched Read pool (up to the bounded 60-row
+    // shell request) behind Browse instead of silently dropping row seven.
+    const published = ordered.map((r) => rowCard(r, "article"));
+    // Original drafts stay in the Ideas route until editorial review and an owned
+    // persistent identity. Historical published rows remain in Browse on main.
+    return calmLayout && !returnToMain ? [...LIFESTYLE_EDITORIAL_DRAFTS.map((r) => rowCard(r, "article")), ...published] : published;
+  }, [grouped, rowCard, selectedPresentation, feed, calmLayout, returnToMain]);
   const storyCards = useMemo(() => (grouped.story || []).slice(0, 6).map((r) => rowCard(r, "daily_story")), [grouped, rowCard]);
   // CONTINUE READING cards — lead the Read board with what she's part-way through. The eyebrow
   // says "Continue reading", the meta says where she is, and tapping resumes IN PLACE (the same
@@ -1250,7 +1281,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
     // 1 · Story — today's chapter, the daily ritual
     push(dailyStoryCards[0], "Today's chapter");
     // 2 · Read — her top personalised article
-    const a = firstOf("article"); push(a ? rowCard(a, "article") : articleCards[0], "A read for you");
+    push(articleCards.find(card => !card.archived && (!returnToMain || !card._raw?.editorial_local)), "A read for you");
     // 3 · Listen — a real episode, ROTATING BY THE DAY so it's fresh, not the same top pick.
     const auList = grouped.audio || [];
     const au = auList.length ? rotateDaily(auList, 1)[0] : firstOf("audio");
@@ -1269,7 +1300,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
     // 6 · The good life — one small joy
     push(calmLayout ? goodLifeJoys[0] : ritualCards[0], "A small joy");
     return out.filter(Boolean).slice(0, 7);   // 7 sections now that watch has its own slot
-  }, [feed, grouped, rowCard, dailyStoryCards, articleCards, videoCards, horoscopeCards, shelfBookCards, classicCards, ritualCards, calmLayout, goodLifeJoys]);
+  }, [feed, grouped, rowCard, dailyStoryCards, articleCards, videoCards, horoscopeCards, shelfBookCards, classicCards, ritualCards, calmLayout, goodLifeJoys, returnToMain]);
 
   // ── THE CONTROLLER-HERO's destinations (§6.8.2 band 1) ──────────────────────────────────
   // ORDER MATTERS: this useMemo's deps are evaluated AT THIS LINE, so every value it reads
@@ -1597,7 +1628,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
         {foldVariant && <div className="fw-ff-actions">{focusedActions}</div>}
 
         {selectedPresentation && calmLayout && focusSection === "read" && <div className="fw-living-content fw-selected-room--read fw-selected-read-lead" style={{ marginTop: 12 }}>
-          <ReadFocus calmLayout presentation continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} onDetails={setExpanded} segment="lead" />
+          <ReadFocus calmLayout presentation editorialPreview={!returnToMain} continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} onDetails={setExpanded} segment="lead" />
         </div>}
 
         {/* ══ §6.8.2 BAND 3+4 — the TOP SLIDING ROW (uniform panels, no dead space).
@@ -1617,13 +1648,14 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
             const lines = {read:continueCards[0] ? `Your place in ${continueCards[0].title} is waiting. One good read beats twelve open tabs.` : "One good read beats twelve open tabs.",listen:"Let someone else do the talking. Your headphones have earned an outing.",books:calmLayout ? (story ? `${cleanTitle(story.series_title || story.title || "The story")} has a chapter for you. Your shelf can wait.` : "The shelf is here when you want it. Pick the company you fancy.") : "One chapter. Then we’ll see.",good:"A little room in your day. No productivity hat required.",yours:savedItems.length || skySavedCount ? "Your excellent taste, filed loosely." : keepsError || skySavesError ? "Some keeps need another look." : keepsLoading || skySavesLoading ? "Finding the things you've kept." : "Your shelf's yours to make."};
             jess.eyebrow = "Jess · " + (FOCUS_MAP[focusSection]?.label || "Lifestyle"); jess.body = lines[focusSection] || jess.body;
           }
+          const currentRead = articleCards.find(card => !card.archived && (!returnToMain || !card._raw?.editorial_local));
           const glanceRows = [
             { Icon: Feather, label: calmBookPosition && !calmBookPosition.caughtUp ? "Your place" : "Today's chapter", text: calmBookPosition && !calmBookPosition.caughtUp ? `${calmBookPosition.chapter.series_title || calmBookPosition.chapter.title || "Your story"} · chapter ${calmBookPosition.chapter.day_number || calmBookPosition.index + 1}` : story ? (calmLayout && focusSection === "books" ? `${story.series_title || story.title || "Today's chapter"}${story.day_number ? ` · chapter ${story.day_number}` : ""}` : `${story.series_title || story.title || "Today's chapter"}${story.cliffhanger ? ` — "${story.cliffhanger}"` : ""}`) : "Today's chapter is on its way — tap to open the Daily Story.", onClick: calmBookPosition && !calmBookPosition.caughtUp ? openPersonalChapter : openTodaysChapter },
             { Icon: BookOpen, label: "Your reading",
-              text: continueCards.length ? `${continueCards.length} on the go · ${grouped.article.length} fresh reads`
-                : savedItems.length ? `${savedItems.length} saved to come back to · ${grouped.article.length} fresh reads`
-                : articleCards.some(card => !card._raw?.editorial_local) ? articleCards.find(card => !card._raw?.editorial_local).title
-                : articleCards.length ? `${articleCards.length} complete Ideas ${articleCards.length === 1 ? "read" : "reads"} to try.`
+              text: continueCards.length ? `${continueCards.length} on the go · choose a page below`
+                : savedItems.length ? `${savedItems.length} saved to come back to · choose a page below`
+                : currentRead ? currentRead.title
+                : articleCards.length ? returnToMain ? "Older reading is in Browse below." : `${articleCards.length} complete Ideas ${articleCards.length === 1 ? "read" : "reads"} to try.`
                 : storyCards.length ? "A story is here when you fancy one." : "No reads here just now.",
               onClick: () => jumpTo(1) },
             { Icon: Moon, label: "Your sky", text: horoscope ? cleanTitle(horoscope.headline || horoscope.narrative || "Today's reading is ready.") : "Add your birth details to read today's sky.", onClick: () => continuousSky && focusSection === "sky" ? setSkyActionRequest({ type: "reading" }) : setReadingOpen(true) },
@@ -1641,8 +1673,8 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
             : glanceRows;
           // the deep read — only sections we genuinely have signal for, never padded
           const readWhatOn = continueCards.length ? "Your reading place is saved. Come back mid-sentence."
-            : articleCards.some(card => !card._raw?.editorial_local) ? "A read is here. Follow the one that catches your eye."
-            : articleCards.length ? `${articleCards.length} complete Ideas ${articleCards.length === 1 ? "read is" : "reads are"} here. Try one.`
+            : currentRead ? "A read is here. Follow the one that catches your eye."
+            : articleCards.length ? returnToMain ? "Older reading is in Browse when you want it." : `${articleCards.length} complete Ideas ${articleCards.length === 1 ? "read is" : "reads are"} here. Try one.`
             : storyCards.length ? "A story is here. Open it when you fancy a page." : "Read is taking a breath today. Books is next door if you fancy a chapter.";
           const jessWhatOn = {
             read: readWhatOn,
@@ -1869,7 +1901,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
               else openBook(it._continue || it._raw || it);
             }} lifeStage={profile?.life_stage} /></div>;
           if (sec === "listen") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--listen" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{livingDemo && <nav aria-label="Full media directories" style={{display:"flex",justifyContent:"space-between",gap:12,marginBottom:12,fontFamily:UI,fontSize:12}}>{[["listen","All listens & shows"],["watch","All watches"]].map(([mode,label])=><button key={mode} type="button" onClick={()=>navigate(`/WatchListen?mode=${mode}${calmLayout ? "&appearance=calm" : ""}${returnToMain ? "&from=lifestyle-main" : ""}`)} style={{color:C.ink,minHeight:44,border:0,background:"transparent",textDecoration:"underline",cursor:"pointer",font:"inherit"}}>{label}</button>)}</nav>}<ListenFocus calmLayout={calmLayout} presentation={selectedPresentation} audioCards={audioCards} videoCards={videoCards} onOpen={setExpanded} /></div>;
-          if (sec === "read") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--read" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><ReadFocus calmLayout={calmLayout} presentation={selectedPresentation} continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} onDetails={selectedPresentation ? setExpanded : undefined} segment={selectedPresentation && calmLayout ? "rest" : "all"} /></div>;
+          if (sec === "read") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--read" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><ReadFocus calmLayout={calmLayout} presentation={selectedPresentation} editorialPreview={!returnToMain} continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} onDetails={selectedPresentation ? setExpanded : undefined} segment={selectedPresentation && calmLayout ? "rest" : "all"} /></div>;
           if (sec === "good") { const h = new Date().getHours(); const timeOfDay = h < 12 ? "morning" : h < 18 ? "afternoon" : "evening"; return <div className={selectedPresentation ? "fw-living-content fw-selected-room--good" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><GoodLifeFocus calmLayout={calmLayout} onOpenRooms={focusedPreview ? ()=>setRoomsOpen(true) : undefined} presentation={selectedPresentation} timeOfDay={timeOfDay} timeLens={<TimePickerLens presentation={selectedPresentation} calmLayout={calmLayout} pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />} joys={goodLifeJoys} onPlan={(it)=>glTick(it.id,it.doable?.title || it.title,it.doable?.kind)} onSlip={openJoy} /></div>; }
           if (sec === "yours") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--yours" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{selectedPresentation && keepsError && <div role="alert" style={{fontFamily:UI,fontSize:13,marginBottom:16}}><p>{keepsError}</p><button type="button" onClick={()=>setKeepsRevision(value=>value+1)}>Retry keeps</button> <a href={savedHref}>Open the full saved collection</a></div>}<YoursFocus calmLayout={calmLayout} presentation={selectedPresentation} savedCards={savedCards} savedSummary={savedSummary} phaseCards={phaseCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={(it)=>{if(it._keep?._unavailable){setKeepsRevision(n=>n+1);return;}if(it._keep?._href){openYoursSource(it._keep._href);return;}openReadCard(it);}} onDetails={setExpanded} skySavedCount={livingDemo ? skySavedCount : 0} />{livingDemo && <SavedSkyLessons userId={user?.id} human={artDirection === "sky-worlds"} direction={worldDirection} previewRoute={contentRoute || (artDirection === "sky-worlds" ? "/SkyWorldsDemo" : artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artDirection === "marginalia" ? "/LivingAtelierDemo" : undefined)} ownedState={{rows:keptSkyLessons,error:skySavesError,loading:skySavesLoading,retry:retrySkySaves}} compactEmpty={calmLayout}/>}</div>;
           // every section is bespoke — the generic slider-free layout is only ever the LANDING deck
@@ -1927,7 +1959,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
       {/* tap-to-expand — the shared card language's full-screen detail (§6.7.7).
           Save is CONTROLLED → real persistence + the feed's learning loop. */}
       {expanded && <ExpandDetailCard item={expanded} active={routeActive} presentation={focusedPreview ? "focused" : selectedPresentation} room={focusedPreview && focusSection !== "sky" ? focusSection : undefined} onClose={() => setExpanded(null)} saved={isCardSaved(expanded)} onSave={onCardSave} />}
-      {focusedRaw && <ExpandDetailCard item={rowCard(focusedRaw,CARD_TYPE_OF(focusedRaw))} active={routeActive} presentation="focused" room={focusedPreview && focusSection !== "sky" ? focusSection : undefined} onClose={()=>setFocusedRaw(null)} saved={isSaved(focusedRaw.id)} onSave={onCardSave}/>}
+      {focusedRaw && <ExpandDetailCard item={rowCard(focusedRaw,CARD_TYPE_OF(focusedRaw))} active={routeActive} presentation="focused" room={focusedPreview && focusSection !== "sky" ? focusSection === "read" && !returnToMain ? "read-ideas" : focusSection : undefined} onClose={()=>setFocusedRaw(null)} saved={isSaved(focusedRaw.id)} onSave={onCardSave}/>}
       {roomsOpen && <FocusedLifestyleRooms active={routeActive} onClose={()=>setRoomsOpen(false)} user={user} profile={profile} phaseKey={phaseKey} shellItems={items} horoscope={horoscope} toCard={(raw)=>rowCard(raw,CARD_TYPE_OF(raw))} isSaved={isCardSaved} onSave={onCardSave} onStory={openTodaysChapter} onSky={()=>setReadingOpen(true)}/>}
       {/* These sheets' buttons used to be no-ops that just closed — a button that lies is worse
           than no button. Each now does the real thing. */}

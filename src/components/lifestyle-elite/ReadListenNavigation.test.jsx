@@ -11,10 +11,9 @@ beforeEach(()=>{api.empty.mockResolvedValue([]);api.rows.mockImplementation(asyn
 describe('read navigation within the existing app document',()=>{
   it('opens the exact article in the clean Lifestyle reader without changing its source identity',async()=>{
     render(<MemoryRouter initialEntries={['/Lifestyle?section=read']}><Lifestyle/><Destination/></MemoryRouter>);
-    await screen.findByRole('heading',{name:'Start here'}, {timeout:15000});
-    const browse=screen.getByText(/Browse all reading/).closest('details');
-    fireEvent.click(screen.getByText(/Browse all reading/));
-    fireEvent.click(within(browse).getAllByRole('button',{name:/A complete source/})[0]);
+    fireEvent.click(await screen.findByText('Browse all reading · 1'));
+    await screen.findByRole('button',{name:/A complete source.*Read/}, {timeout:15000});
+    fireEvent.click(screen.getByRole('button',{name:/A complete source.*Read/}));
     expect(await screen.findByRole('dialog',{name:'A complete source'})).toHaveTextContent('Source words.');
     expect(screen.getByLabelText('Actual destination')).toHaveTextContent('/Lifestyle?section=read');
   });

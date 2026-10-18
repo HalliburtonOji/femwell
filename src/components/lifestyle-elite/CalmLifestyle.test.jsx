@@ -57,15 +57,15 @@ describe("calmer lists preserve exact source tasks", () => {
     const rows = Array.from({ length: 7 }, (_, i) => ({ id: `source-${i}`, title: `Complete source ${i}`, type: "article", body: [`Full unshortened source ${i}.`], _raw: { id: `raw-${i}` } }));
     rows[4]._raw.author_name="FemWell Fiction";
     const resume={id:"saved-place",title:"The Shape of Starting Over",type:"book",_continue:{id:"saved-place"}};
-    render(<ReadFocus calmLayout presentation="focused" articleCards={rows.slice(0, 4)} storyCards={rows.slice(4)} continueCards={[resume]} onOpen={onOpen} onDetails={onDetails}/>);
-    fireEvent.click(screen.getByRole("button",{name:/The Shape of Starting Over.*Continue/}));
+    render(<ReadFocus calmLayout editorialPreview presentation="focused" articleCards={rows.slice(0, 4)} storyCards={rows.slice(4)} continueCards={[resume]} onOpen={onOpen} onDetails={onDetails}/>);
+    fireEvent.click(screen.getByRole("button",{name:"Continue The Shape of Starting Over"}));
     expect(onOpen).toHaveBeenLastCalledWith(resume);
-    fireEvent.click(screen.getByRole("button",{name:/Complete source 4.*Read/}));
-    expect(onOpen).toHaveBeenLastCalledWith(rows[4]);
+    fireEvent.click(screen.getByRole("button",{name:"Read Complete source 0"}));
+    expect(onOpen).toHaveBeenLastCalledWith(rows[0]);
     expect(screen.getByText(rows[3].title)).not.toBeVisible();
     expect(screen.getByText(rows[6].title)).not.toBeVisible();
     fireEvent.click(screen.getByText("Browse all reading · 6"));
-    for (const row of rows.filter(row=>row!==rows[4])) {
+    for (const row of rows.filter(row=>row!==rows[0])) {
       fireEvent.click(screen.getByRole("button", { name: new RegExp(`^${row.title}.*Read$`) }));
       expect(onOpen).toHaveBeenLastCalledWith(row);
       fireEvent.click(screen.getByRole("button", { name: `Details & tools for ${row.title}` }));
@@ -79,8 +79,8 @@ describe("calmer lists preserve exact source tasks", () => {
     const saved={id:"saved",title:"The Shape of Starting Over",type:"book",_continue:{id:"saved"}};
     const essay={id:"essay",title:"The plans you actually want to keep",type:"article",_raw:{id:"essay",editorial_local:true},saveable:false};
     const story={id:"story",title:"The Tuesday Decision",type:"daily_story",_raw:{id:"story",author_name:"FemWell Fiction"}};
-    render(<ReadFocus calmLayout presentation="focused" continueCards={[saved]} articleCards={[essay]} storyCards={[story]} onOpen={onOpen}/>);
-    fireEvent.click(screen.getByRole("button",{name:/The plans you actually want to keep.*Read/}));
+    render(<ReadFocus calmLayout editorialPreview presentation="focused" continueCards={[saved]} articleCards={[essay]} storyCards={[story]} onOpen={onOpen}/>);
+    fireEvent.click(screen.getByRole("button",{name:"Read The plans you actually want to keep"}));
     expect(onOpen).toHaveBeenCalledExactlyOnceWith(essay);
     fireEvent.click(screen.getByText("Browse all reading · 1"));
     expect(screen.getByRole("button",{name:/The Tuesday Decision.*Read/})).toBeVisible();

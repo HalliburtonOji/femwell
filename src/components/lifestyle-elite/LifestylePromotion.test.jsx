@@ -3,33 +3,52 @@ import {beforeEach,describe,expect,it,vi} from 'vitest';
 import {fireEvent,render,screen,waitFor,within} from '@testing-library/react';
 import Lifestyle from '@/pages/LifestyleElite';
 import BooksStoryFocus from './BooksStoryFocus';
-const mock=vi.hoisted(()=>({empty:vi.fn(),chapters:vi.fn(),readings:vi.fn()}));
-vi.mock('@/api/base44Client',()=>({base44:{auth:{me:async()=>({id:'owner'})},functions:{invoke:async()=>({data:{items:[]}})},entities:new Proxy({},{get:(_,name)=>({filter:name==='DailyStory' ? mock.chapters : name==='HoroscopeReading' ? mock.readings : mock.empty,subscribe:()=>()=>{}})})}}));
+const mock=vi.hoisted(()=>({empty:vi.fn(),articles:vi.fn(),chapters:vi.fn(),readings:vi.fn()}));
+vi.mock('@/api/base44Client',()=>({base44:{auth:{me:async()=>({id:'owner'})},functions:{invoke:async()=>({data:{items:[]}})},entities:new Proxy({},{get:(_,name)=>({filter:name==='DailyStory' ? mock.chapters : name==='HoroscopeReading' ? mock.readings : name==='LifestyleItems' ? mock.articles : mock.empty,subscribe:()=>()=>{}})})}}));
 vi.mock('@/components/lifestyle/DailyStoryReader',()=>({default:({goToChapter,onExit})=><div role="dialog" aria-label="Actual chapter reader"><p>Chapter index: {goToChapter}</p><button onClick={onExit}>Exit chapter reader</button></div>}));
 vi.mock('./SelectedLifestyleHeader',()=>({default:({active})=><h1>{active.title}</h1>,SelectedRoomDetail:()=>null}));
-beforeEach(()=>{mock.empty.mockResolvedValue([]);mock.chapters.mockResolvedValue([]);mock.readings.mockResolvedValue([]);vi.spyOn(globalThis,'fetch').mockResolvedValue({ok:true,json:async()=>({results:[]})});window.history.replaceState({},'', '/Lifestyle');});
+beforeEach(()=>{mock.empty.mockResolvedValue([]);mock.articles.mockResolvedValue([]);mock.chapters.mockResolvedValue([]);mock.readings.mockResolvedValue([]);vi.spyOn(globalThis,'fetch').mockResolvedValue({ok:true,json:async()=>({results:[]})});window.history.replaceState({},'', '/Lifestyle');});
 describe('approved main Lifestyle parity',()=>{
   it('puts one exact Read source before the glance without duplicating it below',async()=>{
     window.history.replaceState({},'', '/Lifestyle?section=read');
+    mock.articles.mockResolvedValue([{id:'reviewed-read',title:'An actual full article',summary:'A short, useful opening.',lede:'A complete original article. '.repeat(55),category:'Relationships',provider:'EDITORIAL',content_type:'ARTICLE',media_type:'ARTICLE',status:'PUBLISHED',author_name:'FemWell Editorial'},{id:'second-read',title:'Another complete read',summary:'A different subject.',lede:'A second complete article. '.repeat(55),category:'Lifestyle',provider:'EDITORIAL',content_type:'ARTICLE',media_type:'ARTICLE',status:'PUBLISHED'}]);
     const {container}=render(<Lifestyle/>);
     const glance=await screen.findByRole('region',{name:"Your glance and Jess's read"});
     const lead=container.querySelector('.fw-selected-read-lead');
     const rest=container.querySelector('.fw-selected-reading-rest');
     expect(lead).toBeInTheDocument();
     expect(lead.compareDocumentPosition(glance)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(within(lead).getByRole('button',{name:/The plans you actually want to keep.*Read/})).toBeVisible();
-    expect(within(lead).getAllByText('The plans you actually want to keep')).toHaveLength(1);
+    expect(within(lead).getByRole('button',{name:/An actual full article.*Read/})).toBeVisible();
+    expect(within(lead).getAllByText('An actual full article')).toHaveLength(1);
     expect(rest).toBeInTheDocument();
     expect(rest.compareDocumentPosition(glance)&Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
-    expect(within(rest).queryByText('The plans you actually want to keep')).not.toBeInTheDocument();
+    expect(within(rest).queryByText('An actual full article')).not.toBeInTheDocument();
     expect(within(glance).getByRole('button',{name:'Jess’s read'})).toBeVisible();
   });
-  it('describes the actual complete Ideas reads shown when the remote Read catalogue is empty',async()=>{
+  it('does not promote unreviewed Ideas drafts as published reading on main',async()=>{
     render(<Lifestyle/>);
     const glance=await screen.findByRole('region',{name:"Your glance and Jess's read"});
-    expect(within(glance).getByText('2 complete Ideas reads to try.')).toBeVisible();
-    expect(await screen.findByText('The plans you actually want to keep')).toBeVisible();
-    expect(screen.queryByText('Fresh reads land here as they’re published.')).not.toBeInTheDocument();
+    expect(within(glance).getByText('No reads here just now.')).toBeVisible();
+    expect(screen.queryByText('The plans you actually want to keep')).not.toBeInTheDocument();
+    expect(await screen.findByText('Fresh reads land here')).toBeVisible();
+  });
+  it('keeps later fetched articles in Browse instead of ending the room at six',async()=>{
+    window.history.replaceState({},'', '/Lifestyle?section=read');
+    mock.articles.mockResolvedValue(Array.from({length:8},(_,i)=>({id:`read-${i}`,title:`Complete article ${i}`,summary:'A distinct article.',lede:'An actual full article. '.repeat(55),category:'Lifestyle',provider:'EDITORIAL',content_type:'ARTICLE',media_type:'ARTICLE',status:'PUBLISHED'})));
+    render(<Lifestyle/>);
+    const browse=await screen.findByText('Browse all reading · 7');
+    fireEvent.click(browse);
+    expect(screen.getByRole('button',{name:/Complete article 7.*Read/})).toBeVisible();
+  });
+  it('keeps expired news in the archive without calling it a current lead',async()=>{
+    window.history.replaceState({},'', '/Lifestyle?section=read');
+    mock.articles.mockResolvedValue([{id:'old-news',title:'An old price-cap story',summary:'Historical news.',lede:'The entire dated source. '.repeat(55),category:'Money',provider:'RSS',content_type:'NEWS',media_type:'ARTICLE',status:'PUBLISHED',published_at:'2024-01-01'}]);
+    render(<Lifestyle/>);
+    expect(await screen.findByText('The reading desk is between editions. Older pieces are in Browse below.')).toBeVisible();
+    const browse=screen.getByText('Browse all reading · 1');
+    fireEvent.click(browse);
+    expect(screen.getByRole('button',{name:/An old price-cap story.*Read/})).toBeVisible();
+    expect(screen.getByText('News archive · date check pending')).toBeVisible();
   });
   it('keeps the Everything Sky detail honest and opens the selected Sky room',async()=>{
     render(<Lifestyle/>);
