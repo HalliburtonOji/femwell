@@ -13,6 +13,19 @@ vi.mock("@/components/brand/expandCards", () => ({
 vi.mock("./SelectedLifestyleHeader", () => ({ SelectedRoomDetail: () => null }));
 
 describe("Listen source action", () => {
+  it("gives the Ideas choice a short reason and retains the remaining episode in Browse", () => {
+    const unrelated = { id:"other", type:"audio", title:"First feed item", audioSrc:"https://publisher.example/other.mp3" };
+    const chosen = { id:"chosen", type:"audio", title:"A culture episode", audioSrc:"https://publisher.example/chosen.mp3", editorialReason:"A real story with a useful turn.", editorialFollowedCategory:"Culture" };
+    const archive = { id:"archive", type:"audio", title:"Third feed item", audioSrc:"https://publisher.example/archive.mp3" };
+    render(<ListenFocus calmLayout editorialPreview presentation="folio" audioCards={[chosen, unrelated, archive]} />);
+    expect(screen.getByText("From your Culture shelf · A real story with a useful turn.")).toBeVisible();
+    const browse = screen.getByText("Browse all listens & watches · 1").closest("details");
+    expect(browse).not.toHaveAttribute("open");
+    fireEvent.click(screen.getByText("Browse all listens & watches · 1"));
+    expect(browse).toHaveAttribute("open");
+    expect(screen.getByText("Third feed item")).toBeVisible();
+  });
+
   it("carries focused audio styling into the main featured folio player", () => {
     render(<ListenFocus calmLayout presentation="folio"
       audioCards={[{ id:"listen-1", type:"audio", title:"A real episode", audioSrc:"https://example.com/episode.mp3" }]} />);
@@ -31,4 +44,5 @@ describe("Listen source action", () => {
     fireEvent.click(screen.getByRole("button", { name:"Details & tools for A source-only watch" }));
     expect(details).toHaveBeenCalledOnce();
   });
+
 });

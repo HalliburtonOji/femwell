@@ -36,20 +36,23 @@ function ListenCard({ eyebrow, title, accent = "sage", children, style, classNam
   );
 }
 
-export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, presentation, calmLayout = false }) {
+export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, presentation, calmLayout = false, editorialPreview = false }) {
   const player = usePodcastPlayer();
   const current = presentation ? player?.currentEpisode : null;
   const active = current && (audioCards.find(card=>card.id===current.id) || (current.audio_url ? {
     id:current.id,type:"audio",title:current.title,audioSrc:current.audio_url,duration:current.duration_seconds,
     sourceName:current.source_name,imageUrl:current.image_url,_raw:current,
-    meta:[["Headphones",current.source_name || "Podcast"]],body:[],actions:[],
+    meta:[["Headphones",current.source_name || "Podcast"]],body:[],
+    actions:/^https?:\/\/\S+$/i.test(String(current.episode_url || "")) ? [{
+      label:"At publisher",primary:false,onClick:()=>window.open(current.episode_url,"_blank","noopener,noreferrer"),
+    }] : [],
   } : null));
   // In the focused preview, a source-only show is still browsable, but must not
   // displace something the user can actually start here. The old fallback put a
   // two-hour external health lecture in the first slot when the live RSS pool
   // was empty. Keep the active episode first and every external source below.
   const featured = active || (calmLayout
-    ? audioCards.find(isCheckedRoundtable) || audioCards.find(card => card.audioSrc) || videoCards[0] || audioCards[0]
+    ? (editorialPreview ? audioCards.find(card => card.audioSrc) : audioCards.find(isCheckedRoundtable)) || audioCards.find(card => card.audioSrc) || videoCards[0] || audioCards[0]
     : audioCards[0] || videoCards[0]) || null;
   const restAudio = audioCards.filter(card=>card.id!==featured?.id);
   const watches = presentation && featured === videoCards[0] ? videoCards.slice(1) : videoCards;
@@ -67,7 +70,7 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, 
   const summary = presentation ? `${audioCards.length} listen${audioCards.length === 1 ? "" : "s"} · ${videoCards.length} watch${videoCards.length === 1 ? "" : "es"}${fDur ? ` · start with ${fDur}` : ""}.` : featured
     ? `Something to hear — ${featured.title}${fDur ? ` (${fDur})` : ""}. Press play and it keeps going while you wander.`
     : "Something to hear — press play and it keeps going while you wander the app.";
-  const renderAudio = it => calmLayout && it.audioSrc ? <div key={it.id} className="fw-calm-audio-row"><h4>{resolveCard(it).title}</h4><FloraAudio compact presentation="focused" src={it.audioSrc} label={`Play ${resolveCard(it).title}`} item={it} initialDuration={it.duration || 0}/><button onClick={()=>onOpen?.(it)}>Details &amp; tools</button></div> : <CoverCard presentation={presentation} previewText={calmLayout ? "" : undefined} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />;
+  const renderAudio = it => calmLayout && it.audioSrc ? <div key={it.id} className="fw-calm-audio-row"><h4>{resolveCard(it).title}</h4>{editorialPreview && it.editorialReason && <p style={{fontFamily:SERIF,fontSize:15,lineHeight:1.35,color:C.slate,margin:"0 0 6px"}}>{it.editorialFollowedCategory ? `From your ${it.editorialFollowedCategory} shelf · ` : ""}{it.editorialReason}</p>}<FloraAudio compact presentation="focused" src={it.audioSrc} label={it.sourceName || "Podcast"} accent="#567861" item={it} initialDuration={it.duration || 0}/><button onClick={()=>onOpen?.(it)}>Details &amp; tools</button></div> : <CoverCard presentation={presentation} previewText={calmLayout ? "" : undefined} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />;
   const renderWatch = it => <CoverCard presentation={presentation} previewText={calmLayout ? "" : undefined} key={it.id} item={it} compact onOpen={() => onOpen && onOpen(it)} />;
 
   if (calmLayout) {
@@ -80,11 +83,16 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, 
     const moreWatches = watches.filter(item => !used.has(item.id));
     const moreCount = moreAudio.length + moreWatches.length;
     const alternateSourceAction = alternate?.type === "video" && (alternate.actions || []).find(action => typeof action?.onClick === "function" && /open|watch/i.test(action.label || ""));
-    return <ListenCard className="fw-selected-listening-choice" eyebrow={active ? player?.isPlaying ? "On air" : "Pick up your listen" : featured?.type === "video" ? "Watch here" : externalLead ? "Listen elsewhere" : isCheckedRoundtable(featured) ? "From the listening desk" : "Worth your headphones"} title={featured?.type === "video" ? "Put this on" : externalLead ? "Choose a show" : "Press play"} accent="sage">
+    return <ListenCard className="fw-selected-listening-choice" style={editorialPreview && featured?.audioSrc ? { paddingTop: 8 } : undefined} eyebrow={active ? player?.isPlaying ? "On air" : "Pick up your listen" : featured?.type === "video" ? "Watch here" : externalLead ? "Listen elsewhere" : isCheckedRoundtable(featured) ? "From the listening desk" : "Worth your headphones"} title={editorialPreview && featured?.audioSrc ? undefined : featured?.type === "video" ? "Put this on" : externalLead ? "Choose a show" : "Press play"} accent="sage">
       {presentation && <SelectedRoomDetail section="listen"/>}
-      {featured && <>
+      {featured && editorialPreview && featured.audioSrc ? <div className="fw-calm-audio-row">
+        <h4>{resolveCard(featured).title}</h4>
+        <FloraAudio compact presentation="focused" src={featured.audioSrc} label={featured.sourceName || "Podcast"} accent="#567861" item={featured} initialDuration={featured.duration || 0}/>
+        {featured.editorialReason && <p style={{ fontFamily: SERIF, color: C.slate, margin: "10px 0 0", lineHeight: 1.35 }}>{featured.editorialFollowedCategory ? `From your ${featured.editorialFollowedCategory} shelf · ` : ""}{featured.editorialReason}</p>}
+        <button type="button" onClick={() => onOpen?.(featured)}>Details &amp; tools</button>
+      </div> : featured && <>
         <p style={{ fontFamily: SERIF, color: C.slate, margin: "0 0 12px", lineHeight: 1.45 }}>
-          {active ? "Your last listen is ready where you left it." : isCheckedRoundtable(featured) ? "Mel, AJ and Elizabeth on friendship and reinvention. Forty-five minutes; includes Dove sponsorship." : featured.audioSrc ? "An episode, ready here in the app." : featured.type === "video" ? "A watch, ready here in the app." : "This show opens at its source."}
+          {active ? "Your last listen is ready where you left it." : editorialPreview && featured.editorialReason ? `${featured.editorialFollowedCategory ? `From your ${featured.editorialFollowedCategory} shelf · ` : ""}${featured.editorialReason}` : isCheckedRoundtable(featured) ? "Mel, AJ and Elizabeth on friendship and reinvention. Forty-five minutes; includes Dove sponsorship." : featured.audioSrc ? "An episode, ready here in the app." : featured.type === "video" ? "A watch, ready here in the app." : "This show opens at its source."}
         </p>
         <CoverCard presentation={presentation} mediaPresentation="focused" previewText="" item={featured} onOpen={() => onOpen?.(featured)}/>
       </>}

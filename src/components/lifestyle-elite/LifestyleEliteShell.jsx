@@ -81,6 +81,7 @@ import { getMoonPhase } from "@/utils/astrology";
 import ReadingColumn from "@/components/brand/ReadingColumn";
 import { LIFESTYLE_VIDEOS } from "@/data/lifestyleVideos";
 import { LIFESTYLE_EDITORIAL_DRAFTS } from "@/data/lifestyleEditorialDrafts";
+import { orderListenEdition } from "@/data/listenEditorial";
 // the REAL curated shows (12, with Apple/Spotify deep-links) — the rail already owned them;
 // this page had been carrying a 2-item stub instead. Correcting that.
 import { EXTERNAL_PODCASTS } from "@/components/lifestyle/listen/ExternalPodcastsRail";
@@ -977,7 +978,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
   // ── CARD ADAPTERS (§6.7.7) — turn each live source into the shared card item.
   // We pass CONTENT only; `type` supplies the chrome (kind/Icon/colourway/scene/primary).
   // Every action is REAL: reads/books/video → the real reader; rituals → Planner, no navigation.
-  const openExternal = useCallback((url) => { if (url) window.open(url, "_blank", "noopener,noreferrer"); }, []);
+  const openExternal = useCallback((url) => { if (/^https?:\/\/\S+$/i.test(String(url || ""))) window.open(url, "_blank", "noopener,noreferrer"); }, []);
 
   // §1/§2 — only a REAL media file plays in-card. Platform pages (YouTube/TikTok/a show's
   // site) are never fake-embedded: they keep their honest link-out action.
@@ -1035,7 +1036,10 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
       Icon: type === "video" ? "Film" : type === "audio" ? "Headphones" : type === "book" ? "Book" : "BookOpen",
       primary: true,
       onClick: () => type === "book" ? openBook(r) : (type === "audio" && r.episode_url) ? openExternal(r.episode_url) : focusedPreview && type === "video" && !(r.video_id && r.is_embeddable !== false && !isTikTok(r)) && !playableMedia(r.content_url) ? openExternal(r.content_url || r.source_url) : openItem(r),
-    }],
+    }, ...(focusedPreview && type === "audio" && /^https?:\/\/\S+$/i.test(String(r.episode_url || "")) ? [{
+      label: "At publisher", Icon: "Headphones", primary: false,
+      onClick: () => openExternal(r.episode_url),
+    }] : [])],
     };
   }, [openItem, openExternal, openBook,focusedPreview,calmLayout]);
 
@@ -1095,7 +1099,15 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
   // SHOWS as honest Spotify/Apple link-outs — the 12-show list the rail already owned, not the
   // 2-item stub this page had been carrying.
   const audioCards = useMemo(() => {
-    const real = (grouped.audio || []).slice(0, 6).map((r) => rowCard(r, "audio"));
+    // Ideas-only: an explicitly followed category may choose among a few
+    // checked, playable episodes. The existing first six and all show entries
+    // remain; current playback still takes priority in ListenFocus.
+    const edition = calmLayout && !returnToMain ? orderListenEdition(grouped.audio, profile?.followed_categories) : [];
+    const seen = new Set();
+    const candidates = [...edition.map(choice => choice.row), ...(grouped.audio || []).slice(0, 6)]
+      .filter(row => row && !seen.has(row.id) && seen.add(row.id));
+    const notes = new Map(edition.map(choice => [choice.id, choice]));
+    const real = candidates.map(r => ({ ...rowCard(r, "audio"), ...(notes.has(r.id) ? { editorialReason: notes.get(r.id).reason, editorialFollowedCategory: notes.get(r.id).matchesFollowed ? notes.get(r.id).category : null } : {}) }));
     const ext = EXTERNAL_PODCASTS.slice(0, 6).map((pd) => ({
       id: pd.id, type: "audio", title: calmLayout ? pd.show : pd.title,
       subtitle: calmLayout ? "Choose an episode at the source" : pd.show, category: "listen podcast rest",
@@ -1113,7 +1125,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
       ].filter(Boolean),
     }));
     return [...real, ...ext];
-  }, [grouped, rowCard, openExternal, calmLayout]);
+  }, [grouped, rowCard, openExternal, calmLayout, returnToMain, profile?.followed_categories]);
   const videoCards = useMemo(() => {
     // A long blurb is not proof of a substantial watch. In the Ideas preview,
     // unknown-length/short clips stay in the full watch directory, not the lead.
@@ -1631,6 +1643,10 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
           <ReadFocus calmLayout presentation editorialPreview={!returnToMain} continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} onDetails={setExpanded} segment="lead" />
         </div>}
 
+        {selectedPresentation && calmLayout && !returnToMain && focusSection === "listen" && <div className="fw-living-content fw-selected-room--listen fw-selected-listen-lead" style={{ marginTop: 12 }}>
+          <ListenFocus calmLayout presentation editorialPreview audioCards={audioCards} videoCards={videoCards} onOpen={setExpanded} />
+        </div>}
+
         {/* ══ §6.8.2 BAND 3+4 — the TOP SLIDING ROW (uniform panels, no dead space).
              Slide 1 = today at a glance (the same three rows the SummaryCard carried —
              nothing dropped). Slide 2 = Jess's written read + an upward inner sheet. ══
@@ -1900,7 +1916,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
               } else if (it?.id === "daily-chapter") openTodaysChapter();
               else openBook(it._continue || it._raw || it);
             }} lifeStage={profile?.life_stage} /></div>;
-          if (sec === "listen") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--listen" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{livingDemo && <nav aria-label="Full media directories" style={{display:"flex",justifyContent:"space-between",gap:12,marginBottom:12,fontFamily:UI,fontSize:12}}>{[["listen","All listens & shows"],["watch","All watches"]].map(([mode,label])=><button key={mode} type="button" onClick={()=>navigate(`/WatchListen?mode=${mode}${calmLayout ? "&appearance=calm" : ""}${returnToMain ? "&from=lifestyle-main" : ""}`)} style={{color:C.ink,minHeight:44,border:0,background:"transparent",textDecoration:"underline",cursor:"pointer",font:"inherit"}}>{label}</button>)}</nav>}<ListenFocus calmLayout={calmLayout} presentation={selectedPresentation} audioCards={audioCards} videoCards={videoCards} onOpen={setExpanded} /></div>;
+          if (sec === "listen") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--listen" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{livingDemo && <nav aria-label="Full media directories" style={{display:"flex",justifyContent:"space-between",gap:12,marginBottom:12,fontFamily:UI,fontSize:12}}>{[["listen","All listens & shows"],["watch","All watches"]].map(([mode,label])=><button key={mode} type="button" onClick={()=>navigate(`/WatchListen?mode=${mode}${calmLayout ? "&appearance=calm" : ""}${returnToMain ? "&from=lifestyle-main" : ""}`)} style={{color:C.ink,minHeight:44,border:0,background:"transparent",textDecoration:"underline",cursor:"pointer",font:"inherit"}}>{label}</button>)}</nav>}{!(selectedPresentation && calmLayout && !returnToMain) && <ListenFocus calmLayout={calmLayout} presentation={selectedPresentation} audioCards={audioCards} videoCards={videoCards} onOpen={setExpanded} />}</div>;
           if (sec === "read") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--read" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><ReadFocus calmLayout={calmLayout} presentation={selectedPresentation} editorialPreview={!returnToMain} continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} onDetails={selectedPresentation ? setExpanded : undefined} segment={selectedPresentation && calmLayout ? "rest" : "all"} /></div>;
           if (sec === "good") { const h = new Date().getHours(); const timeOfDay = h < 12 ? "morning" : h < 18 ? "afternoon" : "evening"; return <div className={selectedPresentation ? "fw-living-content fw-selected-room--good" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><GoodLifeFocus calmLayout={calmLayout} onOpenRooms={focusedPreview ? ()=>setRoomsOpen(true) : undefined} presentation={selectedPresentation} timeOfDay={timeOfDay} timeLens={<TimePickerLens presentation={selectedPresentation} calmLayout={calmLayout} pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />} joys={goodLifeJoys} onPlan={(it)=>glTick(it.id,it.doable?.title || it.title,it.doable?.kind)} onSlip={openJoy} /></div>; }
           if (sec === "yours") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--yours" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{selectedPresentation && keepsError && <div role="alert" style={{fontFamily:UI,fontSize:13,marginBottom:16}}><p>{keepsError}</p><button type="button" onClick={()=>setKeepsRevision(value=>value+1)}>Retry keeps</button> <a href={savedHref}>Open the full saved collection</a></div>}<YoursFocus calmLayout={calmLayout} presentation={selectedPresentation} savedCards={savedCards} savedSummary={savedSummary} phaseCards={phaseCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={(it)=>{if(it._keep?._unavailable){setKeepsRevision(n=>n+1);return;}if(it._keep?._href){openYoursSource(it._keep._href);return;}openReadCard(it);}} onDetails={setExpanded} skySavedCount={livingDemo ? skySavedCount : 0} />{livingDemo && <SavedSkyLessons userId={user?.id} human={artDirection === "sky-worlds"} direction={worldDirection} previewRoute={contentRoute || (artDirection === "sky-worlds" ? "/SkyWorldsDemo" : artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artDirection === "marginalia" ? "/LivingAtelierDemo" : undefined)} ownedState={{rows:keptSkyLessons,error:skySavesError,loading:skySavesLoading,retry:retrySkySaves}} compactEmpty={calmLayout}/>}</div>;
