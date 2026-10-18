@@ -43,8 +43,8 @@
   },
   "manualContent": {
     "id": "LIFESTYLE-CONTENT-2026-10-14",
-    "stage": "LC11 A21 Books Ideas edition locally proved under claims 5aecf93c/782fbf95/d66169a6; 86/86 affected tests, root 360/390/430 loaded exact reader and Ideas Back, independent 69/69 and bounded P0/P1/P2 closure. Final build/push/deploy and signed-in preview receipt pending; A20 remains live index-akRbD-nV.js. Four-hour automation PAUSED.",
-    "nextAtom": "LC11-A21-B04: finish fresh build, normal push/site deploy, check both live hashes/Ideas marker and signed-in preview, append receipt/release claims. Then A22 Sky Bulletin source/edition/consumer map before edits, followed by A23 Good life and A24 Yours; no Planner or automation restart.",
+    "stage": "LC11 A21 Books Ideas edition live: source 4e1867ea, both origins index-C4s9KbDM.js, signed-in exact Gutenberg174 first page/Back and six authored fallback classics; 86/86 root and 69/69 independent focused tests, three-width controlled taps and bounded P0/P1/P2 closure. Main chooser new order remains held. Four-hour automation PAUSED.",
+    "nextAtom": "LC11-A22-S01: Sky Bulletin exact live source/edition and consumer map before edits; inspect swipe/keep/private note/Yours/Saved/lounge/Community/Today, stale versus current claims, old opened surfaces and cost. Then stage source-grounded short human bulletin in Ideas with three-width/independent proof. A23 Good life and A24 Yours follow before Planner; no automation restart.",
     "proofGate": "Preserve every accepted feature and bold reader preference; clean actual old-paper owners only after consumer map. Complete 360/390/430 real taps and secondary returns, P0/P1/P2 self-critique, organised Ideas and actual live identity per batch. Live writes, native media/iPhone and long-history cost remain deferred rather than asserted.",
     "carryForward": ["Clean Ideas reader false-open progress repaired in LC08; canonical main reader still follows its held old reached contract until separate promotion", "Full Planner/Garden old-paper redesign and signed-in exact read-back remain; preview book ref token is only a bounded return repair", "Complete 2701-source and later reader-page proof", "Good life short-time read/play inventory thin in the sampled account", "Listen directory ordering and Sky availability copy; 360 Read action wrap", "Generated factual archive and book attribution source review", "LR09 Saved owner read errors", "B01-S03-A05 remaining reader/secondary returns and unchanged main reader front-matter model", "Legacy MediaLens/TikTok no-op controls", "daily generator workflow still invokes no-op", "custom-generation weekly limit enforcement unproved", "C06 request and paid-unit measurement", "Other video runtimes/captions and physical iPhone unproved"],
     "automation": "PAUSED; manual work only"
@@ -54,9 +54,9 @@
     "liveBundle": "index-OD-gjaX_.js"
   },
   "current": {
-    "section": "Lifestyle / Books Ideas content and opened owner (manual)",
-    "atom": "LC11-A21-B04 final build/deploy/live receipt before A22 Sky Bulletin map",
-    "status": "A01–A20 source released; A19 Read and A20 Listen new visual/editorial issues staged in Ideas pending Halli review. A21 Books source and independent controlled proof complete locally, deployment pending; A20 live index-akRbD-nV.js. Native/signed-in/legacy/cost limits remain. Four-hour automation PAUSED."
+    "section": "Lifestyle / Sky Bulletin content and opened owners (manual)",
+    "atom": "LC11-A22-S01 exact source/edition/tap and two-way consumer map before edits",
+    "status": "A01–A21 source released; A19 Read, A20 Listen and A21 Books new editorial/content issues staged live in Ideas pending Halli review. A21 live index-C4s9KbDM.js, exact signed-in ID174/Back and free-classics fallback proved. Native iPhone, live writes, legacy/cost limits remain. Four-hour automation PAUSED."
   },
   "lastCompleted": {
     "run": 5,
