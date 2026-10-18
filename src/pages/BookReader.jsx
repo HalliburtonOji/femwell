@@ -178,14 +178,16 @@ function BookReaderEdition({ routeSearch, ideasPreview }) {
   // The folio is the one current visual ground, including older direct links.
   // Keep the older chapter-reached progress contract on those unflagged links:
   // presentation must not silently change when a chapter counts as read.
-  const cleanPreview = ideasPreview || (route.get("appearance") === "calm" && (route.get("from") === "lifestyle-main" || clubOrigin));
+  const ideasLifestyleOrigin = route.get("from") === "lifestyle-ideas";
+  const cleanPreview = ideasPreview || (route.get("appearance") === "calm" && (route.get("from") === "lifestyle-main" || ideasLifestyleOrigin || clubOrigin));
   const cleanAppearance = true;
   const returnToLifestyle = () => {
     if (clubOrigin) navigate(createPageUrl(`Community?view=bookclub${requestedClubPick ? `&pick=${encodeURIComponent(requestedClubPick)}` : ""}&appearance=calm`));
     else if (route.get("via") === "saved" && route.get("from") === "lifestyle-main") {
       const tab = ["ADVICE", "LIFESTYLE", "CONTENT", "PROGRAM", "JOURNAL", "EVENT"].includes(route.get("saved_tab")) ? route.get("saved_tab") : "LIFESTYLE";
       navigate(`/Saved?tab=${tab}&appearance=calm&from=lifestyle-main`);
-    } else if (route.get("from") === "lifestyle-main") navigate(`/Lifestyle?section=${route.get("return_section") === "yours" ? "yours" : "books"}`);
+    } else if (ideasLifestyleOrigin) navigate(`/CalmLifestyleDemo?section=${route.get("return_section") === "yours" ? "yours" : "books"}`);
+    else if (route.get("from") === "lifestyle-main") navigate(`/Lifestyle?section=${route.get("return_section") === "yours" ? "yours" : "books"}`);
     else if (Number.isInteger(window.history.state?.idx) && window.history.state.idx <= 0) navigate("/Lifestyle?section=books", { replace: true });
     else navigate(-1);
   };

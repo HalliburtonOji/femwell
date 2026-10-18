@@ -73,6 +73,7 @@ describe("chapterForDay — the one gating contract", () => {
     const pick = chapterForDay(all, on("2026-08-20"));
     expect(pick.fresh).toBe(false);
     expect(pick.seriesKey).toBe("small_mends");
+    expect(framingLine(pick)).not.toContain("new run begins");
   });
 
   it("the evergreen is deterministic and advances exactly one a day", () => {

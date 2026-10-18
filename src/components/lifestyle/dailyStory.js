@@ -13,7 +13,8 @@
 // read is a MONTHLY SERIES RUN. Chapter N is served on day N of the calendar month (everyone is on
 // the same chapter today), and the run CLOSES at month-end: once the month has more days than the
 // series has chapters (day 31 of a 30-chapter run), the series is "complete" — the finale stays open
-// and she's invited to read it straight through — and a NEW run begins on the 1st. No silent
+// and she's invited to read it straight through. The calendar may reread this archived run next
+// month until a genuinely new chapter is published; never promise a new run on the 1st. No silent
 // modulo loop, no "chapter 24 on the 21st". (Months shorter than the series — Feb — simply close
 // early; that's honest, and the straight-through read is always there.)
 //
@@ -148,7 +149,7 @@ export function framingLine(pick) {
   if (!pick) return "Today's chapter is on its way.";
   const title = pick.chapter?.series_title || "this series";
   if (pick.fresh) return `Today's chapter of “${title}” — new today.`;
-  if (pick.complete) return `“${title}” has closed for ${pick.monthName || "this month"} — read it straight through; a new run begins on the 1st.`;
+  if (pick.complete) return `“${title}” is here to read straight through whenever you like.`;
   const left = pick.daysLeft != null ? (pick.daysLeft === 1 ? "the run closes tonight" : `the run closes on the ${new Date(pick.monthEnd).getDate()}${ordinal(new Date(pick.monthEnd).getDate())}`) : "";
   return `A chapter a day from “${title}”${left ? ` — ${left}` : ""} — or read it straight through.`;
 }

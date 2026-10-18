@@ -233,6 +233,19 @@ describe("Ideas-only reader margin preview", () => {
     expect(screen.getByLabelText("Returned route")).toHaveTextContent("/Lifestyle?section=books");
   });
 
+  it("returns an Ideas Books choice to its review room", async () => {
+    const search = "gutenberg_id=174&appearance=calm&from=lifestyle-ideas";
+    window.history.replaceState({ idx: 0 }, "", `/BookReader?${search}`);
+    function Destination() { const location = useLocation(); return <output aria-label="Returned route">{location.pathname + location.search}</output>; }
+    render(<MemoryRouter initialEntries={[`/BookReader?${search}`]}><Routes>
+      <Route path="/BookReader" element={<BookReader />} />
+      <Route path="/CalmLifestyleDemo" element={<Destination />} />
+    </Routes></MemoryRouter>);
+    await screen.findByRole("article", { name: "Controlled book reader" });
+    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+    expect(screen.getByLabelText("Returned route")).toHaveTextContent("/CalmLifestyleDemo?section=books");
+  });
+
   it("replaces the complete edition when a same-document book query changes and ignores the old late source", async () => {
     const oldSource = deferred();
     api.invoke.mockImplementationOnce(() => oldSource.promise).mockResolvedValueOnce({ data: {

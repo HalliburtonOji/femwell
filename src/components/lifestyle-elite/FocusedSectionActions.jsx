@@ -15,7 +15,7 @@ export default function FocusedSectionActions({ actions, plum, section, routeAct
   const current = active === null ? null : actions[active];
   const afterClose = (run, item) => { setSelected({ run, item }); setActive(null); };
   const choice = (item, i) => <button key={item.id || i} type="button" className={calmLayout ? "fw-calm-chooser-item" : undefined} onClick={() => afterClose(current.open, item)}
-    style={calmLayout ? undefined : { textAlign: "left", padding: "15px 14px", minHeight: 48, background: "white", border: `1px solid ${C.hair}`, borderRadius: 14, fontSize: 15, lineHeight: 1.4 }}>{item.title || item.name || "Open item"}</button>;
+    style={calmLayout ? undefined : { textAlign: "left", padding: "15px 14px", minHeight: 48, background: "white", border: `1px solid ${C.hair}`, borderRadius: 14, fontSize: 15, lineHeight: 1.4 }}>{item.pickerLabel || item.title || item.name || "Open item"}</button>;
   return <>
     <div aria-label="Section actions" style={{ display: "flex", gap: 10, marginTop: 14 }}>
       {actions.map((action, i) => {

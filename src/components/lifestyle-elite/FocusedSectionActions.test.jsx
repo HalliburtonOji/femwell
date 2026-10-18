@@ -12,6 +12,15 @@ const openChooser = (label) => {
 };
 
 describe("FocusedSectionActions — preview interaction contract", () => {
+  it("shows a distinct source label for repeated book titles and opens the exact row", async () => {
+    const open = vi.fn();
+    const item = { id: "gut-174", title: "The Picture of Dorian Gray", pickerLabel: "The Picture of Dorian Gray · Oscar Wilde" };
+    render(<FocusedSectionActions actions={[{label:"Choose a book",items:[item],open}]} plum="#402D46" section="books" calmLayout/>);
+    openChooser("Choose a book");
+    const dialog = await screen.findByRole("dialog", {name:"Choose a book"});
+    fireEvent.click(within(dialog).getByRole("button", {name:item.pickerLabel}));
+    await waitFor(() => expect(open).toHaveBeenCalledExactlyOnceWith(item));
+  });
   it("keeps every deeper calm choice available after a concise first view", async () => {
     const open = vi.fn();
     const items = Array.from({length: 5}, (_, i) => ({id: `listen-${i}`, title: `Episode ${i + 1}`}));

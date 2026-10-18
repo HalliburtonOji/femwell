@@ -88,7 +88,7 @@ describe('approved main Lifestyle parity',()=>{
     fireEvent.click(within(nav).getByRole('button',{name:'Sky',exact:true}));
     expect(window.location.search).toBe('?section=sky&reading=old-reading');
   });
-  it('resets manual chapter choice only when she asks for Today’s chapter, preserving the original notes sheet',async()=>{
+  it('resets manual chapter choice only when she asks for another open chapter, preserving the original notes sheet',async()=>{
     const today=new Date().toISOString().slice(0,10);
     mock.chapters.mockResolvedValue([{id:'first',series_key:'real-run',day_number:1,segment_text:'First chapter',published_date:'2020-01-01'},{id:'today',series_key:'real-run',day_number:2,segment_text:'Today’s actual text',published_date:today}]);
     window.history.replaceState({},'', '/Lifestyle?section=books');render(<Lifestyle/>);
@@ -98,7 +98,7 @@ describe('approved main Lifestyle parity',()=>{
     fireEvent.click(screen.getByRole('button',{name:'Exit chapter reader'}));
     const chapterIndex=screen.getByText('Chapters & short reads').closest('details');
     if(!chapterIndex.open)fireEvent.click(screen.getByText('Chapters & short reads'));
-    fireEvent.click(screen.getByRole('button',{name:/Today.s open chapter/}));
+    fireEvent.click(screen.getByRole('button',{name:/Another open chapter/}));
     expect(screen.getByRole('dialog',{name:'Actual chapter reader'})).toHaveTextContent('Chapter index: 1');
     fireEvent.click(screen.getByRole('button',{name:'Exit chapter reader'}));
     fireEvent.click(screen.getByRole('button',{name:/Notes & reflection/}));
@@ -176,7 +176,7 @@ describe('approved main Lifestyle parity',()=>{
     window.history.replaceState({},'', '/Lifestyle?tab=daily_story');render(<Lifestyle/>);
     const nav=await screen.findByRole('navigation',{name:'Lifestyle sections'});
     await waitFor(()=>expect(within(nav).getByRole('button',{name:'Books',exact:true})).toHaveAttribute('aria-pressed','true'));
-    expect(screen.getAllByRole('button',{name:"Today's chapter",exact:true}).every(button=>button.textContent.includes("Today's chapter"))).toBe(true);
+    expect(screen.getAllByRole('button',{name:"Your chapter",exact:true}).every(button=>button.textContent.includes("Your chapter"))).toBe(true);
   });
   it('keeps actual fiction and classics reachable from the Books body with their distinct tools',()=>{
     const open=vi.fn(),details=vi.fn(),notes=vi.fn();
@@ -187,7 +187,7 @@ describe('approved main Lifestyle parity',()=>{
     fireEvent.click(screen.getByRole('button',{name:/The exact classic/}));expect(open).toHaveBeenLastCalledWith(classic);
     const library=document.getElementById('book-library');
     fireEvent.click(within(library).getAllByRole('button',{name:/Details & tools/})[1]);expect(details).toHaveBeenCalledWith(classic);
-    fireEvent.click(screen.getByRole('button',{name:/Today’s chapter · notes/}));expect(notes).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole('button',{name:/Your chapter · notes/}));expect(notes).toHaveBeenCalledTimes(1);
   });
   it('opens the full shelf disclosure with its own cue in one tap on main',()=>{
     render(<BooksStoryFocus calmLayout artDirection="reading-room" shelfBookCards={[{id:'owned-book',title:'My own book'}]} />);

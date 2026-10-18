@@ -106,7 +106,7 @@ function WayIn({ Icon, title, line, onClick, first }) {
   );
 }
 
-export default function BooksStoryFocus({ chapters = [], story, pick, onRead, continueCards = [], shelfBookCards = [], classicCards = [], onOpenBook, lifeStage, userId, onSchedule, onCorner, artDirection, onChapterDetails, onBookDetails, calmLayout = false }) {
+export default function BooksStoryFocus({ chapters = [], story, pick, onRead, continueCards = [], shelfBookCards = [], classicCards = [], onOpenBook, lifeStage, userId, onSchedule, onCorner, onSelectionChange, artDirection, onChapterDetails, onBookDetails, calmLayout = false }) {
   const room = artDirection === "reading-room";
   const libraryRef = useRef(null);
   const openLibrary = () => {
@@ -190,9 +190,8 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
   }, []);
   useEffect(() => { refreshClub(); return () => { clubSequence.current++; }; }, [refreshClub]);
   const set = useMemo(() => monthlySet(new Date(), lifeStage, doorway, calmLayout), [lifeStage, doorway, passTick, calmLayout]);
-  // The authored MONTHS map may have no edition for this calendar month. In the
-  // calm preview, evergreen books are available now, not a fictional monthly drop.
-  const revealOpen = !!set.reveal && (set.reveal.revealed || (calmLayout && !set.hasMonthlyEdition));
+  // An evergreen set has no scheduled monthly reveal on either route.
+  const revealOpen = !!set.reveal && (set.reveal.revealed || !set.hasMonthlyEdition);
 
   const contBooks = (continueCards || []).filter(isBook);
   const her = pos?.chapter || story || null;
@@ -206,6 +205,9 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
   const latestIndex = pos && Number.isInteger(pick?.index) && pick.index >= 0 && pick.index < pos.unlockedCount ? pick.index : -1;
   const latest = latestIndex >= 0 ? pos.pool[latestIndex] : null;
   const series = story?.series_title || her?.series_title || "the serial";
+  const currentStoryMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+  const storyPublishedThisMonth = !!pick?.seriesKey && (chapters || []).some(chapter =>
+    chapter?.series_key === pick.seriesKey && String(chapter.published_date || "").startsWith(currentStoryMonth));
   const openBook = (b, extra) => onOpenBook && onOpenBook({ _gutenbergId: b.gutenberg_id, _book: "gutenberg", title: b.title, ...extra });
 
   // read-time as PERMISSION when small; hidden past the threshold (the reader standard, §6.7.8)
@@ -251,13 +253,13 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
 
   const summary = pos
     ? (pick?.complete
-      ? `“${series}” has closed for ${pick.monthName || "the month"} — read it straight through whenever you like; a new one begins on the 1st.`
+      ? `“${series}” is here to read straight through whenever you like.`
       : caughtUp
-        ? `You're up to date with “${series}”. Chapter ${Math.min(herN + 1, total)} opens tomorrow${set.featured ? `, and ${set.featured.title} is waiting whenever you want it` : ""}.`
+        ? `You're up to date with “${series}”. The full story is here whenever you want it${set.featured ? `, and ${set.featured.title} is waiting too` : ""}.`
         : waiting > 1
           ? `You're at chapter ${herN} of “${series}” — ${waiting} have opened while you were busy. They'll wait. One at a time.`
           : `Chapter ${herN} of “${series}” is waiting for you.`)
-    : `${set.featured ? `This month it's ${set.featured.title}.` : "This month's book is being chosen."} Read a little, or not at all — it keeps.`;
+    : `${set.featured ? `${set.hasMonthlyEdition ? "This month's" : "A"} book to start: ${set.featured.title}.` : "Your reading shelf is here."} Read a little, or not at all — it keeps.`;
 
   return (
     <div className="fw-books-focus" data-room={room || undefined} style={{ display: "flex", flexDirection: "column" }}>
@@ -297,7 +299,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
         <Card className={room ? "fw-room-chapter-leaf" : undefined}>
           <Eyebrow cw="crimson" align="left">The serial</Eyebrow>
           <Title align="left">A chapter a day, when you want it</Title>
-          <Body style={{ margin: 0 }}>Today's instalment lands each morning through the month. Miss a week and nothing is lost — it waits at the one you haven't read.</Body>
+          <Body style={{ margin: 0 }}>When a serial is running, your next chapter will wait here. The books below are ready now.</Body>
         </Card>
       )}
 
@@ -307,10 +309,10 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
       <CalmOptional enabled={calmLayout} title="Chapters & short reads">
       {pos ? (
         <section className={room ? "fw-room-chapter-index" : undefined}>
-          <Eyebrow cw="plum">{pick?.monthName ? `${pick.monthName}'s run` : "The run"} · {total} chapters</Eyebrow>
+          <Eyebrow cw="plum">{storyPublishedThisMonth && pick?.monthName ? `${pick.monthName}'s run` : "The serial"} · {total} chapters</Eyebrow>
           <RunStrip room={room} pool={pos.pool} unlockedCount={pos.unlockedCount} nextIndex={pos.index} onOpen={(i) => onRead && onRead(i)} />
           <Legend />
-          {calmLayout && latest && latestIndex !== pos.index && <Quiet style={{minHeight:44,padding:"10px 4px"}} onClick={() => onRead && onRead(latestIndex)}>Today's open chapter · {latest.day_number || latestIndex + 1} ›</Quiet>}
+          {calmLayout && latest && latestIndex !== pos.index && <Quiet style={{minHeight:44,padding:"10px 4px"}} onClick={() => onRead && onRead(latestIndex)}>Another open chapter · {latest.day_number || latestIndex + 1} ›</Quiet>}
           <div style={{ display: "flex", flexDirection: "column" }}>
             {pos.pool.slice(pos.index + 1, pos.index + 3).map((c, i) => {
               const n = c.day_number || pos.index + 2 + i;
@@ -362,7 +364,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
           </summary>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, margin: "6px 0 10px" }}>
             {DOORWAY_KEYS.map((key) => <button key={key} type="button" aria-pressed={doorway === key} className="fw-elite-press"
-              onClick={() => { setDoorway(key); setDoor(key); }}
+              onClick={() => { setDoorway(key); setDoor(key); onSelectionChange?.(); }}
               style={{ minHeight: 48, textAlign: "left", background: doorway === key ? C.sunk : C.surface, border: `1px solid ${doorway === key ? C.goldHair : C.hair}`, borderRadius: 14, padding: "10px 12px", fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: C.ink, cursor: "pointer" }}>
               {DOORWAYS[key].label}
             </button>)}
@@ -371,7 +373,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
         </details>
       </section>}
       <section className={room ? "fw-room-feature" : undefined}>
-        <Eyebrow cw="gold">{calmLayout && !set.hasMonthlyEdition ? "A book you can start" : `${set.monthName}'s book`}</Eyebrow>
+        <Eyebrow cw="gold">{!set.hasMonthlyEdition ? "A book you can start" : `${set.monthName}'s book`}</Eyebrow>
         {set.featured ? (
           <Card className={room ? "fw-room-feature-leaf" : undefined}>
             <div style={{ display: "flex", gap: 14 }}>
@@ -410,10 +412,10 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
             </div>}
             {!userId && onShelf(set.featured.gutenberg_id) && <p style={{fontFamily:UI,fontSize:13,color:C.slate}}>Kept on this device.</p>}
             {shelfScope === userId && shelfError && (!shelfRetry || shelfRetry.book?.gutenberg_id === set.featured.gutenberg_id) && <div role="alert" style={{fontFamily:UI,fontSize:13,color:C.crimson,marginTop:10}}><p>{shelfError}</p><button disabled={shelfBusy || shelfLoading} onClick={() => shelfRetry ? shelve(shelfRetry.book,shelfRetry.status) : refreshShelf()} style={doorBtnStyle()}>Try again</button></div>}
-            <Quiet onClick={() => { passBook(set.featured.gutenberg_id); setPassTick((t) => t + 1); }}>Not for me — show me another ›</Quiet>
+            <Quiet onClick={() => { passBook(set.featured.gutenberg_id); setPassTick((t) => t + 1); onSelectionChange?.(); }}>Not for me — show me another ›</Quiet>
           </Card>
         ) : (
-          <Card><Body style={{ textAlign: "center", color: C.slate, margin: 0 }}>{calmLayout && !set.hasMonthlyEdition ? "You've passed on these picks — nothing owed. The whole library is still here." : "You've passed on this month's picks — nothing owed. The whole library is a tap away, and a new set arrives on the 1st."}</Body></Card>
+          <Card><Body style={{ textAlign: "center", color: C.slate, margin: 0 }}>{!set.hasMonthlyEdition ? "You've passed on these picks — nothing owed. The whole library is still here." : "You've passed on this month's picks — nothing owed. The whole library is a tap away."}</Body></Card>
         )}
       </section>
 
@@ -425,9 +427,9 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
         <Eyebrow cw="blush">Read it with others</Eyebrow>
         <Title>The book club</Title>
         <Card className={room ? "fw-room-correspondence" : undefined}>
-          {clubLoading && <p role="status" style={{fontFamily:UI,fontSize:13,color:C.slate}}>Finding the club’s current read…</p>}
+          {clubLoading && <p role="status" style={{fontFamily:UI,fontSize:13,color:C.slate}}>Finding the club read…</p>}
           {clubError && <div role="alert"><p>{clubError}</p><button onClick={refreshClub} style={doorBtnStyle()}>Try again</button></div>}
-          {club && <><div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
+          {club && <>{club._origin === "seed" && <p style={{fontFamily:UI,fontSize:12,color:C.slate,margin:"0 0 6px"}}>From the club library</p>}<div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
             <span style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: C.ink }}>{club.title}</span>
             <span style={{ fontFamily: UI, fontSize: 13, color: C.slate }}>{[club.author,club.cadence,!calmLayout && club.gutenberg_id ? `Gutenberg ${club.gutenberg_id}` : null].filter(Boolean).join(" · ")}</span>
           </div>
@@ -452,7 +454,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
       {(set.alternates.length || set.reveal) ? (
         <CalmOptional enabled={calmLayout} title={`Browse ${set.alternates.length + (set.reveal ? 1 : 0)} more books`}>
         <section className={room ? "fw-room-catalogue" : undefined} style={{ marginTop: 24 }}>
-          <Eyebrow cw="sky">{calmLayout && !set.hasMonthlyEdition ? "Other ways in" : "Also this month"}</Eyebrow>
+          <Eyebrow cw="sky">{!set.hasMonthlyEdition ? "Other ways in" : "Also this month"}</Eyebrow>
           <div style={{ display: "flex", flexDirection: "column" }}>
             {set.alternates.map((b, i) => (
               <button key={b.gutenberg_id} onClick={() => openBook(b)} className="fw-elite-press"
@@ -495,7 +497,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
       <CalmOptional enabled={calmLayout} title="Your shelf & free classics">
       <section id="book-library" ref={libraryRef} className={room ? "fw-room-catalogue fw-room-library" : undefined} style={{marginTop:24,scrollMarginTop:64}}>
         <Eyebrow cw="sky">Your shelf &amp; free classics</Eyebrow>
-        {!calmLayout && onChapterDetails && <Quiet onClick={onChapterDetails}>Today’s chapter · notes &amp; reflection ›</Quiet>}
+        {!calmLayout && onChapterDetails && <Quiet onClick={onChapterDetails}>Your chapter · notes &amp; reflection ›</Quiet>}
         <div style={{marginTop:16}}>
           <Title size={20}>Your reading shelf</Title>
           {shelfLoading && <p role="status" style={{fontFamily:UI,fontSize:13,color:C.slate}}>Finding your books…</p>}
@@ -557,7 +559,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
           <Title size={20}>What draws you into a book?</Title>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
             {DOORWAY_KEYS.map((k) => (
-              <button key={k} onClick={() => { setDoorway(k); setDoor(k); }} className="fw-elite-press"
+              <button key={k} onClick={() => { setDoorway(k); setDoor(k); onSelectionChange?.(); }} className="fw-elite-press"
                 style={{ textAlign: "left", background: C.surface, border: `1px solid ${C.hair}`, borderRadius: 14, padding: "13px 14px", cursor: "pointer" }}>
                 <span style={{ display: "block", fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: C.ink }}>{DOORWAYS[k].label}</span>
                 <span style={{ display: "block", fontFamily: SERIF, fontSize: 14, color: C.slate, lineHeight: 1.35, marginTop: 2 }}>{DOORWAYS[k].line}</span>

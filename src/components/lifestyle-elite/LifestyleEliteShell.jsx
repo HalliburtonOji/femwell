@@ -73,6 +73,7 @@ import { CoverCard, ExpandDetailCard } from "@/components/brand/expandCards";
 import FaceOverlay from "@/components/brand/FaceOverlay";
 // the Daily Story — ONE gating contract + the real immersive reader (component #5)
 import { DAILY_STORY_SERIES, isoDay, loadStoryChapters, chapterForDay, nextChapterOf, chapterLabel, framingLine, markChapterRead, isChapterRead, readCount, readingPosition } from "@/components/lifestyle/dailyStory";
+import { monthlySet, getDoorway, DOORWAYS } from "@/components/lifestyle/booksMonthly";
 import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
 import { buildBookChapters } from "@/components/lifestyle/bookChapters";
 // the sky (component #6) — the REAL horoscope reader (15 sections + birth-chart onboarding),
@@ -569,6 +570,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
   const [readingOpen, setReadingOpen] = useState(false);
   const [expanded, setExpanded] = useState(null);   // the tap-to-expand card item (§6.7.7)
   const [roomsOpen, setRoomsOpen] = useState(false);
+  const [bookChoicesRevision, setBookChoicesRevision] = useState(0);
   const [focusedRaw, setFocusedRaw] = useState(null);
   // good-life bottom shelf (piece E) — a tapped permission/joy slip opens IN-BOARD via the
   // FaceOverlay. gLFace holds the tapped slip ({slip}); gLDone tracks which slips' "one doable
@@ -897,9 +899,9 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
     if (!it) return;
     recordAction(it, "open");
     const raw = it._raw || it;
-    if (it._book === "gutenberg" || it.gutenbergId) { const href=gutenbergReaderHref(it); if(href)navigate(focusedPreview ? `${href}&appearance=calm&from=lifestyle-main` : href);else flash("This book’s reader couldn’t open. Try another edition."); return; }
+    if (it._book === "gutenberg" || it.gutenbergId) { const href=gutenbergReaderHref(it); if(href)navigate(focusedPreview ? `${href}&appearance=calm&from=${returnToMain ? "lifestyle-main" : "lifestyle-ideas"}` : href);else flash("This book’s reader couldn’t open. Try another edition."); return; }
     setBookReader(raw);
-  }, [recordAction,navigate,focusedPreview]);
+  }, [recordAction,navigate,focusedPreview,returnToMain]);
 
   // open the exact item full-screen (deep-link parity with live Lifestyle: LifestyleDetail / readers)
   const openItem = useCallback((it) => {
@@ -1168,16 +1170,34 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
   }, [story, grouped, rowCard, openTodaysChapter]);
   // §3 BOOKS — 2 taps, not 3: tap the card and you're READING (the pane paginates the
   // opening pages via the existing fetchGutenbergBook fn); the FULL reader is one clear option.
-  const classicCards = useMemo(() => (gutenberg || []).slice(0, 6).map((b) => ({
-    id: b.id, type: "book", saveable: false, title: b.title, subtitle: b.author || "Public domain",
-    summary: b.summary || "A free, public-domain classic — start reading here, or open the full reader for chapters, reflections and the club.",
-    meta: [["Book", b.tag || "Public domain"], ["Star", b.stars ? "★".repeat(b.stars) : "A classic"]],
-    chips: ["free", "classic", ...(b.subjects || []).map((x) => String(x).split("--")[0].trim().toLowerCase()).filter(Boolean)].slice(0, 4),
-    body: [],
-    gutenbergId: b._gutenbergId,
-    onOpenFullReader: () => openItem(b),
-    actions: [{ label: "Open reader", Icon: "Book", primary: true, onClick: () => openItem(b) }],
-  })), [gutenberg, openItem]);
+  const classicCards = useMemo(() => {
+    // The authored, exact-edition reading desk is available even when Gutendex
+    // times out. Keep every fetched public-domain result after these choices.
+    const set = monthlySet(new Date(), profile?.life_stage, getDoorway(), calmLayout);
+    const authored = [set.featured, ...set.alternates, ...(!set.hasMonthlyEdition ? [set.reveal] : [])]
+      .filter(Boolean).map((book) => ({
+        id: `gut-${book.gutenberg_id}`, type: "book", _book: "gutenberg", _gutenbergId: book.gutenberg_id,
+        gutenbergId: book.gutenberg_id, saveable: false, title: book.title, subtitle: book.author,
+        pickerLabel: `${book.title} · ${book.author}`, summary: book.why,
+        meta: [["Book", "Public domain"], ["Star", DOORWAYS[book.doorway]?.label || "From the reading desk"]],
+        chips: ["free", "classic"], body: [],
+        actions: [{ label: "Open reader", Icon: "Book", primary: true, onClick: () => openBook({ _book: "gutenberg", _gutenbergId: book.gutenberg_id, title: book.title }) }],
+      }));
+    const fetched = (gutenberg || []).slice(0, 6).map((book) => ({
+      id: book.id, type: "book", _book: "gutenberg", _gutenbergId: book._gutenbergId,
+      saveable: false, title: book.title, subtitle: book.author || "Public domain",
+      pickerLabel: `${book.title} · ${book.author || "Public domain"}`,
+      summary: book.summary || "A free, public-domain classic — open the reader for the full text.",
+      meta: [["Book", book.tag || "Public domain"], ["Star", book.stars ? "★".repeat(book.stars) : "A classic"]],
+      chips: ["free", "classic", ...(book.subjects || []).map((subject) => String(subject).split("--")[0].trim().toLowerCase()).filter(Boolean)].slice(0, 4),
+      body: [], gutenbergId: book._gutenbergId,
+      onOpenFullReader: () => openItem(book),
+      actions: [{ label: "Open reader", Icon: "Book", primary: true, onClick: () => openItem(book) }],
+    }));
+    const seen = new Set();
+    const ordered = focusedPreview && !returnToMain ? [...authored, ...fetched] : [...fetched, ...authored];
+    return ordered.filter(card => !seen.has(card.id) && seen.add(card.id));
+  }, [gutenberg, openItem, openBook, profile?.life_stage, calmLayout, bookChoicesRevision, focusedPreview, returnToMain]);
   const dailyStoryCards = useMemo(() => (story ? (() => { const t = storyTaster(story.segment_text); return [{
     id: "story-today", type: "daily_story", saveable: false, title: story.series_title || story.title || "Today's chapter",
     subtitle: story.cliffhanger ? `"${story.cliffhanger}"` : "Today's chapter is ready to read.",
@@ -1344,7 +1364,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
   const heroCards = useMemo(() => {
     if (!layout) return HERO_CARDS;
     const cards = HERO_CARDS.filter((c) => c.id !== "story").map((c) => c.id !== "books" ? c : {
-      ...c, label: "Books", title: story ? "Today's chapter & your shelf" : "Your shelf",
+      ...c, label: "Books", title: story ? "Your chapter & your shelf" : "Your shelf",
       line: story?.cliffhanger ? `"${story.cliffhanger}"` : "A chapter a day through the month — and a shelf of free classics to fall into.",
       openness: 0.8, cw: "crimson", creature: "butterfly",
       action: { label: story ? "Read today's chapter" : "Open your shelf", on: () => (story ? openTodaysChapter() : jumpTo(3)) },
@@ -1504,6 +1524,14 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
     return selectedPresentation && it._raw ? openItem(it._raw) : setExpanded(it);
   };
   const choose = (label, items, open = setExpanded, empty) => ({ label, items, open, empty });
+  const bookPickerRows = [...classicCards, ...shelfBookCards.map(item => {
+    if (item.id === "daily-chapter") return { ...item, pickerLabel: `The serial · ${item.title}` };
+    const date = item._raw?.published_at || item._raw?.created_date;
+    const day = date && !Number.isNaN(Date.parse(date)) ? new Date(date).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "FemWell fiction";
+    return { ...item, pickerLabel: `${item.title} · ${day}` };
+  })];
+  const openBookChoice = item => item?.id === "daily-chapter" ? openTodaysChapter()
+    : item?.type === "book" || item?._book === "gutenberg" ? openBook(item) : setExpanded(item);
   const actionSavedCards = savedItems.map((item) => rowCard(item, CARD_TYPE_OF(item)));
   const focusGoodTime = () => {
     const picker = [...document.querySelectorAll(".fw-calm-lifestyle .fw-selected-room--good .fw-selected-time")]
@@ -1522,7 +1550,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
   const sectionActions = {
     read: [continueCards[0] ? {label:"Continue reading",run:()=>openReadCard(continueCards[0])} : choose("Choose a read", [...articleCards, ...storyCards], openReadCard), choose("Saved reads", actionSavedCards.filter((i) => ["article", "story", "daily_story"].includes(i.type)), openReadCard, keepsError ? "Some saves couldn’t load. Open Yours to retry." : keepsLoading ? "Finding your saved reads…" : "No saved reads yet. Save a piece you enjoy and it will appear here.")],
     listen: [choose("Choose a listen", audioCards), choose("Choose a watch", videoCards)],
-    books: [{ label: calmBookPosition && !calmBookPosition.caughtUp ? "Continue story" : "Today's chapter", run: calmBookPosition && !calmBookPosition.caughtUp ? openPersonalChapter : openTodaysChapter }, choose("Choose a book", calmLayout ? [...classicCards, ...shelfBookCards] : [...shelfBookCards, ...classicCards])],
+    books: [{ label: calmBookPosition && !calmBookPosition.caughtUp ? "Continue story" : "Your chapter", run: calmBookPosition && !calmBookPosition.caughtUp ? openPersonalChapter : openTodaysChapter }, focusedPreview && !returnToMain ? choose("Choose a book", bookPickerRows, openBookChoice) : choose("Choose a book", calmLayout ? [...classicCards, ...shelfBookCards] : [...shelfBookCards, ...classicCards])],
     good: [calmLayout ? { label: "Time for yourself", run: focusGoodTime } : { label: "Time for yourself", description: "A read, a listen, or a little doing.", content: (afterClose) => <TimePickerLens presentation={selectedPresentation} calmLayout={calmLayout} pickFor={pickFor} isSaved={isSaved} onSave={(it) => afterClose(toggleSave, it)} onOpen={(it) => afterClose(openItem, it)} onTry={(title) => afterClose(saveTryThis, title)} /> }, choose("A small joy", goodLifeJoys, openJoy)],
     yours: [livingDemo ? {label:"Open your saves",run:()=>navigate(savedHref)} : choose("Open your saves", actionSavedCards), choose("Continue reading", continueCards, openReadCard, "No reading in progress yet. Start a book and your place will appear here.")],
     sky: [skyActionState.hasChart ? { label: "Ask the sky", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "ask" }) } : { label: "Set up your sky", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "chart" }) }, skyActionState.hasChart ? { label: "Edit your chart", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "chart" }) } : { label: "What you'll need", description: "Your birth date starts your sky. Add time and place only if you know them; do not guess. Unknown birth time limits what can be calculated.", content: <p style={{ lineHeight: 1.6 }}>Use Set up your sky when you are ready. You can review your details in the chart sheet before saving.</p> }],
@@ -1666,7 +1694,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
           }
           const currentRead = articleCards.find(card => !card.archived && (!returnToMain || !card._raw?.editorial_local));
           const glanceRows = [
-            { Icon: Feather, label: calmBookPosition && !calmBookPosition.caughtUp ? "Your place" : "Today's chapter", text: calmBookPosition && !calmBookPosition.caughtUp ? `${calmBookPosition.chapter.series_title || calmBookPosition.chapter.title || "Your story"} · chapter ${calmBookPosition.chapter.day_number || calmBookPosition.index + 1}` : story ? (calmLayout && focusSection === "books" ? `${story.series_title || story.title || "Today's chapter"}${story.day_number ? ` · chapter ${story.day_number}` : ""}` : `${story.series_title || story.title || "Today's chapter"}${story.cliffhanger ? ` — "${story.cliffhanger}"` : ""}`) : "Today's chapter is on its way — tap to open the Daily Story.", onClick: calmBookPosition && !calmBookPosition.caughtUp ? openPersonalChapter : openTodaysChapter },
+            { Icon: Feather, label: calmBookPosition && !calmBookPosition.caughtUp ? "Your place" : focusSection === "books" ? "Your chapter" : "Today's chapter", text: calmBookPosition && !calmBookPosition.caughtUp ? `${calmBookPosition.chapter.series_title || calmBookPosition.chapter.title || "Your story"} · chapter ${calmBookPosition.chapter.day_number || calmBookPosition.index + 1}` : story ? (calmLayout && focusSection === "books" ? `${story.series_title || story.title || "Your chapter"}${story.day_number ? ` · chapter ${story.day_number}` : ""}` : `${story.series_title || story.title || "Today's chapter"}${story.cliffhanger ? ` — "${story.cliffhanger}"` : ""}`) : "A serial will appear here when one is published.", onClick: calmBookPosition && !calmBookPosition.caughtUp ? openPersonalChapter : openTodaysChapter },
             { Icon: BookOpen, label: "Your reading",
               text: continueCards.length ? `${continueCards.length} on the go · choose a page below`
                 : savedItems.length ? `${savedItems.length} saved to come back to · choose a page below`
@@ -1683,7 +1711,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
           if(livingDemo && focusSection === "listen")glanceRows.unshift({Icon:Headphones,label:"Listen & watch",text:`${audioCards.length} listens · ${videoCards.length} watches in this selection`,onClick:()=>audioCards[0] || videoCards[0] ? setExpanded(audioCards[0] || videoCards[0]) : window.location.assign(calmLayout ? watchHref : "/WatchListen")});
           if(livingDemo && focusSection === "good")glanceRows.unshift({Icon:Coffee,label:"A small joy",text:goodLifeJoys[0]?.title || "A little time to yourself",onClick:()=>openJoy(goodLifeJoys[0])});
           if(livingDemo && focusSection === "yours")glanceRows.unshift({Icon:Bookmark,label:"Your kept things",text:skySavedCount ? `${skySavedCount} Sky ${skySavedCount===1 ? "lesson" : "lessons"}${savedItems.length ? ` · ${savedItems.length} Lifestyle ${savedItems.length===1 ? "find" : "finds"}` : " kept for another day"}` : savedItems.length ? `${savedItems.length} Lifestyle ${savedItems.length===1 ? "find" : "finds"} · your Sky keepsakes below` : keepsError || skySavesError ? "Some keeps couldn't load · open Yours to retry" : keepsLoading || skySavesLoading ? "Finding what you've kept" : "Your saved things, with room for more",onClick:()=>navigate(savedHref)});
-          const focusRowLabel = { read: "Your reading", books: calmBookPosition && !calmBookPosition.caughtUp ? "Your place" : "Today's chapter", story: "Today's chapter", sky: "Your sky", ...(livingDemo ? {listen:"Listen & watch",good:"A small joy",yours:"Your kept things"} : {}) }[focusSection] || null;
+          const focusRowLabel = { read: "Your reading", books: calmBookPosition && !calmBookPosition.caughtUp ? "Your place" : "Your chapter", story: "Today's chapter", sky: "Your sky", ...(livingDemo ? {listen:"Listen & watch",good:"A small joy",yours:"Your kept things"} : {}) }[focusSection] || null;
           const orderedGlance = focusRowLabel
             ? [...glanceRows].sort((a, b) => (b.label === focusRowLabel) - (a.label === focusRowLabel))
             : glanceRows;
@@ -1702,7 +1730,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
           }[focusSection] || readWhatOn;
           const sheetSections = [
             { label: "What's on", text: jessWhatOn },
-            story ? { label: "If you've ten minutes", text: `Today's chapter${story.cliffhanger ? ` picks up on "${story.cliffhanger}"` : " is ready"} — a finished story you can also read straight through whenever you fancy it.` } : null,
+            story ? { label: "If you've ten minutes", text: `Your chapter${story.cliffhanger ? ` picks up on "${story.cliffhanger}"` : " is ready"} — the full story is here whenever you fancy it.` } : null,
             moonToday ? { label: "Your sky", text: `Tonight's moon: ${moonToday.name.toLowerCase()}, ${moonToday.illumination}% lit${phaseKey ? `. Your cycle: ${phaseLabel(phaseKey).toLowerCase()}` : ""}. Two rhythms, no instructions.` } : null,
           ].filter(Boolean);
           if (foldVariant) return <FirstFoldSummary calmLayout={calmLayout} active={routeActive} orderedGlance={orderedGlance} jess={jess} sheetSections={sheetSections}
@@ -1907,7 +1935,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
           }
           if (sec === "story" || sec === "books") return <div className={artDirection === "sky-worlds" ? "fw-living-content fw-reading-room" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><BooksStoryFocus calmLayout={calmLayout} artDirection={artDirection === "sky-worlds" ? "reading-room" : artDirection} chapters={chapters} story={story} pick={storyPick} onRead={(i) => { setReaderStart(i); setReaderOpen(true); }}
             userId={user?.id} onSchedule={scheduleReading} onCorner={(b) => window.location.assign(createPageUrl(`Community?club=${dailyReadClubKey(b.gutenberg_id)}&title=${encodeURIComponent(b.title || "")}${calmLayout ? "&appearance=calm" : ""}`))}
-            continueCards={continueCards} shelfBookCards={shelfBookCards} classicCards={classicCards} onChapterDetails={() => setChapterOpen(true)} onBookDetails={setExpanded} onOpenBook={(it) => {
+            continueCards={continueCards} shelfBookCards={shelfBookCards} classicCards={classicCards} onSelectionChange={() => setBookChoicesRevision(value => value + 1)} onChapterDetails={() => setChapterOpen(true)} onBookDetails={setExpanded} onOpenBook={(it) => {
               if (it?._library) {
                 const library = document.getElementById("book-library");
                 const disclosure = library?.closest("details");
