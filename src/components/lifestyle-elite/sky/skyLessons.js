@@ -51,12 +51,32 @@ export const SKY_BULLETINS = [
   ["bulletin-kitchen","The Moon and the washing up","Off duty","The Moon makes an excellent companion for a kitchen window. It never asks what you achieved today, and it has watched considerably more washing up than any lifestyle magazine acknowledges. A song comes on. One plate remains. For a few minutes, the room has its own small weather: warm water, bad singing, silver light."],
 ].map(([id,title,lane,body])=>({id,title,lane,body,kind:"bulletin",version:1}));
 
-export const findSkyPiece = (id,version) => [...SKY_LESSONS,...SKY_BULLETINS].find(item=>item.id===id && (version==null || String(item.version)===String(version)));
-export function dailyBulletinDeck(day,exactId) {
+// Ideas editorial extension. These are evergreen authored observations, not a fresh daily news feed.
+// Keep the starter IDs and wording immutable so earlier saves and notes reopen the exact piece.
+export const SKY_BULLETINS_IDEAS = [
+  ["bulletin-voice-note","The voice note comet","People in orbit","A friend sends a voice note marked two minutes. It begins with the weather, detours through a lost earring and lands, quite softly, on the thing she really wanted to say. You listen again while making tea. Some news travels by comet; some arrives with kettle noise."],
+  ["bulletin-friend-date","A table for two friends","People in orbit","Two friends finally meet after three attempts and a cancelled train. Nobody delivers a life update in the proper order. They share chips, swap half a story each and remember why the date kept being moved rather than dropped. The Moon above the café gets the better seat."],
+  ["bulletin-work-draft","The email in drafts","Earthbound business","The email sits in drafts with an ambitious subject line and seventeen unnecessary apologies. At lunch, she cuts it down to four sentences and sends it. No planet applauds. The office printer jams anyway. Still, a small piece of daylight reaches her desk."],
+  ["bulletin-money-drawer","The drawer of future plans","Earthbound business","An old envelope holds cinema stubs, a foreign coin and the note for a trip that never happened. She keeps the coin, checks what the trip might actually cost and puts the note on the fridge. Dreaming is lovely; a price and a date give it shoes."],
+  ["bulletin-bus-stop","The bus-stop astronomers","Little life stories","Three people at a bus stop look up at the same enormous Moon. One says it looks close enough to borrow. One checks the timetable. The third takes a picture that makes it look like a pea. For one minute, nobody is looking down at a phone."],
+  ["bulletin-thrift","Venus at the charity shop","Venus, in practice","Venus enters the charity shop for a glass vase and comes out with a jacket that is completely wrong for Tuesday. By Thursday it has been to the supermarket, a first date and the post office. The vase is still there. Desire is not always good at following a list."],
+  ["bulletin-auntie","Auntie has the weather","People in orbit","An auntie asks if you have eaten before asking how you are. On the third call you finally say the job interview went badly. She tells you about a disastrous one of her own, then asks what is for dinner. Concern can sound wonderfully like a shopping list."],
+  ["bulletin-quiet-party","A constellation by the coats","People in orbit","At the party, the best conversation happens beside the coats. Someone is hiding from the music, someone came alone, someone is trying to remember the host's surname. An hour later they are exchanging recipes. Not every constellation begins in the centre of the room."],
+  ["bulletin-haircut","A small change of orbit","Little life stories","She books a haircut and rehearses a speech about becoming a new person. In the chair she asks for two inches off. Outside, the street is exactly where she left it, but the wind reaches the back of her neck. That is enough novelty for one Tuesday."],
+  ["bulletin-garden-mug","The windowsill republic","Off duty","A cutting lives in a chipped mug on the windowsill. Nobody knows its proper name. It grows one leaf during a week of late trains and unfinished lists, then another while everyone is busy elsewhere. The little republic requires light, water and absolutely no motivational speech."],
+  ["bulletin-dancing","Saturn misses the beat","Off duty","In a kitchen dance break, someone misses every beat but the last. The dog leaves. The pasta water boils over. They start the song again, because nobody was judging it except possibly Saturn, and he has rings to keep in order."],
+  ["bulletin-neighbour","The spare key orbit","People in orbit","The neighbour has your spare key and a heroic ability to spot parcels before the rain does. You know her dog's name but not, for several embarrassing months, hers. Then you bring her a slice of cake and ask. A tiny bit of a street turns into a place."],
+  ["bulletin-unmade-bed","The moon sees the laundry","Off duty","There is an unmade bed, a clean shirt over a chair and a novel open face-down at page eighty-three. The Moon has seen grander scenes, but this one has a good lamp and a place to sit. She reads one more page before doing anything useful."],
+  ["bulletin-first-date","A very earthly first date","Venus, in practice","They agree to meet under the clock and each stands beneath a different one. Ten minutes of polite messages later, they find each other at the same coffee counter. The conversation is better than the plan. Venus would probably have enjoyed the wrong-clock part most."],
+].map(([id,title,lane,body])=>({id,title,lane,body,kind:"bulletin",version:1}));
+
+export const findSkyPiece = (id,version) => [...SKY_LESSONS,...SKY_BULLETINS,...SKY_BULLETINS_IDEAS].find(item=>item.id===id && (version==null || String(item.version)===String(version)));
+export function dailyBulletinDeck(day,exactId,ideas=false) {
+  const catalogue=ideas ? [...SKY_BULLETINS,...SKY_BULLETINS_IDEAS] : SKY_BULLETINS;
   const [year,month,date]=day.split("-").map(Number);
   const ordinal=Math.round((Date.UTC(year,month-1,date)-Date.UTC(2026,9,9))/86400000);
-  const index=((ordinal%SKY_BULLETINS.length)+SKY_BULLETINS.length)%SKY_BULLETINS.length;
-  const daily=[0,1,3,4,6].map(offset=>SKY_BULLETINS[(index+offset)%SKY_BULLETINS.length]);
+  const index=((ordinal%catalogue.length)+catalogue.length)%catalogue.length;
+  const daily=[0,1,3,4,6].map(offset=>catalogue[(index+offset)%catalogue.length]);
   const exact=findSkyPiece(exactId);
   return exact ? [exact,...daily.filter(item=>item.id!==exact.id)].slice(0,5) : daily;
 }
