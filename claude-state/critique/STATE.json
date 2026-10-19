@@ -1,6 +1,15 @@
 {
   "schemaVersion": 2,
   "buildPlan": "claude-state/BUILD_PLAN.md",
+  "latestManualA29": {
+    "date": "2026-10-19",
+    "status": "Ideas-only visible Good life candidate; local and independent gate passed, live release pending; scheduler remains PAUSED",
+    "preview": "/CalmLifestyleDemo?section=good",
+    "report": "claude-state/critique/lifestyle-lc11-secondary-2026-10-17.md",
+    "completed": "Actual time picker moved under focused actions; open read/listen/do and quieter joys; clean exact read/joy opened owners; main branch unchanged",
+    "checks": "Controlled 360/390/430 time/read full ending/Close/fifteen Try/joy open; zero sampled overflow/errors; affected 35/35 and scoped lint zero errors; independent 16/16, routed preservation and no remaining bounded P0/P1/P2",
+    "next": "Publish Ideas after final proof, then resume A28 alternate-topic and historical full article/audio/video endings across eleven rooms, plus Yours partial-keeps and Read human editor/recheck gate; no automatic run"
+  },
   "buildBatch": {
     "id": "B01",
     "title": "Approved Lifestyle polish and existing connections",

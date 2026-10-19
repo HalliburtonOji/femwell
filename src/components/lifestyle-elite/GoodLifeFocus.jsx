@@ -3,7 +3,7 @@
 // permission to enjoy it (opens in place), then the 11 whole-life rooms as doors she can step into.
 // Deliberately ordered time → joy → rooms. The picker + slips are the real wired widgets in cream.
 import React from "react";
-import { Clock, Shirt, Dumbbell, Users, Compass, PartyPopper, Coffee, Moon, Sprout, Feather, Trees, Coins } from "lucide-react";
+import { ArrowRight, Clock, Shirt, Dumbbell, Users, Compass, PartyPopper, Coffee, Moon, Sprout, Feather, Trees, Coins } from "lucide-react";
 import { CoverCard } from "@/components/brand/expandCards";
 import { createPageUrl } from "@/utils";
 import { SERIF, UI } from "@/components/journal/Editorial";
@@ -71,8 +71,9 @@ function GoodCard({ eyebrow, title, accent = "gold", children, style, className 
   );
 }
 
-export default function GoodLifeFocus({ timeLens, joys = [], onSlip, onPlan, timeOfDay, presentation, onOpenRooms, calmLayout = false }) {
+export default function GoodLifeFocus({ timeLens, joys = [], onSlip, onPlan, timeOfDay, presentation, onOpenRooms, calmLayout = false, ideasEdition = false }) {
   const [moreJoys,setMoreJoys]=React.useState(false);
+  const visibleJoys = onOpenRooms && !moreJoys ? joys.slice(0,3) : joys;
   const greet = timeOfDay === "morning" ? "What have you got time for this morning?"
     : timeOfDay === "evening" ? "What have you got time for this evening?"
     : "What have you got time for right now?";
@@ -83,24 +84,37 @@ export default function GoodLifeFocus({ timeLens, joys = [], onSlip, onPlan, tim
 
       {/* 1 · TIME — the real picker, filters to what's worth the minutes she has */}
       {timeLens ? (
-        <GoodCard className="fw-selected-time" eyebrow="Pick by the time you have" title={presentation ? "How long have you got?" : "A few minutes, or a whole evening"} accent="gold">
-          {presentation && <SelectedRoomDetail section="good"/>}
+        ideasEdition ? <section className="fw-selected-time fw-good-clearing" aria-label="Choose by time">
+          <div className="fw-good-clearing-head"><p>THE TIME YOU HAVE</p><h2>A little time?</h2></div>
           {timeLens}
+        </section> : <GoodCard className="fw-selected-time" eyebrow="Pick by the time you have" title={presentation ? "How long have you got?" : "A few minutes, or a whole evening"} accent="gold">
+          {presentation && <SelectedRoomDetail section="good"/>}{timeLens}
         </GoodCard>
       ) : null}
 
       {/* 2 · A SMALL JOY / PERMISSION — opens in place */}
       {joys.length ? (
-        <GoodCard className="fw-selected-joys" eyebrow={presentation ? "For the pleasure of it" : "No streaks, nothing owed"} title={presentation ? "Small joys" : "Small joys & permission"} accent="plum">
+        ideasEdition ? <section className="fw-selected-joys fw-good-joys" aria-label="Small joys">
+          <p className="fw-good-joys-kicker">FOR THE PLEASURE OF IT</p><h2>Small joys</h2>
+          <div className="fw-good-joy-list">
+            {visibleJoys.map((it,index)=><div key={it.id} className={index === 0 ? "fw-good-joy-feature" : "fw-good-joy-line"}>
+              {index === 0 && <span className="fw-good-joy-number" aria-hidden="true">01 / A LITTLE JOY</span>}
+              <button type="button" className="fw-good-joy-open" onClick={()=>onSlip?.({...it,__goodIdeas:true})}><span>{it.title}</span><small>Open this joy <ArrowRight size={15} aria-hidden="true"/></small></button>
+              {(JOY_HOOKS[it.title] || it.subtitle) && <p>{JOY_HOOKS[it.title] || it.subtitle}</p>}
+              <button type="button" className="fw-good-joy-plan" onClick={()=>onPlan?.(it)}>Plan a time <ArrowRight size={14} aria-hidden="true"/></button>
+            </div>)}
+            {onOpenRooms && joys.length>3 && <button className="fw-focused-button" onClick={()=>setMoreJoys(value=>!value)} aria-expanded={moreJoys}>{moreJoys ? "Show just three" : calmLayout ? "Day-off ideas & permission" : "More small joys"}</button>}
+          </div>
+        </section> : <GoodCard className="fw-selected-joys" eyebrow={presentation ? "For the pleasure of it" : "No streaks, nothing owed"} title={presentation ? "Small joys" : "Small joys & permission"} accent="plum">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {(onOpenRooms && !moreJoys ? joys.slice(0,3) : joys).map((it) => calmLayout ? <CalmFindRow key={it.id} item={it} onOpen={onPlan} onDetails={onSlip} label="Plan a time"/> : <CoverCard presentation={presentation} key={it.id} item={it} previewText={presentation ? (it.type === "quote" ? "" : JOY_HOOKS[it.title] ?? it.subtitle) : undefined} compact onOpen={() => onSlip && onSlip(it)} onConsume={presentation && onPlan ? ()=>onPlan(it) : undefined} consumeLabel="Plan a time" />)}
+            {visibleJoys.map((it) => calmLayout ? <CalmFindRow key={it.id} item={it} onOpen={onPlan} onDetails={onSlip} label="Plan a time"/> : <CoverCard presentation={presentation} key={it.id} item={it} previewText={presentation ? (it.type === "quote" ? "" : JOY_HOOKS[it.title] ?? it.subtitle) : undefined} compact onOpen={() => onSlip && onSlip(it)} onConsume={presentation && onPlan ? ()=>onPlan(it) : undefined} consumeLabel="Plan a time" />)}
             {onOpenRooms && joys.length>3 && <button className="fw-focused-button" onClick={()=>setMoreJoys(value=>!value)} aria-expanded={moreJoys}>{moreJoys ? "Show just three" : calmLayout ? "Day-off ideas & permission" : "More small joys"}</button>}
           </div>
         </GoodCard>
       ) : null}
 
       {/* 3 · YOUR ROOMS — the 11 whole-life doors (health is one room, not the house) */}
-      {onOpenRooms ? <button className="fw-focused-button" onClick={onOpenRooms} style={{alignSelf:"flex-start"}}><Sprout size={17}/>Explore life’s rooms</button> : <GoodCard className="fw-selected-doors" eyebrow="The rest of your life" title="Step into a room" accent="crimson">
+      {onOpenRooms ? <button className={`fw-focused-button${ideasEdition ? " fw-good-rooms-door" : ""}`} onClick={onOpenRooms} style={{alignSelf:"flex-start"}}><Sprout size={17}/>Explore life’s rooms</button> : <GoodCard className="fw-selected-doors" eyebrow="The rest of your life" title="Step into a room" accent="crimson">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           {ROOMS.map((r) => (
             <a key={r.href} href={createPageUrl(r.href)} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", background: C.sunk, border: `1px solid ${C.hair}`, borderRadius: 13, padding: "11px 12px" }}>

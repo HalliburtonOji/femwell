@@ -1573,6 +1573,16 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
       <button onClick={() => jumpTo(0)} className="fw-elite-press" style={clean ? { ...focusPill(gold), background: C.gold, boxShadow: "none", border: "none" } : focusPill(plum)}><Clock size={16} /> What do you have time for?</button>
     </div>
   );
+  const goodLifeFirst = selectedPresentation && calmLayout && !returnToMain && focusSection === "good";
+  const renderGoodLife = () => {
+    const h = new Date().getHours();
+    const timeOfDay = h < 12 ? "morning" : h < 18 ? "afternoon" : "evening";
+    return <div className={selectedPresentation ? "fw-living-content fw-selected-room--good" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: goodLifeFirst ? 10 : 18 }}>
+      <GoodLifeFocus calmLayout={calmLayout} ideasEdition={goodLifeFirst} onOpenRooms={focusedPreview ? ()=>setRoomsOpen(true) : undefined} presentation={selectedPresentation} timeOfDay={timeOfDay}
+        timeLens={<TimePickerLens presentation={selectedPresentation} calmLayout={calmLayout} ideasEdition={goodLifeFirst} pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />}
+        joys={goodLifeJoys} onPlan={(it)=>glTick(it.id,it.doable?.title || it.title,it.doable?.kind)} onSlip={openJoy} />
+    </div>;
+  };
 
   if (loading) {
     return (
@@ -1683,6 +1693,8 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
         {selectedPresentation && calmLayout && !returnToMain && focusSection === "listen" && <div className="fw-living-content fw-selected-room--listen fw-selected-listen-lead" style={{ marginTop: 12 }}>
           <ListenFocus calmLayout presentation editorialPreview audioCards={audioCards} videoCards={videoCards} onOpen={setExpanded} />
         </div>}
+
+        {goodLifeFirst && renderGoodLife()}
 
         {/* ══ §6.8.2 BAND 3+4 — the TOP SLIDING ROW (uniform panels, no dead space).
              Slide 1 = today at a glance (the same three rows the SummaryCard carried —
@@ -1955,7 +1967,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
             }} lifeStage={profile?.life_stage} /></div>;
           if (sec === "listen") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--listen" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{livingDemo && <nav aria-label="Full media directories" style={{display:"flex",justifyContent:"space-between",gap:12,marginBottom:12,fontFamily:UI,fontSize:12}}>{[["listen","All listens & shows"],["watch","All watches"]].map(([mode,label])=><button key={mode} type="button" onClick={()=>navigate(`/WatchListen?mode=${mode}${calmLayout ? "&appearance=calm" : ""}${returnToMain ? "&from=lifestyle-main" : ""}`)} style={{color:C.ink,minHeight:44,border:0,background:"transparent",textDecoration:"underline",cursor:"pointer",font:"inherit"}}>{label}</button>)}</nav>}{!(selectedPresentation && calmLayout && !returnToMain) && <ListenFocus calmLayout={calmLayout} presentation={selectedPresentation} audioCards={audioCards} videoCards={videoCards} onOpen={setExpanded} />}</div>;
           if (sec === "read") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--read" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><ReadFocus calmLayout={calmLayout} presentation={selectedPresentation} editorialPreview={!returnToMain} continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} onDetails={selectedPresentation ? setExpanded : undefined} segment={selectedPresentation && calmLayout ? "rest" : "all"} /></div>;
-          if (sec === "good") { const h = new Date().getHours(); const timeOfDay = h < 12 ? "morning" : h < 18 ? "afternoon" : "evening"; return <div className={selectedPresentation ? "fw-living-content fw-selected-room--good" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><GoodLifeFocus calmLayout={calmLayout} onOpenRooms={focusedPreview ? ()=>setRoomsOpen(true) : undefined} presentation={selectedPresentation} timeOfDay={timeOfDay} timeLens={<TimePickerLens presentation={selectedPresentation} calmLayout={calmLayout} ideasEdition={calmLayout && !returnToMain} pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />} joys={goodLifeJoys} onPlan={(it)=>glTick(it.id,it.doable?.title || it.title,it.doable?.kind)} onSlip={openJoy} /></div>; }
+          if (sec === "good") return goodLifeFirst ? null : renderGoodLife();
           if (sec === "yours") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--yours" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{selectedPresentation && keepsError && <div role="alert" style={{fontFamily:UI,fontSize:13,marginBottom:16}}><p>{keepsError}</p><button type="button" onClick={()=>setKeepsRevision(value=>value+1)}>Retry keeps</button> <a href={savedHref}>Open the full saved collection</a></div>}<YoursFocus calmLayout={calmLayout} editorialPreview={calmLayout && !returnToMain} presentation={selectedPresentation} savedCards={savedCards} savedSummary={savedSummary} phaseCards={phaseCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} ownedLoading={keepsLoading || skySavesLoading} ownedError={!!(keepsError || skySavesError)} onOpen={(it)=>{if(it._keep?._unavailable){setKeepsRevision(n=>n+1);return;}if(it._keep?._href){openYoursSource(it._keep._href);return;}openReadCard(it);}} onDetails={setExpanded} skySavedCount={livingDemo ? skySavedCount : 0} />{livingDemo && <SavedSkyLessons userId={user?.id} human={artDirection === "sky-worlds"} direction={worldDirection} previewRoute={contentRoute || (artDirection === "sky-worlds" ? "/SkyWorldsDemo" : artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artDirection === "marginalia" ? "/LivingAtelierDemo" : undefined)} ownedState={{rows:keptSkyLessons,error:skySavesError,loading:skySavesLoading,retry:retrySkySaves}} compactEmpty={calmLayout}/>}</div>;
           // every section is bespoke — the generic slider-free layout is only ever the LANDING deck
           return <div style={{ marginTop: 22 }}><FocusLayout layout={layout} groups={landingGroups} clean={clean} presentation={selectedPresentation} onConsume={(it) => it.id === "story-today" || it.id === "daily-chapter" ? openTodaysChapter() : it.forYouSection === "Your sky" ? selectRoom("sky") : it._continue || it._raw ? openReadCard(it) : setExpanded(it)} /></div>;
@@ -2011,8 +2023,8 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
       {calOpen && <CalendarOverlay user={user} profile={profile} onClose={() => setCalOpen(false)} />}
       {/* tap-to-expand — the shared card language's full-screen detail (§6.7.7).
           Save is CONTROLLED → real persistence + the feed's learning loop. */}
-      {expanded && <ExpandDetailCard item={expanded} active={routeActive} presentation={focusedPreview ? "focused" : selectedPresentation} room={focusedPreview && focusSection !== "sky" ? focusSection === "read" && !returnToMain ? "read-ideas" : focusSection : undefined} onClose={() => setExpanded(null)} saved={isCardSaved(expanded)} onSave={onCardSave} />}
-      {focusedRaw && <ExpandDetailCard item={rowCard(focusedRaw,CARD_TYPE_OF(focusedRaw))} active={routeActive} presentation="focused" room={focusedPreview && focusSection !== "sky" ? focusSection === "read" && !returnToMain ? "read-ideas" : focusSection : undefined} onClose={()=>setFocusedRaw(null)} saved={isSaved(focusedRaw.id)} onSave={onCardSave}/>}
+      {expanded && <ExpandDetailCard item={expanded} active={routeActive} presentation={focusedPreview ? "focused" : selectedPresentation} room={expanded.__goodIdeas ? "good-ideas" : focusedPreview && focusSection !== "sky" ? focusSection === "read" && !returnToMain ? "read-ideas" : focusSection : undefined} onClose={() => setExpanded(null)} saved={isCardSaved(expanded)} onSave={onCardSave} />}
+      {focusedRaw && <ExpandDetailCard item={{...rowCard(focusedRaw,CARD_TYPE_OF(focusedRaw)),...(goodLifeFirst && focusedRaw.editorial_local ? {kind:"Ideas draft · unreviewed"} : goodLifeFirst && /^FEMWELL_AI/i.test(String(focusedRaw.provider || "")) ? {kind:/FICTION|STORY/.test(String(focusedRaw.content_type || "")) ? "Generated fiction · archive" : "Archive · source review pending"} : {})}} active={routeActive} presentation="focused" room={goodLifeFirst ? "good-ideas" : focusedPreview && focusSection !== "sky" ? focusSection === "read" && !returnToMain ? "read-ideas" : focusSection : undefined} onClose={()=>setFocusedRaw(null)} saved={isSaved(focusedRaw.id)} onSave={onCardSave}/>}
       {roomsOpen && <FocusedLifestyleRooms active={routeActive} onClose={()=>setRoomsOpen(false)} user={user} profile={profile} phaseKey={phaseKey} editorialPreview={calmLayout && !returnToMain} shellItems={items} horoscope={horoscope} toCard={(raw)=>rowCard(raw,CARD_TYPE_OF(raw))} isSaved={isCardSaved} onSave={onCardSave} onStory={openTodaysChapter} onSky={()=>setReadingOpen(true)}/>}
       {/* These sheets' buttons used to be no-ops that just closed — a button that lies is worse
           than no button. Each now does the real thing. */}
@@ -2243,23 +2255,38 @@ function TimePickerLens({ pickFor, isSaved, onSave, onOpen, onTry, presentation,
   useEffect(() => { if (teaStarted) teaGuidanceRef.current?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" }); }, [teaStarted]);
   const picks = pickFor(band.key);
   const read = picks.read, listen = picks.listen;
+  const makeTitle = ideasEdition && band.key === "fifteen" ? "Tea, properly" : band.make.title;
+  const makeGuidance = {
+    few: "Look up, or out of a window. Let your eyes settle on one colour or movement for a breath. That's enough.",
+    fifteen: "Put the kettle on. Choose a mug you like. Sit down for the first few mouthfuls and let the phone wait until the cup is empty.",
+    evening: "Choose the hour you can keep. Set out a book, music or nothing at all. You don't need to finish anything.",
+  }[band.key];
+  const readArchive = read && /^FEMWELL_AI/i.test(String(read.provider || ""))
+    ? /FICTION|STORY/.test(String(read.content_type || "")) ? "GENERATED FICTION · ARCHIVE" : "ARCHIVE · SOURCE REVIEW PENDING"
+    : read && isStaleNews(read) ? "NEWS ARCHIVE · DATE CHECK PENDING" : null;
+  const readTime = (read && durLabel(read)) || "READING TIME UNAVAILABLE";
   return (
-    <div className={calmLayout ? "fw-calm-time-lens" : undefined} style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+    <div className={ideasEdition ? "fw-calm-time-lens fw-good-time-lens" : calmLayout ? "fw-calm-time-lens" : undefined} style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       {!calmLayout && <p style={{ fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 10px" }}>{presentation ? "A read, a listen, or a little doing." : "Pick by the time you have — a small, chosen handful, never an endless scroll."}</p>}
-      <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>{TIME_BANDS.map((b) => { const c = cwOf(b.cw).petal; const on = b.key === band.key; return (
-        <button key={b.key} onClick={() => { setBand(b); setTeaStarted(false); }} aria-pressed={on} className="fw-elite-press" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "9px 4px", borderRadius: 12, cursor: "pointer", background: on ? c : `${c}12`, border: `1px solid ${on ? c : c + "55"}` }}>
-          <b.Icon size={16} color={on ? (presentation === "folio" ? T.ink : "#fff") : c} />
-          <span style={{ fontFamily: UI, fontSize: calmLayout ? 14 : 11.5, fontWeight: 700, color: on ? (presentation === "folio" ? T.ink : "#fff") : T.inkSoft, textAlign: "center", lineHeight: 1.3 }}>{b.label}</span>
+      <div className={ideasEdition ? "fw-good-time-bands" : undefined} style={ideasEdition ? undefined : { display: "flex", gap: 6, marginBottom: 12 }}>{TIME_BANDS.map((b) => { const c = cwOf(b.cw).petal; const on = b.key === band.key; return (
+        <button key={b.key} onClick={() => { setBand(b); setTeaStarted(false); }} aria-pressed={on} className={ideasEdition ? "fw-elite-press fw-good-time-band" : "fw-elite-press"} style={ideasEdition ? {"--band-color":c} : { flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "9px 4px", borderRadius: 12, cursor: "pointer", background: on ? c : `${c}12`, border: `1px solid ${on ? c : c + "55"}` }}>
+          <b.Icon size={16} color={ideasEdition ? undefined : on ? (presentation === "folio" ? T.ink : "#fff") : c} />
+          <span style={ideasEdition ? undefined : { fontFamily: UI, fontSize: calmLayout ? 14 : 11.5, fontWeight: 700, color: on ? (presentation === "folio" ? T.ink : "#fff") : T.inkSoft, textAlign: "center", lineHeight: 1.3 }}>{b.label}</span>
         </button>
       ); })}</div>
-      <div style={{ ...lbl, marginBottom: 6 }}>{ideasEdition && band.key === "fifteen" ? "3-minute read · 10-minute tea" : `For ${band.label.toLowerCase()}`}</div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {read ? <ContentRow Icon={lfTypeOf(read) === "story" ? Feather : BookOpen} accent={cwOf("plum").petal} title={read.title} meta={read.editorial_local ? "Ideas draft · about 3 min" : `Read · ${metaOf(read)}`} saved={isSaved(read.id)} onSave={read.editorial_local ? undefined : () => onSave(read)} onOpen={() => onOpen(read)} cta="Read" /> : !calmLayout && <EmptyLine>{presentation ? "No read fits this time. Try another moment." : "A read lands here as the library fills out."}</EmptyLine>}
+      {!ideasEdition && <div style={{ ...lbl, marginBottom: 6 }}>{`For ${band.label.toLowerCase()}`}</div>}
+      <div className={ideasEdition ? "fw-good-time-results" : undefined} style={ideasEdition ? undefined : { display: "flex", flexDirection: "column", gap: 8 }}>
+        {read ? ideasEdition ? <div className="fw-good-read-choice">
+          <p className="fw-good-choice-kicker">READ · {readTime}{read.editorial_local ? " · IDEAS DRAFT" : readArchive ? ` · ${readArchive}` : ""}</p>
+          <button type="button" className="fw-good-read-open" onClick={() => onOpen(read)}><span>{read.title}</span><ChevronRight size={22} aria-hidden="true"/></button>
+          {(read.summary || read.why_it_matters) && <p className="fw-good-read-hook">{stripHtml(read.summary || read.why_it_matters)}</p>}
+          {!read.editorial_local && <button type="button" className="fw-good-save" aria-pressed={isSaved(read.id)} onClick={()=>onSave(read)}><Bookmark size={15} aria-hidden="true"/>{isSaved(read.id) ? "Saved" : "Save for later"}</button>}
+        </div> : <ContentRow Icon={lfTypeOf(read) === "story" ? Feather : BookOpen} accent={cwOf("plum").petal} title={read.title} meta={read.editorial_local ? "Ideas draft · about 3 min" : `Read · ${metaOf(read)}`} saved={isSaved(read.id)} onSave={read.editorial_local ? undefined : () => onSave(read)} onOpen={() => onOpen(read)} cta="Read" /> : !calmLayout && <EmptyLine>{presentation ? "No read fits this time. Try another moment." : "A read lands here as the library fills out."}</EmptyLine>}
         {listen ? (
           // A listen PLAYS IN PLACE here — the last reachable surface that used to route to
           // /LifestyleDetail. Title line for context + the real inline player (LifestyleMedia:
           // VIDEO → autoplay iframe, PODCAST/CLIP → real <audio>), one tap on the face.
-          <div>
+          <div className={ideasEdition ? "fw-good-listen-choice" : undefined}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: cwOf("sage").petal, margin: "0 0 5px" }}>
               {lfTypeOf(listen) === "video" ? <Film size={13} /> : <Headphones size={13} />}
               <span style={{ color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{listen.title}</span>
@@ -2270,15 +2297,16 @@ function TimePickerLens({ pickFor, isSaved, onSave, onOpen, onTry, presentation,
         ) : !calmLayout && <EmptyLine>{presentation ? "No listen fits this time. Try another moment." : "A listen lands here as podcasts are added."}</EmptyLine>}
         {calmLayout && !read && !listen && <p className="fw-calm-time-empty">Nothing to read or play at this length yet.</p>}
         {/* the make / awe prompt — saves as a soft intention */}
-        <button onClick={() => ideasEdition && band.key === "fifteen" ? setTeaStarted(value => !value) : onTry(band.make.title)} aria-expanded={ideasEdition && band.key === "fifteen" ? teaStarted : undefined} className={calmLayout ? "fw-elite-press fw-calm-make" : "fw-elite-press"} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", ...subCard(cwOf("gold").petal), ...(calmLayout ? {background:"#fff",border:"1px solid #dfcfab",borderRadius:16,boxShadow:"none"} : {}), padding: "10px 12px", cursor: "pointer" }}>
+        {ideasEdition ? <div className="fw-good-do-choice">
+          <p className="fw-good-choice-kicker">A LITTLE DOING{band.key === "fifteen" ? " · ABOUT TEN MINUTES" : ""}</p>
+          <button type="button" className="fw-good-do-open" onClick={()=>setTeaStarted(value=>!value)} aria-expanded={teaStarted}><span>{makeTitle}</span><small>{teaStarted ? "Close" : "Try now"}<ChevronRight size={16} aria-hidden="true"/></small></button>
+          <p>{band.key === "fifteen" ? "Kettle on. Phone down." : band.make.line}</p>
+          {teaStarted && <div ref={teaGuidanceRef} role="region" aria-label={makeTitle} className="fw-good-do-guidance"><p>{makeGuidance}</p></div>}
+          <button type="button" className="fw-good-do-plan" onClick={()=>onTry(band.make.title)}>Plan this for later <ChevronRight size={14} aria-hidden="true"/></button>
+        </div> : <button onClick={() => onTry(band.make.title)} className={calmLayout ? "fw-elite-press fw-calm-make" : "fw-elite-press"} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", ...subCard(cwOf("gold").petal), ...(calmLayout ? {background:"#fff",border:"1px solid #dfcfab",borderRadius:16,boxShadow:"none"} : {}), padding: "10px 12px", cursor: "pointer" }}>
           <span style={{ width: 28, height: 28, borderRadius: 9, background: `${cwOf("gold").petal}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><Sparkles size={14} color={cwOf("gold").petal} /></span>
-          <span style={{ flex: 1, minWidth: 0 }}><span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, display: "block", lineHeight: 1.2 }}>{ideasEdition && band.key === "fifteen" ? "Tea, properly" : band.make.title}</span><span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{ideasEdition && band.key === "fifteen" ? "Ten minutes. Kettle on, phone down." : band.make.line}</span></span>
-          {ideasEdition && band.key === "fifteen" && <span style={{fontFamily:UI,fontSize:12,fontWeight:700,color:T.inkSoft,whiteSpace:"nowrap"}}>{teaStarted ? "Close" : "Try now"}</span>}
-        </button>
-        {ideasEdition && band.key === "fifteen" && <button type="button" onClick={() => onTry(band.make.title)} style={{alignSelf:"flex-start",background:"none",border:0,borderBottom:`1px solid ${T.inkSoft}`,color:T.inkSoft,fontFamily:UI,fontSize:13,minHeight:44,padding:"9px 0",cursor:"pointer"}}>Plan this for later</button>}
-        {ideasEdition && band.key === "fifteen" && teaStarted && <div ref={teaGuidanceRef} role="region" aria-label="Ten minutes to yourself" style={{background:"#fbf8f1",border:"1px solid #e4d7bd",borderRadius:16,padding:"12px 14px",color:T.inkSoft,scrollMarginBottom:128}}>
-          <p style={{fontFamily:SERIF,fontSize:16,lineHeight:1.45,margin:"0 0 8px"}}>Put the kettle on. Choose a mug you like. Sit down for the first few mouthfuls and let the phone wait until the cup is empty.</p>
-        </div>}
+          <span style={{ flex: 1, minWidth: 0 }}><span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, display: "block", lineHeight: 1.2 }}>{band.make.title}</span><span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{band.make.line}</span></span>
+        </button>}
       </div>
     </div>
   );

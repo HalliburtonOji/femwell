@@ -246,3 +246,58 @@ dialog.fw-calm-dialog.fw-sheet-safe{padding-bottom:0!important}
 .fw-calm-chooser .fw-calm-more>summary:after{content:"+";font:400 22px/1 system-ui}
 .fw-calm-chooser .fw-calm-more[open]>summary:after{content:"−"}
 .fw-calm-chooser :is(button,summary):focus-visible{outline:2px solid #51444e;outline-offset:2px}
+
+/* A29 · Good life's Ideas composition. The real picker leads the room as an
+   open marigold clearing; the old white nested card remains on main. */
+.fw-calm-lifestyle.fw-sky-worlds[data-world=petal-press] .fw-selected-room--good .fw-selected-time.fw-good-clearing{position:relative;isolation:isolate;overflow:hidden!important;margin:0!important;padding:22px 2px 24px!important;border:0!important;border-top:1px solid #bd9d57!important;border-radius:0!important;background:linear-gradient(165deg,#fff 4%,#fffdf6 52%,#fff 100%)!important;box-shadow:none!important}
+.fw-good-clearing:before{content:"";position:absolute;right:-72px;top:-72px;width:210px;height:290px;background:url('/images/flora-dream/good-life-marigold-edge-v1.webp') right top/contain no-repeat;opacity:.17;mask-image:linear-gradient(90deg,transparent,#000 65%);pointer-events:none;z-index:-1}
+.fw-good-clearing-head{position:relative;padding:0 10px 12px 13px;border-left:2px solid #b89543}
+.fw-good-clearing-head p,.fw-good-joys-kicker,.fw-good-choice-kicker{margin:0;font:700 12px/1.4 var(--ff-ui,system-ui);letter-spacing:.13em;color:#82662e;text-transform:uppercase}
+.fw-calm-lifestyle.fw-sky-worlds[data-world=petal-press] .fw-good-clearing-head h2,.fw-calm-lifestyle.fw-sky-worlds[data-world=petal-press] .fw-good-joys h2{font:400 clamp(43px,10vw,58px)/1.02 Ephesis,cursive!important;color:#7a1a12!important;margin:7px 0 0!important}
+.fw-good-time-bands{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:0 4px;margin:5px 0 20px}
+.fw-calm-lifestyle .fw-good-time-band{min-height:54px!important;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 6px!important;background:#fff9eb!important;border:1px solid #e6d8b8!important;border-radius:999px!important;color:#594b3c!important;box-shadow:none!important;cursor:pointer}
+.fw-calm-lifestyle .fw-good-time-band[aria-pressed=true]{background:#765f7c!important;color:#fff!important;border-color:#765f7c!important}
+.fw-good-time-band span{font:700 12px/1.2 var(--ff-ui,system-ui);color:inherit!important}
+.fw-good-time-band svg{width:15px;flex:none;stroke:currentColor}
+.fw-good-time-results{padding:0 4px;display:grid;gap:0}
+.fw-good-read-choice{position:relative;border-top:1px solid #d8c9a7;padding:20px 4px 18px}
+.fw-good-read-open,.fw-good-do-open{display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;min-height:52px;text-align:left;background:none;border:0;padding:6px 0;color:#352c32;cursor:pointer}
+.fw-good-read-open span{font:italic 600 clamp(24px,6.5vw,32px)/1.13 "FemWell Editorial","Cormorant Garamond",Georgia,serif}
+.fw-good-read-open svg,.fw-good-do-open svg{flex:none;color:#8f7135}
+.fw-good-read-hook{font:500 16px/1.43 "FemWell Editorial","Cormorant Garamond",Georgia,serif;color:#625861;margin:3px 0 0;max-width:42ch;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fw-good-save,.fw-good-do-plan,.fw-good-joy-plan{display:inline-flex;align-items:center;gap:7px;min-height:44px;background:none;border:0;border-bottom:1px solid #bda979;padding:8px 0 5px;color:#5b4c5b;font:700 12px/1.3 var(--ff-ui,system-ui);cursor:pointer}
+.fw-good-listen-choice{padding:14px 4px 18px;border-top:1px solid #e6dcc7}
+.fw-good-listen-choice>div:first-child{margin-bottom:10px!important;font-size:12px!important}
+.fw-good-do-choice{padding:17px 4px 3px;border-top:1px solid #e6dcc7}
+.fw-good-do-open span{font:italic 600 clamp(23px,6vw,30px)/1.14 "FemWell Editorial","Cormorant Garamond",Georgia,serif}
+.fw-good-do-open small{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;font:700 12px/1.3 var(--ff-ui,system-ui);color:#6d572c}
+.fw-good-do-choice>p:not(.fw-good-choice-kicker){font:500 15px/1.4 "FemWell Editorial","Cormorant Garamond",Georgia,serif;color:#625861;margin:2px 0 0}
+.fw-good-do-guidance{padding:13px 16px;margin:12px 0 0;background:#f8f0dc;border-radius:18px;color:#51444e;scroll-margin-bottom:128px}
+.fw-good-do-guidance p{font:500 16px/1.5 "FemWell Editorial","Cormorant Garamond",Georgia,serif;margin:0}
+.fw-calm-lifestyle .fw-selected-room--good .fw-selected-joys.fw-good-joys{margin-top:2px;border-top:1px solid #d8c9a7!important;padding:24px 4px 4px!important}
+.fw-good-joys h2{margin-bottom:14px!important}
+.fw-good-joy-list{display:grid;gap:0}
+.fw-good-joy-feature{position:relative;padding:16px 16px 12px;background:radial-gradient(ellipse at 0 15%,#f8efd9 0%,#fffaf0 46%,#fff 82%);margin:0 0 7px}
+.fw-good-joy-feature:after{content:"";position:absolute;right:14px;top:12px;width:35px;height:42px;background:url('/images/flora-dream/specimen-marigold-v2.webp') center/cover no-repeat;opacity:.32;mask-image:linear-gradient(#000,transparent);pointer-events:none}
+.fw-good-joy-number{font:700 12px/1.4 var(--ff-ui,system-ui);letter-spacing:.1em;color:#866d38}
+.fw-good-joy-line{padding:13px 3px 11px;border-bottom:1px solid #e0d6c4}
+.fw-good-joy-open{display:flex;width:100%;min-height:44px;align-items:center;justify-content:space-between;gap:10px;border:0;background:none;padding:5px 0;text-align:left;color:#3e343b;cursor:pointer}
+.fw-good-joy-open span{font:italic 600 23px/1.18 "FemWell Editorial","Cormorant Garamond",Georgia,serif}
+.fw-good-joy-open small{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;color:#735c3c;font:700 12px/1.3 var(--ff-ui,system-ui)}
+.fw-good-joy-list p{font:500 15px/1.4 "FemWell Editorial","Cormorant Garamond",Georgia,serif;color:#635c5d;margin:1px 0 0}
+.fw-calm-lifestyle .fw-good-rooms-door{margin:10px 4px 0!important;min-height:48px;border-radius:999px!important;background:#f9f5eb!important;border:1px solid #d9c7a2!important;color:#4c3e4b!important}
+.fw-good-clearing :is(button):focus-visible,.fw-good-joys :is(button):focus-visible{outline:2px solid #765f7c;outline-offset:3px}
+@media(max-width:374px){.fw-good-time-bands{gap:4px}.fw-good-time-band span{font-size:12px}.fw-good-joy-open{align-items:flex-start;flex-direction:column;gap:2px}}
+
+/* The first joy's opened owner keeps the same calm material, not the older
+   amber sheet. Its complete body, source details and real Plan action remain. */
+.fw-focused-sheet.fw-sheet-safe[data-room=good-ideas]{bottom:calc(var(--fw-sheet-safe,100px) + 8px);padding-bottom:0!important;max-height:calc(100dvh - var(--fw-sheet-safe,100px) - 24px);border-radius:24px;background:#fffdfa;color:#252025}
+.fw-focused-sheet[data-room=good-ideas] .fw-focused-sheet-head{position:relative;overflow:hidden;background:#fffdfa;border-bottom:1px solid #ddd1b5;padding:22px 22px 17px}
+.fw-focused-sheet[data-room=good-ideas] .fw-focused-sheet-head:after{content:"";position:absolute;right:-33px;top:-30px;width:110px;height:130px;background:url('/images/flora-dream/good-life-marigold-edge-v1.webp') right top/contain no-repeat;opacity:.25;mask-image:linear-gradient(90deg,transparent,#000 70%);pointer-events:none}
+.fw-focused-sheet[data-room=good-ideas] .fw-focused-eyebrow{font:700 12px/1.4 var(--ff-ui,system-ui);letter-spacing:.12em;color:#82662e}
+.fw-focused-sheet[data-room=good-ideas] .fw-focused-title{font:400 clamp(37px,9vw,48px)/1.09 Ephesis,cursive;color:#7a1a12;max-width:88%;overflow-wrap:normal}
+.fw-focused-sheet[data-room=good-ideas] .fw-focused-sheet-body{background:#fffdfa;padding-top:18px}
+.fw-focused-sheet[data-room=good-ideas] .fw-focused-prose{max-width:44ch;font:500 18px/1.5 "FemWell Editorial","Cormorant Garamond",Georgia,serif;color:#352c32}
+.fw-focused-sheet[data-room=good-ideas] .fw-focused-sheet-foot{background:#fffdfa;border-top:1px solid #ddd1b5;padding-bottom:16px;border-radius:0 0 24px 24px}
+.fw-focused-sheet[data-room=good-ideas] .fw-focused-button--primary{background:#765f7c;border-color:#765f7c;color:#fff}
+.fw-focused-sheet[data-room=good-ideas] .fw-focused-button{border-radius:999px}

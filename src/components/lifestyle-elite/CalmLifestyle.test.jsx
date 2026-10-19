@@ -221,4 +221,18 @@ describe("calmer lists preserve exact source tasks", () => {
     fireEvent.click(screen.getByRole("button", { name: "Explore life’s rooms" }));
     expect(onOpenRooms).toHaveBeenCalledOnce();
   });
+
+  it("keeps the Ideas joy's full source and Plan action while marking only its opened sheet for the new material", () => {
+    const onPlan=vi.fn(),onSlip=vi.fn();
+    const joys=Array.from({length:5},(_,i)=>({id:`joy-${i}`,title:`Joy ${i}`,body:[`Complete source ${i}.`]}));
+    const {container}=render(<GoodLifeFocus calmLayout ideasEdition presentation="focused" timeLens={<button>Real time picker</button>} joys={joys} onPlan={onPlan} onSlip={onSlip} onOpenRooms={vi.fn()}/>);
+    expect(container.querySelector(".fw-good-clearing")).toBeInTheDocument();
+    expect(container.querySelector(".fw-selected-time .fw-folio-card")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button",{name:"Day-off ideas & permission"}));
+    expect(screen.getByText("Joy 4")).toBeVisible();
+    fireEvent.click(screen.getByRole("button",{name:/Joy 4.*Open this joy/}));
+    expect(onSlip).toHaveBeenCalledWith({...joys[4],__goodIdeas:true});
+    fireEvent.click(screen.getAllByRole("button",{name:/Plan a time/})[4]);
+    expect(onPlan).toHaveBeenCalledWith(joys[4]);
+  });
 });
