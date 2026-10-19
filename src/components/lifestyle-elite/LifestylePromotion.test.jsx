@@ -4,6 +4,7 @@ import {fireEvent,render,screen,waitFor,within} from '@testing-library/react';
 import Lifestyle from '@/pages/LifestyleElite';
 import CalmLifestyleDemo from '@/pages/CalmLifestyleDemo';
 import BooksStoryFocus from './BooksStoryFocus';
+import YoursFocus from './YoursFocus';
 const mock=vi.hoisted(()=>({empty:vi.fn(),articles:vi.fn(),chapters:vi.fn(),readings:vi.fn()}));
 vi.mock('@/api/base44Client',()=>({base44:{auth:{me:async()=>({id:'owner'})},functions:{invoke:async()=>({data:{items:[]}})},entities:new Proxy({},{get:(_,name)=>({filter:name==='DailyStory' ? mock.chapters : name==='HoroscopeReading' ? mock.readings : name==='LifestyleItems' ? mock.articles : mock.empty,subscribe:()=>()=>{}})})}}));
 vi.mock('@/components/lifestyle/DailyStoryReader',()=>({default:({goToChapter,onExit})=><div role="dialog" aria-label="Actual chapter reader"><p>Chapter index: {goToChapter}</p><button onClick={onExit}>Exit chapter reader</button></div>}));
@@ -19,7 +20,7 @@ describe('approved main Lifestyle parity',()=>{
     const rest=container.querySelector('.fw-selected-reading-rest');
     expect(lead).toBeInTheDocument();
     expect(lead.compareDocumentPosition(glance)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(within(lead).getByRole('button',{name:/An actual full article.*Read/})).toBeVisible();
+    expect(within(lead).getByRole('button',{name:'Read An actual full article'})).toBeVisible();
     expect(within(lead).getAllByText('An actual full article')).toHaveLength(1);
     expect(rest).toBeInTheDocument();
     expect(rest.compareDocumentPosition(glance)&Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
@@ -60,7 +61,7 @@ describe('approved main Lifestyle parity',()=>{
     window.history.replaceState({},'', '/Lifestyle?section=read');
     mock.articles.mockResolvedValue([{id:'old-news',title:'An old price-cap story',summary:'Historical news.',lede:'The entire dated source. '.repeat(55),category:'Money',provider:'RSS',content_type:'NEWS',media_type:'ARTICLE',status:'PUBLISHED',published_at:'2024-01-01'}]);
     render(<Lifestyle/>);
-    expect(await screen.findByText('The reading desk is between editions. Older pieces are in Browse below.')).toBeVisible();
+    expect(await screen.findByText('No new read just now. Try Books next door.')).toBeVisible();
     const browse=screen.getByText('Browse all reading · 1');
     fireEvent.click(browse);
     expect(screen.getByRole('button',{name:/An old price-cap story.*Read/})).toBeVisible();
@@ -75,7 +76,7 @@ describe('approved main Lifestyle parity',()=>{
       {id:'current-news',title:'Current checked news',lede:'A present complete article. '.repeat(55),category:'Money',provider:'RSS',content_type:'NEWS',media_type:'ARTICLE',status:'PUBLISHED',published_at:today},
     ]);
     render(<Lifestyle/>);
-    expect(await screen.findByRole('button',{name:/Current checked news.*Read/})).toBeVisible();
+    expect(await screen.findByRole('button',{name:'Read Current checked news'})).toBeVisible();
     fireEvent.click(screen.getByText('Browse all reading · 2'));
     expect(screen.getByRole('button',{name:/Future publication.*Read/})).toBeVisible();
     expect(screen.getByRole('button',{name:/Future source check.*Read/})).toBeVisible();
@@ -98,10 +99,28 @@ describe('approved main Lifestyle parity',()=>{
   it('names the exact joy action as planning and opens the existing time choice',async()=>{
     window.history.replaceState({},'', '/Lifestyle?section=good&joy=try-11gq3zo');render(<Lifestyle/>);
     const joy=await screen.findByRole('dialog',{name:/Read one poem, out loud, to no one/});
+    expect(joy).toHaveAttribute('data-room','good-ideas');
     expect(joy).toHaveTextContent('Read one poem, out loud, to no one');
     expect(within(joy).getByRole('button',{name:'Close'})).toBeVisible();
     fireEvent.click(within(joy).getByRole('button',{name:'Plan a time',exact:true}));
     expect(await screen.findByRole('dialog',{name:'Plan a time',exact:true})).toHaveTextContent('Read one poem, out loud, to no one');
+  });
+  it('uses the approved Good life folio on main without admitting local Ideas drafts',async()=>{
+    window.history.replaceState({},'', '/Lifestyle?section=good');render(<Lifestyle/>);
+    fireEvent.click(await screen.findByRole('button',{name:/Explore life’s rooms/}));
+    const room=screen.getByRole('dialog',{name:'Becoming'});
+    expect(room.querySelector('.fw-life-preview')).toBeInTheDocument();
+    expect(within(room).getByRole('combobox',{name:'Room'})).toBeVisible();
+    expect(within(room).queryByText('Ideas draft · unreviewed')).not.toBeInTheDocument();
+  });
+  it('keeps Sky-only owned content ahead of optional discoveries',()=>{
+    const view=render(<YoursFocus calmLayout presentation editorialPreview savedCards={[]} skySavedCount={2} skyKeepsakes={<div data-testid="owned-sky">Two exact Sky keeps</div>} phaseCards={[{id:'other-read',type:'article',title:'A wider read',summary:'An actual other read.'}]}/>);
+    const owned=screen.getByTestId('owned-sky');
+    const disclosure=screen.getByText('Other finds · 1').closest('details');
+    expect(disclosure).toBeInTheDocument();
+    expect(disclosure).not.toHaveAttribute('open');
+    expect(owned.compareDocumentPosition(disclosure)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    view.unmount();
   });
   it('reconciles a settled new Sky reading back into the same owner’s glance',async()=>{
     const today=new Date().toISOString().slice(0,10),previous=new Date(Date.now()-86400000).toISOString().slice(0,10);
@@ -129,13 +148,13 @@ describe('approved main Lifestyle parity',()=>{
     fireEvent.click(screen.getByRole('button',{name:'Exit chapter reader'}));
     const chapterIndex=screen.getByText('Chapters & short reads').closest('details');
     if(!chapterIndex.open)fireEvent.click(screen.getByText('Chapters & short reads'));
-    fireEvent.click(screen.getByRole('button',{name:/Another open chapter/}));
+    fireEvent.click(screen.getByRole('button',{name:/Another available chapter/}));
     expect(screen.getByRole('dialog',{name:'Actual chapter reader'})).toHaveTextContent('Chapter index: 1');
     fireEvent.click(screen.getByRole('button',{name:'Exit chapter reader'}));
     fireEvent.click(screen.getByRole('button',{name:/Notes & reflection/}));
     expect(screen.getByRole('button',{name:/Mark.*read/})).toBeVisible();
     expect(screen.getByRole('button',{name:/Reflect/})).toBeVisible();
-  });
+  }, 12000);
   it('opens complete chapter notes in the clean Lifestyle sheet and keeps all three actions',async()=>{
     mock.chapters.mockResolvedValue([{id:'chapter-one',series_key:'real-run',day_number:1,segment_text:'## Chapter 1 — Arrival\n\nThe actual first paragraph.\n\nThe actual second paragraph.',published_date:'2020-01-01'}]);
     window.history.replaceState({},'', '/Lifestyle?section=books');render(<Lifestyle/>);

@@ -298,8 +298,8 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
       ) : (
         <Card className={room ? "fw-room-chapter-leaf" : undefined}>
           <Eyebrow cw="crimson" align="left">The serial</Eyebrow>
-          <Title align="left">A chapter a day, when you want it</Title>
-          <Body style={{ margin: 0 }}>When a serial is running, your next chapter will wait here. The books below are ready now.</Body>
+          <Title align="left">No serial today. Plenty of books.</Title>
+          <Body style={{ margin: 0 }}>Pick one below. The next chapter will wait here when a serial is running.</Body>
         </Card>
       )}
 
@@ -312,7 +312,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
           <Eyebrow cw="plum">{storyPublishedThisMonth && pick?.monthName ? `${pick.monthName}'s run` : "The serial"} · {total} chapters</Eyebrow>
           <RunStrip room={room} pool={pos.pool} unlockedCount={pos.unlockedCount} nextIndex={pos.index} onOpen={(i) => onRead && onRead(i)} />
           <Legend />
-          {calmLayout && latest && latestIndex !== pos.index && <Quiet style={{minHeight:44,padding:"10px 4px"}} onClick={() => onRead && onRead(latestIndex)}>Another open chapter · {latest.day_number || latestIndex + 1} ›</Quiet>}
+          {calmLayout && latest && latestIndex !== pos.index && <Quiet style={{minHeight:44,padding:"10px 4px"}} onClick={() => onRead && onRead(latestIndex)}>Another available chapter · {latest.day_number || latestIndex + 1} ›</Quiet>}
           <div style={{ display: "flex", flexDirection: "column" }}>
             {pos.pool.slice(pos.index + 1, pos.index + 3).map((c, i) => {
               const n = c.day_number || pos.index + 2 + i;
@@ -347,7 +347,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
           <WayIn first={!shortest} Icon={RotateCcw} title="Something you already know"
             line={contBooks.length ? `Pick up ${clean(contBooks[0].title)} where you left it — re-reading counts.` : "Re-reading a favourite is reading. It asks nothing new of you."}
             onClick={() => (contBooks.length ? onOpenBook && onOpenBook(contBooks[0]) : openLibrary())} />
-          <WayIn Icon={BookOpen} title="Just a page" line="Open it, read one page, close it. That counts."
+          <WayIn Icon={BookOpen} title="Just a page" line="One page. Famous last words."
             onClick={() => (pos ? onRead && onRead(pos.index) : set.featured ? openBook(set.featured) : openLibrary())} />
         </Card>
         <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: C.faint, textAlign: "center", lineHeight: 1.5, margin: "10px 14px 0" }}>Some weeks there's no room for a book. This is here for those weeks.</p>
@@ -433,7 +433,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
             <span style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: C.ink }}>{club.title}</span>
             <span style={{ fontFamily: UI, fontSize: 13, color: C.slate }}>{[club.author,club.cadence,!calmLayout && club.gutenberg_id ? `Gutenberg ${club.gutenberg_id}` : null].filter(Boolean).join(" · ")}</span>
           </div>
-          {calmLayout && <Body size={16} style={{ margin: "0 0 9px", color: C.slate }}>Read at your pace. Lurking counts.</Body>}
+          {calmLayout && <Body size={16} style={{ margin: "0 0 9px", color: C.slate }}>Read along. Join in when you fancy.</Body>}
           <CalmOptional enabled={calmLayout} title="About the read & content notes">
           <Body size={16} style={{ margin: "0 0 12px", color: C.slate }}>{clean(club.host_intro)}</Body>
           {club.trigger_warnings?.length > 0 && <div style={{fontFamily:UI,fontSize:13,color:C.slate,marginBottom:12}}><strong>Worth knowing</strong>{club.trigger_warnings.map(line => <p key={line}>{line}</p>)}</div>}

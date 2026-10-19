@@ -40,9 +40,9 @@
 .fw-focused-sheet[data-room] .fw-focused-room-bar h2{font:italic 600 27px/1.18 "FemWell Editorial","Cormorant Garamond",Georgia,serif;color:var(--room-ink)}
 /* Good life Ideas is one open folio: the specimen enters from the outer edge
    and dissolves into the same ground. Only artwork fades; type stays crisp. */
-.fw-focused-sheet[data-room=good]:has(.fw-life-preview),.fw-focused-sheet[data-room=good]:has(.fw-life-article){background:#fdfcf9;color:#191510}
+.fw-focused-sheet[data-room=good]:has(.fw-life-preview),.fw-focused-sheet[data-room=good]:has(.fw-life-article){background:#fdfcf9;color:#191510;overflow-x:hidden}
 .fw-focused-sheet[data-room=good]:has(.fw-life-preview),.fw-focused-sheet[data-room=good]:has(.fw-life-article){isolation:isolate}
-.fw-focused-sheet[data-room=good]:has(.fw-life-preview):before,.fw-focused-sheet[data-room=good]:has(.fw-life-article):before{content:"";position:absolute;top:152px;right:-78px;width:256px;height:320px;background:url('/images/flora-dream/good-life-marigold-edge-v1.webp') right top/256px auto no-repeat;opacity:.7;mask-image:linear-gradient(180deg,#000 0%,#000 45%,transparent 98%);pointer-events:none;z-index:0}
+.fw-focused-sheet[data-room=good]:has(.fw-life-preview):before,.fw-focused-sheet[data-room=good]:has(.fw-life-article):before{content:"";position:absolute;top:152px;right:0;width:178px;height:320px;background:url('/images/flora-dream/good-life-marigold-edge-v1.webp') left top/256px auto no-repeat;opacity:.7;mask-image:linear-gradient(180deg,#000 0%,#000 45%,transparent 98%);pointer-events:none;z-index:0}
 .fw-focused-sheet[data-room=good]:has(.fw-life-article):before{display:none}
 .fw-focused-sheet[data-room=good]:has(.fw-life-preview) .fw-focused-sheet-head,.fw-focused-sheet[data-room=good]:has(.fw-life-article) .fw-focused-sheet-head{position:relative;z-index:1;background:transparent;border:0;padding:22px 22px 4px;min-height:96px;overflow:visible}
 .fw-focused-sheet[data-room=good]:has(.fw-life-preview) .fw-focused-sheet-head:after,.fw-focused-sheet[data-room=good]:has(.fw-life-article) .fw-focused-sheet-head:after{display:none}
@@ -65,6 +65,10 @@
 .fw-life-title-action small{display:flex;align-items:center;gap:7px;width:max-content;max-width:100%;min-height:44px;margin-top:8px;color:#342b25;font:700 14px/1.3 ui-sans-serif,system-ui,sans-serif}
 .fw-life-title-action small svg{color:var(--good-accent)}
 .fw-life-title-action:hover small{text-decoration:underline;text-underline-offset:4px}
+.fw-life-prompt-title{max-width:34ch;padding-right:64px;color:#211c19;font:italic 600 clamp(29px,7vw,35px)/1.18 "FemWell Editorial","Cormorant Garamond",Georgia,serif;text-shadow:none!important;filter:none!important}
+.fw-life-next-prompt{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:6px 0;border:0;background:transparent;color:#342b25;font:700 14px/1.3 ui-sans-serif,system-ui,sans-serif;cursor:pointer}
+.fw-life-next-prompt svg{color:var(--good-accent)}
+.fw-life-next-prompt:hover{text-decoration:underline;text-underline-offset:4px}
 .fw-life-standfirst{max-width:33ch;margin:0 0 12px;font:500 17px/1.55 "FemWell Editorial","Cormorant Garamond",Georgia,serif;color:#2b2724}
 .fw-life-time{margin:0 0 4px;font:600 13px/1.4 ui-sans-serif,system-ui,sans-serif;color:#3f3933}
 .fw-life-status{margin:0;color:#514a43;font:600 12px/1.4 ui-sans-serif,system-ui,sans-serif}
@@ -79,7 +83,7 @@
 .fw-life-article .fw-read-folio-label{color:#4e3e2c!important}
 .fw-life-article .fw-read-folio-standfirst{color:#2b2724!important}
 .fw-focused-sheet[data-room=good]:has(.fw-life-article) .fw-focused-sheet-foot{background:#fdfcf9;border-top-color:#ebe8df}
-@media(max-width:390px){.fw-focused-sheet[data-room=good]:has(.fw-life-preview):before,.fw-focused-sheet[data-room=good]:has(.fw-life-article):before{right:-80px;width:246px;background-size:246px auto}.fw-life-opening h2{padding-right:65px}}
+@media(max-width:390px){.fw-focused-sheet[data-room=good]:has(.fw-life-preview):before,.fw-focused-sheet[data-room=good]:has(.fw-life-article):before{right:0;width:166px;background-size:246px auto}.fw-life-opening h2{padding-right:65px}}
 .fw-focused-sheet[data-room] .fw-focused-room-list button{font:600 18px/1.3 "FemWell Editorial","Cormorant Garamond",Georgia,serif}
 .fw-focused-sheet[data-room=read-ideas] .fw-focused-sheet-head{background:linear-gradient(110deg,#fff 55%,#ede7ee)}
 .fw-focused-sheet[data-room=read-ideas] .fw-focused-sheet-body{background:#fff;padding-top:18px}

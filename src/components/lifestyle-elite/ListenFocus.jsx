@@ -36,7 +36,7 @@ function ListenCard({ eyebrow, title, accent = "sage", children, style, classNam
   );
 }
 
-export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, presentation, calmLayout = false, editorialPreview = false }) {
+export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, presentation, calmLayout = false, editorialPreview = false, directPlayer = false }) {
   const player = usePodcastPlayer();
   const current = presentation ? player?.currentEpisode : null;
   const active = current && (audioCards.find(card=>card.id===current.id) || (current.audio_url ? {
@@ -61,7 +61,7 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, 
   if (!hasAny) {
     return (
       <ListenCard eyebrow="Something to hear" title="Fresh listens land here">
-        <p style={{ fontFamily: SERIF, fontSize: 16, color: C.ink, lineHeight: 1.6, margin: 0 }}>{presentation ? "A quiet sound room today. New episodes and shows will land here." : "Podcasts, shows and short listens will appear here as they're published — press play and they keep going while you wander the app."}</p>
+        <p style={{ fontFamily: SERIF, fontSize: 16, color: C.ink, lineHeight: 1.6, margin: 0 }}>Nothing ready to play here yet. A quiet moment is allowed too.</p>
       </ListenCard>
     );
   }
@@ -83,16 +83,16 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, 
     const moreWatches = watches.filter(item => !used.has(item.id));
     const moreCount = moreAudio.length + moreWatches.length;
     const alternateSourceAction = alternate?.type === "video" && (alternate.actions || []).find(action => typeof action?.onClick === "function" && /open|watch/i.test(action.label || ""));
-    return <ListenCard className="fw-selected-listening-choice" style={editorialPreview && featured?.audioSrc ? { paddingTop: 8 } : undefined} eyebrow={active ? player?.isPlaying ? "On air" : "Pick up your listen" : featured?.type === "video" ? "Watch here" : externalLead ? "Listen elsewhere" : isCheckedRoundtable(featured) ? "From the listening desk" : "Worth your headphones"} title={editorialPreview && featured?.audioSrc ? undefined : featured?.type === "video" ? "Put this on" : externalLead ? "Choose a show" : "Press play"} accent="sage">
+    return <ListenCard className="fw-selected-listening-choice" style={directPlayer && featured?.audioSrc ? { paddingTop: 8 } : undefined} eyebrow={active ? player?.isPlaying ? "On air" : "Pick up your listen" : featured?.type === "video" ? "Watch here" : externalLead ? "Listen elsewhere" : isCheckedRoundtable(featured) ? "From the listening desk" : "Worth your headphones"} title={directPlayer && featured?.audioSrc ? undefined : featured?.type === "video" ? "Put this on" : externalLead ? "Choose a show" : "Press play"} accent="sage">
       {presentation && <SelectedRoomDetail section="listen"/>}
-      {featured && editorialPreview && featured.audioSrc ? <div className="fw-calm-audio-row">
+      {featured && directPlayer && featured.audioSrc ? <div className="fw-calm-audio-row">
         <h4>{resolveCard(featured).title}</h4>
         <FloraAudio compact presentation="focused" src={featured.audioSrc} label={featured.sourceName || "Podcast"} accent="#567861" item={featured} initialDuration={featured.duration || 0}/>
         {featured.editorialReason && <p style={{ fontFamily: SERIF, color: C.slate, margin: "10px 0 0", lineHeight: 1.35 }}>{featured.editorialFollowedCategory ? `From your ${featured.editorialFollowedCategory} shelf · ` : ""}{featured.editorialReason}</p>}
-        <button type="button" onClick={() => onOpen?.(featured)}>Details &amp; tools</button>
+        <button type="button" onClick={() => onOpen?.(featured)}>Episode notes &amp; tools</button>
       </div> : featured && <>
         <p style={{ fontFamily: SERIF, color: C.slate, margin: "0 0 12px", lineHeight: 1.45 }}>
-          {active ? "Your last listen is ready where you left it." : editorialPreview && featured.editorialReason ? `${featured.editorialFollowedCategory ? `From your ${featured.editorialFollowedCategory} shelf · ` : ""}${featured.editorialReason}` : isCheckedRoundtable(featured) ? "Mel, AJ and Elizabeth on friendship and reinvention. Forty-five minutes; includes Dove sponsorship." : featured.audioSrc ? "An episode, ready here in the app." : featured.type === "video" ? "A watch, ready here in the app." : "This show opens at its source."}
+          {active ? "Your last listen is ready where you left it." : editorialPreview && featured.editorialReason ? `${featured.editorialFollowedCategory ? `From your ${featured.editorialFollowedCategory} shelf · ` : ""}${featured.editorialReason}` : isCheckedRoundtable(featured) ? "Mel, AJ and Elizabeth on friendship and reinvention. Forty-five minutes; includes Dove sponsorship." : featured.audioSrc ? "Press play. Let someone else hold the floor." : featured.type === "video" ? "A watch, ready here." : "This show opens at its source."}
         </p>
         <CoverCard presentation={presentation} mediaPresentation="focused" previewText="" item={featured} onOpen={() => onOpen?.(featured)}/>
       </>}

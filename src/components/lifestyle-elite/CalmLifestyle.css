@@ -289,6 +289,20 @@ dialog.fw-calm-dialog.fw-sheet-safe{padding-bottom:0!important}
 .fw-good-clearing :is(button):focus-visible,.fw-good-joys :is(button):focus-visible{outline:2px solid #765f7c;outline-offset:3px}
 @media(max-width:374px){.fw-good-time-bands{gap:4px}.fw-good-time-band span{font-size:12px}.fw-good-joy-open{align-items:flex-start;flex-direction:column;gap:2px}}
 
+/* LC12: the approved open composition reaches main. The iris, bluebell and
+   jasmine keep their own material rather than inheriting Good life's marigold. */
+.fw-calm-lifestyle.fw-sky-worlds[data-world=petal-press] .fw-selected-room--read .fw-selected-lead{padding:20px 3px 16px 8px!important;border:0!important;border-top:1px solid #bda7be!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+.fw-calm-lifestyle .fw-selected-room--read .fw-selected-lead:before{content:"";position:absolute;left:0;top:21px;width:2px;height:78px;background:#9b739c;opacity:.7}
+.fw-calm-lifestyle .fw-selected-room--read .fw-selected-reading-rest{background:transparent!important;border:0!important;border-top:1px solid #d9cbd8!important;border-radius:0!important;box-shadow:none!important;padding:18px 3px!important}
+.fw-calm-lifestyle .fw-selected-room--listen .fw-selected-listening-choice{background:transparent!important;border:0!important;border-left:2px solid #8faa9a!important;border-radius:0!important;box-shadow:none!important;padding:12px 4px 14px 16px!important}
+.fw-calm-lifestyle .fw-selected-room--listen .fw-selected-listening-choice .fw-calm-audio-row{border-top:0;padding-top:2px}
+.fw-calm-lifestyle .fw-selected-room--listen.fw-selected-listen-lead{margin-top:0!important}
+.fw-calm-lifestyle .fw-selected-listen-lead .fw-audio-transport{position:relative}
+.fw-calm-lifestyle .fw-selected-listen-lead .fw-audio-garden{position:absolute;right:12px;top:-25px;width:96px;height:25px;overflow:hidden;opacity:.4;pointer-events:none;mask-image:linear-gradient(90deg,transparent,#000 42%)}
+.fw-calm-lifestyle .fw-books-focus>section:first-of-type{background:linear-gradient(100deg,#fffdf9,#fff 78%)!important;box-shadow:none!important;border-top:1px solid #d4d0c4!important}
+.fw-calm-lifestyle .fw-selected-room--yours .fw-selected-collection{background:transparent!important;box-shadow:none!important;border-radius:0!important}
+.fw-calm-lifestyle .fw-selected-room--yours .fw-selected-phase{background:transparent!important;box-shadow:none!important;border-radius:0!important}
+
 /* The first joy's opened owner keeps the same calm material, not the older
    amber sheet. Its complete body, source details and real Plan action remain. */
 .fw-focused-sheet.fw-sheet-safe[data-room=good-ideas]{bottom:calc(var(--fw-sheet-safe,100px) + 8px);padding-bottom:0!important;max-height:calc(100dvh - var(--fw-sheet-safe,100px) - 24px);border-radius:24px;background:#fffdfa;color:#252025}

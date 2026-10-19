@@ -76,7 +76,10 @@ function LessonDeck({userId,moon,direction,previewRoute,human,calmLayout}) {
   const requestedPiece=exact ? findSkyPiece(exact,requestedVersion) : null;
   const unavailable=exact && !requestedPiece;
   const bulletinMode=calmLayout || requestedPiece?.kind==="bulletin";
-  const deck=bulletinMode ? dailyBulletinDeck(day,unavailable ? null : exact,previewRoute==="/CalmLifestyleDemo") : dailyLessonDeck(day,unavailable ? null : exact);
+  // Halli approved the human Bulletin edition on main; the route still owns
+  // exact save/source/back links and is never rewritten to an Ideas path.
+  const humanEdition=["/CalmLifestyleDemo","/Lifestyle"].includes(previewRoute);
+  const deck=bulletinMode ? dailyBulletinDeck(day,unavailable ? null : exact,humanEdition) : dailyLessonDeck(day,unavailable ? null : exact);
   const [index,setIndex]=useState(0);
   const [lessonHeight,setLessonHeight]=useState(null);
   const track=useRef(null);

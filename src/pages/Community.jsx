@@ -2662,8 +2662,8 @@ function communityJessSummary(seed, ctx) {
   const { firstName, quiet, question, season } = ctx;
   const signal = [];
   signal.push(quiet
-    ? "It's gentle in here just now — a lovely time to leave the first word for whoever comes next."
-    : "There are women around today — you're not the only one here.");
+    ? "It's quiet in here. No opening speech required."
+    : "There are women here today. Come on in.");
   if (question) signal.push(`Today's question is "${question}" — a line is plenty.`);
   if (season) signal.push(season);
   const g = cPickAt(CJESS_GREET, seed);
@@ -2821,7 +2821,7 @@ function QuietlyHub({ onOpen, onBack }) {
       {onBack && <button onClick={onBack} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>}
       <Eyebrow color={T.gold} mb={6}>Quietly</Eyebrow>
       <Script size={36} color={OXBLOOD} style={{ marginBottom: 4 }}>Somewhere softer</Script>
-      <Hand size={17} color={T.muted} style={{ marginBottom: 8 }}>The gentler corners of the community — anonymous, one-to-one, or just for you. Here’s what each one is, and how it stays private.</Hand>
+      <Hand size={17} color={T.muted} style={{ marginBottom: 8 }}>Private chats, short notes and letters. Each door tells you who can see what.</Hand>
       <div style={{ display: "flex", alignItems: "center", gap: 7, background: `${T.sage || "#8FAF8F"}12`, border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "9px 12px", marginBottom: 18 }}>
         <ShieldCheck size={15} color={T.sage || "#8FAF8F"} style={{ flexShrink: 0 }} />
         <span style={{ fontFamily: UI, fontSize: 12, color: T.inkSoft, lineHeight: 1.45 }}>Everything here is anonymous by default. Kindness is screened in the background, and if you’re ever really struggling, help is a tap away.</span>

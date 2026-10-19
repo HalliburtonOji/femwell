@@ -33,11 +33,12 @@ function YoursCard({ eyebrow, title, accent = "gold", children, style, className
   );
 }
 
-export default function YoursFocus({ savedCards = [], savedSummary, phaseCards = [], phaseWord, onOpen, onDetails, skySavedCount = 0, ownedLoading = false, ownedError = false, presentation, calmLayout = false, editorialPreview = false }) {
+export default function YoursFocus({ savedCards = [], savedSummary, phaseCards = [], phaseWord, onOpen, onDetails, skySavedCount = 0, skyKeepsakes = null, ownedLoading = false, ownedError = false, presentation, calmLayout = false, editorialPreview = false }) {
   const groups = KINDS.map((k) => ({ ...k, items: savedCards.filter((c) => k.test(String(c.type || ""))) })).filter((g) => g.items.length);
   const other = savedCards.filter(c => !KINDS.some(k => k.test(String(c.type || ""))));
   if (presentation && other.length) groups.push({label:"Other keeps",accent:"gold",items:other});
   const hasSaved = savedCards.length > 0;
+  const hasOwned = hasSaved || skySavedCount > 0;
   // Same-title sources can be different stories. Distinguish them with their own
   // words, keeping every original item/action rather than merging by title.
   const titleCounts = new Map();
@@ -48,12 +49,13 @@ export default function YoursFocus({ savedCards = [], savedSummary, phaseCards =
     const words = String(card.summary || "").trim().split(/\s+/).filter(Boolean);
     return words.length ? words.slice(0, 18).join(" ") + (words.length > 18 ? "…" : "") : undefined;
   };
-  if (!editorialPreview && !hasSaved && !skySavedCount && !phaseCards.length) {
-    return (
+  if (!editorialPreview && !ownedLoading && !ownedError && !hasSaved && !skySavedCount && !phaseCards.length) {
+    return (<>
       <YoursCard eyebrow="Yours" title="Your saved things live here">
-        <p style={{ fontFamily: SERIF, fontSize: 16, color: C.ink, lineHeight: 1.6, margin: 0 }}>{presentation ? "Keep a read, listen, watch or book and it waits here for you." : "Tap the heart on any read, listen, watch or book and it waits for you here — grouped by kind, ready when the moment's right. Nothing owed."}</p>
+        <p style={{ fontFamily: SERIF, fontSize: 16, color: C.ink, lineHeight: 1.6, margin: 0 }}>Nothing saved yet. Keep the good bits as you go.</p>
       </YoursCard>
-    );
+      {skyKeepsakes}
+    </>);
   }
   const summary = skySavedCount
     ? `${skySavedCount} Sky ${skySavedCount === 1 ? "lesson" : "lessons"} kept above${hasSaved ? ` · ${savedCards.length} more saved finds` : ""}${phaseCards.length ? " — and this week's set below" : ""}.`
@@ -81,7 +83,7 @@ export default function YoursFocus({ savedCards = [], savedSummary, phaseCards =
       {!calmLayout && <Summary Icon={Bookmark} cw="gold">{summary}</Summary>}
 
       {/* 1 · SAVED — auto-grouped collections by kind */}
-      {editorialPreview && !hasSaved && !skySavedCount && ownedLoading && <p role="status" style={{fontFamily:SERIF,fontSize:16,color:C.ink,margin:0}}>Finding your keeps…</p>}
+      {!hasSaved && !skySavedCount && ownedLoading && <p role="status" style={{fontFamily:SERIF,fontSize:16,color:C.ink,margin:0}}>Finding what you kept…</p>}
       {editorialPreview && !hasSaved && !skySavedCount && !ownedLoading && !ownedError && <YoursCard eyebrow="Yours" title="Keep what you love">
         <p style={{ fontFamily: SERIF, fontSize: 16, color: C.ink, lineHeight: 1.5, margin: 0 }}>A read, a voice or a page worth coming back to. Save it where you find it; it will wait here.</p>
       </YoursCard>}
@@ -95,10 +97,12 @@ export default function YoursFocus({ savedCards = [], savedSummary, phaseCards =
         </YoursCard>
       ))}
 
+      {skyKeepsakes}
+
       {/* 2 · FOR YOUR PHASE — this week's tuned set */}
-      {phaseCards.length ? <CalmMore enabled={editorialPreview} title={`Browse other finds · ${phaseCards.length}`}>
-        <YoursCard className="fw-selected-phase" eyebrow={editorialPreview ? "From the wider library" : presentation ? "Something new" : "Tuned to your week"} title={editorialPreview ? "Other finds" : presentation ? "A few discoveries" : phaseWord ? `For your ${phaseWord} week` : "For your phase"} accent="sage">
-          {editorialPreview && <p style={{fontFamily:SERIF,fontSize:15,color:C.ink,lineHeight:1.45,margin:"0 0 12px"}}>From the wider library, not chosen from your keeps.</p>}
+      {phaseCards.length ? <CalmMore enabled={calmLayout && hasOwned} title={`Other finds · ${phaseCards.length}`}>
+        <YoursCard className="fw-selected-phase" eyebrow={calmLayout ? "From the wider library" : "Tuned to your week"} title={calmLayout ? "Other finds" : phaseWord ? `For your ${phaseWord} week` : "For your phase"} accent="sage">
+          {calmLayout && <p style={{fontFamily:SERIF,fontSize:15,color:C.ink,lineHeight:1.45,margin:"0 0 12px"}}>A few finds from elsewhere. Your saves stay above.</p>}
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {primaryDiscoveries.map(renderDiscovery)}
             {calmLayout && !readyDiscoveries.length && <p>These finds need a source check before we lead with them.</p>}
@@ -108,7 +112,7 @@ export default function YoursFocus({ savedCards = [], savedSummary, phaseCards =
         </YoursCard>
       </CalmMore> : null}
 
-      <Foot>{presentation ? "Come back when you fancy. It will all be here." : "Kept for when the moment's right — open any of it whenever, nothing owed."}</Foot>
+      <Foot>Come back when you fancy. ‘Later’ has no deadline.</Foot>
     </div>
   );
 }

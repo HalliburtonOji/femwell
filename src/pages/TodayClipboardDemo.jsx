@@ -625,10 +625,10 @@ export default function TodayClipboardDemo({ routeActive = true }) {
       const accent = T.gold;
       const modes = [
         { tag: "Your moon", hook: `Tonight: ${moon.name.toLowerCase()}`, line: `${moon.line}. Your sky, read against where you are.`, visual: <MoonGlyph frac={moon.frac} size={92} />, flower: "violet", action: { type: "deeplink", Icon: Star, label: horo ? "Today's reading" : "Read your sky", href: "/Lifestyle?tab=horoscope" } },
-        listen && { tag: "Listen", hook: clip(listen.title, 52), line: listen.source_name ? `${listen.source_name} · play it right here` : "A new episode — play it right here, no leaving the page.", flower: "bluebell", action: { type: "audio", url: audioUrl, title: listen.title, href: listenHref, Icon: Headphones } },
+        listen && { tag: "Listen", hook: clip(listen.title, 52), line: listen.source_name ? `${listen.source_name} · play it here` : "An episode you can play here.", flower: "bluebell", action: { type: "audio", url: audioUrl, title: listen.title, href: listenHref, Icon: Headphones } },
         content.book && { tag: "Book of the day", hook: clip(content.book.title, 46), line: content.book.author ? `${content.book.author} — opens straight in the reader, full screen.` : "Opens straight in the reader, full screen.", flower: "rose", action: { type: "deeplink", Icon: BookOpen, label: "Open in the reader", href: bookHref } },
-        content.story && { tag: "Daily story", hook: clip(storyTitle, 44), line: content.story.segment_text ? clip(storyPreview(content.story.segment_text), 80) : "A short instalment, released daily.", flower: "poppy", action: { type: "deeplink", Icon: Feather, label: "Read today's chapter", href: "/Lifestyle?tab=daily_story" } },
-        foryouItem && { tag: "For you", hook: clip(foryouItem.title, 50), line: `Gathered for you${phaseWord ? `, tuned to your ${phaseWord} phase` : ""}.`, flower: "primrose", action: { type: "deeplink", Icon: Sparkles, label: "Open this", href: foryouHref } },
+        content.story && { tag: "Daily story", hook: clip(storyTitle, 44), line: content.story.segment_text ? clip(storyPreview(content.story.segment_text), 80) : "A chapter you can read now.", flower: "poppy", action: { type: "deeplink", Icon: Feather, label: "Read today's chapter", href: "/Lifestyle?tab=daily_story" } },
+        foryouItem && { tag: "For you", hook: clip(foryouItem.title, 50), line: "One from Lifestyle. Take it or leave it.", flower: "primrose", action: { type: "deeplink", Icon: Sparkles, label: "Open this", href: foryouHref } },
       ];
       const m = pickMode(modes, 0) || modes[0];
       return { key: "lifestyle", section: "Lifestyle", accent, Icon: Sparkles, open: { href: "/Lifestyle", label: "Open Lifestyle" }, ...m };
@@ -695,7 +695,7 @@ export default function TodayClipboardDemo({ routeActive = true }) {
     else out.push({ Icon: Leaf, accent: T.sage, text: "A few seeds or greens would lift today's iron — a 10-minute recipe is waiting.", href: "/Nutrition" });
     // journal recency — real
     const jd = journal?.lastDays;
-    if (jd == null || jd >= 2) out.push({ Icon: PenLine, accent: T.gold, text: jd != null ? `It's been ${jd === 1 ? "a day" : `${jd} days`} since you wrote — a gentle prompt is waiting.` : "A quiet prompt is waiting whenever you want it.", href: "/Journal" });
+    if (jd == null || jd >= 2) out.push({ Icon: PenLine, accent: T.gold, text: "A prompt is waiting in Journal. One line will do.", href: "/Journal" });
     // today's symptom — real
     const recentSym = (symptoms || [])[0];
     if (recentSym && recentSym.date === todayKey()) {

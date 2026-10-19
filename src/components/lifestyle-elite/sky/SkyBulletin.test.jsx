@@ -40,13 +40,14 @@ it('opens an old exact astronomy edition inside Bulletin without overwriting its
   fireEvent.click(screen.getByRole('button',{name:'A private note'}));fireEvent.change(screen.getByLabelText('What caught your eye?'),{target:{value:'Own retained draft'}});fireEvent.click(screen.getByRole('button',{name:'Close · keep draft'}));fireEvent.click(screen.getByRole('button',{name:'A private note'}));expect(screen.getByLabelText('What caught your eye?')).toHaveValue('Own retained draft');
   fireEvent.click(screen.getByRole('button',{name:'Next sky bulletin'}));expect(screen.getByLabelText('What caught your eye?')).toHaveValue('');fireEvent.click(screen.getByRole('button',{name:'Previous sky bulletin'}));expect(screen.getByLabelText('What caught your eye?')).toHaveValue('Own retained draft');await waitFor(()=>expect(mock.journals).toHaveBeenCalled());
 });
-it('opens an exact Ideas story from a saved main route without changing the main daily deck',async()=>{
+it('opens an exact Ideas story from a saved main route and returns to the approved human daily deck',async()=>{
   const exact=findSkyPiece('bulletin-money-drawer',1);
   window.history.replaceState({},'','/Lifestyle?section=sky&lesson=bulletin-money-drawer&lessonVersion=1');
   render(<DailySkyLesson {...props} previewRoute='/Lifestyle'/>);
   expect(screen.getByRole('group',{name:'1 of 5'})).toHaveTextContent(exact.body);
   fireEvent.click(screen.getByRole('button',{name:'Next sky bulletin'}));
-  expect(screen.getByRole('group',{name:'2 of 5'})).toHaveTextContent(dailyBulletinDeck(localSkyDay())[0].body);
+  const daily=dailyBulletinDeck(localSkyDay(),null,true);
+  expect(screen.getByRole('group',{name:'2 of 5'})).toHaveTextContent(daily.find(piece=>piece.id!==exact.id).body);
 });
 it('keeps a Bulletin with acknowledged ownership and reopens the same edition from the actual saves consumer',async()=>{
   const item=dailyBulletinDeck(localSkyDay(),null,true)[0];const row={id:'saved',user_id:'owner',item_id:skyLessonKey(item),title:item.title,meta_json:JSON.stringify({kind:'sky-lesson',lessonId:item.id,lessonVersion:1})};mock.save.mockResolvedValue(row);

@@ -48,7 +48,7 @@ export default function SelectedLifestyleHeader({ active, moon }) {
     yours: "Forget-me-not means remembrance. You get to decide what stays.",
     sky: "The percentage shows how much of the Moon’s face is sunlit. Its angle can look different from where you are.",
   };
-  const captions = { read: "A page worth your time.", listen: "Press play. Take the long way.", good: "A little pleasure counts.", yours: "Good things, kept close." };
+  const captions = { read: "Worth closing a few tabs for.", listen: "Press play. The list can wait.", good: "Fun without a productive reason. Imagine.", yours: "Saved for later. ‘Later’ remains flexible." };
   const now = new Date();
   const dateTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const asset = section === "sky" ? "/images/sky-worlds/petal-v1.webp" : `/images/selected-lifestyle/${section}-v1.webp`;

@@ -21,7 +21,7 @@ function ReadEditionChoice({ item, onOpen, onDetails, resume = false, compact = 
   const kind = resume ? "Continue reading" : raw.editorial_local ? `Ideas · ${draftType} · unreviewed` : archive ? "Archive · source check pending"
     : /news/i.test(String(raw.provider || "") + String(raw.category || "")) ? "News & context"
     : /guide/i.test(String(raw.content_type || "") + String(raw.media_type || "")) ? "Useful guide"
-    : /fiction|story/i.test(String(raw.content_type || "") + String(item.type || "")) ? "Story" : "The read";
+    : /fiction|story/i.test(String(raw.content_type || "") + String(item.type || "")) ? "Story" : "Article";
   const line = firstSentences(item.subtitle || item.summary || "", 1);
   const source = raw.editorial_local ? raw.duration_label : item.sourceName || raw.source_name || raw.author_name;
   return <div className={`fw-read-edition${compact ? " fw-read-edition--compact" : ""}`}>
@@ -61,13 +61,13 @@ function ReadCard({ eyebrow, title, accent = "plum", children, style, className 
   );
 }
 
-export default function ReadFocus({ continueCards = [], articleCards = [], storyCards = [], phaseWord, onOpen, onDetails, presentation, calmLayout = false, editorialPreview = false, segment = "all" }) {
+export default function ReadFocus({ continueCards = [], articleCards = [], storyCards = [], phaseWord, onOpen, onDetails, presentation, calmLayout = false, editorialPreview = false, visualEdition = false, segment = "all" }) {
   const hasAny = continueCards.length || articleCards.length || storyCards.length;
   if (!hasAny) {
     if (segment === "rest") return null;
     return (
       <ReadCard eyebrow="Something to read" title="Fresh reads land here">
-        <p style={{ fontFamily: SERIF, fontSize: 16, color: C.ink, lineHeight: 1.6, margin: 0 }}>{presentation ? "The reading desk is quiet today. New essays and stories will land here." : "Essays, guides and stories will appear here as they're published — chosen for where you are, a chapter or an article at a time. No streaks, nothing owed."}</p>
+        <p style={{ fontFamily: SERIF, fontSize: 16, color: C.ink, lineHeight: 1.6, margin: 0 }}>No new reads just now. Books is next door if you fancy a chapter.</p>
       </ReadCard>
     );
   }
@@ -95,15 +95,15 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
       ...storyCards.map(item => ({ item, label: "Read" })),
     ].filter(({ item }) => item && !used.has(item.id) && used.add(item.id));
     const primaryIsResume = continueCards.includes(primary);
-    const lead = <ReadCard className="fw-selected-reading-choice fw-selected-lead" eyebrow={editorialPreview ? undefined : primaryIsResume ? "Your saved place" : "Your next page"} accent="plum">
+    const lead = <ReadCard className="fw-selected-reading-choice fw-selected-lead" eyebrow={visualEdition || editorialPreview ? undefined : primaryIsResume ? "Your saved place" : "Your next page"} accent="plum">
       {presentation && <SelectedRoomDetail section="read"/>}
-      {!primary ? <p className="fw-calm-read-empty">The reading desk is between editions. Older pieces are in Browse below.</p>
-        : editorialPreview ? <ReadEditionChoice item={primary} onOpen={onOpen} onDetails={onDetails} resume={primaryIsResume}/>
+      {!primary ? <p className="fw-calm-read-empty">No new read just now. Try Books next door.</p>
+        : visualEdition || editorialPreview ? <ReadEditionChoice item={primary} onOpen={onOpen} onDetails={onDetails} resume={primaryIsResume}/>
         : <CalmFindRow item={primary} onOpen={onOpen} onDetails={onDetails} label={primaryIsResume ? "Continue" : "Read"}/>}
     </ReadCard>;
     const more = <>
       {second && <div style={segment === "all" ? { marginTop: 16 } : undefined}>
-        {editorialPreview ? <ReadEditionChoice item={second} onOpen={onOpen} onDetails={onDetails} compact/>
+        {visualEdition || editorialPreview ? <ReadEditionChoice item={second} onOpen={onOpen} onDetails={onDetails} compact/>
           : <CalmFindRow item={second} onOpen={onOpen} onDetails={onDetails} label="Read"/>}
       </div>}
       <CalmMore enabled={remaining.length > 0} title={`Browse all reading · ${remaining.length}`}>
@@ -139,8 +139,8 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
     if (segment === "rest") return hasMore ? <ReadCard className="fw-selected-reading-rest" eyebrow={editorialPreview && issueFeature ? "In this issue" : "More at the reading desk"} accent="plum">{visibleMore}</ReadCard> : null;
     return <ReadCard className="fw-selected-reading-choice" eyebrow="Your next page" accent="plum">
       {presentation && <SelectedRoomDetail section="read"/>}
-      {!primary ? <p className="fw-calm-read-empty">The reading desk is between editions. Older pieces are in Browse below.</p>
-        : editorialPreview ? <ReadEditionChoice item={primary} onOpen={onOpen} onDetails={onDetails} resume={primaryIsResume}/>
+      {!primary ? <p className="fw-calm-read-empty">No new read just now. Try Books next door.</p>
+        : visualEdition || editorialPreview ? <ReadEditionChoice item={primary} onOpen={onOpen} onDetails={onDetails} resume={primaryIsResume}/>
         : <CalmFindRow item={primary} onOpen={onOpen} onDetails={onDetails} label={primaryIsResume ? "Continue" : "Read"}/>}
       {visibleMore}
     </ReadCard>;

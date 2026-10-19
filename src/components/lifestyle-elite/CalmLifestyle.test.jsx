@@ -16,30 +16,40 @@ describe("calmer lists preserve exact source tasks", () => {
     const onOpen=vi.fn();
     const {container}=render(<YoursFocus calmLayout editorialPreview presentation="focused" savedCards={[saved]} phaseCards={candidates} onOpen={onOpen}/>);
     expect(screen.getByRole("heading",{name:"Stories"})).toBeVisible();
-    const other=screen.getByText("Browse other finds · 3").closest("details");
+    const other=screen.getByText("Other finds · 3").closest("details");
     expect(other.open).toBe(false);
     fireEvent.click(screen.getByRole("button",{name:/Her kept story.*Read/}));
     expect(onOpen).toHaveBeenLastCalledWith(saved);
     fireEvent.click(other.querySelector("summary"));
     expect(other.open).toBe(true);
-    expect(screen.getByText("From the wider library, not chosen from your keeps.")).toBeVisible();
+    expect(screen.getByText("A few finds from elsewhere. Your saves stay above.")).toBeVisible();
     fireEvent.click(screen.getByText("More discoveries · 1").closest("summary"));
     expect(container.querySelectorAll(".fw-calm-find-primary")).toHaveLength(4);
     fireEvent.click(screen.getByRole("button",{name:/Other find 2.*Open/}));
     expect(onOpen).toHaveBeenLastCalledWith(candidates[2]);
   });
-  it("shows a save invitation before optional discoveries when Yours has no owned keep", () => {
+  it("shows a save invitation and a direct first find when Yours has no owned keep", () => {
     render(<YoursFocus calmLayout editorialPreview presentation="focused" phaseCards={[{id:"candidate",type:"article",title:"Other find"}]}/>);
     expect(screen.getByRole("heading",{name:"Keep what you love"})).toBeVisible();
-    expect(screen.getByText("Browse other finds · 1").closest("details").open).toBe(false);
+    expect(screen.queryByText("Other finds · 1")).not.toBeInTheDocument();
+    expect(screen.getByText("Other find")).toBeVisible();
   });
   it("does not mistake a loading or failed owner read for an empty drawer", () => {
     const {rerender}=render(<YoursFocus calmLayout editorialPreview presentation="focused" ownedLoading/>);
-    expect(screen.getByRole("status")).toHaveTextContent("Finding your keeps");
+    expect(screen.getByRole("status")).toHaveTextContent("Finding what you kept");
     expect(screen.queryByRole("heading",{name:"Keep what you love"})).not.toBeInTheDocument();
     rerender(<YoursFocus calmLayout editorialPreview presentation="focused" ownedError/>);
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
     expect(screen.queryByRole("heading",{name:"Keep what you love"})).not.toBeInTheDocument();
+  });
+  it("keeps main Yours honest while the owned collection is loading or failed", () => {
+    const {rerender}=render(<YoursFocus calmLayout presentation="focused" ownedLoading/>);
+    expect(screen.getByRole("status")).toHaveTextContent("Finding what you kept");
+    expect(screen.queryByText("Nothing saved yet. Keep the good bits as you go.")).not.toBeInTheDocument();
+    rerender(<YoursFocus calmLayout presentation="focused" ownedError/>);
+    expect(screen.queryByText("Nothing saved yet. Keep the good bits as you go.")).not.toBeInTheDocument();
+    rerender(<YoursFocus calmLayout presentation="focused"/>);
+    expect(screen.getByText("Nothing saved yet. Keep the good bits as you go.")).toBeVisible();
   });
   it("distinguishes different same-title discoveries with their own source words and preserves both exact actions", () => {
     const onOpen=vi.fn(),onDetails=vi.fn();

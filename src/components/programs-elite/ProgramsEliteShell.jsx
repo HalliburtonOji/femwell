@@ -213,45 +213,45 @@ export default function ProgramsEliteShell() {
       <div style={{ maxWidth: 430, margin: "0 auto", padding: "16px 16px 0" }} className="fw-elite-in">
         {/* HERO — generic page title (NEVER the user's handle) */}
         <FwFloraHero title="Your programmes" colorway={ph.cw} bloom={ph.bloom} flankL="clover" flankR="chamomile" titleColor={OXBLOOD} creature="butterfly"
-          line="Gentle, guided journeys — a few minutes a day. Pick up where you left off, or start somewhere new." />
+          line="Guided programmes. Pick up one you started, or find a new one." />
         <div style={{ display: "flex", justifyContent: "center", marginTop: -6, marginBottom: 2 }}>
           <Bouquet items={[{ form: ph.bloom, colorway: ph.cw }, { form: "fern", colorway: "sage" }, { form: "cosmos", colorway: "plum" }]} size={150} animate idx="prog-bq" />
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, margin: "2px 0 16px" }}>
           <span style={{ width: 9, height: 9, borderRadius: 99, background: ph.hue }} />
-          <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.inkSoft }}>{phaseKey ? `${phaseLabel(phaseKey)} — gentler journeys suit you` : "Guided journeys, at your pace"}</span>
+          <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.inkSoft }}>{phaseKey ? `${phaseLabel(phaseKey)} week · choose what fits` : "Choose what fits your week"}</span>
         </div>
 
-        <SummaryCard eyebrow="Continue your journey" accent={plum} rows={[
+        <SummaryCard eyebrow="Your programmes" accent={plum} rows={[
           continueItem
             ? { Icon: Play, label: "Active", text: `${continueItem.program.title} — day ${continueItem.entry.current_day || 1} of ${totalDays(continueItem.program)}`, onClick: () => setDetail(continueItem.program) }
-            : { Icon: Play, label: "Active", text: "No active journey yet — start one below", onClick: () => jumpTo(0) },
-          { Icon: CalendarDays, label: "For now", text: phaseKey ? `${phaseLabel(phaseKey)} week — gentler journeys suit you` : "Pick by what you need this week", onClick: () => jumpTo(1) },
+            : { Icon: Play, label: "Active", text: "Nothing in progress. Browse below.", onClick: () => jumpTo(0) },
+          { Icon: CalendarDays, label: "For now", text: phaseKey ? `${phaseLabel(phaseKey)} week · choose what fits` : "Pick by what you need this week", onClick: () => jumpTo(1) },
           featured ? { Icon: Star, label: "New", text: `${featured.title} — a good place to start`, onClick: () => setDetail(featured) } : null,
         ].filter(Boolean)} />
 
         <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-          <button onClick={() => (continueItem ? setDetail(continueItem.program) : jumpTo(0))} className="fw-elite-press" style={focusPill(plum)}><Play size={16} /> {continueItem ? "Continue" : "Start a journey"}</button>
+          <button onClick={() => (continueItem ? setDetail(continueItem.program) : jumpTo(0))} className="fw-elite-press" style={focusPill(plum)}><Play size={16} /> {continueItem ? "Continue" : "Choose a programme"}</button>
           <button onClick={() => jumpTo(2)} className="fw-elite-press" style={focusPill(gold)}><Search size={16} /> Browse</button>
         </div>
 
         {/* search governs the Browse board */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "9px 14px" }}>
           <Search size={15} color={T.muted} />
-          <input value={q} onChange={(e) => setQ(e.target.value)} onFocus={() => jumpTo(2)} placeholder="Search journeys — sleep, mood, energy…" style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontFamily: UI, fontSize: 13.5, color: T.ink }} />
+          <input value={q} onChange={(e) => setQ(e.target.value)} onFocus={() => jumpTo(2)} placeholder="Search programmes — sleep, mood, energy…" style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontFamily: UI, fontSize: 13.5, color: T.ink }} />
           {q && <button onClick={() => setQ("")} aria-label="Clear" style={{ border: "none", background: "transparent", cursor: "pointer", color: T.muted }}><X size={15} /></button>}
         </div>
 
         <div ref={sliderRef} style={{ marginTop: 16, position: "relative" }}>
           <SliderArrows sliderRef={sliderRef} />
-          <ClipboardSlider hint="Slide your journeys →" accent={plum}>
+          <ClipboardSlider hint="More programmes →" accent={plum}>
 
             {/* ── BOARD 1 — CONTINUE ─────────────────────────────────────── */}
             <Clipboard title="Continue" sub="PICK UP WHERE YOU LEFT OFF" accent={plum} flower="violet" idx="cb-cont" titleColor={OXBLOOD}>
               <BoardBody>
                 <StackedCard topAccent={plum} bottomAccent={crim}
                   top={[
-                    <Panel key="active" label="Your active journey" Icon={Play} accent={plum}><ActiveLens item={continueItem} ctx={ctx} onReminder={setReminder} /></Panel>,
+                    <Panel key="active" label="Your active programme" Icon={Play} accent={plum}><ActiveLens item={continueItem} ctx={ctx} onReminder={setReminder} /></Panel>,
                     <Panel key="others" label="Also in progress" Icon={Activity} accent={sage}><OthersLens items={activeItems.slice(1)} ctx={ctx} /></Panel>,
                   ]}
                   bottom={[

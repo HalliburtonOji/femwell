@@ -895,8 +895,8 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
   const openJoy = useCallback((slip) => {
     if(!slip)return;
     if(!focusedPreview){setGLFace({slip});return;}
-    setExpanded({...slip,saveable:false,body:[slip.why,...(slip.body || [])].filter(Boolean),actions:[{label:"Plan a time",primary:true,onClick:()=>glTick(slip.id,slip.doable?.title || slip.title,slip.doable?.kind)}]});
-  },[focusedPreview,glTick]);
+    setExpanded({...slip,__goodIdeas:calmLayout && !!selectedPresentation,saveable:false,body:[slip.why,...(slip.body || [])].filter(Boolean),actions:[{label:"Plan a time",primary:true,onClick:()=>glTick(slip.id,slip.doable?.title || slip.title,slip.doable?.kind)}]});
+  },[focusedPreview,glTick,calmLayout,selectedPresentation]);
 
   // #4 — open a book at OUR reader standard, IN PLACE (no navigation to a slow route).
   // FemWell fiction is already loaded (its chapters live on the row), so we mount the
@@ -1110,10 +1110,10 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
   // SHOWS as honest Spotify/Apple link-outs — the 12-show list the rail already owned, not the
   // 2-item stub this page had been carrying.
   const audioCards = useMemo(() => {
-    // Ideas-only: an explicitly followed category may choose among a few
+    // Approved edition: an explicitly followed category may choose among a few
     // checked, playable episodes. The existing first six and all show entries
     // remain; current playback still takes priority in ListenFocus.
-    const edition = calmLayout && !returnToMain ? orderListenEdition(grouped.audio, profile?.followed_categories) : [];
+    const edition = calmLayout ? orderListenEdition(grouped.audio, profile?.followed_categories) : [];
     const seen = new Set();
     const candidates = [...edition.map(choice => choice.row), ...(grouped.audio || []).slice(0, 6)]
       .filter(row => row && !seen.has(row.id) && seen.add(row.id));
@@ -1255,14 +1255,14 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
       .map((d) => ({
         id: authoredJoyId("aday", d.title), type: "ritual", saveable: false, title: d.title, subtitle: d.line,
         meta: [["Sun", "A day for you"], ["Heart", "No streaks, no pressure"]], chips: ["a day for you"],
-        body: ["Leisure is the point — this lands softly in your planner, and nothing nags you if the day goes another way."],
+        body: ["Fancy a day for yourself? Choose a time in Planner. You can change your mind."],
         why: whyFor(d.title), doable: { label: "Save it for the day", title: d.title, kind: "day" },
         actions: [{ label: "Save it for the day", Icon: "Star", primary: true, onClick: () => { savePlannerDay(d.title); setExpanded(null); } }],
       }));
     const trys = rotateDaily(TRY_THIS, 3).map((t) => ({
       id: authoredJoyId("try", t.title), type: "ritual", saveable: false, title: t.title, subtitle: "Small, doable, just for today.", cw: t.cw,
       meta: [["Wind", "A small thing"], ["Heart", "No streaks"]], chips: ["try this"],
-      body: ["Tap to keep it — it lands softly in your planner. Try it when you fancy it; leave it if you don't."],
+      body: ["A small idea for today. Choose a time in Planner if you want one."],
       why: whyFor(t.title), doable: { label: "Keep it for today", title: t.title, kind: "try" },
       actions: [{ label: "Keep it for today", Icon: "Star", primary: true, onClick: () => { saveTryThis(t.title); setExpanded(null); } }],
     }));
@@ -1573,7 +1573,9 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
       <button onClick={() => jumpTo(0)} className="fw-elite-press" style={clean ? { ...focusPill(gold), background: C.gold, boxShadow: "none", border: "none" } : focusPill(plum)}><Clock size={16} /> What do you have time for?</button>
     </div>
   );
-  const goodLifeFirst = selectedPresentation && calmLayout && !returnToMain && focusSection === "good";
+  // Halli approved the visible Good life composition for main. Keep `contentRoute`
+  // untouched: it owns exact Saved, reader, player and Planner return paths.
+  const goodLifeFirst = selectedPresentation && calmLayout && focusSection === "good";
   const renderGoodLife = () => {
     const h = new Date().getHours();
     const timeOfDay = h < 12 ? "morning" : h < 18 ? "afternoon" : "evening";
@@ -1687,11 +1689,11 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
         {foldVariant && <div className="fw-ff-actions">{focusedActions}</div>}
 
         {selectedPresentation && calmLayout && focusSection === "read" && <div className="fw-living-content fw-selected-room--read fw-selected-read-lead" style={{ marginTop: 12 }}>
-          <ReadFocus calmLayout presentation editorialPreview={!returnToMain} continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} onDetails={setExpanded} segment="lead" />
+          <ReadFocus calmLayout presentation editorialPreview={!returnToMain} visualEdition continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} onDetails={setExpanded} segment="lead" />
         </div>}
 
-        {selectedPresentation && calmLayout && !returnToMain && focusSection === "listen" && <div className="fw-living-content fw-selected-room--listen fw-selected-listen-lead" style={{ marginTop: 12 }}>
-          <ListenFocus calmLayout presentation editorialPreview audioCards={audioCards} videoCards={videoCards} onOpen={setExpanded} />
+        {selectedPresentation && calmLayout && focusSection === "listen" && <div className="fw-living-content fw-selected-room--listen fw-selected-listen-lead" style={{ marginTop: 12 }}>
+          <ListenFocus calmLayout presentation editorialPreview directPlayer audioCards={audioCards} videoCards={videoCards} onOpen={setExpanded} />
         </div>}
 
         {goodLifeFirst && renderGoodLife()}
@@ -1965,10 +1967,10 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
               } else if (it?.id === "daily-chapter") openTodaysChapter();
               else openBook(it._continue || it._raw || it);
             }} lifeStage={profile?.life_stage} /></div>;
-          if (sec === "listen") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--listen" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{livingDemo && <nav aria-label="Full media directories" style={{display:"flex",justifyContent:"space-between",gap:12,marginBottom:12,fontFamily:UI,fontSize:12}}>{[["listen","All listens & shows"],["watch","All watches"]].map(([mode,label])=><button key={mode} type="button" onClick={()=>navigate(`/WatchListen?mode=${mode}${calmLayout ? "&appearance=calm" : ""}${returnToMain ? "&from=lifestyle-main" : ""}`)} style={{color:C.ink,minHeight:44,border:0,background:"transparent",textDecoration:"underline",cursor:"pointer",font:"inherit"}}>{label}</button>)}</nav>}{!(selectedPresentation && calmLayout && !returnToMain) && <ListenFocus calmLayout={calmLayout} presentation={selectedPresentation} audioCards={audioCards} videoCards={videoCards} onOpen={setExpanded} />}</div>;
-          if (sec === "read") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--read" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><ReadFocus calmLayout={calmLayout} presentation={selectedPresentation} editorialPreview={!returnToMain} continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} onDetails={selectedPresentation ? setExpanded : undefined} segment={selectedPresentation && calmLayout ? "rest" : "all"} /></div>;
+          if (sec === "listen") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--listen" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{livingDemo && <nav aria-label="Full media directories" style={{display:"flex",justifyContent:"space-between",gap:12,marginBottom:12,fontFamily:UI,fontSize:12}}>{[["listen","All listens & shows"],["watch","All watches"]].map(([mode,label])=><button key={mode} type="button" onClick={()=>navigate(`/WatchListen?mode=${mode}${calmLayout ? "&appearance=calm" : ""}${returnToMain ? "&from=lifestyle-main" : ""}`)} style={{color:C.ink,minHeight:44,border:0,background:"transparent",textDecoration:"underline",cursor:"pointer",font:"inherit"}}>{label}</button>)}</nav>}{!(selectedPresentation && calmLayout) && <ListenFocus calmLayout={calmLayout} presentation={selectedPresentation} audioCards={audioCards} videoCards={videoCards} onOpen={setExpanded} />}</div>;
+          if (sec === "read") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--read" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><ReadFocus calmLayout={calmLayout} presentation={selectedPresentation} editorialPreview={!returnToMain} visualEdition={selectedPresentation && calmLayout} continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} onDetails={selectedPresentation ? setExpanded : undefined} segment={selectedPresentation && calmLayout ? "rest" : "all"} /></div>;
           if (sec === "good") return goodLifeFirst ? null : renderGoodLife();
-          if (sec === "yours") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--yours" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{selectedPresentation && keepsError && <div role="alert" style={{fontFamily:UI,fontSize:13,marginBottom:16}}><p>{keepsError}</p><button type="button" onClick={()=>setKeepsRevision(value=>value+1)}>Retry keeps</button> <a href={savedHref}>Open the full saved collection</a></div>}<YoursFocus calmLayout={calmLayout} editorialPreview={calmLayout && !returnToMain} presentation={selectedPresentation} savedCards={savedCards} savedSummary={savedSummary} phaseCards={phaseCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} ownedLoading={keepsLoading || skySavesLoading} ownedError={!!(keepsError || skySavesError)} onOpen={(it)=>{if(it._keep?._unavailable){setKeepsRevision(n=>n+1);return;}if(it._keep?._href){openYoursSource(it._keep._href);return;}openReadCard(it);}} onDetails={setExpanded} skySavedCount={livingDemo ? skySavedCount : 0} />{livingDemo && <SavedSkyLessons userId={user?.id} human={artDirection === "sky-worlds"} direction={worldDirection} previewRoute={contentRoute || (artDirection === "sky-worlds" ? "/SkyWorldsDemo" : artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artDirection === "marginalia" ? "/LivingAtelierDemo" : undefined)} ownedState={{rows:keptSkyLessons,error:skySavesError,loading:skySavesLoading,retry:retrySkySaves}} compactEmpty={calmLayout}/>}</div>;
+          if (sec === "yours") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--yours" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{selectedPresentation && keepsError && <div role="alert" style={{fontFamily:UI,fontSize:13,marginBottom:16}}><p>{keepsError}</p><button type="button" onClick={()=>setKeepsRevision(value=>value+1)}>Retry keeps</button> <a href={savedHref}>Open the full saved collection</a></div>}<YoursFocus calmLayout={calmLayout} editorialPreview={calmLayout && !returnToMain} presentation={selectedPresentation} savedCards={savedCards} savedSummary={savedSummary} phaseCards={phaseCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} ownedLoading={keepsLoading || skySavesLoading} ownedError={!!(keepsError || skySavesError)} onOpen={(it)=>{if(it._keep?._unavailable){setKeepsRevision(n=>n+1);return;}if(it._keep?._href){openYoursSource(it._keep._href);return;}openReadCard(it);}} onDetails={setExpanded} skySavedCount={livingDemo ? skySavedCount : 0} skyKeepsakes={livingDemo ? <SavedSkyLessons userId={user?.id} human={artDirection === "sky-worlds"} direction={worldDirection} previewRoute={contentRoute || (artDirection === "sky-worlds" ? "/SkyWorldsDemo" : artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artDirection === "marginalia" ? "/LivingAtelierDemo" : undefined)} ownedState={{rows:keptSkyLessons,error:skySavesError,loading:skySavesLoading,retry:retrySkySaves}} compactEmpty={calmLayout}/> : null} /></div>;
           // every section is bespoke — the generic slider-free layout is only ever the LANDING deck
           return <div style={{ marginTop: 22 }}><FocusLayout layout={layout} groups={landingGroups} clean={clean} presentation={selectedPresentation} onConsume={(it) => it.id === "story-today" || it.id === "daily-chapter" ? openTodaysChapter() : it.forYouSection === "Your sky" ? selectRoom("sky") : it._continue || it._raw ? openReadCard(it) : setExpanded(it)} /></div>;
         })()}
@@ -2025,7 +2027,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
           Save is CONTROLLED → real persistence + the feed's learning loop. */}
       {expanded && <ExpandDetailCard item={expanded} active={routeActive} presentation={focusedPreview ? "focused" : selectedPresentation} room={expanded.__goodIdeas ? "good-ideas" : focusedPreview && focusSection !== "sky" ? focusSection === "read" && !returnToMain ? "read-ideas" : focusSection : undefined} onClose={() => setExpanded(null)} saved={isCardSaved(expanded)} onSave={onCardSave} />}
       {focusedRaw && <ExpandDetailCard item={{...rowCard(focusedRaw,CARD_TYPE_OF(focusedRaw)),...(goodLifeFirst && focusedRaw.editorial_local ? {kind:"Ideas draft · unreviewed"} : goodLifeFirst && /^FEMWELL_AI/i.test(String(focusedRaw.provider || "")) ? {kind:/FICTION|STORY/.test(String(focusedRaw.content_type || "")) ? "Generated fiction · archive" : "Archive · source review pending"} : {})}} active={routeActive} presentation="focused" room={goodLifeFirst ? "good-ideas" : focusedPreview && focusSection !== "sky" ? focusSection === "read" && !returnToMain ? "read-ideas" : focusSection : undefined} onClose={()=>setFocusedRaw(null)} saved={isSaved(focusedRaw.id)} onSave={onCardSave}/>}
-      {roomsOpen && <FocusedLifestyleRooms active={routeActive} onClose={()=>setRoomsOpen(false)} user={user} profile={profile} phaseKey={phaseKey} editorialPreview={calmLayout && !returnToMain} shellItems={items} horoscope={horoscope} toCard={(raw)=>rowCard(raw,CARD_TYPE_OF(raw))} isSaved={isCardSaved} onSave={onCardSave} onStory={openTodaysChapter} onSky={()=>setReadingOpen(true)}/>}
+      {roomsOpen && <FocusedLifestyleRooms active={routeActive} onClose={()=>setRoomsOpen(false)} user={user} profile={profile} phaseKey={phaseKey} editorialPreview={calmLayout && !returnToMain} visualEdition={calmLayout && !!selectedPresentation} shellItems={items} horoscope={horoscope} toCard={(raw)=>rowCard(raw,CARD_TYPE_OF(raw))} isSaved={isCardSaved} onSave={onCardSave} onStory={openTodaysChapter} onSky={()=>setReadingOpen(true)}/>}
       {/* These sheets' buttons used to be no-ops that just closed — a button that lies is worse
           than no button. Each now does the real thing. */}
       {chapterOpen && (
@@ -2264,7 +2266,7 @@ function TimePickerLens({ pickFor, isSaved, onSave, onOpen, onTry, presentation,
   const readArchive = read && /^FEMWELL_AI/i.test(String(read.provider || ""))
     ? /FICTION|STORY/.test(String(read.content_type || "")) ? "GENERATED FICTION · ARCHIVE" : "ARCHIVE · SOURCE REVIEW PENDING"
     : read && isStaleNews(read) ? "NEWS ARCHIVE · DATE CHECK PENDING" : null;
-  const readTime = (read && durLabel(read)) || "READING TIME UNAVAILABLE";
+  const readTime = read && durLabel(read);
   return (
     <div className={ideasEdition ? "fw-calm-time-lens fw-good-time-lens" : calmLayout ? "fw-calm-time-lens" : undefined} style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       {!calmLayout && <p style={{ fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 10px" }}>{presentation ? "A read, a listen, or a little doing." : "Pick by the time you have — a small, chosen handful, never an endless scroll."}</p>}
@@ -2277,7 +2279,7 @@ function TimePickerLens({ pickFor, isSaved, onSave, onOpen, onTry, presentation,
       {!ideasEdition && <div style={{ ...lbl, marginBottom: 6 }}>{`For ${band.label.toLowerCase()}`}</div>}
       <div className={ideasEdition ? "fw-good-time-results" : undefined} style={ideasEdition ? undefined : { display: "flex", flexDirection: "column", gap: 8 }}>
         {read ? ideasEdition ? <div className="fw-good-read-choice">
-          <p className="fw-good-choice-kicker">READ · {readTime}{read.editorial_local ? " · IDEAS DRAFT" : readArchive ? ` · ${readArchive}` : ""}</p>
+          <p className="fw-good-choice-kicker">READ{readTime ? ` · ${readTime}` : ""}{read.editorial_local ? " · IDEAS DRAFT" : readArchive ? ` · ${readArchive}` : ""}</p>
           <button type="button" className="fw-good-read-open" onClick={() => onOpen(read)}><span>{read.title}</span><ChevronRight size={22} aria-hidden="true"/></button>
           {(read.summary || read.why_it_matters) && <p className="fw-good-read-hook">{stripHtml(read.summary || read.why_it_matters)}</p>}
           {!read.editorial_local && <button type="button" className="fw-good-save" aria-pressed={isSaved(read.id)} onClick={()=>onSave(read)}><Bookmark size={15} aria-hidden="true"/>{isSaved(read.id) ? "Saved" : "Save for later"}</button>}

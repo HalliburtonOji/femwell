@@ -482,7 +482,7 @@ export default function Onboarding() {
                 Your lifestyle interests
               </h2>
               <p style={{ fontSize: "13px", color: "var(--mauve)", marginTop: "6px" }}>
-                Powers your personalised feed from day one.
+                Pick what you’d like to see more of.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -901,7 +901,7 @@ export default function Onboarding() {
             <div style={{ ...card, padding: "16px", textAlign: "left" }}>
               <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", marginBottom: 6 }}>You're not doing this alone</p>
               <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.6 }}>
-                There's a Community of women in your season here whenever you want it — anonymous, 18+, no names. Anything you share is private and on your terms; you decide what (if anything) you ever say.
+                Community is here when you want it. It’s 18+ and uses an alias; posts can be seen by other members. You can also just read.
               </p>
             </div>
 
@@ -913,9 +913,9 @@ export default function Onboarding() {
             </div>
             <button className="btn-primary w-full" onClick={handleFinish} disabled={saving}
               style={{ fontSize: 16, padding: "16px" }}>
-              {saving ? "Setting up..." : "Start your journey →"}
+              {saving ? "Saving your choices..." : "Open FemWell →"}
             </button>
-            {saveError && <p style={{ fontSize: 13, color: "var(--rose-dust)", marginTop: 8 }}>Something went wrong. Please try again.</p>}
+            {saveError && <p style={{ fontSize: 13, color: "var(--rose-dust)", marginTop: 8 }}>We couldn’t save your choices. Try again.</p>}
           </div>
         )}
 
