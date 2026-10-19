@@ -117,6 +117,35 @@ describe("calmer lists preserve exact source tasks", () => {
     expect(screen.getByRole("button",{name:/The Tuesday Decision.*Read/})).toBeVisible();
   });
 
+  it("offers a compact sourced Read issue without hiding an older exact source or its tools", () => {
+    const onOpen=vi.fn(),onDetails=vi.fn();
+    const date=new Date(),today=[date.getFullYear(),String(date.getMonth()+1).padStart(2,"0"),String(date.getDate()).padStart(2,"0")].join("-");
+    const resume={id:"saved",title:"The Shape of Starting Over",type:"book",_continue:{id:"saved"}};
+    const feature={id:"feature",title:"The plans you actually want to keep",type:"article",_raw:{editorial_local:true,content_type:"ARTICLE"},saveable:false};
+    const guide={id:"guide",title:"The payment you forgot about",type:"article",_raw:{editorial_local:true,content_type:"GUIDE",duration_label:"About 2 min read"},saveable:false};
+    const news={id:"news",title:"The energy cap changed",type:"article",_raw:{editorial_local:true,content_type:"NEWS",published_at:today,expires_at:today,duration_label:"About 2 min read"},saveable:false};
+    const older={id:"older",title:"The older full article",type:"article",_raw:{provider:"EDITORIAL"}};
+    const {rerender}=render(<ReadFocus calmLayout editorialPreview presentation="focused" continueCards={[resume]} articleCards={[feature,guide,news,older]} onOpen={onOpen} onDetails={onDetails}/>);
+    expect(screen.getByRole("heading",{name:"The plans you actually want to keep"})).toBeVisible();
+    expect(screen.getByRole("button",{name:"Read The payment you forgot about"})).toBeVisible();
+    expect(screen.getByRole("button",{name:"Read The energy cap changed"})).toBeVisible();
+    expect(screen.getByText("The older full article")).not.toBeVisible();
+    fireEvent.click(screen.getByRole("button",{name:"Read The payment you forgot about"}));expect(onOpen).toHaveBeenLastCalledWith(guide);
+    fireEvent.click(screen.getByRole("button",{name:"Details & tools for The payment you forgot about"}));expect(onDetails).toHaveBeenLastCalledWith(guide);
+    fireEvent.click(screen.getByRole("button",{name:"Read The energy cap changed"}));expect(onOpen).toHaveBeenLastCalledWith(news);
+    fireEvent.click(screen.getByText("Browse all reading · 1"));
+    fireEvent.click(screen.getByRole("button",{name:/The older full article.*Read/}));expect(onOpen).toHaveBeenLastCalledWith(older);
+    rerender(<ReadFocus calmLayout editorialPreview presentation="focused" continueCards={[resume]} articleCards={[feature,guide,{...news,_raw:{...news._raw,expires_at:today}},older]} onOpen={onOpen} onDetails={onDetails}/>);
+    expect(within(screen.getByLabelText("Useful reads in this issue")).getByRole("button",{name:"Read The energy cap changed"})).toBeVisible();
+    rerender(<ReadFocus calmLayout editorialPreview presentation="focused" continueCards={[resume]} articleCards={[feature,guide,{...news,_raw:{...news._raw,expires_at:"2026-01-01"}},older]} onOpen={onOpen} onDetails={onDetails}/>);
+    expect(within(screen.getByLabelText("Useful reads in this issue")).queryByRole("button",{name:"Read The energy cap changed"})).not.toBeInTheDocument();
+    expect(screen.getByText("Browse all reading · 2")).toBeVisible();
+    const old=new Date(Date.now()-16*86400000).toISOString().slice(0,10),future=new Date(Date.now()+28*86400000).toISOString().slice(0,10);
+    rerender(<ReadFocus calmLayout editorialPreview presentation="focused" continueCards={[resume]} articleCards={[feature,guide,{...news,_raw:{...news._raw,published_at:old,expires_at:future}},older]} onOpen={onOpen} onDetails={onDetails}/>);
+    expect(within(screen.getByLabelText("Useful reads in this issue")).queryByRole("button",{name:"Read The energy cap changed"})).not.toBeInTheDocument();
+    expect(screen.getByText("Browse all reading · 2")).toBeVisible();
+  });
+
   it("keeps one direct watch alternative and the remaining exact media behind Browse", () => {
     const onOpen=vi.fn();
     const audio=[0,1,2].map(i=>({id:`audio-${i}`,type:"audio",title:`Episode ${i}`,audioSrc:`https://example.test/${i}.mp3`,duration:2400,meta:[["Clock","40 min"]],actions:[]}));

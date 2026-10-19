@@ -2,6 +2,7 @@ import React from 'react';
 import {beforeEach,describe,expect,it,vi} from 'vitest';
 import {fireEvent,render,screen,waitFor,within} from '@testing-library/react';
 import Lifestyle from '@/pages/LifestyleElite';
+import CalmLifestyleDemo from '@/pages/CalmLifestyleDemo';
 import BooksStoryFocus from './BooksStoryFocus';
 const mock=vi.hoisted(()=>({empty:vi.fn(),articles:vi.fn(),chapters:vi.fn(),readings:vi.fn()}));
 vi.mock('@/api/base44Client',()=>({base44:{auth:{me:async()=>({id:'owner'})},functions:{invoke:async()=>({data:{items:[]}})},entities:new Proxy({},{get:(_,name)=>({filter:name==='DailyStory' ? mock.chapters : name==='HoroscopeReading' ? mock.readings : name==='LifestyleItems' ? mock.articles : mock.empty,subscribe:()=>()=>{}})})}}));
@@ -32,6 +33,21 @@ describe('approved main Lifestyle parity',()=>{
     expect(screen.queryByText('The plans you actually want to keep')).not.toBeInTheDocument();
     expect(await screen.findByText('Fresh reads land here')).toBeVisible();
   });
+  it('keeps the Ideas Read Guide source and unreviewed status through both Read and Details',async()=>{
+    window.history.replaceState({},'', '/CalmLifestyleDemo?section=read');
+    render(<CalmLifestyleDemo/>);
+    fireEvent.click(await screen.findByRole('button',{name:'Details & tools for The payment you forgot about'}));
+    let sheet=screen.getByRole('dialog',{name:'The payment you forgot about'});
+    expect(within(sheet).getByText('Ideas draft · Guide · unreviewed')).toBeVisible();
+    expect(within(sheet).getByRole('link',{name:/MoneyHelper · regular payments and cancellation/})).toBeVisible();
+    expect(within(sheet).queryByRole('button',{name:'Save',exact:true})).not.toBeInTheDocument();
+    fireEvent.click(within(sheet).getByRole('button',{name:'Close'}));
+    expect(window.location.pathname+window.location.search).toBe('/CalmLifestyleDemo?section=read');
+    fireEvent.click(screen.getByRole('button',{name:'Read The payment you forgot about'}));
+    sheet=screen.getByRole('dialog',{name:'The payment you forgot about'});
+    expect(within(sheet).getByText('Ideas draft · Guide · unreviewed')).toBeVisible();
+    expect(within(sheet).getByRole('link',{name:/MoneyHelper · regular payments and cancellation/})).toBeVisible();
+  });
   it('keeps later fetched articles in Browse instead of ending the room at six',async()=>{
     window.history.replaceState({},'', '/Lifestyle?section=read');
     mock.articles.mockResolvedValue(Array.from({length:8},(_,i)=>({id:`read-${i}`,title:`Complete article ${i}`,summary:'A distinct article.',lede:'An actual full article. '.repeat(55),category:'Lifestyle',provider:'EDITORIAL',content_type:'ARTICLE',media_type:'ARTICLE',status:'PUBLISHED'})));
@@ -49,6 +65,21 @@ describe('approved main Lifestyle parity',()=>{
     fireEvent.click(browse);
     expect(screen.getByRole('button',{name:/An old price-cap story.*Read/})).toBeVisible();
     expect(screen.getByText('News archive · date check pending')).toBeVisible();
+  });
+  it('keeps future published or revalidated news in archive while a current dated source can lead',async()=>{
+    window.history.replaceState({},'', '/Lifestyle?section=read');
+    const future=`${new Date().getFullYear()+4}-01-01`,today=new Date().toISOString().slice(0,10);
+    mock.articles.mockResolvedValue([
+      {id:'future-published',title:'Future publication',lede:'A complete article. '.repeat(55),category:'Money',provider:'RSS',content_type:'NEWS',media_type:'ARTICLE',status:'PUBLISHED',published_at:future,revalidated_at:'2024-01-01'},
+      {id:'future-checked',title:'Future source check',lede:'Another complete article. '.repeat(55),category:'Money',provider:'RSS',content_type:'NEWS',media_type:'ARTICLE',status:'PUBLISHED',published_at:today,revalidated_at:future},
+      {id:'current-news',title:'Current checked news',lede:'A present complete article. '.repeat(55),category:'Money',provider:'RSS',content_type:'NEWS',media_type:'ARTICLE',status:'PUBLISHED',published_at:today},
+    ]);
+    render(<Lifestyle/>);
+    expect(await screen.findByRole('button',{name:/Current checked news.*Read/})).toBeVisible();
+    fireEvent.click(screen.getByText('Browse all reading · 2'));
+    expect(screen.getByRole('button',{name:/Future publication.*Read/})).toBeVisible();
+    expect(screen.getByRole('button',{name:/Future source check.*Read/})).toBeVisible();
+    expect(screen.getAllByText('News archive · date check pending')).toHaveLength(2);
   });
   it('keeps the Everything Sky detail honest and opens the selected Sky room',async()=>{
     render(<Lifestyle/>);

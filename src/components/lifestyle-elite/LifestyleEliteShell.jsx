@@ -359,9 +359,16 @@ const contentBodyOf = (r) => {
 const isNewsSource = (r) => /NEWS/i.test(String(r?.content_type || "") + " " + String(r?.provider || "") + " " + String(r?.category || ""));
 const isStaleNews = (r) => {
   if (!isNewsSource(r)) return false;
-  const checkedAt = Date.parse(r?.revalidated_at || r?.published_at || "");
-  const expiresAt = Date.parse(r?.expires_at || "");
-  return !Number.isFinite(checkedAt) || Date.now() - checkedAt > 14 * 86400000 || (Number.isFinite(expiresAt) && Date.now() > expiresAt);
+  const published = String(r?.published_at || ""), revalidated = String(r?.revalidated_at || "");
+  const checkedAt = Date.parse(revalidated || published || "");
+  const expires = String(r?.expires_at || ""), expiresAt = Date.parse(expires);
+  const now=Date.now(), date=new Date(now);
+  const today=[date.getFullYear(),String(date.getMonth()+1).padStart(2,"0"),String(date.getDate()).padStart(2,"0")].join("-");
+  const future = value => /^\d{4}-\d{2}-\d{2}$/.test(value) ? value > today : Date.parse(value) > now;
+  return !Number.isFinite(checkedAt) ||
+    (published && (!Number.isFinite(Date.parse(published)) || future(published))) ||
+    (revalidated && (!Number.isFinite(Date.parse(revalidated)) || future(revalidated))) ||
+    now - checkedAt > 14 * 86400000 || (Number.isFinite(expiresAt) && (/^\d{4}-\d{2}-\d{2}$/.test(expires) ? expires < today : now > expiresAt));
 };
 const takeawaysOf = (r) => {
   const arr = Array.isArray(r?.takeaways) ? r.takeaways : [];
@@ -2004,7 +2011,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
       {calOpen && <CalendarOverlay user={user} profile={profile} onClose={() => setCalOpen(false)} />}
       {/* tap-to-expand — the shared card language's full-screen detail (§6.7.7).
           Save is CONTROLLED → real persistence + the feed's learning loop. */}
-      {expanded && <ExpandDetailCard item={expanded} active={routeActive} presentation={focusedPreview ? "focused" : selectedPresentation} room={focusedPreview && focusSection !== "sky" ? focusSection : undefined} onClose={() => setExpanded(null)} saved={isCardSaved(expanded)} onSave={onCardSave} />}
+      {expanded && <ExpandDetailCard item={expanded} active={routeActive} presentation={focusedPreview ? "focused" : selectedPresentation} room={focusedPreview && focusSection !== "sky" ? focusSection === "read" && !returnToMain ? "read-ideas" : focusSection : undefined} onClose={() => setExpanded(null)} saved={isCardSaved(expanded)} onSave={onCardSave} />}
       {focusedRaw && <ExpandDetailCard item={rowCard(focusedRaw,CARD_TYPE_OF(focusedRaw))} active={routeActive} presentation="focused" room={focusedPreview && focusSection !== "sky" ? focusSection === "read" && !returnToMain ? "read-ideas" : focusSection : undefined} onClose={()=>setFocusedRaw(null)} saved={isSaved(focusedRaw.id)} onSave={onCardSave}/>}
       {roomsOpen && <FocusedLifestyleRooms active={routeActive} onClose={()=>setRoomsOpen(false)} user={user} profile={profile} phaseKey={phaseKey} editorialPreview={calmLayout && !returnToMain} shellItems={items} horoscope={horoscope} toCard={(raw)=>rowCard(raw,CARD_TYPE_OF(raw))} isSaved={isCardSaved} onSave={onCardSave} onStory={openTodaysChapter} onSky={()=>setReadingOpen(true)}/>}
       {/* These sheets' buttons used to be no-ops that just closed — a button that lies is worse

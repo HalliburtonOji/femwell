@@ -36,6 +36,18 @@ function ReadEditionChoice({ item, onOpen, onDetails, resume = false, compact = 
   </div>;
 }
 
+function ReadIssueBrief({ item, onOpen, onDetails }) {
+  const raw = item._raw || {};
+  const news = /NEWS/i.test(String(raw.content_type || ""));
+  return <div className="fw-read-brief">
+    <button className="fw-read-brief-open" onClick={() => onOpen?.(item)} aria-label={`Read ${item.title}`}>
+      <span><small>{news ? "News draft · unreviewed" : "Practical guide · unreviewed"}{raw.duration_label ? ` · ${raw.duration_label}` : ""}</small><strong>{item.title}</strong></span>
+      <span aria-hidden="true">→</span>
+    </button>
+    {onDetails && <button className="fw-read-brief-details" onClick={() => onDetails(item)} aria-label={`Details & tools for ${item.title}`}>Details &amp; tools</button>}
+  </div>;
+}
+
 
 function ReadCard({ eyebrow, title, accent = "plum", children, style, className }) {
   // CLEAN (§2.7): one shared clean surface — white, a single soft lift, a gold eyebrow carrying its
@@ -98,14 +110,39 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
         {remaining.map(({ item, label }) => <CalmFindRow key={item.id} item={item} onOpen={onOpen} onDetails={onDetails} label={label}/>)}
       </CalmMore>
     </>;
+    const issueFeature = editorialPreview && articleCards.find(item => item._raw?.editorial_local && String(item._raw?.content_type || "").toUpperCase() === "ARTICLE");
+    const issueGuide = editorialPreview && articleCards.find(item => item._raw?.editorial_local && String(item._raw?.content_type || "").toUpperCase() === "GUIDE");
+    const issueNews = editorialPreview && articleCards.find(item => {
+      const raw=item._raw || {}, now=Date.now(), date=new Date(now);
+      const today=[date.getFullYear(),String(date.getMonth()+1).padStart(2,"0"),String(date.getDate()).padStart(2,"0")].join("-");
+      const published=String(raw.published_at || ""), expires=String(raw.expires_at || ""), checked=String(raw.revalidated_at || published);
+      const starts=/^\d{4}-\d{2}-\d{2}$/.test(published) ? published <= today : Date.parse(published) <= now;
+      const ends=/^\d{4}-\d{2}-\d{2}$/.test(expires) ? expires >= today : Date.parse(expires) >= now;
+      const checkedAt=Date.parse(checked), checkedIsCurrent=Number.isFinite(checkedAt) && now-checkedAt <= 14*86400000 &&
+        (/^\d{4}-\d{2}-\d{2}$/.test(checked) ? checked <= today : checkedAt <= now);
+      return raw.editorial_local && String(raw.content_type || "").toUpperCase() === "NEWS" && starts && ends && checkedIsCurrent;
+    });
+    const issueLead=issueFeature && issueFeature.id !== primary?.id ? issueFeature : null;
+    const issueBriefs=[issueGuide,issueNews].filter(item => item && item.id !== primary?.id);
+    const issueUsed=new Set([primary?.id,issueLead?.id,...issueBriefs.map(item=>item.id)]);
+    const issueArchive=[...continueCards,...articleCards,...storyCards].filter(item => item && !issueUsed.has(item.id) && issueUsed.add(item.id));
+    const issueMore=issueFeature ? <>
+      {issueLead && <ReadEditionChoice item={issueLead} onOpen={onOpen} onDetails={onDetails} compact/>}
+      {issueBriefs.length > 0 && <div className="fw-read-brief-list" aria-label="Useful reads in this issue">{issueBriefs.map(item=><ReadIssueBrief key={item.id} item={item} onOpen={onOpen} onDetails={onDetails}/>)}</div>}
+      <CalmMore enabled={issueArchive.length > 0} title={`Browse all reading · ${issueArchive.length}`}>
+        {issueArchive.map(item=><CalmFindRow key={item.id} item={item} onOpen={onOpen} onDetails={onDetails} label={continueCards.includes(item) ? "Continue" : "Read"}/>)}
+      </CalmMore>
+    </> : more;
+    const visibleMore=editorialPreview ? issueMore : more;
+    const hasMore=editorialPreview && issueFeature ? !!(issueLead || issueBriefs.length || issueArchive.length) : !!(second || remaining.length);
     if (segment === "lead") return lead;
-    if (segment === "rest") return second || remaining.length ? <ReadCard className="fw-selected-reading-rest" eyebrow="More at the reading desk" accent="plum">{more}</ReadCard> : null;
+    if (segment === "rest") return hasMore ? <ReadCard className="fw-selected-reading-rest" eyebrow={editorialPreview && issueFeature ? "In this issue" : "More at the reading desk"} accent="plum">{visibleMore}</ReadCard> : null;
     return <ReadCard className="fw-selected-reading-choice" eyebrow="Your next page" accent="plum">
       {presentation && <SelectedRoomDetail section="read"/>}
       {!primary ? <p className="fw-calm-read-empty">The reading desk is between editions. Older pieces are in Browse below.</p>
         : editorialPreview ? <ReadEditionChoice item={primary} onOpen={onOpen} onDetails={onDetails} resume={primaryIsResume}/>
         : <CalmFindRow item={primary} onOpen={onOpen} onDetails={onDetails} label={primaryIsResume ? "Continue" : "Read"}/>}
-      {more}
+      {visibleMore}
     </ReadCard>;
   }
 

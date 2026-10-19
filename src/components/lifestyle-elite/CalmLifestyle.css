@@ -12,6 +12,13 @@
 .fw-read-edition-open{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;min-width:90px;padding:8px 13px;border:1px solid #51444e;border-radius:999px;background:#51444e;color:#fff;font:700 13px/1.2 ui-sans-serif,system-ui,sans-serif;cursor:pointer;flex:none}
 .fw-read-edition-details{display:block;border:0;background:transparent;color:#51444e;text-decoration:underline;text-underline-offset:3px;font:600 12px/1.4 ui-sans-serif,system-ui,sans-serif;min-height:44px;padding:9px 0 0;cursor:pointer}
 .fw-read-edition--compact{padding-top:4px}.fw-read-edition--compact h2{font-size:clamp(24px,6vw,31px);max-width:25ch}.fw-read-edition--compact:after{width:55px;height:80px;opacity:.1}
+.fw-read-brief-list{margin-top:10px;border-bottom:1px solid #d9cbd8}
+.fw-read-brief{border-top:1px solid #d9cbd8;padding:7px 0 4px}
+.fw-read-brief-open{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;min-height:58px;padding:3px 0;border:0;background:transparent;color:#191510;text-align:left;cursor:pointer}
+.fw-read-brief-open>span:first-child{min-width:0}.fw-read-brief-open>span:last-child{color:#7a1a12;font:600 22px/1 "FemWell Editorial","Cormorant Garamond",Georgia,serif}
+.fw-read-brief-open small{display:block;color:#6b506e;font:700 12px/1.4 ui-sans-serif,system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase}
+.fw-read-brief-open strong{display:block;margin-top:3px;color:#7a1a12;font:italic 600 20px/1.12 "FemWell Editorial","Cormorant Garamond",Georgia,serif;overflow-wrap:anywhere}
+.fw-read-brief-details{min-height:44px;padding:6px 0 10px;border:0;background:transparent;color:#51444e;text-decoration:underline;text-underline-offset:3px;font:600 12px/1.4 ui-sans-serif,system-ui,sans-serif;cursor:pointer}
 .fw-calm-read-empty{margin:8px 0 2px;color:#51444e;font:500 16px/1.45 "FemWell Editorial","Cormorant Garamond",Georgia,serif}
 .fw-calm-find-primary{display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;min-height:64px;text-align:left;border:0;background:transparent;padding:14px 0;color:inherit;cursor:pointer}
 .fw-calm-find-primary>span:first-child{min-width:0;flex:1}
