@@ -2006,7 +2006,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
           Save is CONTROLLED → real persistence + the feed's learning loop. */}
       {expanded && <ExpandDetailCard item={expanded} active={routeActive} presentation={focusedPreview ? "focused" : selectedPresentation} room={focusedPreview && focusSection !== "sky" ? focusSection : undefined} onClose={() => setExpanded(null)} saved={isCardSaved(expanded)} onSave={onCardSave} />}
       {focusedRaw && <ExpandDetailCard item={rowCard(focusedRaw,CARD_TYPE_OF(focusedRaw))} active={routeActive} presentation="focused" room={focusedPreview && focusSection !== "sky" ? focusSection === "read" && !returnToMain ? "read-ideas" : focusSection : undefined} onClose={()=>setFocusedRaw(null)} saved={isSaved(focusedRaw.id)} onSave={onCardSave}/>}
-      {roomsOpen && <FocusedLifestyleRooms active={routeActive} onClose={()=>setRoomsOpen(false)} user={user} profile={profile} phaseKey={phaseKey} shellItems={items} horoscope={horoscope} toCard={(raw)=>rowCard(raw,CARD_TYPE_OF(raw))} isSaved={isCardSaved} onSave={onCardSave} onStory={openTodaysChapter} onSky={()=>setReadingOpen(true)}/>}
+      {roomsOpen && <FocusedLifestyleRooms active={routeActive} onClose={()=>setRoomsOpen(false)} user={user} profile={profile} phaseKey={phaseKey} editorialPreview={calmLayout && !returnToMain} shellItems={items} horoscope={horoscope} toCard={(raw)=>rowCard(raw,CARD_TYPE_OF(raw))} isSaved={isCardSaved} onSave={onCardSave} onStory={openTodaysChapter} onSky={()=>setReadingOpen(true)}/>}
       {/* These sheets' buttons used to be no-ops that just closed — a button that lies is worse
           than no button. Each now does the real thing. */}
       {chapterOpen && (

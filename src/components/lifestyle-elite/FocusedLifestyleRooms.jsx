@@ -6,6 +6,11 @@ import { cleanTitle } from "@/utils/cleanTitle";
 import { FocusedCardContents, focusedSourceParagraphs, resolveCard } from "@/components/brand/expandCards";
 import FocusedLifestyleSheet, { firstSentences, FocusedText } from "./FocusedLifestyleSheet";
 import * as BLUEPRINTS from "./roomBlueprints";
+import { LIFESTYLE_EDITORIAL_DRAFTS } from "@/data/lifestyleEditorialDrafts";
+
+// Only complete, source-mapped Ideas drafts get a first-room slot. The older
+// keyword-ranked catalogue remains reachable; its PUBLISHED flag is not a review receipt.
+const ROOM_DRAFT = { Kindred: {topic:"friend",id:"ideas-read-friendship-plans"}, Delight: {topic:"surprise",id:"ideas-read-day-off"}, Money: {id:"ideas-read-subscription-check"} };
 
 const ROOMS = [
   ["Mirror",Shirt,"Dress for how you feel"],["Move",Dumbbell,"Move for your mood"],["Kindred",Users,"Your kind of company"],
@@ -57,7 +62,7 @@ const CONNECT = {
  Outside:["Events","Planner","Jess","Community","Journal"],Money:["Deals","Jess","Community","Journal"],
 };
 
-export default function FocusedLifestyleRooms({ active, onClose, user, profile, shellItems, toCard, isSaved, onSave, onStory, onSky, horoscope, phaseKey }) {
+export default function FocusedLifestyleRooms({ active, onClose, user, profile, shellItems, toCard, isSaved, onSave, onStory, onSky, horoscope, phaseKey, editorialPreview = false }) {
   const [room,setRoom]=useState("Becoming"), [choices,setChoices]=useState({}), [turns,setTurns]=useState({}), [visibleCounts,setVisibleCounts]=useState({});
   const [library,setLibrary]=useState(null), [libraryError,setLibraryError]=useState(""), [revision,setRevision]=useState(0), [loading,setLoading]=useState(false);
   const [libraryHasMore,setLibraryHasMore]=useState(false);
@@ -94,6 +99,8 @@ export default function FocusedLifestyleRooms({ active, onClose, user, profile, 
   const candidates=room === "Kindred" && topic.key === "solitude" ? [] : matches;
   const first=d.rotateDaily(candidates,6), ordered=[...first,...candidates.filter(row=>!first.some(other=>other.id===row.id))];
   const rows=ordered.slice(0,visibleCounts[`${room}:${topic.key}`] || 3);
+  const draftSlot=ROOM_DRAFT[room];
+  const roomDraft=editorialPreview && draftSlot && (!draftSlot.topic || draftSlot.topic===topic.key) ? LIFESTYLE_EDITORIAL_DRAFTS.find(draft=>draft.id===draftSlot.id) : null;
   const prompts=promptPool(room), prompt=prompts[(d.dayOffset()+(turns[room]||0))%prompts.length];
   const RoomIcon=ROOMS.find(([name])=>name===room)[1];
   useLayoutEffect(()=>{if(sheet.current)sheet.current.scrollTop=item ? 0 : positions.current[room] || 0;},[item,room]);
@@ -116,9 +123,17 @@ export default function FocusedLifestyleRooms({ active, onClose, user, profile, 
       setGoalStatus("Kept in your garden.");
     }catch(error){setGoalStatus(error.message || "That didn’t stick. Try again.");}finally{setGoalBusy(false);}
   };
+  const moneyIntention=room === "Money" && <section style={{marginTop:20}}><label className="fw-focused-note" htmlFor="fw-money-intention">A money intention</label><select id="fw-money-intention" className="fw-focused-button" style={{width:"100%",margin:"8px 0",whiteSpace:"normal"}} value={intention} onChange={event=>{setIntention(event.target.value);setGoalStatus("");}}>{d.INTENTIONS.map(text=><option key={text}>{text}</option>)}</select><p className="fw-focused-prose">{intention}</p><button className="fw-focused-button" onClick={keepIntention} disabled={goalBusy}>{goalBusy ? "Checking…" : "Keep this intention"}</button>{goalStatus && <p role="status" className="fw-focused-note">{goalStatus}</p>}</section>;
+  const libraryResults=<>
+    {loading && <p role="status" className="fw-focused-note">Opening the library…</p>}{libraryError && <div role="alert"><p className="fw-focused-note">{libraryError}</p><button className="fw-focused-button" disabled={loading} onClick={()=>library ? loadMoreLibrary() : setRevision(value=>value+1)}>Try again</button></div>}
+    <ul className="fw-focused-room-list">{rows.map(row=><li key={row.id}><button onClick={()=>open(row)}><span style={{flex:1}}>{resolveCard({title:cleanTitle(row.title)}).title}<small>{row.source_name || row.channel_name || row.author_name}</small></span><ArrowRight size={16}/></button></li>)}</ul>
+    {ordered.length>rows.length && <button className="fw-focused-button" onClick={()=>setVisibleCounts(values=>({...values,[`${room}:${topic.key}`]:(values[`${room}:${topic.key}`] || 3)+6}))}>More in this room</button>}
+    {libraryHasMore && <details className="fw-focused-depth"><summary>Browse the wider library</summary><button className="fw-focused-button" disabled={loading} onClick={loadMoreLibrary}>{loading ? "Loading…" : "Load more published pieces"}</button></details>}
+    {!rows.length && !loading && !libraryError && topic.key!=="solitude" && <p role="status" className="fw-focused-note">{topic.key === "all" ? "No published pieces here yet." : `No ${topic.label.toLowerCase()} in this selection. Try All reads in this room${libraryHasMore ? " or load more" : ""}.`}</p>}
+  </>;
   return <FocusedLifestyleSheet title={item ? item.title : "Life’s rooms"} eyebrow={item ? room : "The rest of your life"} room="good" active={active} onClose={onClose} contentRef={sheet}
-    footer={item && <><button className="fw-focused-button" onClick={()=>setItem(null)}><ArrowLeft size={16}/>Back to {room}</button><button className="fw-focused-button" onClick={save} disabled={saving} aria-pressed={isSaved(item)}><Bookmark size={16}/>{saving ? "Saving…" : isSaved(item) ? "Saved" : "Save"}</button></>}>
-    {item ? <><FocusedCardContents item={item}/>{saveError && <p role="alert" className="fw-focused-note">{saveError}</p>}{!focusedSourceParagraphs(item).length && !item.audioSrc && !item.videoSrc && !item.youtubeId && !item._raw?.content_url && !item._raw?.source_url && item.actions?.map(action=><button key={action.label} className="fw-focused-button" onClick={()=>{onClose();action.onClick?.(item);}}>{action.label}</button>)}</> : <>
+    footer={item && <><button className="fw-focused-button" onClick={()=>setItem(null)}><ArrowLeft size={16}/>Back to {room}</button>{item.saveable !== false && <button className="fw-focused-button" onClick={save} disabled={saving} aria-pressed={isSaved(item)}><Bookmark size={16}/>{saving ? "Saving…" : isSaved(item) ? "Saved" : "Save"}</button>}</>}>
+    {item ? <><FocusedCardContents item={item} room={item._raw?.editorial_local ? "read-ideas" : "good"}/>{saveError && <p role="alert" className="fw-focused-note">{saveError}</p>}{!focusedSourceParagraphs(item).length && !item.audioSrc && !item.videoSrc && !item.youtubeId && !item._raw?.content_url && !item._raw?.source_url && item.actions?.map(action=><button key={action.label} className="fw-focused-button" onClick={()=>{onClose();action.onClick?.(item);}}>{action.label}</button>)}</> : <>
       <label className="fw-focused-note" htmlFor="fw-life-room">Room</label><select id="fw-life-room" className="fw-focused-button" style={{width:"100%",margin:"5px 0 20px"}} value={room} onChange={event=>switchRoom(event.target.value)}>{ROOMS.map(([name])=><option key={name}>{name}</option>)}</select>
       <div className="fw-focused-room-bar"><span className="fw-focused-room-mark"><RoomIcon size={20}/></span><h2>{room}</h2><Flower2 size={17} color="#A8893F" aria-hidden="true"/></div>
       {prompt ? <div className="fw-focused-prose"><p><FocusedText text={prompt}/></p><div className="fw-focused-room-links"><button className="fw-focused-button" onClick={()=>setTurns(values=>({...values,[room]:(values[room]||0)+1}))}>Another little thing <ArrowRight size={15}/></button>{room === "Becoming" && <a className="fw-focused-button" href="/Journal">Write in Journal</a>}</div></div> : null}
@@ -126,16 +141,14 @@ export default function FocusedLifestyleRooms({ active, onClose, user, profile, 
       {room === "Move" && phaseKey && d.ENERGY_NOTE[phaseKey] && <details className="fw-focused-depth"><summary>Your energy, your call</summary><p className="fw-focused-note">{d.ENERGY_NOTE[phaseKey]}</p></details>}
       {room === "Tonight" && <div className="fw-focused-room-links"><button className="fw-focused-button" onClick={()=>{onClose();onStory();}}>Tonight’s chapter</button><button className="fw-focused-button" disabled={!horoscope?.id} onClick={()=>{onClose();onSky();}}>Your sky</button></div>}
       {room === "Outside" && <details className="fw-focused-depth"><summary>No garden? Still counts.</summary><p className="fw-focused-prose">A windowsill, a tree on your street, the view through a window. Start where you are.</p></details>}
-      {room === "Money" && <section style={{marginTop:20}}><label className="fw-focused-note" htmlFor="fw-money-intention">A money intention</label><select id="fw-money-intention" className="fw-focused-button" style={{width:"100%",margin:"8px 0",whiteSpace:"normal"}} value={intention} onChange={event=>{setIntention(event.target.value);setGoalStatus("");}}>{d.INTENTIONS.map(text=><option key={text}>{text}</option>)}</select><p className="fw-focused-prose">{intention}</p><button className="fw-focused-button" onClick={keepIntention} disabled={goalBusy}>{goalBusy ? "Checking…" : "Keep this intention"}</button>{goalStatus && <p role="status" className="fw-focused-note">{goalStatus}</p>}</section>}
+      {!editorialPreview && moneyIntention}
       {room !== "Make" && <section style={{marginTop:24}}><label className="fw-focused-note" htmlFor="fw-room-topic">{room === "Move" ? "How do you feel?" : room === "Kindred" ? "What’s your heart asking for?" : "What do you fancy?"}</label><select id="fw-room-topic" className="fw-focused-button" style={{width:"100%",margin:"8px 0 12px"}} value={topic.key} onChange={event=>setChoices(values=>({...values,[room]:event.target.value}))}>{topics.map(value=><option value={value.key} key={value.key}>{value.label}</option>)}</select>
         {topic.line && <p className="fw-focused-note">{firstSentences(topic.line,1)}</p>}
         {room === "Kindred" && topic.nudge && <details className="fw-focused-depth"><summary>A little reach-out idea</summary><p className="fw-focused-prose">{d.REACH_OUT}</p></details>}
-        {loading && <p role="status" className="fw-focused-note">Opening the library…</p>}{libraryError && <div role="alert"><p className="fw-focused-note">{libraryError}</p><button className="fw-focused-button" disabled={loading} onClick={()=>library ? loadMoreLibrary() : setRevision(value=>value+1)}>Try again</button></div>}
-        <ul className="fw-focused-room-list">{rows.map(row=><li key={row.id}><button onClick={()=>open(row)}><span style={{flex:1}}>{resolveCard({title:cleanTitle(row.title)}).title}<small>{row.source_name || row.channel_name || row.author_name}</small></span><ArrowRight size={16}/></button></li>)}</ul>
-        {ordered.length>rows.length && <button className="fw-focused-button" onClick={()=>setVisibleCounts(values=>({...values,[`${room}:${topic.key}`]:(values[`${room}:${topic.key}`] || 3)+6}))}>More in this room</button>}
-        {libraryHasMore && <details className="fw-focused-depth"><summary>Browse the wider library</summary><button className="fw-focused-button" disabled={loading} onClick={loadMoreLibrary}>{loading ? "Loading…" : "Load more published pieces"}</button></details>}
-        {!rows.length && !loading && !libraryError && topic.key!=="solitude" && <p role="status" className="fw-focused-note">{topic.key === "all" ? "No published pieces here yet." : `No ${topic.label.toLowerCase()} in this selection. Try All reads in this room${libraryHasMore ? " or load more" : ""}.`}</p>}
+        {editorialPreview && (roomDraft ? <div className="fw-focused-prose"><p>From the Ideas reading desk · {roomDraft.duration_label}. Source review still open.</p><button className="fw-focused-button" onClick={()=>open(roomDraft)}>{roomDraft.title}<ArrowRight size={15}/></button></div> : <p className="fw-focused-note">The reading shelf for {room.toLowerCase()} is being checked. The little idea above is ready now.</p>)}
+        {editorialPreview ? <details className="fw-focused-depth"><summary>Browse unreviewed library{ordered.length ? ` · ${ordered.length}` : ""}</summary>{libraryResults}</details> : libraryResults}
       </section>}
+      {editorialPreview && moneyIntention}
       <details className="fw-focused-depth"><summary>Carry it on</summary><div className="fw-focused-room-links">{CONNECT[room].map(destination=>destination === "Jess" ? <button key={destination} className="fw-focused-button" onClick={()=>{onClose();window.dispatchEvent(new CustomEvent("fw_open_assistant",{detail:{prompt:`I’d like to talk about ${room.toLowerCase()}.`}}));}}>Ask Jess</button> : <a key={destination} className="fw-focused-button" href={`/${destination}`}>{destination}</a>)}</div></details>
     </>}
   </FocusedLifestyleSheet>;
