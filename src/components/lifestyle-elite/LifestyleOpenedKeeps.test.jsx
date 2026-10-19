@@ -34,7 +34,8 @@ async function openFictionDetails(){
  api.update.mockImplementation(async(entity,id,data)=>({id,user_id:'owner',...data}));api.create.mockImplementation(async(entity,data)=>({id:'created-profile',...data}));
  render(<MemoryRouter initialEntries={['/Lifestyle?section=books']}><KeptAlive/></MemoryRouter>);
  const main=screen.getByTestId('kept-lifestyle');await waitFor(()=>expect(main.querySelector('#book-library')).not.toBeNull());
- fireEvent.click(within(main.querySelector('#book-library')).getByRole('button',{name:'Details & tools ›'}));
+ const fictionRow=within(main.querySelector('#book-library')).getByRole('button',{name:/Actual fiction/}).parentElement;
+ fireEvent.click(within(fictionRow).getByRole('button',{name:'Details & tools ›'}));
  await screen.findAllByRole('button',{name:'Save',exact:true});
  return screen.getAllByRole('button',{name:'Save',exact:true})[0];
 }

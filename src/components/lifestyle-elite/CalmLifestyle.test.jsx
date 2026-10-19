@@ -10,6 +10,37 @@ import { CalmTaskDialog } from "./CalmLifestyle";
 vi.mock("@/api/base44Client", () => ({ base44: { auth: { me: vi.fn() }, entities: {}, functions: { invoke: vi.fn() } } }));
 
 describe("calmer lists preserve exact source tasks", () => {
+  it("gives Ideas Yours the owned source first and keeps every wider-library row behind a truthful choice", () => {
+    const saved={id:"owned-story",type:"daily_story",title:"Her kept story",sourceName:"FemWell Fiction",body:["Full kept story."]};
+    const candidates=[0,1,2].map(index=>({id:`candidate-${index}`,type:"article",title:`Other find ${index}`,sourceName:"FemWell Fiction",body:[`Full source ${index}.`]}));
+    const onOpen=vi.fn();
+    const {container}=render(<YoursFocus calmLayout editorialPreview presentation="focused" savedCards={[saved]} phaseCards={candidates} onOpen={onOpen}/>);
+    expect(screen.getByRole("heading",{name:"Stories"})).toBeVisible();
+    const other=screen.getByText("Browse other finds · 3").closest("details");
+    expect(other.open).toBe(false);
+    fireEvent.click(screen.getByRole("button",{name:/Her kept story.*Read/}));
+    expect(onOpen).toHaveBeenLastCalledWith(saved);
+    fireEvent.click(other.querySelector("summary"));
+    expect(other.open).toBe(true);
+    expect(screen.getByText("From the wider library, not chosen from your keeps.")).toBeVisible();
+    fireEvent.click(screen.getByText("More discoveries · 1").closest("summary"));
+    expect(container.querySelectorAll(".fw-calm-find-primary")).toHaveLength(4);
+    fireEvent.click(screen.getByRole("button",{name:/Other find 2.*Open/}));
+    expect(onOpen).toHaveBeenLastCalledWith(candidates[2]);
+  });
+  it("shows a save invitation before optional discoveries when Yours has no owned keep", () => {
+    render(<YoursFocus calmLayout editorialPreview presentation="focused" phaseCards={[{id:"candidate",type:"article",title:"Other find"}]}/>);
+    expect(screen.getByRole("heading",{name:"Keep what you love"})).toBeVisible();
+    expect(screen.getByText("Browse other finds · 1").closest("details").open).toBe(false);
+  });
+  it("does not mistake a loading or failed owner read for an empty drawer", () => {
+    const {rerender}=render(<YoursFocus calmLayout editorialPreview presentation="focused" ownedLoading/>);
+    expect(screen.getByRole("status")).toHaveTextContent("Finding your keeps");
+    expect(screen.queryByRole("heading",{name:"Keep what you love"})).not.toBeInTheDocument();
+    rerender(<YoursFocus calmLayout editorialPreview presentation="focused" ownedError/>);
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading",{name:"Keep what you love"})).not.toBeInTheDocument();
+  });
   it("distinguishes different same-title discoveries with their own source words and preserves both exact actions", () => {
     const onOpen=vi.fn(),onDetails=vi.fn();
     const rows=[{id:"mara",type:"book",title:"Starting Over",summary:"Mara runs her mother's flower shop."},{id:"lena",type:"book",title:"Starting Over",summary:"Lena makes ceramics while caring for her mother."},{id:"unique",type:"article",title:"Other find",summary:"No repeated preview needed."}];
