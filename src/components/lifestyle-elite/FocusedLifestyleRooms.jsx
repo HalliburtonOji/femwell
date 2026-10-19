@@ -105,7 +105,7 @@ export default function FocusedLifestyleRooms({ active, onClose, user, profile, 
     base44.entities.LifestyleItems.filter({status:"PUBLISHED"},"-engagement_score",500).then(rows=>{
       if (!Array.isArray(rows)) throw new Error("Unexpected library reply");
       if(alive){setLibrary(rows.filter(Boolean));setLibraryHasMore(rows.length===500);}
-    }).catch(()=>{if(alive)setLibraryError("The library didn’t open. Your room is still here.");}).finally(()=>{if(alive)setLoading(false);});
+    }).catch(()=>{if(alive)setLibraryError("The wider library didn’t refresh. Anything already shown here is still available.");}).finally(()=>{if(alive)setLoading(false);});
     return ()=>{alive=false;};
   // Initial room is Becoming. Switching rooms reuses this in-flight/read edition.
   // eslint-disable-next-line react-hooks/exhaustive-deps
