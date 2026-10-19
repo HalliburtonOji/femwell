@@ -63,3 +63,42 @@ it('keeps every old source in optional depth while giving only topic-fit Ideas d
   fireEvent.change(screen.getByLabelText('What do you fancy?'),{target:{value:'surprise'}});
   expect(screen.getByRole('button',{name:/Your day off is not a performance review/})).toBeVisible();
 });
+
+const firstPieces = [
+  ['Mirror','The outfit already in your wardrobe','The point isn\'t to dress for a mood'],
+  ['Move','Ten minutes, your rules','an invitation, not a test'],
+  ['Curious','Why stars twinkle and planets show off','Curiosity is allowed to stop'],
+  ['Nest','One corner, five minutes','A place you can use tonight'],
+  ['Tonight','The day can stop here','Tonight\'s chapter and your Sky'],
+  ['Becoming','A small yes that sounds like yours','Thursdays and window seats'],
+  ['Make','A five-minute paper garden','The making was the point'],
+  ['Outside','The outdoors, from where you are','You do not need to grow anything'],
+];
+
+it.each(firstPieces)('opens and returns from the complete %s Ideas first piece without a false Save',async(room,title,ending)=>{
+  const onSave=vi.fn();
+  render(<FocusedLifestyleRooms active editorialPreview user={{id:'alice'}} shellItems={[]}
+    toCard={row=>({...row,type:'article',_raw:row,saveable:!row.editorial_local,body:[row.lede].filter(Boolean)})}
+    isSaved={()=>false} onSave={onSave} onClose={vi.fn()}/>);
+  fireEvent.change(screen.getByLabelText('Room'),{target:{value:room}});
+  const first=screen.getByRole('button',{name:new RegExp(title)});
+  expect(first).toBeVisible();
+  fireEvent.click(first);
+  expect(screen.getByRole('heading',{name:title})).toBeVisible();
+  expect(screen.getByText(new RegExp(ending))).toBeVisible();
+  expect(screen.getByText(/Ideas draft · Guide · unreviewed/)).toBeVisible();
+  expect(screen.queryByRole('button',{name:'Save'})).not.toBeInTheDocument();
+  expect(onSave).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button',{name:new RegExp(`Back to ${room}`)}));
+  expect(screen.getByRole('button',{name:new RegExp(title)})).toBeVisible();
+});
+
+it('does not serve a first piece for the wrong selected topic',()=>{
+  render(<FocusedLifestyleRooms active editorialPreview user={{id:'alice'}} shellItems={[]}
+    toCard={row=>row} isSaved={()=>false} onSave={vi.fn()} onClose={vi.fn()}/>);
+  fireEvent.change(screen.getByLabelText('Room'),{target:{value:'Mirror'}});
+  expect(screen.getByRole('button',{name:/The outfit already in your wardrobe/})).toBeVisible();
+  fireEvent.change(screen.getByLabelText('What do you fancy?'),{target:{value:'soft'}});
+  expect(screen.queryByRole('button',{name:/The outfit already in your wardrobe/})).not.toBeInTheDocument();
+  expect(screen.getByText(/reading shelf for mirror is being checked/)).toBeVisible();
+});

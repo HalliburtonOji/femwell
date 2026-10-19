@@ -7,10 +7,37 @@ import { FocusedCardContents, focusedSourceParagraphs, resolveCard } from "@/com
 import FocusedLifestyleSheet, { firstSentences, FocusedText } from "./FocusedLifestyleSheet";
 import * as BLUEPRINTS from "./roomBlueprints";
 import { LIFESTYLE_EDITORIAL_DRAFTS } from "@/data/lifestyleEditorialDrafts";
+import { GOOD_LIFE_ROOM_EDITIONS } from "@/data/goodLifeRoomEditions";
 
 // Only complete, source-mapped Ideas drafts get a first-room slot. The older
 // keyword-ranked catalogue remains reachable; its PUBLISHED flag is not a review receipt.
-const ROOM_DRAFT = { Kindred: {topic:"friend",id:"ideas-read-friendship-plans"}, Delight: {topic:"surprise",id:"ideas-read-day-off"}, Money: {id:"ideas-read-subscription-check"} };
+const ROOM_DRAFT = {
+  Mirror:{topic:"bright",id:"ideas-good-mirror-own-wardrobe"},
+  Move:{topic:"energy",id:"ideas-good-move-choose-ten"},
+  Kindred:{topic:"friend",id:"ideas-read-friendship-plans"},
+  Curious:{topic:"science",id:"ideas-good-curious-twinkle"},
+  Delight:{topic:"surprise",id:"ideas-read-day-off"},
+  Nest:{topic:"home",id:"ideas-good-nest-one-corner"},
+  Tonight:{topic:"all",id:"ideas-good-tonight-close-day"},
+  Becoming:{topic:"trust",id:"ideas-good-becoming-small-yes"},
+  Make:{id:"ideas-good-make-paper-garden"},
+  Outside:{topic:"all",id:"ideas-good-outside-nearby"},
+  Money:{id:"ideas-read-subscription-check"},
+};
+const ROOM_EDITION = [...LIFESTYLE_EDITORIAL_DRAFTS,...GOOD_LIFE_ROOM_EDITIONS];
+const ROOM_SIGNATURE = {
+  Mirror:["The dressing table","#94575f","#f5e9eb"],
+  Move:["The movement note","#4e735d","#e9f0ea"],
+  Kindred:["The letter","#88566a","#f2e9ee"],
+  Curious:["The rabbit hole","#4d6d7f","#e9f0f2"],
+  Delight:["A little delight","#906b2a","#f4efdf"],
+  Nest:["The little room","#806642","#f3eee5"],
+  Tonight:["Before lights out","#665e82","#eeebf3"],
+  Becoming:["The open page","#745373","#f1eaf2"],
+  Make:["The workbench","#9b5c49","#f5ebe6"],
+  Outside:["The field note","#4f765b","#e9f1e9"],
+  Money:["The money minute","#886b31","#f4eedf"],
+};
 
 const ROOMS = [
   ["Mirror",Shirt,"Dress for how you feel"],["Move",Dumbbell,"Move for your mood"],["Kindred",Users,"Your kind of company"],
@@ -100,7 +127,8 @@ export default function FocusedLifestyleRooms({ active, onClose, user, profile, 
   const first=d.rotateDaily(candidates,6), ordered=[...first,...candidates.filter(row=>!first.some(other=>other.id===row.id))];
   const rows=ordered.slice(0,visibleCounts[`${room}:${topic.key}`] || 3);
   const draftSlot=ROOM_DRAFT[room];
-  const roomDraft=editorialPreview && draftSlot && (!draftSlot.topic || draftSlot.topic===topic.key) ? LIFESTYLE_EDITORIAL_DRAFTS.find(draft=>draft.id===draftSlot.id) : null;
+  const roomDraft=editorialPreview && draftSlot && (!draftSlot.topic || draftSlot.topic===topic.key) ? ROOM_EDITION.find(draft=>draft.id===draftSlot.id) : null;
+  const [signature,accent,wash]=ROOM_SIGNATURE[room];
   const prompts=promptPool(room), prompt=prompts[(d.dayOffset()+(turns[room]||0))%prompts.length];
   const RoomIcon=ROOMS.find(([name])=>name===room)[1];
   useLayoutEffect(()=>{if(sheet.current)sheet.current.scrollTop=item ? 0 : positions.current[room] || 0;},[item,room]);
@@ -135,7 +163,8 @@ export default function FocusedLifestyleRooms({ active, onClose, user, profile, 
     footer={item && <><button className="fw-focused-button" onClick={()=>setItem(null)}><ArrowLeft size={16}/>Back to {room}</button>{item.saveable !== false && <button className="fw-focused-button" onClick={save} disabled={saving} aria-pressed={isSaved(item)}><Bookmark size={16}/>{saving ? "Saving…" : isSaved(item) ? "Saved" : "Save"}</button>}</>}>
     {item ? <><FocusedCardContents item={item} room={item._raw?.editorial_local ? "read-ideas" : "good"}/>{saveError && <p role="alert" className="fw-focused-note">{saveError}</p>}{!focusedSourceParagraphs(item).length && !item.audioSrc && !item.videoSrc && !item.youtubeId && !item._raw?.content_url && !item._raw?.source_url && item.actions?.map(action=><button key={action.label} className="fw-focused-button" onClick={()=>{onClose();action.onClick?.(item);}}>{action.label}</button>)}</> : <>
       <label className="fw-focused-note" htmlFor="fw-life-room">Room</label><select id="fw-life-room" className="fw-focused-button" style={{width:"100%",margin:"5px 0 20px"}} value={room} onChange={event=>switchRoom(event.target.value)}>{ROOMS.map(([name])=><option key={name}>{name}</option>)}</select>
-      <div className="fw-focused-room-bar"><span className="fw-focused-room-mark"><RoomIcon size={20}/></span><h2>{room}</h2><Flower2 size={17} color="#A8893F" aria-hidden="true"/></div>
+      <div className="fw-focused-room-bar" style={editorialPreview ? {"--good-accent":accent,"--good-wash":wash} : undefined}><span className="fw-focused-room-mark"><RoomIcon size={20}/></span><h2>{room}</h2><Flower2 size={17} color="#A8893F" aria-hidden="true"/></div>
+      {roomDraft && <div className="fw-focused-room-feature" style={{"--good-accent":accent,"--good-wash":wash}}><p className="fw-focused-room-feature-kicker">{signature} · {roomDraft.duration_label}</p><button className="fw-focused-button" onClick={()=>open(roomDraft)}><span>{roomDraft.title}</span><ArrowRight size={18} aria-hidden="true"/></button><p className="fw-focused-note">Ideas draft · unreviewed</p></div>}
       {prompt ? <div className="fw-focused-prose"><p><FocusedText text={prompt}/></p><div className="fw-focused-room-links"><button className="fw-focused-button" onClick={()=>setTurns(values=>({...values,[room]:(values[room]||0)+1}))}>Another little thing <ArrowRight size={15}/></button>{room === "Becoming" && <a className="fw-focused-button" href="/Journal">Write in Journal</a>}</div></div> : null}
       {room === "Mirror" && <details className="fw-focused-depth"><summary>A three-minute getting-ready ritual</summary><p className="fw-focused-prose">One song, one thing you like in the mirror, out the door lighter.</p>{phaseKey && d.SKIN_NOTE[phaseKey] && <p className="fw-focused-note">{d.SKIN_NOTE[phaseKey]}</p>}</details>}
       {room === "Move" && phaseKey && d.ENERGY_NOTE[phaseKey] && <details className="fw-focused-depth"><summary>Your energy, your call</summary><p className="fw-focused-note">{d.ENERGY_NOTE[phaseKey]}</p></details>}
@@ -145,7 +174,7 @@ export default function FocusedLifestyleRooms({ active, onClose, user, profile, 
       {room !== "Make" && <section style={{marginTop:24}}><label className="fw-focused-note" htmlFor="fw-room-topic">{room === "Move" ? "How do you feel?" : room === "Kindred" ? "What’s your heart asking for?" : "What do you fancy?"}</label><select id="fw-room-topic" className="fw-focused-button" style={{width:"100%",margin:"8px 0 12px"}} value={topic.key} onChange={event=>setChoices(values=>({...values,[room]:event.target.value}))}>{topics.map(value=><option value={value.key} key={value.key}>{value.label}</option>)}</select>
         {topic.line && <p className="fw-focused-note">{firstSentences(topic.line,1)}</p>}
         {room === "Kindred" && topic.nudge && <details className="fw-focused-depth"><summary>A little reach-out idea</summary><p className="fw-focused-prose">{d.REACH_OUT}</p></details>}
-        {editorialPreview && (roomDraft ? <div className="fw-focused-prose"><p>From the Ideas reading desk · {roomDraft.duration_label}. Source review still open.</p><button className="fw-focused-button" onClick={()=>open(roomDraft)}>{roomDraft.title}<ArrowRight size={15}/></button></div> : <p className="fw-focused-note">The reading shelf for {room.toLowerCase()} is being checked. The little idea above is ready now.</p>)}
+        {editorialPreview && !roomDraft && <p className="fw-focused-note">The reading shelf for {room.toLowerCase()} is being checked. The little idea above is ready now.</p>}
         {editorialPreview ? <details className="fw-focused-depth"><summary>Browse unreviewed library{ordered.length ? ` · ${ordered.length}` : ""}</summary>{libraryResults}</details> : libraryResults}
       </section>}
       {editorialPreview && moneyIntention}
