@@ -12,7 +12,8 @@
 // HONEST SCIENCE (do NOT launder slogans): movement→MOOD is strongly evidenced (SMD ~-0.4);
 // "cycle-sync your workouts" / "stronger in follicular" is WEAK/contested — so the cycle
 // element is a gentle editorial note about energy+mood, never a phase-programmed plan.
-// Movement "snacks" (≤5 min) are genuinely evidence-backed (2022 Nature Medicine).
+// NHS start-small guidance supports optional short activity; one snack is not
+// a complete workout or a promised mood result.
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Zap, Wind, Feather as FeatherIcon, Cloud, Sparkles, Moon, Dumbbell, HeartPulse, Footprints, Clock, MessageCircle, CalendarPlus } from "lucide-react";
@@ -71,14 +72,14 @@ const ENERGY_NOTE = {
 };
 const NOTE_LABEL = { menstrual: "Bleed week", follicular: "Follicular", ovulatory: "Ovulatory", luteal: "Luteal" };
 
-// evidence-backed micro-movement — ≤5 min bouts genuinely improve mood/fitness (2022 Nature Med)
+// Six optional small moves, with no promise that one minute is a workout or treatment.
 const SNACKS = [
-  "One song — put it on and dance the whole thing. That's a complete workout for your mood.",
-  "A five-minute walk round the block. No shoes-and-kit ritual, just out the door.",
-  "Ten slow shoulder rolls and a big stretch upward. Undo the desk.",
-  "Take the stairs like you mean it — one flight, a little out of breath, done.",
-  "Stand up and shake out every limb for 60 seconds. Silly on purpose.",
-  "A doorway chest stretch, both sides, and three deep breaths. Open you back up.",
+  "Put on one song and dance until it ends. The kitchen floor doesn't mind your technique.",
+  "Walk for five minutes, inside or out. Turn round whenever you like.",
+  "Roll your shoulders, reach up, let your arms fall. Your desk can wait.",
+  "Take one flight of stairs if that appeals. No stopwatch, no second flight owed.",
+  "Shake out your arms and legs for a minute. Yes, it looks ridiculous. That's fine.",
+  "Try a gentle doorway chest stretch on each side, then a few easy breaths. Stop if it feels uncomfortable.",
 ];
 
 export default function Move() {
