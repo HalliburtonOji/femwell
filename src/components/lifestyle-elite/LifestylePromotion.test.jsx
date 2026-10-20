@@ -11,6 +11,43 @@ vi.mock('@/components/lifestyle/DailyStoryReader',()=>({default:({goToChapter,on
 vi.mock('./SelectedLifestyleHeader',()=>({default:({active})=><h1>{active.title}</h1>,SelectedRoomDetail:()=>null}));
 beforeEach(()=>{mock.empty.mockResolvedValue([]);mock.articles.mockResolvedValue([]);mock.chapters.mockResolvedValue([]);mock.readings.mockResolvedValue([]);vi.spyOn(globalThis,'fetch').mockResolvedValue({ok:true,json:async()=>({results:[]})});window.history.replaceState({},'', '/Lifestyle');});
 describe('approved main Lifestyle parity',()=>{
+  it('keeps generated health prose out of the first Good life time pick while retaining its archive',async()=>{
+    window.history.replaceState({},'', '/Lifestyle?section=good');
+    const title='The Cycle-Synced Workweek: How to Plan 28 Days Around Your Hormones';
+    mock.articles.mockResolvedValue([{id:'unchecked-cycle',title,summary:'An unchecked claim.',lede:'A long but unreviewed body. '.repeat(70),category:"Women's Health",provider:'FEMWELL_AI',content_type:'ARTICLE',media_type:'ARTICLE',status:'PUBLISHED'}]);
+    const {container}=render(<Lifestyle/>);
+    await screen.findByRole('button',{name:/Explore life’s rooms/});
+    await waitFor(()=>expect(mock.articles).toHaveBeenCalled());
+    const choices=container.querySelector('.fw-good-time-results');
+    expect(choices).toBeInTheDocument();
+    expect(within(choices).queryByText(title)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button',{name:/Explore life’s rooms/}));
+    const room=screen.getByRole('dialog',{name:'Becoming'});
+    fireEvent.click(within(room).getByText('Browse the wider library'));
+    await waitFor(()=>expect(mock.articles.mock.calls.some(([, , limit])=>limit===500)).toBe(true));
+  });
+  it('times the complete source, then chooses a different full read for fifteen minutes',async()=>{
+    window.history.replaceState({},'', '/Lifestyle?section=good');
+    mock.articles.mockResolvedValue([
+      {id:'long',title:'A proper longer read',lede:'A complete paragraph with a clear thought. '.repeat(300),provider:'EDITORIAL',content_type:'ARTICLE',media_type:'ARTICLE',category:'Lifestyle',status:'PUBLISHED'},
+      {id:'short',title:'A proper short read',lede:'A complete paragraph with a clear thought. '.repeat(70),provider:'EDITORIAL',content_type:'ARTICLE',media_type:'ARTICLE',category:'Lifestyle',status:'PUBLISHED'},
+    ]);
+    const {container}=render(<Lifestyle/>);
+    await screen.findByRole('button',{name:/Explore life’s rooms/});
+    const choices=container.querySelector('.fw-good-time-results');
+    await waitFor(()=>expect(within(choices).getByRole('button',{name:'A proper short read'})).toBeVisible());
+    expect(within(choices).queryByText('A proper longer read')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button',{name:/Fifteen minutes/}));
+    expect(within(choices).getByRole('button',{name:'A proper longer read'})).toBeVisible();
+  });
+  it('keeps generated fiction in Read Browse without making it the first unsaved page',async()=>{
+    window.history.replaceState({},'', '/Lifestyle?section=read');
+    mock.articles.mockResolvedValue([{id:'old-story',title:'An archived story',summary:'A whole fictional scene.',lede:'The complete fictional scene. '.repeat(60),category:'Fiction',provider:'FEMWELL_AI',content_type:'STORY',media_type:'ARTICLE',status:'PUBLISHED'}]);
+    render(<Lifestyle/>);
+    expect(await screen.findByText('No new read just now. Try Books next door.')).toBeVisible();
+    fireEvent.click(screen.getByText('Browse all reading · 1'));
+    expect(screen.getByRole('button',{name:/An archived story.*Read/})).toBeVisible();
+  });
   it('puts one exact Read source before the glance without duplicating it below',async()=>{
     window.history.replaceState({},'', '/Lifestyle?section=read');
     mock.articles.mockResolvedValue([{id:'reviewed-read',title:'An actual full article',summary:'A short, useful opening.',lede:'A complete original article. '.repeat(55),category:'Relationships',provider:'EDITORIAL',content_type:'ARTICLE',media_type:'ARTICLE',status:'PUBLISHED',author_name:'FemWell Editorial'},{id:'second-read',title:'Another complete read',summary:'A different subject.',lede:'A second complete article. '.repeat(55),category:'Lifestyle',provider:'EDITORIAL',content_type:'ARTICLE',media_type:'ARTICLE',status:'PUBLISHED'}]);

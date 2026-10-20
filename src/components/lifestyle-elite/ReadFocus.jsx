@@ -80,13 +80,13 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
     // whole-life essay changes the subject from the existing fiction-heavy
     // archive; the full article/history list stays one tap away.
     const namedResume = continueCards.find(item => !/^Project Gutenberg book \d+$/i.test(item.title || ""));
-    const labelledFiction = storyCards.find(item => /fiction/i.test(item._raw?.author_name || item.sourceName || ""));
+    const labelledFiction = storyCards.find(item => !item.archived && /fiction/i.test(item._raw?.author_name || item.sourceName || ""));
     const completeEditorial = articleCards.find(item => item._raw?.editorial_local ||
       (!item.archived && item.body?.length));
-    const currentFeatured = featured && !featured.archived ? featured : null;
-    const primary = namedResume || continueCards[0] || completeEditorial || labelledFiction || storyCards[0] || currentFeatured;
-    const alternate = continueCards.includes(primary) ? completeEditorial || labelledFiction || currentFeatured
-      : storyCards.includes(primary) ? completeEditorial || currentFeatured : labelledFiction;
+    const currentStory = storyCards.find(item => !item.archived && item.body?.length);
+    const primary = namedResume || continueCards[0] || completeEditorial || labelledFiction || currentStory || null;
+    const alternate = continueCards.includes(primary) ? completeEditorial || labelledFiction || currentStory
+      : storyCards.includes(primary) ? completeEditorial : labelledFiction || currentStory;
     const second = alternate?.id === primary?.id ? null : alternate;
     const used = new Set([primary?.id, second?.id]);
     const remaining = [

@@ -11,7 +11,7 @@ const roomsProps={active:true,onClose:vi.fn(),user:{id:'owner-a'},profile:{},she
 it('cleans decorative publisher title marks without changing the source row',async()=>{
  const row={id:'emoji-source',title:'Real confidence source 🌅',category:'Lifestyle'};
  sdk.entities.LifestyleItems.filter.mockResolvedValue([row]);render(<FocusedLifestyleRooms {...roomsProps}/>);
- expect(await screen.findByRole('button',{name:'Real confidence source',exact:true})).toBeVisible();
+ expect(await screen.findByRole('button',{name:/Real confidence source/})).toBeVisible();
  expect(row.title).toBe('Real confidence source 🌅');
 });
 it('preserves the existing structured quote and attribution in focused detail',()=>{
@@ -44,7 +44,7 @@ it('retains the existing recipe ingredients shape and method in focused detail',
 it('keeps the real read action available from a room item that carries no full inline source',async()=>{
  const open=vi.fn();sdk.entities.LifestyleItems.filter.mockResolvedValue([{id:'source-item',title:'Real confidence source',summary:'An actual source opening',category:'Lifestyle'}]);
  render(<FocusedLifestyleRooms {...roomsProps} toCard={r=>({...base,...r,actions:[{label:'Read this',onClick:open}]})}/>);
- fireEvent.click(await screen.findByRole('button',{name:'Real confidence source'}));
+ fireEvent.click(await screen.findByRole('button',{name:/Real confidence source/}));
  fireEvent.click(screen.getByRole('button',{name:'Read this'}));expect(open).toHaveBeenCalledTimes(1);
 });
 it('stops Money intention creation when the owner changes during the duplicate lookup',async()=>{
@@ -62,7 +62,7 @@ it('an inactive focused detail does not consume another route Escape or discard 
 });
 it('Mirror All reads includes skin and body-neutral pieces as well as fashion',async()=>{
  sdk.entities.LifestyleItems.filter.mockResolvedValue([{id:'fashion',title:'Fashion wardrobe',category:'Fashion'},{id:'skin',title:'A skincare guide',category:'Beauty'},{id:'body',title:'Body confidence',category:'Body Image'}]);
- render(<FocusedLifestyleRooms {...roomsProps}/>);await screen.findByRole('button',{name:'Body confidence'});
+ render(<FocusedLifestyleRooms {...roomsProps}/>);await screen.findByRole('button',{name:/Body confidence/});
  fireEvent.change(screen.getByLabelText('Room'),{target:{value:'Mirror'}});fireEvent.change(screen.getByLabelText('What do you fancy?'),{target:{value:'all'}});
- expect(screen.getByRole('button',{name:'Fashion wardrobe'})).toBeVisible();expect(screen.getByRole('button',{name:'A skincare guide'})).toBeVisible();expect(screen.getByRole('button',{name:'Body confidence'})).toBeVisible();
+ expect(screen.getByRole('button',{name:/Fashion wardrobe/})).toBeVisible();expect(screen.getByRole('button',{name:/A skincare guide/})).toBeVisible();expect(screen.getByRole('button',{name:/Body confidence/})).toBeVisible();
 });

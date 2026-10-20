@@ -962,23 +962,30 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
   const pickFor = useCallback((bandKey) => {
     const byDur = (arr) => [...(arr || [])].sort((a, b) => (a.duration_seconds || 9e9) - (b.duration_seconds || 9e9));
     const longest = (arr) => [...(arr || [])].sort((a, b) => (b.duration_seconds || 0) - (a.duration_seconds || 0));
+    // PUBLISHED is a catalogue state, not an editorial sign-off. Keep the
+    // generated/news archives in Browse, never as the first personal time pick.
+    const firstRead = row => row && !/^FEMWELL_AI/i.test(String(row.provider || "")) && !isStaleNews(row) && contentBodyOf(row).length > 0;
     // The new demo's time promise uses measured durations. Longer/unknown items stay in their sections.
     const within = (rows, seconds) => byDur(rows).find(row => Number(row.duration_seconds) > 0 && Number(row.duration_seconds) <= seconds) || null;
     // The unreviewed local pieces are a preview choice only. On main, estimate
     // reading time from a complete source body when the row has no measured
     // duration; a thin teaser cannot claim to fit a time band.
     const withinRead = (seconds) => [...(grouped.article || []), ...(grouped.guide || [])]
+      .filter(firstRead)
       .map(row => {
-        const body = contentBodyOf(row);
+        // The card body is capped to a taster. Time the whole opened source,
+        // otherwise a long article can masquerade as a five-minute read.
+        const body = Array.isArray(row.chapters_json) && row.chapters_json.length
+          ? row.chapters_json.flatMap(chapter => toParas(chapter?.body || "")) : toParas(row.lede || "");
         const measured = Number(row.duration_seconds);
         const estimate = body.length ? Math.ceil(body.join(" ").split(/\s+/).filter(Boolean).length / 200) * 60 : Infinity;
-        return { row, seconds: measured > 0 ? measured : estimate };
+        return { row, seconds: measured > 0 ? Math.max(measured, estimate) : estimate };
       })
       .filter(choice => choice.seconds <= seconds)
-      .sort((a, b) => a.seconds - b.seconds)[0]?.row || null;
+      .sort((a, b) => seconds <= 300 ? a.seconds - b.seconds : b.seconds - a.seconds)[0]?.row || null;
     if (calmLayout && bandKey === "few") return { read: returnToMain ? withinRead(300) : LIFESTYLE_EDITORIAL_DRAFTS[0], listen: within([...(grouped.audio || []), ...(grouped.video || [])], 300) };
     if (calmLayout && bandKey === "fifteen") return { read: returnToMain ? withinRead(900) : LIFESTYLE_EDITORIAL_DRAFTS[1], listen: within(grouped.audio, 900) };
-    if (calmLayout && bandKey === "evening") return { read: grouped.story?.[0] || longest(grouped.article)[0] || null, listen: eveningListen(grouped.audio) };
+    if (calmLayout && bandKey === "evening") return { read: [...(grouped.story || []), ...longest(grouped.article)].find(firstRead) || null, listen: eveningListen(grouped.audio) };
     if (bandKey === "few") return { read: livingDemo ? timeFit([...(grouped.article || []), ...(grouped.guide || [])],300) : byDur(grouped.article)[0] || grouped.guide?.[0] || null, listen: livingDemo ? within([...(grouped.audio || []), ...(grouped.video || [])], 300) : grouped.audio?.[0] || grouped.video?.[0] || null };
     if (bandKey === "fifteen") return { read: livingDemo ? timeFit([...(grouped.article || []), ...(grouped.guide || [])],900) : grouped.article?.[1] || grouped.article?.[0] || null, listen: livingDemo ? within(grouped.audio, 900) : grouped.audio?.[0] || null };
     return { read: grouped.story?.[0] || longest(grouped.article)[0] || null, listen: longest(grouped.audio)[0] || grouped.video?.[0] || null };
@@ -1014,7 +1021,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
     // Audio (piece #3): a SHORT summary — the flora player IS the content, not a wall of text.
     summary: (type === "audio" ? shortSummary(r.summary || r.lede) : stripHtml(r.summary || r.why_it_matters || "")) || undefined,
     category: r.category || undefined,
-    meta: [...(focusedPreview ? (durLabel(r) ? [["Clock",durLabel(r)]] : []) : [["Clock",durLabel(r) || "Duration unavailable"]]), ["BookOpen", archiveLabel || r.source_name || r.author_name || "FemWell Editorial"]],
+    meta: [...(focusedPreview ? (durLabel(r) ? [["Clock",durLabel(r)]] : []) : [["Clock",durLabel(r) || "Duration unavailable"]]), ["BookOpen", archiveLabel || r.source_name || r.channel_name || r.author_name || "FemWell Editorial"]],
     chips: [r.category, r.emotional_tag].filter(Boolean).slice(0, 3),
     // audio: no prose body (the player carries it); everything else gets its real body (piece G)
     body: type === "audio" ? [] : g_body,
@@ -1036,7 +1043,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
     ...(r.captions_url ? { captionsSrc: r.captions_url } : {}),
     ...(r.transcript ? { transcript: stripHtml(r.transcript) } : {}),
     // identity for the global player's lock-screen metadata
-    sourceName: archiveLabel || r.source_name || r.author_name || "FemWell",
+    sourceName: archiveLabel || r.source_name || r.channel_name || r.author_name || "FemWell",
     imageUrl: r.image_url || undefined,
     duration: Number(r.duration_seconds) || undefined,
     ...(r.editorial_local ? { saveable: false } : {}),
@@ -2297,7 +2304,7 @@ function TimePickerLens({ pickFor, isSaved, onSave, onOpen, onTry, presentation,
             <>{presentation && listen.audio_url ? <FloraAudio item={listen} src={listen.audio_url} label={listen.title} accent={cwOf("sage").petal} initialDuration={Number(listen.duration_seconds)||0}/> : <LifestyleMedia item={listen} accent={cwOf("sage").petal} />}</>
           </div>
         ) : !calmLayout && <EmptyLine>{presentation ? "No listen fits this time. Try another moment." : "A listen lands here as podcasts are added."}</EmptyLine>}
-        {calmLayout && !read && !listen && <p className="fw-calm-time-empty">Nothing to read or play at this length yet.</p>}
+        {calmLayout && !read && !listen && <p className="fw-calm-time-empty">No short read or listen to recommend here yet. The little doing is ready.</p>}
         {/* the make / awe prompt — saves as a soft intention */}
         {ideasEdition ? <div className="fw-good-do-choice">
           <p className="fw-good-choice-kicker">A LITTLE DOING{band.key === "fifteen" ? " · ABOUT TEN MINUTES" : ""}</p>

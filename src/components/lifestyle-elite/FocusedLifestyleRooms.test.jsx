@@ -21,8 +21,10 @@ beforeEach(()=>{
 });
 
 it('keeps a chosen room topic exact and restores the wider list only when All reads is chosen',async()=>{
-  render(<FocusedLifestyleRooms active user={{id:'alice'}} shellItems={[]} toCard={row=>row} isSaved={()=>false} onSave={vi.fn()} onClose={vi.fn()}/>);
+  render(<FocusedLifestyleRooms active visualEdition user={{id:'alice'}} shellItems={[]} toCard={row=>row} isSaved={()=>false} onSave={vi.fn()} onClose={vi.fn()}/>);
   fireEvent.change(screen.getByLabelText('Room'),{target:{value:'Move'}});
+  expect(api.filter).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByText('Browse the wider library'));
   await waitFor(()=>expect(api.filter).toHaveBeenCalledTimes(1));
   fireEvent.change(screen.getByLabelText('How do you feel?'),{target:{value:'strength'}});
   const list=screen.getByRole('list');
@@ -41,11 +43,12 @@ it('keeps every old source in optional depth while giving only topic-fit Ideas d
   ]);
   render(<FocusedLifestyleRooms active editorialPreview user={{id:'alice'}} shellItems={[]} toCard={row=>({...row,type:'article',_raw:row,saveable:!row.editorial_local,body:[row.lede].filter(Boolean)})} isSaved={()=>false} onSave={onSave} onClose={vi.fn()}/>);
   fireEvent.change(screen.getByLabelText('Room'),{target:{value:'Money'}});
-  await waitFor(()=>expect(screen.getByText(/Browse unreviewed library · 1/)).toBeVisible());
+  expect(api.filter).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByText('Browse unreviewed library'));
+  await waitFor(()=>expect(api.filter).toHaveBeenCalledTimes(1));
   expect(screen.getByRole('button',{name:/The payment you forgot about/})).toBeVisible();
   const older=screen.getByText(/Browse unreviewed library/).closest('details');
-  expect(older.open).toBe(false);
-  fireEvent.click(older.querySelector('summary'));
+  expect(older.open).toBe(true);
   expect(within(older).getByText('Budgeting with a friend')).toBeVisible();
   expect(within(older).queryByText('Strength with small weights')).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('button',{name:/The payment you forgot about/}));

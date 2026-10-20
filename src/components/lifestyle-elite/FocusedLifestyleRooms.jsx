@@ -98,15 +98,16 @@ const ALL_TOPIC_TITLES = {
 export default function FocusedLifestyleRooms({ active, onClose, user, profile, shellItems, toCard, isSaved, onSave, onStory, onSky, horoscope, phaseKey, editorialPreview = false, visualEdition = editorialPreview }) {
   const [room,setRoom]=useState("Becoming"), [choices,setChoices]=useState({}), [turns,setTurns]=useState({}), [visibleCounts,setVisibleCounts]=useState({});
   const [library,setLibrary]=useState(null), [libraryError,setLibraryError]=useState(""), [revision,setRevision]=useState(0), [loading,setLoading]=useState(false);
+  const [browseRequested,setBrowseRequested]=useState(!visualEdition);
   const [libraryHasMore,setLibraryHasMore]=useState(false);
   const [item,setItem]=useState(null), [saving,setSaving]=useState(false), [saveError,setSaveError]=useState("");
   const [intention,setIntention]=useState(BLUEPRINTS.Money.INTENTIONS[0]), [goalStatus,setGoalStatus]=useState(""), [goalBusy,setGoalBusy]=useState(false);
   const sheet=useRef(null), positions=useRef({}), pending=useRef(false), owner=useRef(user?.id);
   owner.current=user?.id;
-  // One catalogue edition shared across all rooms. Fetch only after a room that
-  // uses it opens. The existing 500-row coverage ceiling is stated, not hidden.
+  // One catalogue edition shared across all rooms. Its 500-row history belongs
+  // behind the optional Browse disclosure, not to every room opening.
   useEffect(()=>{
-    if (room === "Make" || library) return;
+    if (!browseRequested || room === "Make" || library) return;
     let alive=true;setLoading(true);setLibraryError("");
     base44.entities.LifestyleItems.filter({status:"PUBLISHED"},"-engagement_score",500).then(rows=>{
       if (!Array.isArray(rows)) throw new Error("Unexpected library reply");
@@ -115,7 +116,7 @@ export default function FocusedLifestyleRooms({ active, onClose, user, profile, 
     return ()=>{alive=false;};
   // Initial room is Becoming. Switching rooms reuses this in-flight/read edition.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[library,revision]);
+  },[browseRequested,library,revision]);
   // Do not repeat the edition request on room changes while it is in flight.
   const d=BLUEPRINTS[room], topics=roomTopics(room), topic=topics.find(value=>value.key===choices[room]) || topics[0];
   const edition=[...new Map([...(shellItems || []),...(library || [])].filter(Boolean).map(row=>[row.id,row])).values()];
@@ -160,7 +161,7 @@ export default function FocusedLifestyleRooms({ active, onClose, user, profile, 
   const moneyIntention=room === "Money" && <section style={{marginTop:20}}><label className="fw-focused-note" htmlFor="fw-money-intention">A money intention</label><select id="fw-money-intention" className="fw-focused-button" style={{width:"100%",margin:"8px 0",whiteSpace:"normal"}} value={intention} onChange={event=>{setIntention(event.target.value);setGoalStatus("");}}>{d.INTENTIONS.map(text=><option key={text}>{text}</option>)}</select><p className="fw-focused-prose">{intention}</p><button className="fw-focused-button" onClick={keepIntention} disabled={goalBusy}>{goalBusy ? "Checking…" : "Keep this intention"}</button>{goalStatus && <p role="status" className="fw-focused-note">{goalStatus}</p>}</section>;
   const libraryResults=<>
     {loading && <p role="status" className="fw-focused-note">Opening the library…</p>}{libraryError && <div role="alert"><p className="fw-focused-note">{libraryError}</p><button className="fw-focused-button" disabled={loading} onClick={()=>library ? loadMoreLibrary() : setRevision(value=>value+1)}>Try again</button></div>}
-    <ul className="fw-focused-room-list">{rows.map(row=><li key={row.id}><button onClick={()=>open(row)}><span style={{flex:1}}>{resolveCard({title:cleanTitle(row.title)}).title}<small>{row.source_name || row.channel_name || row.author_name}</small></span><ArrowRight size={16}/></button></li>)}</ul>
+    <ul className="fw-focused-room-list">{rows.map(row=><li key={row.id}><button onClick={()=>open(row)}><span style={{flex:1}}>{resolveCard({title:cleanTitle(row.title)}).title}<small>{/^FEMWELL_AI/i.test(String(row.provider || "")) ? "Archive · source review pending" : row.source_name || row.channel_name || row.author_name || "Older library"}{String(row.media_type || "").toUpperCase() === "VIDEO" && !Number(row.duration_seconds) ? " · length unverified" : ""}</small></span><ArrowRight size={16}/></button></li>)}</ul>
     {ordered.length>rows.length && <button className="fw-focused-button" onClick={()=>setVisibleCounts(values=>({...values,[`${room}:${topic.key}`]:(values[`${room}:${topic.key}`] || 3)+6}))}>More in this room</button>}
     {libraryHasMore && <details className="fw-focused-depth"><summary>Browse the wider library</summary><button className="fw-focused-button" disabled={loading} onClick={loadMoreLibrary}>{loading ? "Loading…" : "Load more published pieces"}</button></details>}
     {!rows.length && !loading && !libraryError && topic.key!=="solitude" && <p role="status" className="fw-focused-note">{topic.key === "all" ? "No published pieces here yet." : `No ${topic.label.toLowerCase()} in this selection. Try All reads in this room${libraryHasMore ? " or load more" : ""}.`}</p>}
@@ -188,7 +189,7 @@ export default function FocusedLifestyleRooms({ active, onClose, user, profile, 
         {topic.line && <p className="fw-focused-note">{firstSentences(topic.line,1)}</p>}
         {room === "Kindred" && topic.nudge && <details className="fw-focused-depth"><summary>A little reach-out idea</summary><p className="fw-focused-prose">{d.REACH_OUT}</p></details>}
         {editorialPreview && !roomDraft && <p className="fw-focused-note">The reading shelf for {room.toLowerCase()} is being checked. The little idea above is ready now.</p>}
-        {visualEdition ? <details className="fw-focused-depth"><summary>{editorialPreview ? "Browse unreviewed library" : "Browse the wider library"}{ordered.length ? ` · ${ordered.length}` : ""}</summary>{libraryResults}</details> : libraryResults}
+        {visualEdition ? <details className="fw-focused-depth" onToggle={event=>{if(event.currentTarget.open)setBrowseRequested(true);}}><summary>{editorialPreview ? "Browse unreviewed library" : "Browse the wider library"}{library ? ` · ${ordered.length}` : ""}</summary>{browseRequested ? libraryResults : <p className="fw-focused-note">Open to see older pieces from this room.</p>}</details> : libraryResults}
       </section>}
       {visualEdition && moneyIntention}
       <details className="fw-focused-depth"><summary>Carry it on</summary><div className="fw-focused-room-links">{CONNECT[room].map(destination=>destination === "Jess" ? <button key={destination} className="fw-focused-button" onClick={()=>{onClose();window.dispatchEvent(new CustomEvent("fw_open_assistant",{detail:{prompt:`I’d like to talk about ${room.toLowerCase()}.`}}));}}>Ask Jess</button> : <a key={destination} className="fw-focused-button" href={`/${destination}`}>{destination}</a>)}</div></details>
