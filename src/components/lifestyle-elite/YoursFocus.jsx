@@ -33,7 +33,7 @@ function YoursCard({ eyebrow, title, accent = "gold", children, style, className
   );
 }
 
-export default function YoursFocus({ savedCards = [], savedSummary, phaseCards = [], phaseWord, onOpen, onDetails, skySavedCount = 0, skyKeepsakes = null, ownedLoading = false, ownedError = false, presentation, calmLayout = false, editorialPreview = false }) {
+export default function YoursFocus({ savedCards = [], savedSummary, phaseCards = [], phaseWord, onOpen, onDetails, skySavedCount = 0, skyKeepsakes = null, ownedLoading = false, ownedError = false, onRetryOwned, presentation, calmLayout = false, editorialPreview = false }) {
   const groups = KINDS.map((k) => ({ ...k, items: savedCards.filter((c) => k.test(String(c.type || ""))) })).filter((g) => g.items.length);
   const other = savedCards.filter(c => !KINDS.some(k => k.test(String(c.type || ""))));
   if (presentation && other.length) groups.push({label:"Other keeps",accent:"gold",items:other});
@@ -81,6 +81,7 @@ export default function YoursFocus({ savedCards = [], savedSummary, phaseCards =
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* 0 · section-specific, stateful summary */}
       {!calmLayout && <Summary Icon={Bookmark} cw="gold">{summary}</Summary>}
+      {ownedError && <div role="alert" className="fw-yours-partial"><p>Some keeps couldn’t load. What you can see here is still available.</p>{onRetryOwned && <button type="button" onClick={onRetryOwned} disabled={ownedLoading}>Try again</button>}</div>}
 
       {/* 1 · SAVED — auto-grouped collections by kind */}
       {!hasSaved && !skySavedCount && ownedLoading && <p role="status" style={{fontFamily:SERIF,fontSize:16,color:C.ink,margin:0}}>Finding what you kept…</p>}
@@ -102,7 +103,7 @@ export default function YoursFocus({ savedCards = [], savedSummary, phaseCards =
       {/* 2 · FOR YOUR PHASE — this week's tuned set */}
       {phaseCards.length ? <CalmMore enabled={calmLayout && hasOwned} title={`Other finds · ${phaseCards.length}`}>
         <YoursCard className="fw-selected-phase" eyebrow={calmLayout ? "From the wider library" : "Tuned to your week"} title={calmLayout ? "Other finds" : phaseWord ? `For your ${phaseWord} week` : "For your phase"} accent="sage">
-          {calmLayout && <p style={{fontFamily:SERIF,fontSize:15,color:C.ink,lineHeight:1.45,margin:"0 0 12px"}}>A few finds from elsewhere. Your saves stay above.</p>}
+          {calmLayout && <p style={{fontFamily:SERIF,fontSize:15,color:C.ink,lineHeight:1.45,margin:"0 0 12px"}}>{hasOwned ? "A few finds from elsewhere. Your saves stay above." : "A few finds from elsewhere while you build your own shelf."}</p>}
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {primaryDiscoveries.map(renderDiscovery)}
             {calmLayout && !readyDiscoveries.length && <p>These finds need a source check before we lead with them.</p>}

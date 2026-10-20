@@ -6,7 +6,7 @@ import { withTimeout } from "@/utils/safeEntity";
 import { readKeepAcknowledgement } from "./useLifestyleKeepAcknowledgements";
 
 const EMPTY = [];
-const ERROR = "Some keeps couldn’t load. Your saved references are still safe.";
+const ERROR = "Some keeps couldn’t load. Try again.";
 function reconcilePartial(previous, partial, ownerId) {
   const rows = new Map(previous.filter(row => row.user_id === ownerId).map(row => [row.id, row]));
   for (const row of partial || []) if (row?.id && row.user_id === ownerId) rows.set(row.id, row);

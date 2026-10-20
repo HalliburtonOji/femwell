@@ -42,6 +42,16 @@ describe("calmer lists preserve exact source tasks", () => {
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
     expect(screen.queryByRole("heading",{name:"Keep what you love"})).not.toBeInTheDocument();
   });
+  it("keeps confirmed rows visible and offers one retry when an owned source is partial", () => {
+    const retry=vi.fn();
+    const saved={id:"confirmed",type:"article",title:"The confirmed keep"};
+    render(<YoursFocus calmLayout presentation="focused" savedCards={[saved]} ownedError onRetryOwned={retry}/>);
+    expect(screen.getByText("The confirmed keep")).toBeVisible();
+    expect(screen.getByRole("alert")).toHaveTextContent("Some keeps couldn’t load");
+    fireEvent.click(screen.getByRole("button",{name:"Try again"}));
+    expect(retry).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText("Nothing saved yet. Keep the good bits as you go.")).not.toBeInTheDocument();
+  });
   it("keeps main Yours honest while the owned collection is loading or failed", () => {
     const {rerender}=render(<YoursFocus calmLayout presentation="focused" ownedLoading/>);
     expect(screen.getByRole("status")).toHaveTextContent("Finding what you kept");

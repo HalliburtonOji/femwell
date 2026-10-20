@@ -103,5 +103,55 @@ it('does not serve a first piece for the wrong selected topic',()=>{
   expect(screen.getByRole('button',{name:/The outfit already in your wardrobe/})).toBeVisible();
   fireEvent.change(screen.getByLabelText('What do you fancy?'),{target:{value:'soft'}});
   expect(screen.queryByRole('button',{name:/The outfit already in your wardrobe/})).not.toBeInTheDocument();
-  expect(screen.getByText(/reading shelf for mirror is being checked/)).toBeVisible();
+  expect(screen.getByRole('button',{name:/An outfit you can live in/})).toBeVisible();
+});
+
+it('keeps the old rotating idea action reachable from a specific topic without calling it topic-fit',()=>{
+  render(<FocusedLifestyleRooms active visualEdition user={{id:'alice'}} shellItems={[]}
+    toCard={row=>row} isSaved={()=>false} onSave={vi.fn()} onClose={vi.fn()}/>);
+  fireEvent.change(screen.getByLabelText('Room'),{target:{value:'Move'}});
+  fireEvent.change(screen.getByLabelText('How do you feel?'),{target:{value:'rest'}});
+  expect(screen.getByText(/Rest\. If moving sounds good later/)).toBeVisible();
+  fireEvent.click(screen.getByRole('button',{name:/Surprise me/}));
+  expect(screen.getByLabelText('How do you feel?')).toHaveValue('all');
+  expect(screen.getByRole('button',{name:/Another idea/})).toBeVisible();
+});
+
+it.each([
+  ['Mirror','soft','An outfit you can live in','Nobody else can feel your clothes for you'],
+  ['Move','rest','No workout. No speech.','The room will be here another day'],
+  ['Kindred','solitude','A date with your own company','You selected Just solitude'],
+  ['Curious','arts','Stay with one work of art','not a quiz in expensive vocabulary'],
+  ['Delight','music','Give one song the whole room','One song can simply be one song'],
+  ['Nest','cooking','A supper from what you have','information, not a challenge'],
+  ['Becoming','boundaries','A short no is a whole sentence','leave it here'],
+])('opens the full alternate %s/%s Ideas edition and returns', (room,topic,title,ending)=>{
+  render(<FocusedLifestyleRooms active editorialPreview user={{id:'alice'}} shellItems={[]}
+    toCard={row=>({...row,type:'article',_raw:row,saveable:false,body:[row.lede]})}
+    isSaved={()=>false} onSave={vi.fn()} onClose={vi.fn()}/>);
+  fireEvent.change(screen.getByLabelText('Room'),{target:{value:room}});
+  fireEvent.change(screen.getByLabelText(room==='Move'?'How do you feel?':room==='Kindred'?'What’s your heart asking for?':'What do you fancy?'),{target:{value:topic}});
+  fireEvent.click(screen.getByRole('button',{name:new RegExp(title.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'))}));
+  expect(screen.getByText(new RegExp(ending))).toBeVisible();
+  expect(screen.queryByRole('button',{name:'Save'})).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button',{name:new RegExp(`Back to ${room}`)}));
+  expect(screen.getByRole('button',{name:new RegExp(title.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'))})).toBeVisible();
+});
+
+it('changes the first action with the chosen topic while keeping older sources optional',()=>{
+  render(<FocusedLifestyleRooms active visualEdition user={{id:'alice'}} shellItems={[]}
+    toCard={row=>row} isSaved={()=>false} onSave={vi.fn()} onClose={vi.fn()}/>);
+  fireEvent.change(screen.getByLabelText('Room'),{target:{value:'Move'}});
+  fireEvent.change(screen.getByLabelText('How do you feel?'),{target:{value:'rest'}});
+  expect(screen.getByText('Rest. If moving sounds good later, the room will still be here.')).toBeVisible();
+  expect(screen.queryByText(/Take the stairs like you mean it/)).not.toBeInTheDocument();
+  expect(api.filter).not.toHaveBeenCalled();
+  fireEvent.change(screen.getByLabelText('Room'),{target:{value:'Kindred'}});
+  fireEvent.change(screen.getByLabelText('What’s your heart asking for?'),{target:{value:'solitude'}});
+  expect(screen.getByText(/Keep this bit of time for yourself/)).toBeVisible();
+  expect(screen.queryByText(/Send the friend you miss/)).not.toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText('Room'),{target:{value:'Nest'}});
+  fireEvent.change(screen.getByLabelText('What do you fancy?'),{target:{value:'cooking'}});
+  expect(screen.getByText(/Check what is in the cupboard/)).toBeVisible();
+  expect(screen.queryByText(/Clear the spot where you actually sit/)).not.toBeInTheDocument();
 });

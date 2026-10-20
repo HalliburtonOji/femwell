@@ -33,7 +33,7 @@ beforeEach(() => {
   serverProfile = { id: "profile", user_id: "reader", saved_item_ids: [], liked_item_ids: [] }; serverPhysical = [];
   api.me.mockResolvedValue({ id: "reader" });
   api.profiles.mockImplementation(async () => [serverProfile]);
-  api.physical.mockImplementation(async query => serverPhysical.filter(row => row.user_id === query.user_id && (!query.item_id || row.item_id === query.item_id)));
+  api.physical.mockImplementation(async query => serverPhysical.filter(row => row.user_id === query.user_id && (!query.id || row.id === query.id) && (!query.item_id || row.item_id === query.item_id)));
   api.items.mockImplementation(async query => query.id === article.id ? [article] : []);
   api.update.mockImplementation(async (id, fields) => { serverProfile = { ...serverProfile, ...fields }; return { ...serverProfile, id }; });
   api.create.mockImplementation(async fields => ({ id: "new-profile", ...fields }));

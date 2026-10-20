@@ -88,4 +88,67 @@ If you have five minutes and want to stay, notice the same spot twice: once now,
 
 RHS has ideas for growing on a windowsill or doorstep if you want a bigger project later. You do not need to grow anything to take this one look. Events and Planner are here if another day calls for company or a proper outing.`,
     [{label:"RHS · gardening without a garden",url:"https://www.rhs.org.uk/advice/gardening-without-a-garden"}]),
+  draft("ideas-good-mirror-soft-outfit", "An outfit you can live in",
+    "Get dressed for the actual day, including the sitting-down parts.", "Fashion", "About 2 min read",
+    `Start with the thing that feels good on your skin. Maybe it's the jumper with the soft sleeves or trousers you can sit in without negotiating with the waistband. Put it on before you decide what the outfit is supposed to say about you.
+
+Add one thing that makes it feel like yours: earrings, a colour, a shirt left open, the shoes that have already proved themselves. You can stop there. An outfit doesn't need a concept note.
+
+Now do a real-life rehearsal. Sit down. Reach for something. Walk to the door. If a seam twists or a collar needs constant fixing, change that piece. The clothes work for you; the interview is over.
+
+You chose Soft & cosy. That might look like an enormous cardigan, or it might mean a crisp shirt that doesn't scratch. Nobody else can feel your clothes for you.`, []),
+  draft("ideas-good-move-rest-day", "No workout. No speech.",
+    "A rest choice with a beginning and an end. Yes, that counts as a choice.", "Movement", "About 1 min read",
+    `You chose Not today. Good. Close the list of workouts.
+
+Ask one practical question instead: what would make the next hour easier? A glass of water within reach, a more comfortable seat, a break from a noisy room, or simply doing nothing for a bit. Choose one, if any, and let the rest of the suggestions go.
+
+If you want to move later, you can. If you don't, there is no catch-up task waiting here. Rest doesn't need a motivational speech or an explanation from your cycle.
+
+This page has an end: put the phone down, or open a chapter if company sounds nice. The room will be here another day.`, []),
+  draft("ideas-good-kindred-own-company", "A date with your own company",
+    "Solitude without a self-improvement agenda or a surprise reach-out task.", "Friendship", "About 2 min read",
+    `Choose a little pocket of time that belongs to you. Ten minutes is enough. Decide what you actually want in it before the phone makes an offer: a walk, a song, a cup of tea, a page, or staring out of the window like the lead in a period drama.
+
+Then do that one thing. You don't have to turn it into a ritual, document it or become wonderfully good at being alone. If the mind wanders to people you miss, that's allowed too. Missing someone doesn't mean you made the wrong choice by wanting quiet now.
+
+When the time ends, notice whether you'd like more of it. If yes, make another small space later. If not, go back to company. You are allowed to change your mind without an app asking for a reason.
+
+There is no message to send at the bottom of this piece. You selected Just solitude, and we listened.`, []),
+  draft("ideas-good-curious-one-work", "Stay with one work of art",
+    "A gallery visit you can do with a poster, a song or a picture on your phone.", "Arts & culture", "About 2 min read",
+    `Pick one work you can look at or listen to right now. A painting in a gallery, the image on a library book, a song you already own, a building you pass every week. No search for the most important one.
+
+Give it a full minute before reading anyone else's description. What caught you first? What did you miss at the start? If it's a song, listen for one sound that stays in the background. If it's a picture, follow one line all the way across.
+
+Now read its label or credit, if there is one. Did it change anything? Perhaps. Perhaps the original thought was better. Either answer belongs to you.
+
+If you want another minute, take it. If you don't, leave with one detail in your pocket. Being curious about art is not a quiz in expensive vocabulary.`, []),
+  draft("ideas-good-delight-one-song", "Give one song the whole room",
+    "A tiny listening break. No playlist to maintain.", "Music", "About 1 min read",
+    `Choose a song you already know and play it from the beginning. Put the phone down while it plays. That is the whole plan.
+
+You can dance, sing the wrong words, sit with your eyes closed or make tea. Somewhere in the middle, notice the part you wait for: the bass arriving, the line that still gets you, the outrageous key change. Let it have its moment.
+
+When the song ends, decide whether you want another. Do not let autoplay make that decision for you. The app doesn't need to measure your taste, and you don't need to build a playlist out of every nice thing.
+
+One song can simply be one song. An excellent use of three-ish minutes.`, []),
+  draft("ideas-good-nest-cupboard-supper", "A supper from what you have",
+    "Start with a cupboard look, then make one ordinary meal your way.", "Home", "About 2 min read · optional cooking time",
+    `Open the cupboard or fridge and find one thing you would happily eat tonight. Bread, rice, eggs, beans, a vegetable, leftovers. Then find one thing that would make it nicer: a bit of cheese, herbs, something crunchy, the sauce you forget you own.
+
+Make a simple supper you already know how to cook. Beans on toast. A bowl of rice with vegetables. An omelette. If a recipe is new to you, use a complete trusted recipe for ingredients, cooking times and food-safety details; this little note isn't pretending to be one.
+
+Put it on a plate if that makes the moment feel better. Eat it somewhere comfortable. A meal from the cupboard is not a consolation prize, and you don't need to photograph it before it goes cold.
+
+If there is nothing usable there, that's information, not a challenge to improvise dinner from a tea bag. Choose another plan.`, []),
+  draft("ideas-good-becoming-short-no", "A short no is a whole sentence",
+    "Practise the small boundary before you need the big speech.", "Self-trust", "About 2 min read",
+    `Picture a request you might get this week: staying late, another favour, a plan you don't want. Choose one that feels safe to decline. You don't have to start with the hardest person in your life.
+
+Say a short reply to yourself: “I can't this time.” Or “That doesn't work for me.” If you want to offer another day, do it because you mean it, not because silence feels unbearable.
+
+Now stop talking. The imaginary conversation will probably try to write three more paragraphs on your behalf. You can let them remain imaginary.
+
+A real request may need a fuller answer, especially when care, work or money is involved. This is just practice at hearing your own preference before automatically handing it away. You can keep the sentence in Journal, privately, or leave it here.`, []),
 ];

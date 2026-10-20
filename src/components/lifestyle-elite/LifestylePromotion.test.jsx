@@ -1,16 +1,53 @@
 import React from 'react';
 import {beforeEach,describe,expect,it,vi} from 'vitest';
-import {fireEvent,render,screen,waitFor,within} from '@testing-library/react';
+import {act,fireEvent,render,screen,waitFor,within} from '@testing-library/react';
 import Lifestyle from '@/pages/LifestyleElite';
 import CalmLifestyleDemo from '@/pages/CalmLifestyleDemo';
 import BooksStoryFocus from './BooksStoryFocus';
 import YoursFocus from './YoursFocus';
-const mock=vi.hoisted(()=>({empty:vi.fn(),articles:vi.fn(),chapters:vi.fn(),readings:vi.fn()}));
-vi.mock('@/api/base44Client',()=>({base44:{auth:{me:async()=>({id:'owner'})},functions:{invoke:async()=>({data:{items:[]}})},entities:new Proxy({},{get:(_,name)=>({filter:name==='DailyStory' ? mock.chapters : name==='HoroscopeReading' ? mock.readings : name==='LifestyleItems' ? mock.articles : mock.empty,subscribe:()=>()=>{}})})}}));
+const mock=vi.hoisted(()=>({empty:vi.fn(),profiles:vi.fn(),articles:vi.fn(),chapters:vi.fn(),readings:vi.fn()}));
+vi.mock('@/api/base44Client',()=>({base44:{auth:{me:async()=>({id:'owner'})},functions:{invoke:async()=>({data:{items:[]}})},entities:new Proxy({},{get:(_,name)=>({filter:name==='DailyStory' ? mock.chapters : name==='HoroscopeReading' ? mock.readings : name==='LifestyleItems' ? mock.articles : name==='UserProfile' ? mock.profiles : mock.empty,subscribe:()=>()=>{}})})}}));
 vi.mock('@/components/lifestyle/DailyStoryReader',()=>({default:({goToChapter,onExit})=><div role="dialog" aria-label="Actual chapter reader"><p>Chapter index: {goToChapter}</p><button onClick={onExit}>Exit chapter reader</button></div>}));
 vi.mock('./SelectedLifestyleHeader',()=>({default:({active})=><h1>{active.title}</h1>,SelectedRoomDetail:()=>null}));
-beforeEach(()=>{mock.empty.mockResolvedValue([]);mock.articles.mockResolvedValue([]);mock.chapters.mockResolvedValue([]);mock.readings.mockResolvedValue([]);vi.spyOn(globalThis,'fetch').mockResolvedValue({ok:true,json:async()=>({results:[]})});window.history.replaceState({},'', '/Lifestyle');});
+beforeEach(()=>{mock.empty.mockResolvedValue([]);mock.profiles.mockResolvedValue([]);mock.articles.mockResolvedValue([]);mock.chapters.mockResolvedValue([]);mock.readings.mockResolvedValue([]);vi.spyOn(globalThis,'fetch').mockResolvedValue({ok:true,json:async()=>({results:[]})});window.history.replaceState({},'', '/Lifestyle');});
 describe('approved main Lifestyle parity',()=>{
+  it('does not call profile-only keeps empty after a failed profile read and retries that source',async()=>{
+    window.history.replaceState({},'', '/Lifestyle?section=yours');
+    mock.profiles.mockRejectedValueOnce(new Error('profile offline'));
+    mock.profiles.mockResolvedValue([{id:'profile',user_id:'owner',saved_item_ids:['profile-only-source']}]);
+    mock.articles.mockImplementation(async query=>query?.id==='profile-only-source'
+      ? [{id:'profile-only-source',title:'The profile-only keep',content_type:'ARTICLE',media_type:'ARTICLE',status:'PUBLISHED'}] : []);
+    render(<Lifestyle/>);
+    const alert=await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Some keeps couldn’t load');
+    expect(screen.queryByText('Nothing saved yet. Keep the good bits as you go.')).not.toBeInTheDocument();
+    const retry=within(alert).getByRole('button',{name:'Try again'});
+    await waitFor(()=>expect(retry).toBeEnabled());
+    fireEvent.click(retry);
+    await waitFor(()=>expect(mock.profiles).toHaveBeenCalledTimes(2));
+    expect(await screen.findByText('The profile-only keep')).toBeVisible();
+    await waitFor(()=>expect(screen.queryByRole('alert')).not.toBeInTheDocument());
+  });
+  it('keeps a confirmed save when an older profile retry resolves afterwards',async()=>{
+    window.history.replaceState({},'', '/Lifestyle?section=yours');
+    let finishRetry;
+    mock.profiles.mockRejectedValueOnce(new Error('profile offline'));
+    mock.profiles.mockImplementationOnce(()=>new Promise(resolve=>{ finishRetry=resolve; }));
+    mock.articles.mockImplementation(async query=>query?.id==='newly-kept'
+      ? [{id:'newly-kept',title:'The newest keep',content_type:'ARTICLE',media_type:'ARTICLE',status:'PUBLISHED'}] : []);
+    render(<Lifestyle/>);
+    const alert=await screen.findByRole('alert');
+    fireEvent.click(within(alert).getByRole('button',{name:'Try again'}));
+    await waitFor(()=>expect(finishRetry).toBeTypeOf('function'));
+    await act(async()=>{
+      window.dispatchEvent(new CustomEvent('fw_sky_lesson_saved',{detail:{ownerId:'owner',itemId:'newly-kept',profile:{id:'profile',user_id:'owner',saved_item_ids:['newly-kept']},removedSavedRecordIds:[]}}));
+    });
+    expect(await screen.findByText('The newest keep')).toBeVisible();
+    await act(async()=>{finishRetry([{id:'profile',user_id:'owner',saved_item_ids:[]}]);});
+    expect(screen.getByText('The newest keep')).toBeVisible();
+    expect(screen.queryByText('Nothing saved yet. Keep the good bits as you go.')).not.toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent('Some keeps couldn’t load');
+  });
   it('keeps generated health prose out of the first Good life time pick while retaining its archive',async()=>{
     window.history.replaceState({},'', '/Lifestyle?section=good');
     const title='The Cycle-Synced Workweek: How to Plan 28 Days Around Your Hormones';
@@ -47,6 +84,14 @@ describe('approved main Lifestyle parity',()=>{
     expect(await screen.findByText('No new read just now. Try Books next door.')).toBeVisible();
     fireEvent.click(screen.getByText('Browse all reading · 1'));
     expect(screen.getByRole('button',{name:/An archived story.*Read/})).toBeVisible();
+  });
+  it('takes the no-current-read suggestion straight to Books on the same page',async()=>{
+    window.history.replaceState({},'', '/Lifestyle?section=read');
+    render(<Lifestyle/>);
+    fireEvent.click(await screen.findByRole('button',{name:'Open Books'}));
+    const nav=screen.getByRole('navigation',{name:'Lifestyle sections'});
+    expect(within(nav).getByRole('button',{name:'Books',exact:true})).toHaveAttribute('aria-pressed','true');
+    expect(window.location.search).toBe('?section=books');
   });
   it('puts one exact Read source before the glance without duplicating it below',async()=>{
     window.history.replaceState({},'', '/Lifestyle?section=read');

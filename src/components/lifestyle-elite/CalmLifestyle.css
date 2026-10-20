@@ -301,6 +301,9 @@ dialog.fw-calm-dialog.fw-sheet-safe{padding-bottom:0!important}
 .fw-calm-lifestyle .fw-selected-listen-lead .fw-audio-garden{position:absolute;right:12px;top:-25px;width:96px;height:25px;overflow:hidden;opacity:.4;pointer-events:none;mask-image:linear-gradient(90deg,transparent,#000 42%)}
 .fw-calm-lifestyle .fw-books-focus>section:first-of-type{background:linear-gradient(100deg,#fffdf9,#fff 78%)!important;box-shadow:none!important;border-top:1px solid #d4d0c4!important}
 .fw-calm-lifestyle .fw-selected-room--yours .fw-selected-collection{background:transparent!important;box-shadow:none!important;border-radius:0!important}
+.fw-calm-lifestyle .fw-yours-partial{margin:0 0 14px;padding:12px 15px;border:1px solid #d8c8a6;border-radius:16px;background:#fbf9f3;color:#4c4139;font:500 14px/1.45 var(--fw-ui,Arial,sans-serif)}
+.fw-calm-lifestyle .fw-yours-partial p{margin:0 0 8px}
+.fw-calm-lifestyle .fw-yours-partial button{display:inline-flex;align-items:center;min-height:44px;border:0;border-bottom:1px solid currentColor;background:transparent;color:#775a30;font:inherit;font-weight:700;padding:8px 2px;cursor:pointer}
 .fw-calm-lifestyle .fw-selected-room--yours .fw-selected-phase{background:transparent!important;box-shadow:none!important;border-radius:0!important}
 
 /* The first joy's opened owner keeps the same calm material, not the older

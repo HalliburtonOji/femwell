@@ -1,5 +1,9 @@
 # Critic learning — append dated evidence
 
+## 20 October — LC14 source truth and newer acknowledgement
+
+A profile-only SavedItems view is not empty when `UserProfile.filter` fails; keep confirmed physical rows, mark the profile source unknown and retry that owner-scoped read. A late Retry result must not overwrite a newer acknowledged save. Gate the read by a mutation revision, keep the confirmed item visible, and leave Retry available for the unfinished source. A small text button still needs a 44px touch target. In an adjacent Saved→Yours test, a mock that ignored exact `{id}` queries manufactured a duplicate-removal failure: fixtures must honour backend query semantics before changing product code. Topic-specific first actions can be local, cheap and useful; older complete sources stay reachable behind a clear disclosure, while unreviewed new long pieces stay in Ideas.
+
 ## 15 October — LC08 finish and private acknowledgement
 
 Entering a chapter is not finishing it: the clean Books reader must use the reader's final-page finish callback, including its single-chapter no-lock branch. Keep warned-chapter and reflection entry on reached. A shelf mutation needs an owned exact row/status receipt or owned read-back, fresh account checks around queued writes, and a revision check after the last migration await. Garden's calendar and profile must use the current local day and owner. Source tests prove these bounded contracts; Planner/Garden's rejected old-paper appearance needs a separate full-surface pass and actual mobile proof.

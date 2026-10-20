@@ -548,6 +548,8 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
   const skySavedCount = !skySavesLoading && !skySavesError ? keptSkyLessons.filter(row=>row.user_id===user?.id).length : 0;
   const [profile, setProfile] = useState(null);
   const [keepsRevision, setKeepsRevision] = useState(0);
+  const [profileKeepsError, setProfileKeepsError] = useState(false);
+  const [profileKeepsLoading, setProfileKeepsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   // CHIP-FOCUS (demo-flag, default OFF → live /Lifestyle is byte-identical). When on, tapping a
   // controller chip focuses the whole page onto that section: For-you filters to it, the boards
@@ -564,6 +566,11 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
   const [chapters, setChapters] = useState([]);    // the whole active series (one gating contract)
   const [horoscope, setHoroscope] = useState(null);// today's HoroscopeReading
   const [savedIds, setSavedIds] = useState([]);    // UserProfile.saved_item_ids (the SAVE field)
+  const profileMutationRevision = useRef(0);       // confirmed saves outrank older profile reads
+  const acceptAcknowledgedSavedIds = useCallback(ids => {
+    profileMutationRevision.current += 1;
+    setSavedIds(ids);
+  }, []);
   const [skyNotes, setSkyNotes] = useState([]);    // recent SkyNote rows (real, persisted)
   const continuationRoute = useRef(contentRoute || routePathname || window.location.pathname);
   const continuationActive = routeActive && (!routePathname || routePathname === continuationRoute.current || (continuationRoute.current === "/Lifestyle" && routePathname === "/LifestyleElite"));
@@ -624,7 +631,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
   const { archiveKeeps, resolvedKeeps, keepsLoading, keepsError, removeConfirmed: removeConfirmedKeeps, invalidateSources: invalidateKeptSources } = useLifestyleKeeps({
     ownerId: user?.id, enabled: !!selectedPresentation, profile, savedIds, items, revision: keepsRevision,
   });
-  useLifestyleKeepAcknowledgements({ ownerId: user?.id, setProfile, setSavedIds });
+  useLifestyleKeepAcknowledgements({ ownerId: user?.id, setProfile, setSavedIds: acceptAcknowledgedSavedIds });
 
   // ── grouped content (per-type rows, like LifestyleForYou) ─────────────────
   const grouped = useMemo(() => {
@@ -735,6 +742,31 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
     } catch { /* leave books to FemWell fiction */ }
   }, []);
 
+  // Profile-only keeps are a separate source from physical SavedItems rows.
+  // An empty result after a failed profile read is unknown, not an empty shelf.
+  const retryProfileKeeps = useCallback(async () => {
+    const owner = user?.id;
+    if (!owner || profileKeepsLoading) return;
+    const readRevision = profileMutationRevision.current;
+    setProfileKeepsLoading(true);
+    try {
+      const profiles = await base44.entities.UserProfile.filter({ user_id: owner });
+      if (!Array.isArray(profiles)) throw new Error("Invalid profile reply");
+      if ((await base44.auth.me())?.id !== owner) return;
+      // A confirmed save may land while this request is in flight. Its acknowledgement
+      // is newer evidence than this response, so leave it visible and keep retry open.
+      if (profileMutationRevision.current !== readRevision) {
+        setProfileKeepsError(true);
+        return;
+      }
+      const chosen = pickProfile(profiles);
+      setProfile(chosen);
+      setSavedIds(Array.isArray(chosen?.saved_item_ids) ? chosen.saved_item_ids : []);
+      setProfileKeepsError(false);
+    } catch { if (user?.id === owner) setProfileKeepsError(true); }
+    finally { setProfileKeepsLoading(false); }
+  }, [user?.id, profileKeepsLoading]);
+
   // ── init ───────────────────────────────────────────────────────────────────
   useEffect(() => {
     let alive = true; let unsubItems;
@@ -743,14 +775,27 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
         const u = await base44.auth.me().catch(() => null); if (!alive) return; setUser(u);
         let p = null;
         if (u?.id) {
-          const profiles = await base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []);
+          const readRevision = profileMutationRevision.current;
+          let profiles;
+          try {
+            profiles = await base44.entities.UserProfile.filter({ user_id: u.id });
+            if (!Array.isArray(profiles)) throw new Error("Invalid profile reply");
+            setProfileKeepsError(false);
+          } catch {
+            profiles = [];
+            setProfileKeepsError(true);
+          }
           if (!alive) return;
-          // NOT [0]. She can have several profile rows and `filter` returns newest-first —
-          // measured: 5 rows for the test user, and the ONLY one carrying her cycle data was
-          // at index 3. Taking [0] read an empty row, which is why phaseKey was null.
-          p = pickProfile(profiles);
-          setProfile(p);
-          setSavedIds(Array.isArray(p?.saved_item_ids) ? p.saved_item_ids : []);
+          if (profileMutationRevision.current !== readRevision) {
+            setProfileKeepsError(true);
+          } else {
+            // NOT [0]. She can have several profile rows and `filter` returns newest-first —
+            // measured: 5 rows for the test user, and the ONLY one carrying her cycle data was
+            // at index 3. Taking [0] read an empty row, which is why phaseKey was null.
+            p = pickProfile(profiles);
+            setProfile(p);
+            setSavedIds(Array.isArray(p?.saved_item_ids) ? p.saved_item_ids : []);
+          }
         }
         await loadContent(u?.id);
         loadGutenberg();          // background — never blocks the loader
@@ -803,7 +848,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
         } else latest = { ...latest, ...result };
       }
       await assertOwner();
-      setProfile(latest ? { ...latest, saved_item_ids: next } : null); setSavedIds(next);
+      setProfile(latest ? { ...latest, saved_item_ids: next } : null); acceptAcknowledgedSavedIds(next);
       if (!target) {
         removeConfirmedKeeps(owner, keep => keep.item_type === "LIFESTYLE" && keep.item_id === itemId);
         setExpanded(card => card?._keep?.item_type === "LIFESTYLE" && card._keep.item_id === itemId ? null : card);
@@ -815,7 +860,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
       return true;
     } catch { if (current()) { flash("Couldn't update your keeps — try again"); setKeepsRevision(n=>n+1); } return false; }
     finally { savePending.current = false; }
-  }, [user, recordAction,isSaved,removeConfirmedKeeps]);
+  }, [user, recordAction,isSaved,removeConfirmedKeeps,acceptAcknowledgedSavedIds]);
 
   // ── Sky diary → SkyNote.create (real persistence; optimistic + rollback) ──
   const addSkyNote = useCallback(async (text) => {
@@ -1696,7 +1741,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
         {foldVariant && <div className="fw-ff-actions">{focusedActions}</div>}
 
         {selectedPresentation && calmLayout && focusSection === "read" && <div className="fw-living-content fw-selected-room--read fw-selected-read-lead" style={{ marginTop: 12 }}>
-          <ReadFocus calmLayout presentation editorialPreview={!returnToMain} visualEdition continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} onDetails={setExpanded} segment="lead" />
+          <ReadFocus calmLayout presentation editorialPreview={!returnToMain} visualEdition continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} onDetails={setExpanded} onBooks={()=>selectRoom("books")} segment="lead" />
         </div>}
 
         {selectedPresentation && calmLayout && focusSection === "listen" && <div className="fw-living-content fw-selected-room--listen fw-selected-listen-lead" style={{ marginTop: 12 }}>
@@ -1975,9 +2020,9 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
               else openBook(it._continue || it._raw || it);
             }} lifeStage={profile?.life_stage} /></div>;
           if (sec === "listen") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--listen" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{livingDemo && <nav aria-label="Full media directories" style={{display:"flex",justifyContent:"space-between",gap:12,marginBottom:12,fontFamily:UI,fontSize:12}}>{[["listen","All listens & shows"],["watch","All watches"]].map(([mode,label])=><button key={mode} type="button" onClick={()=>navigate(`/WatchListen?mode=${mode}${calmLayout ? "&appearance=calm" : ""}${returnToMain ? "&from=lifestyle-main" : ""}`)} style={{color:C.ink,minHeight:44,border:0,background:"transparent",textDecoration:"underline",cursor:"pointer",font:"inherit"}}>{label}</button>)}</nav>}{!(selectedPresentation && calmLayout) && <ListenFocus calmLayout={calmLayout} presentation={selectedPresentation} audioCards={audioCards} videoCards={videoCards} onOpen={setExpanded} />}</div>;
-          if (sec === "read") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--read" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><ReadFocus calmLayout={calmLayout} presentation={selectedPresentation} editorialPreview={!returnToMain} visualEdition={selectedPresentation && calmLayout} continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} onDetails={selectedPresentation ? setExpanded : undefined} segment={selectedPresentation && calmLayout ? "rest" : "all"} /></div>;
+          if (sec === "read") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--read" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><ReadFocus calmLayout={calmLayout} presentation={selectedPresentation} editorialPreview={!returnToMain} visualEdition={selectedPresentation && calmLayout} continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} onDetails={selectedPresentation ? setExpanded : undefined} onBooks={()=>selectRoom("books")} segment={selectedPresentation && calmLayout ? "rest" : "all"} /></div>;
           if (sec === "good") return goodLifeFirst ? null : renderGoodLife();
-          if (sec === "yours") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--yours" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{selectedPresentation && keepsError && <div role="alert" style={{fontFamily:UI,fontSize:13,marginBottom:16}}><p>{keepsError}</p><button type="button" onClick={()=>setKeepsRevision(value=>value+1)}>Retry keeps</button> <a href={savedHref}>Open the full saved collection</a></div>}<YoursFocus calmLayout={calmLayout} editorialPreview={calmLayout && !returnToMain} presentation={selectedPresentation} savedCards={savedCards} savedSummary={savedSummary} phaseCards={phaseCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} ownedLoading={keepsLoading || skySavesLoading} ownedError={!!(keepsError || skySavesError)} onOpen={(it)=>{if(it._keep?._unavailable){setKeepsRevision(n=>n+1);return;}if(it._keep?._href){openYoursSource(it._keep._href);return;}openReadCard(it);}} onDetails={setExpanded} skySavedCount={livingDemo ? skySavedCount : 0} skyKeepsakes={livingDemo ? <SavedSkyLessons userId={user?.id} human={artDirection === "sky-worlds"} direction={worldDirection} previewRoute={contentRoute || (artDirection === "sky-worlds" ? "/SkyWorldsDemo" : artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artDirection === "marginalia" ? "/LivingAtelierDemo" : undefined)} ownedState={{rows:keptSkyLessons,error:skySavesError,loading:skySavesLoading,retry:retrySkySaves}} compactEmpty={calmLayout}/> : null} /></div>;
+          if (sec === "yours") return <div className={selectedPresentation ? "fw-living-content fw-selected-room--yours" : livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><YoursFocus calmLayout={calmLayout} editorialPreview={calmLayout && !returnToMain} presentation={selectedPresentation} savedCards={savedCards} savedSummary={savedSummary} phaseCards={phaseCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} ownedLoading={keepsLoading || skySavesLoading || profileKeepsLoading} ownedError={!!(keepsError || skySavesError || profileKeepsError)} onRetryOwned={()=>{if(keepsError)setKeepsRevision(value=>value+1);if(skySavesError)retrySkySaves();if(profileKeepsError)retryProfileKeeps();}} onOpen={(it)=>{if(it._keep?._unavailable){setKeepsRevision(n=>n+1);return;}if(it._keep?._href){openYoursSource(it._keep._href);return;}openReadCard(it);}} onDetails={setExpanded} skySavedCount={livingDemo ? skySavedCount : 0} skyKeepsakes={livingDemo ? <SavedSkyLessons userId={user?.id} human={artDirection === "sky-worlds"} direction={worldDirection} previewRoute={contentRoute || (artDirection === "sky-worlds" ? "/SkyWorldsDemo" : artDirection === "reading-room" ? "/LivingReadingRoomDemo" : artDirection === "marginalia" ? "/LivingAtelierDemo" : undefined)} ownedState={{rows:keptSkyLessons,error:skySavesError,loading:skySavesLoading,retry:retrySkySaves}} compactEmpty={calmLayout}/> : null} /></div>;
           // every section is bespoke — the generic slider-free layout is only ever the LANDING deck
           return <div style={{ marginTop: 22 }}><FocusLayout layout={layout} groups={landingGroups} clean={clean} presentation={selectedPresentation} onConsume={(it) => it.id === "story-today" || it.id === "daily-chapter" ? openTodaysChapter() : it.forYouSection === "Your sky" ? selectRoom("sky") : it._continue || it._raw ? openReadCard(it) : setExpanded(it)} /></div>;
         })()}
