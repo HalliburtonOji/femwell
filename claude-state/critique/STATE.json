@@ -53,9 +53,9 @@
     "reason": "Halli stopped recurring builds: usage consumption and endless loop. Tool and automation.toml confirm PAUSED; explicit user restart required."
   },
   "manualContent": {
-    "id": "LIFESTYLE-CONTENT-2026-10-21-LC15",
-    "stage": "LC15 source f76bee71 pushed and live at index-BQcT88wX.js on both origins. One authored short Sky listen and exact source/Keep are Ideas-only; main route/room scroll continuity repaired. Scoped 111 tests, independent review, three-width controlled real taps and signed-in live Play passed. Four-hour automation PAUSED.",
-    "nextAtom": "LC16-A01: map actual Lifestyle→Menu→Profile→Saved/player/reader opened owners, state, consumers and cost; repair bounded retired paper/streak and exact returns. Prototype nav/sheet motion and complete multiroom short-listen catalogue in organised Ideas. Carry Good life alternate endings, Nest/Delight media and factual Read editor/source/recheck; do not promote unreviewed content or restart automation.",
+    "id": "LIFESTYLE-CONTENT-2026-10-21-LC16",
+    "stage": "LC16 first Profile owner candidate locally proved under claims 67067f4b and 8702cc64; Profile row/handle, old ground/streak, export/delete truth and denied-save draft corrected. Three-width open/close fixture and independent critique completed. Not pushed/deployed; live remains LC15 index-BQcT88wX.js. Four-hour automation PAUSED.",
+    "nextAtom": "LC16-A01 release gate: final build/reproof, normal push, frontend deploy, two-origin hash and read-only live Profile/Ideas proof. Then LC17 mapped Menu→Settings/Saved/reader/player old-owner and motion stage, multiroom short-listen catalogue, and factual Read editor/source/recheck; no automation restart.",
     "proofGate": "Preserve every accepted feature and bold reader preference; clean actual old-paper owners only after consumer map. Complete 360/390/430 real taps and secondary returns, P0/P1/P2 self-critique, organised Ideas and actual live identity per batch. Live writes, native media/iPhone and long-history cost remain deferred rather than asserted.",
     "carryForward": [
       "Clean Ideas reader false-open progress repaired in LC08; canonical main reader still follows its held old reached contract until separate promotion",
@@ -72,7 +72,9 @@
       "C06 request and paid-unit measurement",
       "Other video runtimes/captions and physical iPhone unproved",
       "LC15 authenticated Keep read-back and native iPhone media controls remain unproved; only one Sky edition exists, with no main rotation",
-      "Profile/Menu retained old paper and streak; nav/sheet visual motion and full every-tap owner audit remain LC16"
+      "LC16 Profile first owner removes old ground/streak locally; Settings/Menu and 15+ linked owners, nav/sheet visual motion and full every-tap audit remain separate",
+      "LC16 Profile anonymous preference has no known Community or analytics consumer; wording corrected but privacy behaviour needs product design",
+      "LC16 Profile fetches all owner DailyCheckins before local 90-day truncation; actual row/byte cost and safe query plan remain"
     ],
     "automation": "PAUSED; manual work only"
   },
@@ -81,9 +83,9 @@
     "liveBundle": "index-OD-gjaX_.js"
   },
   "current": {
-    "section": "Lifestyle / Profile-Menu opened owners, motion and short-listen catalogue (manual)",
-    "atom": "LC16-A01: map actual Menu→Profile→Saved/player/reader taps and retained old-ground owners before claim/edit",
-    "status": "LC15 released f76bee71; both origins serve index-BQcT88wX.js. Sky short-listen pilot is Ideas-only; main route/room scroll return is live. Claims released. Four-hour automation PAUSED."
+    "section": "Lifestyle / Profile first owner release (manual)",
+    "atom": "LC16-A01: final build/reproof, source push, frontend deploy and live identity; then LC17 Settings/Menu next owner",
+    "status": "LC16 Profile first-owner candidate locally proved; live still LC15 index-BQcT88wX.js until deploy. No automatic runs; scheduler PAUSED."
   },
   "lastCompleted": {
     "run": 5,

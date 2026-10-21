@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
+import { pickProfile, displayFirstName } from "@/utils/userProfile";
 import {
   ChevronRight, Bell, Moon, Heart, Shield,
   Calendar, MapPin, Sparkles, Camera, Users,
@@ -14,7 +15,7 @@ import FirstLaunchStagePicker from "../components/planner/FirstLaunchStagePicker
 import { writeDevStageOverride } from "../components/planner/DevStageSwitcher";
 // Brand v4 lush layer — §3 carved heart · §4 botanicals · §5.3 Profile char = blush/gold camellia ·
 // §6.8 signature top · §6.10 Clipboard Stack Slider · §6.7.6 quick-action popup.
-import { T, UI, SERIF, Script, Hand, Eyebrow, Heart as BrandHeart, PAPER_BG } from "@/components/journal/Editorial";
+import { T, UI, SERIF, Script, Hand, Eyebrow, Heart as BrandHeart, useEscape } from "@/components/journal/Editorial";
 import { VineMotifV2, FlowerGlyph, CardFrame, floraKeyframes, cwOf, Butterfly, SwayBloom, SprigDivider, lighten, RichBloomV2 } from "@/components/brand/flora";
 import BloomprintCard from "@/components/nurture/BloomprintCard";
 import { bloomprintSignature } from "@/components/nurture/bloomprint";
@@ -53,20 +54,24 @@ function getCyclePhase(lastPeriodDate, cycleLen = 28, periodLen = 5) {
   return { phase, day: cycleDay };
 }
 const PHASE_LABELS_P = { menstrual: 'Menstrual', follicular: 'Follicular', ovulatory: 'Ovulatory', luteal: 'Luteal' };
+const PROFILE_BG = {
+  backgroundColor: "#FBFAF8",
+  backgroundImage: "radial-gradient(ellipse 90% 22% at 50% 0%, rgba(232,180,184,.16), transparent 80%), linear-gradient(#FBFAF8, #F8FAF7)",
+};
 
 // ── §6.8 SIGNATURE TOP — the flora hero (Profile char = blush/gold camellia, §5.3) ──────────────────
 // Holds the page-creature crown + identity (photo upload / name / email) + the live phase chips, so
 // the whole "who you are" fold sits in one screen instead of a scroll of separate cards.
-function ProfileHero({ user, profile, onPhoto, uploadingPhoto, cycleInfo, daysToNextPeriod, checkinStreak }) {
+function ProfileHero({ user, profile, onPhoto, uploadingPhoto, cycleInfo, daysToNextPeriod }) {
   const cw = cwOf("blush");
   const hour = (() => { try { return new Date().getHours(); } catch { return 10; } })();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-  const firstName = (user?.full_name || "").trim().split(" ")[0] || "";
+  const firstName = displayFirstName(user, profile);
   return (
     <section style={{
       position: "relative", overflow: "hidden", borderRadius: 26, padding: "26px 20px 20px", marginBottom: 16,
-      background: `linear-gradient(168deg, ${T.paperHi} 0%, ${cw.petal}26 52%, ${T.gold}16 100%)`,
-      border: `1px solid ${T.paperDeep}`, boxShadow: "0 10px 34px rgba(58,44,26,0.14), 0 2px 8px rgba(58,44,26,0.08)",
+      background: `linear-gradient(160deg, #FFFFFF 0%, #FCF7F8 68%, #F6FAF6 100%)`,
+      border: `1px solid rgba(168,137,63,.2)`, boxShadow: "0 12px 34px rgba(72,57,68,.07)",
     }}>
       <style>{`@keyframes fwPfGlow{0%,100%{opacity:.82;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.05)}}@media (prefers-reduced-motion:reduce){.fw-pf-glow{animation:none!important}}`}</style>
       <CardFrame variant="sprig" color={cw.petal} size={58} opacity={0.62} />
@@ -89,9 +94,9 @@ function ProfileHero({ user, profile, onPhoto, uploadingPhoto, cycleInfo, daysTo
           <Script size={36} color={T.ink}>{firstName ? `${greeting}, ${firstName}` : greeting}</Script>
           <FlowerGlyph variant="camellia" size={20} color={T.gold} idx="pf-r" />
         </div>
-        <Hand size={16} color={T.muted} style={{ marginTop: 8, maxWidth: 300, lineHeight: 1.5 }}>This is you — tended, not measured. Everything here bends to your season.</Hand>
+        <Hand size={17} color={T.muted} style={{ marginTop: 8, maxWidth: 300, lineHeight: 1.4 }}>Your space. Make it feel like yours.</Hand>
         {/* identity — photo upload preserved, set in a soft framed sub-card */}
-        <div style={{ display: "flex", alignItems: "center", gap: 13, marginTop: 16, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 16, padding: "10px 14px 10px 10px", boxShadow: "inset 0 1px 0 rgba(255,253,247,0.6)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 13, marginTop: 16, background: "rgba(255,255,255,.9)", border: "1px solid rgba(168,137,63,.16)", borderRadius: 16, padding: "10px 14px 10px 10px" }}>
           <label style={{ cursor: uploadingPhoto ? "wait" : "pointer", position: "relative", display: "inline-block" }}>
             <div style={{ width: 56, height: 56, borderRadius: "50%", overflow: "hidden", border: `2px solid ${cw.petal}`, background: T.paperHi, display: "grid", placeItems: "center" }}>
               {profile?.avatar_url
@@ -106,7 +111,7 @@ function ProfileHero({ user, profile, onPhoto, uploadingPhoto, cycleInfo, daysTo
             <input type="file" accept="image/*" style={{ display: "none" }} onChange={onPhoto} disabled={uploadingPhoto} />
           </label>
           <div style={{ textAlign: "left", minWidth: 0 }}>
-            <p style={{ fontFamily: SERIF, fontSize: 19, fontWeight: 700, color: T.ink, margin: 0, lineHeight: 1.2 }}>{user?.full_name || "You"}</p>
+            <p style={{ fontFamily: SERIF, fontSize: 19, fontWeight: 700, color: T.ink, margin: 0, lineHeight: 1.2 }}>{profile?.display_name && !/\d/.test(profile.display_name) ? profile.display_name : firstName || "You"}</p>
             <p style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, margin: "2px 0 0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 180 }}>{user?.email}</p>
             <p style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: cw.accent, margin: "3px 0 0", display: "inline-flex", alignItems: "center", gap: 4 }}><Camera size={10} /> tap to change</p>
           </div>
@@ -117,9 +122,9 @@ function ProfileHero({ user, profile, onPhoto, uploadingPhoto, cycleInfo, daysTo
             {[
               { label: "Phase", value: PHASE_LABELS_P[cycleInfo.phase] || cycleInfo.phase },
               { label: "Cycle day", value: `Day ${cycleInfo.day}` },
-              daysToNextPeriod != null ? { label: "Next period", value: `${daysToNextPeriod}d` } : { label: "Streak", value: `${checkinStreak}d` },
+              ...(daysToNextPeriod != null ? [{ label: "Next period", value: `${daysToNextPeriod}d` }] : []),
             ].map(c => (
-              <div key={c.label} style={{ flex: 1, background: T.paper, border: `1px solid ${T.paperDeep}`, borderTop: `2px solid ${cw.petal}`, borderRadius: 12, padding: "9px 6px", textAlign: "center" }}>
+              <div key={c.label} style={{ flex: 1, background: "rgba(255,255,255,.9)", border: "1px solid rgba(168,137,63,.18)", borderTop: `2px solid ${cw.petal}`, borderRadius: 14, padding: "9px 6px", textAlign: "center" }}>
                 <p style={{ fontFamily: UI, fontSize: 8.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.09em", color: cw.accent, margin: 0 }}>{c.label}</p>
                 <p style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 700, color: T.ink, margin: "3px 0 0" }}>{c.value}</p>
               </div>
@@ -132,26 +137,27 @@ function ProfileHero({ user, profile, onPhoto, uploadingPhoto, cycleInfo, daysTo
 }
 
 // ── ONE summary card (§6.8) — at-a-glance stats + this-week dots in a single board ──────────────────
-function ProfileSummary({ checkins, avgMood, checkinStreak }) {
+function ProfileSummary({ checkins, avgMood }) {
   const last7 = Array.from({ length: 7 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - (6 - i)); return d.toISOString().split('T')[0]; });
   const set = new Set(checkins.map(c => c.date));
   const loggedThisWeek = last7.filter(d => set.has(d)).length;
+  const latestDate = checkins.map(c => c.date).filter(Boolean).sort().at(-1);
+  const latestLabel = latestDate
+    ? new Date(`${latestDate}T12:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "short" })
+    : "—";
   const stats = [
     { label: "Check-ins", value: checkins.length },
     { label: "Avg mood", value: avgMood ? `${avgMood}/5` : "—" },
-    { label: "Streak", value: `${checkinStreak}d` },
+    { label: "Last check-in", value: latestLabel },
   ];
-  // soulful read — a gentle line, never a scoreboard (locked voice)
-  const read = checkinStreak > 0
-    ? `${checkinStreak} day${checkinStreak === 1 ? "" : "s"} in a row — a quiet rhythm you've kept.`
-    : loggedThisWeek > 0
-      ? "A few marks this week — gently does it, no streak to chase."
-      : "A fresh page. Check in whenever you like — never on demand.";
+  const read = loggedThisWeek > 0
+    ? "A few notes from this week. Come back when there's something to say."
+    : "A clear page. Check in when you want to.";
   return (
     <section style={{
       position: "relative", overflow: "hidden", borderRadius: 20, padding: "16px 18px 15px", marginBottom: 18,
-      background: `linear-gradient(165deg, ${T.paperHi} 0%, ${T.sage}16 100%)`,
-      border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.sage}`, boxShadow: "0 4px 18px rgba(58,44,26,0.10)",
+      background: "linear-gradient(165deg, #FFFFFF 0%, #F6FAF6 100%)",
+      border: "1px solid rgba(143,175,143,.3)", boxShadow: "0 6px 20px rgba(72,57,68,.05)",
     }}>
       <CardFrame variant="sprig" color={T.sage} size={42} opacity={0.5} />
       <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
@@ -193,8 +199,8 @@ function ProfileTile({ Icon, label, sub, value, accent = T.gold, onClick, danger
       gridColumn: full ? "1 / -1" : "auto",
       position: "relative", display: "flex", flexDirection: "column", gap: 5,
       textAlign: "left", width: "100%", minHeight: 78, padding: "12px 13px",
-      background: `linear-gradient(165deg, ${T.paperHi} 0%, ${c}10 100%)`,
-      border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${c}`,
+      background: `linear-gradient(165deg, #FFFFFF 0%, ${c}08 100%)`,
+      border: "1px solid rgba(80,66,82,.14)", borderLeft: `3px solid ${c}`,
       borderRadius: 14, cursor: onClick ? "pointer" : "default",
       boxShadow: "0 1px 4px rgba(58,44,26,0.07)",
     }}>
@@ -233,8 +239,8 @@ function ProfileStrip({ Icon, label, sub, accent = T.gold, href, onClick, value,
   const style = {
     display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left",
     padding: "13px 14px", marginBottom: 9, borderRadius: 14, cursor: "pointer", textDecoration: "none",
-    background: `linear-gradient(165deg, ${T.paperHi} 0%, ${c}0d 100%)`,
-    border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${c}`, boxShadow: "0 1px 4px rgba(58,44,26,0.06)",
+    background: `linear-gradient(165deg, #FFFFFF 0%, ${c}08 100%)`,
+    border: "1px solid rgba(80,66,82,.14)", borderLeft: `3px solid ${c}`, boxShadow: "0 2px 8px rgba(72,57,68,.04)",
   };
   if (href) return <a href={href} style={style}>{inner}</a>;
   return <button onClick={onClick} style={style}>{inner}</button>;
@@ -258,16 +264,47 @@ function SegmentHeader({ title, sub, accent = T.gold }) {
 // ── §6.7.6 QUICK-ACTION POPUP — edit a single field in place without a full page ─────────────────────
 function ProfileEditPopup({ cfg, onClose }) {
   const [val, setVal] = useState(cfg?.value ?? "");
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const dialogRef = useRef(null);
+  const returnFocusRef = useRef(null);
+  useEscape(savingEdit ? null : onClose);
+  useEffect(() => {
+    returnFocusRef.current = document.activeElement;
+    dialogRef.current?.focus();
+    return () => returnFocusRef.current?.focus?.();
+  }, []);
   if (!cfg) return null;
   const arr = Array.isArray(val) ? val : [];
+  const saveEdit = async (nextValue) => {
+    if (savingEdit) return;
+    setSavingEdit(true);
+    setSaveError("");
+    try {
+      const saved = await cfg.onSave(nextValue);
+      if (saved === false) throw new Error("Save was not confirmed");
+      onClose();
+    } catch {
+      setSaveError("Couldn’t save. Your change is still here — try again.");
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+  const keepFocusInside = (event) => {
+    if (event.key !== "Tab") return;
+    const focusable = [...dialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), a[href]')];
+    if (!focusable.length) return;
+    if (event.shiftKey && (document.activeElement === focusable[0] || document.activeElement === dialogRef.current)) { event.preventDefault(); focusable.at(-1).focus(); }
+    else if (!event.shiftKey && document.activeElement === focusable.at(-1)) { event.preventDefault(); focusable[0].focus(); }
+  };
   return (
-    <div role="dialog" aria-modal="true" onClick={onClose}
+    <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={cfg.title} onKeyDown={keepFocusInside} onClick={() => { if (!savingEdit) onClose(); }}
       style={{ position: "fixed", inset: 0, zIndex: 130, background: "rgba(11,8,5,0.42)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
       <div onClick={e => e.stopPropagation()} className="fw-sheet-safe"
-        style={{ width: "100%", maxWidth: 440, background: T.paperHi, borderRadius: "22px 22px 0 0", border: `1px solid ${T.paperDeep}`, borderBottom: "none", padding: "18px", boxShadow: "0 -10px 40px rgba(58,44,26,0.25)" }}>
+        style={{ width: "100%", maxWidth: 440, maxHeight: "calc(100dvh - 16px)", overflowY: "auto", background: "#FBFAF8", borderRadius: "28px 28px 0 0", border: "1px solid rgba(168,137,63,.2)", borderBottom: "none", padding: "18px 18px calc(18px + env(safe-area-inset-bottom, 0px))", boxShadow: "0 -12px 38px rgba(43,34,44,.16)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
           <Script size={26} color={T.ink}>{cfg.title}</Script>
-          <button onClick={onClose} aria-label="Close" style={{ width: 30, height: 30, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paper, display: "grid", placeItems: "center", cursor: "pointer" }}>
+          <button onClick={onClose} disabled={savingEdit} aria-label="Close" style={{ width: 30, height: 30, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paper, display: "grid", placeItems: "center", cursor: "pointer" }}>
             <X size={15} style={{ color: T.muted }} />
           </button>
         </div>
@@ -275,10 +312,10 @@ function ProfileEditPopup({ cfg, onClose }) {
 
         {(cfg.kind === "text" || cfg.kind === "date") && (
           <div style={{ display: "flex", gap: 8 }}>
-            <input type={cfg.kind === "date" ? "date" : "text"} value={val} onChange={e => setVal(e.target.value)} placeholder={cfg.placeholder} autoFocus
-              style={{ flex: 1, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "11px 13px", fontSize: 15, color: T.ink, background: T.paper, outline: "none" }} />
-            <button onClick={() => { cfg.onSave(val); onClose(); }}
-              style={{ background: T.ink, color: T.paperHi, borderRadius: 999, padding: "0 18px", fontSize: 13, fontWeight: 700, border: "none", cursor: "pointer" }}>Save</button>
+            <input type={cfg.kind === "date" ? "date" : "text"} value={val} onChange={e => setVal(e.target.value)} placeholder={cfg.placeholder} aria-label={cfg.title}
+              style={{ flex: 1, minWidth: 0, border: "1px solid rgba(80,66,82,.22)", borderRadius: 14, padding: "11px 13px", fontFamily: UI, fontSize: 16, color: "#504252", background: "#FFFFFF", outline: "none" }} />
+            <button onClick={() => saveEdit(val)} disabled={savingEdit}
+              style={{ background: "#504252", color: "#FFFFFF", borderRadius: 999, padding: "0 18px", fontFamily: UI, fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer" }}>{savingEdit ? "Saving…" : "Save"}</button>
           </div>
         )}
 
@@ -296,8 +333,8 @@ function ProfileEditPopup({ cfg, onClose }) {
                 );
               })}
             </div>
-            <button onClick={() => { cfg.onSave(arr); onClose(); }}
-              style={{ marginTop: 16, width: "100%", background: T.ink, color: T.paperHi, borderRadius: 999, padding: "11px", fontSize: 13, fontWeight: 700, border: "none", cursor: "pointer" }}>Done</button>
+            <button onClick={() => saveEdit(arr)} disabled={savingEdit}
+              style={{ marginTop: 16, width: "100%", background: T.ink, color: T.paperHi, borderRadius: 999, padding: "11px", fontSize: 13, fontWeight: 700, border: "none", cursor: "pointer" }}>{savingEdit ? "Saving…" : "Done"}</button>
           </>
         )}
 
@@ -306,7 +343,7 @@ function ProfileEditPopup({ cfg, onClose }) {
             {cfg.options.map(o => {
               const active = val === o.id;
               return (
-                <button key={o.id} onClick={() => { cfg.onSave(o.id); onClose(); }}
+                <button key={o.id} disabled={savingEdit} onClick={() => saveEdit(o.id)}
                   style={{ textAlign: "left", borderRadius: 13, padding: "11px 12px", border: "1.5px solid", cursor: "pointer",
                     background: active ? T.ink : T.paper, borderColor: active ? T.ink : T.paperDeep, color: active ? T.paperHi : T.ink }}>
                   <span style={{ fontFamily: UI, fontSize: 13.5, fontWeight: 700, display: "block" }}>{o.label}</span>
@@ -316,6 +353,7 @@ function ProfileEditPopup({ cfg, onClose }) {
             })}
           </div>
         )}
+        {saveError && <p role="alert" style={{ fontFamily: UI, fontSize: 13, color: "#8D303B", margin: "12px 0 0" }}>{saveError}</p>}
       </div>
     </div>
   );
@@ -323,8 +361,9 @@ function ProfileEditPopup({ cfg, onClose }) {
 
 // ── full-screen area overlay (Health & conditions / More areas) — back arrow, no nav loss ───────────
 function ProfileAreaOverlay({ title, onClose, children }) {
+  useEscape(onClose);
   return (
-    <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, zIndex: 125, ...PAPER_BG, overflowY: "auto" }}>
+    <div role="dialog" aria-modal="true" className="fw-sheet-safe" style={{ position: "fixed", inset: 0, zIndex: 125, ...PROFILE_BG, overflowY: "auto" }}>
       <div style={{ position: "sticky", top: 0, zIndex: 2, display: "flex", alignItems: "center", gap: 10, padding: "14px 16px", background: T.paperHi, borderBottom: `1px solid ${T.paperDeep}` }}>
         <button onClick={onClose} aria-label="Back" style={{ width: 34, height: 34, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paper, display: "grid", placeItems: "center", cursor: "pointer" }}>
           <ArrowLeft size={17} style={{ color: T.ink }} />
@@ -378,13 +417,15 @@ export default function ProfileClipboardDemo() {
   };
 
   const saveProfileField = async (field, value) => {
-    if (!profile) return;
+    if (!profile) return false;
     try {
       await base44.entities.UserProfile.update(profile.id, { [field]: value });
       setProfile(p => ({ ...p, [field]: value }));
       flash(true, "Saved");
+      return true;
     } catch (_) {
       flash(false, "Couldn’t save — try again.");
+      return false;
     }
   };
 
@@ -398,7 +439,7 @@ export default function ProfileClipboardDemo() {
           base44.entities.UserPreferences.filter({ user_id: u.id }).catch(() => []),
           base44.entities.DailyCheckins.filter({ user_id: u.id }).catch(() => []),
         ]);
-        if (profiles[0]) setProfile(profiles[0]);
+        setProfile(pickProfile(profiles));
         if (prefs[0]) setPreferences(prefs[0]);
         const cutoff = new Date();
         cutoff.setDate(cutoff.getDate() - 90);
@@ -413,7 +454,7 @@ export default function ProfileClipboardDemo() {
   }, []);
 
   const updateTone = async (tone) => {
-    if (!profile) return;
+    if (!profile) return false;
     setSaving(true);
     try {
       await base44.entities.UserProfile.update(profile.id, { tone_preference: tone });
@@ -423,9 +464,11 @@ export default function ProfileClipboardDemo() {
         setPreferences((current) => ({ ...current, coach_tone: tone }));
       }
       flash(true, "Saved");
+      return true;
     } catch (err) {
       console.error("Tone update failed:", err);
-      flash(false, "Couldn’t save tone — try again.");
+      flash(false, "Couldn’t save the full tone change — try again.");
+      return false;
     } finally {
       setSaving(false);
     }
@@ -448,19 +491,6 @@ export default function ProfileClipboardDemo() {
     ? getCyclePhase(profile.last_period_start_date, profile.cycle_avg_length || 28, profile.period_length || 5)
     : null;
 
-  const checkinStreak = (() => {
-    if (!checkins.length) return 0;
-    let count = 0;
-    const dates = new Set(checkins.map(c => c.date));
-    const d = new Date();
-    while (count <= 365) {
-      if (!dates.has(d.toISOString().split('T')[0])) break;
-      count++;
-      d.setDate(d.getDate() - 1);
-    }
-    return count;
-  })();
-
   const avgMood = (() => {
     const moodLogs = checkins.filter(c => c.mood);
     if (!moodLogs.length) return null;
@@ -476,7 +506,7 @@ export default function ProfileClipboardDemo() {
   })();
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ ...PAPER_BG }}>
+    <div className="min-h-screen flex items-center justify-center" style={PROFILE_BG}>
       <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
            style={{ borderColor: `${T.blush}66`, borderTopColor: T.blush }} />
     </div>
@@ -506,7 +536,7 @@ export default function ProfileClipboardDemo() {
   };
 
   return (
-    <div className="min-h-screen pb-28" style={{ ...PAPER_BG, position: "relative", overflowX: "clip" }}>
+    <div className="min-h-screen pb-28" style={{ ...PROFILE_BG, position: "relative", overflowX: "clip" }}>
       {/* botanical page texture — blush/gold vines (§5.3 Profile char), hairline + low-opacity */}
       <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
         <style>{floraKeyframes}</style>
@@ -530,9 +560,9 @@ export default function ProfileClipboardDemo() {
         {/* §6.8 signature top */}
         <ProfileHero
           user={user} profile={profile} onPhoto={handlePhotoUpload} uploadingPhoto={uploadingPhoto}
-          cycleInfo={cycleInfo} daysToNextPeriod={daysToNextPeriod} checkinStreak={checkinStreak}
+          cycleInfo={cycleInfo} daysToNextPeriod={daysToNextPeriod}
         />
-        <ProfileSummary checkins={checkins} avgMood={avgMood} checkinStreak={checkinStreak} />
+        <ProfileSummary checkins={checkins} avgMood={avgMood} />
 
         {/* Bloomprint — her personal flora identity (signature + earned shelf + disclosure tier) */}
         <div style={{ margin: "0 0 14px" }}><BloomprintCard userId={user?.id} /></div>
@@ -556,9 +586,9 @@ export default function ProfileClipboardDemo() {
           <Clipboard title="Account" sub="your plan, your privacy, your data" accent={T.sage} flower="rose" idx="cb-acct">
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               <ProfileTile full Icon={Sparkles} label="Plan" value={profile?.plan ? `${profile.plan} Plan` : "Free Plan"} sub="Tap to see what's in the upgrade" accent={T.gold} onClick={() => navigate(createPageUrl("Upgrade"))} />
-              <ProfileTile Icon={Shield} label="Anonymous mode" value={profile?.anonymous_mode ? "On" : "Off"} sub="Not linked to analytics" accent={T.sage} onClick={toggleAnon} />
-              <ProfileTile Icon={ChevronRight} label="Data export" value="Download" sub={`${checkins.length} check-ins stored`} accent={T.blush} onClick={() => setShowDataExportModal(true)} />
-              <ProfileTile full danger Icon={Shield} label="Delete my data" value="Request permanent deletion" accent={T.crimson} onClick={() => setShowDataDeleteModal(true)} />
+              <ProfileTile Icon={Shield} label="Anonymous preference" value={profile?.anonymous_mode ? "Saved" : "Off"} sub="Stored here; not applied to Community or analytics" accent={T.sage} onClick={toggleAnon} />
+              <ProfileTile Icon={ChevronRight} label="Data export" value="See options" sub="Choose what to download" accent={T.blush} onClick={() => setShowDataExportModal(true)} />
+              <ProfileTile full danger Icon={Shield} label="Delete my data" value="See how to request it" accent={T.crimson} onClick={() => setShowDataDeleteModal(true)} />
             </div>
           </Clipboard>
         </ClipboardSlider>
