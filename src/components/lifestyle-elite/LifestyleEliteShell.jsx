@@ -507,7 +507,7 @@ function FocusableBoards({ focusBoard, sliderRef, gold, children }) {
 
 function exactSkySource(search) {
   const params = new URLSearchParams(search);
-  return JSON.stringify(["reading", "lesson", "lessonVersion"].map(name => params.get(name) || ""));
+  return JSON.stringify(["reading", "lesson", "lessonVersion", "listen", "listenVersion"].map(name => params.get(name) || ""));
 }
 
 function RoutedLifestyleShell(props) {
@@ -528,7 +528,9 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
     if (!routeActive) return;
     const pathname = routePathname ?? window.location.pathname;
     const search = routeSearch ?? window.location.search;
-    setSkyArrival(current => current.pathname === pathname && current.search === search ? current : {pathname,search});
+    // A primary-tab return has no section query. It is not an instruction to
+    // replace a retained exact Sky edition or its in-progress note with today.
+    setSkyArrival(current => current.pathname === pathname && (!search || current.search === search) ? current : {pathname,search});
   }, [routeActive, routePathname, routeSearch]);
   const returnToMain = contentRoute === "/Lifestyle";
   const savedHref = `/Saved?tab=LIFESTYLE${calmLayout ? "&appearance=calm" : ""}${returnToMain ? "&from=lifestyle-main" : ""}`;
@@ -1543,6 +1545,16 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
     try {
       const q = new URLSearchParams(routeSearch ?? window.location.search);
       const requested = String(q.get("tab") || q.get("section") || "").toLowerCase();
+      // Returning through the persistent Lifestyle tab's bare URL keeps the
+      // selected room. An explicit section/all deep link still takes priority.
+      if (!requested && focusSection) {
+        const url = new URL(window.location.href);
+        if (url.pathname === routePathname) {
+          url.searchParams.set("section", focusSection);
+          window.history.replaceState(window.history.state, "", url);
+        }
+        return;
+      }
       if (requested === "all") { setFocusSection(null); return; }
       const want = TAB_TO_SECTION[requested] || TAB_TO_SECTION[initialSection];
       if (!want) return;
@@ -1564,7 +1576,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
     if (livingDemo) {
       const url = new URL(window.location.href);
       url.searchParams.set("section", section || "all");
-      ["tab", "reading", "lesson", "lessonVersion", "joy"].forEach(key => url.searchParams.delete(key));
+      ["tab", "reading", "lesson", "lessonVersion", "listen", "listenVersion", "joy"].forEach(key => url.searchParams.delete(key));
       url.hash = "";
       window.history.replaceState(window.history.state, "", url);
       // replaceState leaves React Router's location unchanged. Keep Sky's accepted
@@ -1785,7 +1797,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
           // that already summarises itself.
           if(livingDemo && focusSection === "listen")glanceRows.unshift({Icon:Headphones,label:"Listen & watch",text:`${audioCards.length} listens · ${videoCards.length} watches in this selection`,onClick:()=>audioCards[0] || videoCards[0] ? setExpanded(audioCards[0] || videoCards[0]) : window.location.assign(calmLayout ? watchHref : "/WatchListen")});
           if(livingDemo && focusSection === "good")glanceRows.unshift({Icon:Coffee,label:"A small joy",text:goodLifeJoys[0]?.title || "A little time to yourself",onClick:()=>openJoy(goodLifeJoys[0])});
-          if(livingDemo && focusSection === "yours")glanceRows.unshift({Icon:Bookmark,label:"Your kept things",text:skySavedCount ? `${skySavedCount} Sky ${skySavedCount===1 ? "lesson" : "lessons"}${savedItems.length ? ` · ${savedItems.length} Lifestyle ${savedItems.length===1 ? "find" : "finds"}` : " kept for another day"}` : savedItems.length ? `${savedItems.length} Lifestyle ${savedItems.length===1 ? "find" : "finds"} · your Sky keepsakes below` : keepsError || skySavesError ? "Some keeps couldn't load · open Yours to retry" : keepsLoading || skySavesLoading ? "Finding what you've kept" : "Your saved things, with room for more",onClick:()=>navigate(savedHref)});
+          if(livingDemo && focusSection === "yours")glanceRows.unshift({Icon:Bookmark,label:"Your kept things",text:skySavedCount ? `${skySavedCount} Sky ${skySavedCount===1 ? "keepsake" : "keepsakes"}${savedItems.length ? ` · ${savedItems.length} Lifestyle ${savedItems.length===1 ? "find" : "finds"}` : " kept for another day"}` : savedItems.length ? `${savedItems.length} Lifestyle ${savedItems.length===1 ? "find" : "finds"} · your Sky keepsakes below` : keepsError || skySavesError ? "Some keeps couldn't load · open Yours to retry" : keepsLoading || skySavesLoading ? "Finding what you've kept" : "Your saved things, with room for more",onClick:()=>navigate(savedHref)});
           const focusRowLabel = { read: "Your reading", books: calmBookPosition && !calmBookPosition.caughtUp ? "Your place" : "Your chapter", story: "Today's chapter", sky: "Your sky", ...(livingDemo ? {listen:"Listen & watch",good:"A small joy",yours:"Your kept things"} : {}) }[focusSection] || null;
           const orderedGlance = focusRowLabel
             ? [...glanceRows].sort((a, b) => (b.label === focusRowLabel) - (a.label === focusRowLabel))

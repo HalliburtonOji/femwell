@@ -3,10 +3,10 @@ import { PageLoader } from './components/common/LoadingSpinner';
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { pagesConfig } from './pages.config'
-import { BrowserRouter as Router, Route, Routes, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 // Sprint 10 — public partner-view route, mounted OUTSIDE the auth gate.
 import Partner from './pages/Partner';
-import { useEffect, useState, memo } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, memo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { flushPending } from '@/utils/pendingQueue';
 import { scheduleNotifications } from '@/utils/notifications';
@@ -97,7 +97,59 @@ const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const navigationType = useNavigationType();
   const currentPageName = pageNameFromPath(location.pathname);
+
+  // The three warmed tabs share the browser's one scroll position. Remember
+  // each destination while its own page is visible, and remember history keys
+  // separately so Back returns to the exact earlier place. Keep this in the
+  // persistent router, not inside pages that can unmount or stay hidden.
+  const scrollMemory = useRef({ route: null, y: 0, byKey: new Map(), byTab: new Map(), gesture: 0 });
+  useEffect(() => {
+    const previous = window.history.scrollRestoration;
+    window.history.scrollRestoration = 'manual';
+    const remember = () => {
+      const memory = scrollMemory.current;
+      memory.y = window.scrollY;
+      if (memory.route) {
+        memory.byKey.set(memory.route.key, memory.y);
+        if (KEEP_ALIVE.includes(memory.route.page)) memory.byTab.set(memory.route.page, memory.y);
+      }
+    };
+    const beganGesture = () => { scrollMemory.current.gesture += 1; };
+    window.addEventListener('scroll', remember, { passive: true });
+    window.addEventListener('wheel', beganGesture, { passive: true });
+    window.addEventListener('touchstart', beganGesture, { passive: true });
+    window.addEventListener('keydown', beganGesture);
+    return () => { window.removeEventListener('scroll', remember); window.removeEventListener('wheel', beganGesture); window.removeEventListener('touchstart', beganGesture); window.removeEventListener('keydown', beganGesture); window.history.scrollRestoration = previous; };
+  }, []);
+  useLayoutEffect(() => {
+    const memory = scrollMemory.current;
+    const previous = memory.route;
+    const next = { key: location.key, page: currentPageName, pathname: location.pathname };
+    if (!previous) { memory.route = next; memory.y = window.scrollY; return; }
+    if (previous.key === next.key && previous.page === next.page) return;
+    memory.byKey.set(previous.key, memory.y);
+    if (KEEP_ALIVE.includes(previous.page)) memory.byTab.set(previous.page, memory.y);
+    memory.route = next;
+    // Section/query choices within a room own their own position and focus.
+    if (previous.pathname === next.pathname && navigationType !== 'POP') return;
+    const target = navigationType === 'POP' && memory.byKey.has(next.key)
+      ? memory.byKey.get(next.key)
+      : KEEP_ALIVE.includes(next.page) ? (memory.byTab.get(next.page) ?? 0) : 0;
+    memory.y = target;
+    const gesture = memory.gesture;
+    const focusAtArrival = document.activeElement;
+    const frame = requestAnimationFrame(() => window.scrollTo(0, target));
+    // A previous history position may exceed the temporary swap container's
+    // height. Retry only that case after mount; never yank a new page or its
+    // anchor back to the top after it deliberately positioned itself.
+    const retry = target > 0 && navigationType === 'POP' && !location.hash && !KEEP_ALIVE.includes(next.page)
+      ? window.setTimeout(() => {
+          if (memory.route?.key === next.key && memory.gesture === gesture && document.activeElement === focusAtArrival && window.scrollY < target - 2) window.scrollTo(0, target);
+        }, 390) : null;
+    return () => { cancelAnimationFrame(frame); clearTimeout(retry); };
+  }, [location.key, location.pathname, currentPageName, navigationType]);
 
   // Keep-alive bookkeeping — which keep-alive pages have been mounted ("warmed").
   const [warm, setWarm] = useState(() => new Set([currentPageName]));

@@ -1,5 +1,9 @@
 # Critic learning — append dated evidence
 
+## 21 October — LC15 exact sound and navigation return
+
+A versioned saved clip needs its own key, route parameters, carousel availability rule and route remount key; preserving only the parent Bulletin silently substitutes another sound edition. The selected Lifestyle room is part of a keep-alive tab's state: a bare nav return must not reset it to Read and shrink the document under its saved scroll position. Browser hashes can fire before a routed section mounts, so verify the untouched arrival after hydration and allow an early user gesture to cancel a delayed anchor move. Source CSS was misleading here: `.fw-sky-worlds .sky-world-body>section` overrode the section's 110px scroll margin to 18px until a specific rule was added. Inspect computed style and actual 360/390/430 pixels, not only the edited declaration. Playback cost is separate from generation: this static short makes no paid TTS call or five-second progress write per Play, while its actual 1.05 MB transfer and production egress remain unpriced.
+
 ## 20 October — LC14 source truth and newer acknowledgement
 
 A profile-only SavedItems view is not empty when `UserProfile.filter` fails; keep confirmed physical rows, mark the profile source unknown and retry that owner-scoped read. A late Retry result must not overwrite a newer acknowledged save. Gate the read by a mutation revision, keep the confirmed item visible, and leave Retry available for the unfinished source. A small text button still needs a 44px touch target. In an adjacent Saved→Yours test, a mock that ignored exact `{id}` queries manufactured a duplicate-removal failure: fixtures must honour backend query semantics before changing product code. Topic-specific first actions can be local, cheap and useful; older complete sources stay reachable behind a clear disclosure, while unreviewed new long pieces stay in Ideas.

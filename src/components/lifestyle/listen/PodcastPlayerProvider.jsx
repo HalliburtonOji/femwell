@@ -138,6 +138,7 @@ export function PodcastPlayerProvider({ children }) {
   // resume-from-position on the next episode load. Non-fatal — silently
   // skips if user_id is missing.
   const upsertListenRow = useCallback(async (episode, posSec, durSec, isCompleted, owner = episodeOwnerRef.current) => {
+    if (episode?.save_progress === false) return;
     const uid = owner;
     if (!uid || !episode?.id || !progressReadyRef.current) return;
     const key = `${uid}:${episode.id}`;
@@ -415,6 +416,14 @@ export function PodcastPlayerProvider({ children }) {
     const failedStart = () => { if (isCurrent()) { setError('Couldn’t start. Tap play to try again.');setTransport('failed'); } };
     try { startResult = Promise.resolve(a.play()).catch(failedStart); }
     catch { failedStart();startResult=Promise.resolve(); }
+    // Static editorial shorts have their own exact SavedItems identity. There
+    // is no useful per-five-second PodcastListens row for a one-minute story.
+    if (episode.save_progress === false) {
+      episodeOwnerRef.current = null;
+      setProgressReady(false);
+      await startResult;
+      return;
+    }
     try {
       const uid = (await base44.auth.me())?.id || null;
       if (!isCurrent()) return;

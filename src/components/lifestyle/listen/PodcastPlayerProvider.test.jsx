@@ -103,6 +103,15 @@ async function begin(item = episode()) {
 async function event(name) { await act(async () => { audio.dispatchEvent(new Event(name)); await flush(); }); }
 
 describe('latest episode intent and cached metadata', () => {
+  it('plays a static short story without a PodcastListens lookup or per-five-second writes', async () => {
+    await mount();sdk.filter.mockClear();sdk.create.mockClear();sdk.update.mockClear();
+    await begin({...episode('sky-short-listen:moon:v1'),duration_seconds:66,save_progress:false});
+    await act(async () => { audio.metadata(66);for (let second=1;second<=65;second+=1){audio.currentTime=second;audio.dispatchEvent(new Event('timeupdate'));}await flush();context.close();await flush(); });
+    expect(audio.play).toHaveBeenCalled();
+    expect(sdk.filter).not.toHaveBeenCalled();
+    expect(sdk.create).not.toHaveBeenCalled();
+    expect(sdk.update).not.toHaveBeenCalled();
+  });
   it('should start in the user gesture before a deferred resume lookup finishes', async () => {
     const lookup = deferred(); sdk.filter.mockReturnValueOnce(lookup.promise);
     await mount(); await begin();

@@ -51,7 +51,14 @@ export function savedReturnRoute(row, lifestyleItem) {
     try {
       const recorded = new URL(meta.route, "https://femwells.com");
       if (recorded.origin !== "https://femwells.com" || !SKY_ROUTES.has(recorded.pathname)) return null;
-      return skyLessonRoute(lesson, recorded.searchParams.get("direction") || "letter", recorded.pathname);
+      const bulletinRoute = skyLessonRoute(lesson, recorded.searchParams.get("direction") || "letter", recorded.pathname);
+      if (!meta.shortListenId) return bulletinRoute;
+      if (!/^[\w-]{1,160}$/.test(String(meta.shortListenId)) || !/^\d{1,6}$/.test(String(meta.shortListenVersion ?? ""))) return null;
+      if (recorded.searchParams.get("listen") !== String(meta.shortListenId) || recorded.searchParams.get("listenVersion") !== String(meta.shortListenVersion)) return null;
+      const exact = new URL(bulletinRoute, "https://femwells.com");
+      exact.searchParams.set("listen", meta.shortListenId);
+      exact.searchParams.set("listenVersion", String(meta.shortListenVersion));
+      return `${exact.pathname}${exact.search}${exact.hash}`;
     } catch { return null; }
   }
   if (lifestyleItem) {

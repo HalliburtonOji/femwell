@@ -58,7 +58,7 @@ export default function YoursFocus({ savedCards = [], savedSummary, phaseCards =
     </>);
   }
   const summary = skySavedCount
-    ? `${skySavedCount} Sky ${skySavedCount === 1 ? "lesson" : "lessons"} kept above${hasSaved ? ` · ${savedCards.length} more saved finds` : ""}${phaseCards.length ? " — and this week's set below" : ""}.`
+    ? `${skySavedCount} Sky ${skySavedCount === 1 ? "keepsake" : "keepsakes"} above${hasSaved ? ` · ${savedCards.length} more saved finds` : ""}${phaseCards.length ? " — and this week's set below" : ""}.`
     : hasSaved
     ? `${savedCards.length} saved${savedSummary ? ` · ${savedSummary}` : ""}${phaseCards.length ? ` — and this week's set` : ""}.`
     : `Your keeps will live here. A few discoveries to start you off.`;
