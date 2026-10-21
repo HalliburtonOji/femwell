@@ -1,0 +1,37 @@
+{
+  "title": "The long way home",
+  "source": "/CalmLifestyleDemo?section=read",
+  "status": "Ideas-only original fiction audition; no account voice setting",
+  "variants": [
+    {
+      "id": "laura",
+      "name": "Laura",
+      "role": "Quick, wry; let the joke arrive late.",
+      "src": "./audio/scene-laura-v1.mp3",
+      "transcript": "She missed the bus because of one shoelace. The bus didn't wait, obviously; buses have a deeply personal commitment to leaving as you arrive. “Right,” Mina told the shelter. Her phone had six per cent and claimed the next bus arrived three minutes ago. She could see the entire road. It hadn't. Later, the orange bag split. A woman outside the launderette caught the escapee with her foot. “You've got one making a break for it.” At the bridge, two signs both pointed left. Three people and a flat-pack bookcase reached a locked gate. “We could climb it,” one said. They looked at the box. “We won't,” said the other. Mina laughed. Her sister texted: Mum has bought a karaoke machine. Finally, somebody else had the bigger problem. Mina got home with six oranges. The seventh had gone with the woman from the launderette. Honestly? Not a bad ending.",
+      "charactersSubmitted": 866,
+      "bytes": 934181,
+      "performanceScript": "She missed the bus because of one shoelace. The bus didn't wait, obviously; buses have a deeply personal commitment to leaving as you arrive. [sigh] “Right,” Mina told the shelter. Her phone had six per cent and claimed the next bus arrived three minutes ago. She could see the entire road. It hadn't. Later, the orange bag split. A woman outside the launderette caught the escapee with her foot. “You've got one making a break for it.” At the bridge, two signs both pointed left. Three people and a flat-pack bookcase reached a locked gate. “We could climb it,” one said. They looked at the box. “We won't,” said the other. [brief laugh] Mina laughed. Her sister texted: Mum has bought a karaoke machine. Finally, somebody else had the bigger problem. Mina got home with six oranges. The seventh had gone with the woman from the launderette. Honestly? Not a bad ending."
+    },
+    {
+      "id": "george",
+      "name": "George",
+      "role": "Low, warm; give the message room to land.",
+      "src": "./audio/scene-george-v1.mp3",
+      "transcript": "The bus left while Mina was retying her shoe. No pause, no sympathetic blink from the indicator; it simply took her route home and went. “Right,” she said. Six per cent battery. A timetable that swore the next bus had already come. She could see the road; it hadn't. Her bag of oranges tore ten minutes into the walk. A woman from the launderette saved one with her foot, and the two of them gathered the rest. At the closed bridge, Mina joined two people with a flat-pack bookcase. They ended up at a locked gate. “We could climb it,” one said. They looked at the box. “We won't,” said the other. She laughed. Later her sister texted: “Mum's bought a karaoke machine.” It was the first message all evening that needed no solving. At home she set six oranges in a bowl. One had stayed behind at the launderette. Some nights, making it home is plenty.",
+      "charactersSubmitted": 867,
+      "bytes": 972634,
+      "performanceScript": "The bus left while Mina was retying her shoe. No pause, no sympathetic blink from the indicator; it simply took her route home and went. [sigh] “Right,” she said. Six per cent battery. A timetable that swore the next bus had already come. She could see the road; it hadn't. Her bag of oranges tore ten minutes into the walk. A woman from the launderette saved one with her foot, and the two of them gathered the rest. At the closed bridge, Mina joined two people with a flat-pack bookcase. They ended up at a locked gate. “We could climb it,” one said. They looked at the box. “We won't,” said the other. [brief laugh] She laughed. Later her sister texted: “Mum's bought a karaoke machine.” It was the first message all evening that needed no solving. At home she set six oranges in a bowl. One had stayed behind at the launderette. Some nights, making it home is plenty."
+    },
+    {
+      "id": "river",
+      "name": "River",
+      "role": "Understated, close; matter-of-fact until the laugh.",
+      "src": "./audio/scene-river-v1.mp3",
+      "transcript": "Mina had missed the bus. She knew it was ridiculous to blame a shoelace; she did it anyway. “Right.” Her phone was on six per cent, and the next bus, according to the screen, had arrived three minutes ago. According to the empty road, it had not. She walked. The paper bag split; seven oranges tried for separate lives. A stranger outside the launderette caught one. Then came the closed bridge, two left arrows, and a locked gate shared with a couple carrying a bookcase. “We could climb it.” Nobody moved. “We won't.” Mina laughed. Her sister's text came through when Mina borrowed a charger: “Mum has a karaoke machine. Call tomorrow.” No demand to fix the day. At home Mina put six oranges in a bowl and left work in its bag. The seventh orange was with the woman who had stopped to help. That is a small story, but small stories get people home.",
+      "charactersSubmitted": 867,
+      "bytes": 883190,
+      "performanceScript": "Mina had missed the bus. She knew it was ridiculous to blame a shoelace; she did it anyway. [sigh] “Right.” Her phone was on six per cent, and the next bus, according to the screen, had arrived three minutes ago. According to the empty road, it had not. She walked. The paper bag split; seven oranges tried for separate lives. A stranger outside the launderette caught one. Then came the closed bridge, two left arrows, and a locked gate shared with a couple carrying a bookcase. “We could climb it.” Nobody moved. “We won't.” [brief laugh] Mina laughed. Her sister's text came through when Mina borrowed a charger: “Mum has a karaoke machine. Call tomorrow.” No demand to fix the day. At home Mina put six oranges in a bowl and left work in its bag. The seventh orange was with the woman who had stopped to help. That is a small story, but small stories get people home."
+    }
+  ]
+}
