@@ -2,7 +2,7 @@
 
 Status: Ideas audition and architecture proposal. Halli has rejected the sound of the existing Sky pilot. This is a new direction, not approval to put ten voices, ambient audio, live Jess synthesis or a social digest on main. Four-hour automation remains **PAUSED**. Claim `d83db9a3` precedes the audition work.
 
-Live routing correction: the first deployed board link to the trailing-slash folder resolved to Base44's app shell, not this static page. The explicit `/lifestyle-content/voice-studio/index.html` served the audition. Both Ideas entrances were corrected; direct live 360/390/430 Hear/Pause/Again/Choose, failed River retry, Back and zero-overflow proof passed before the corrected links were redeployed.
+Live routing correction: the first deployed board link to the trailing-slash folder resolved to Base44's app shell, not this static page. The explicit `/lifestyle-content/voice-studio/index.html` served the audition. Both Ideas entrances were corrected in `71fc6f97` and redeployed after direct live 360/390/430 Hear/Pause/Again/Choose, failed River retry, Back and zero-overflow proof. Final live direct proof passed again after deploy. Fresh custom and Base44 origins both served `index-CbMXATuW.js`; the organised board exposed the corrected URL and the ten retained audio assets were present. This is an Ideas-only release, not Halli's judgement of the sound or approval of a shared app setting.
 
 ## Motherboard: what actually speaks today
 
