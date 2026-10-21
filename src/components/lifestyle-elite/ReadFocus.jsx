@@ -17,7 +17,7 @@ function ReadEditionChoice({ item, onOpen, onDetails, resume = false, compact = 
   if (!item) return null;
   const raw = item._raw || {};
   const archive = item.archived || /^FEMWELL_AI/i.test(String(raw.provider || ""));
-  const draftType = /NEWS/i.test(String(raw.content_type || "")) ? "News" : /GUIDE/i.test(String(raw.content_type || "")) ? "Guide" : "Essay";
+  const draftType = /NEWS/i.test(String(raw.content_type || "")) ? "News" : /GUIDE/i.test(String(raw.content_type || "")) ? "Guide" : /STORY|FICTION/i.test(String(raw.content_type || "")) ? "Fiction" : "Essay";
   const kind = resume ? "Continue reading" : raw.editorial_local ? `Ideas · ${draftType} · unreviewed` : archive ? "Archive · source check pending"
     : /news/i.test(String(raw.provider || "") + String(raw.category || "")) ? "News & context"
     : /guide/i.test(String(raw.content_type || "") + String(raw.media_type || "")) ? "Useful guide"
@@ -82,10 +82,14 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
     // archive; the full article/history list stays one tap away.
     const namedResume = continueCards.find(item => !/^Project Gutenberg book \d+$/i.test(item.title || ""));
     const labelledFiction = storyCards.find(item => !item.archived && /fiction/i.test(item._raw?.author_name || item.sourceName || ""));
-    const completeEditorial = articleCards.find(item => item._raw?.editorial_local ||
-      (!item.archived && item.body?.length));
+    const completeEditorial = (editorialPreview && articleCards.find(item => item._raw?.editorial_local && String(item._raw.content_type).toUpperCase() === "ARTICLE")) ||
+      articleCards.find(item => item._raw?.editorial_local || (!item.archived && item.body?.length));
     const currentStory = storyCards.find(item => !item.archived && item.body?.length);
-    const primary = namedResume || continueCards[0] || completeEditorial || labelledFiction || currentStory || null;
+    // An Ideas issue opens with its complete editorial piece. A saved place
+    // stays one direct tap below it; main keeps its existing resume-first order.
+    const primary = editorialPreview && completeEditorial?._raw?.editorial_local
+      ? completeEditorial || namedResume || continueCards[0] || labelledFiction || currentStory || null
+      : namedResume || continueCards[0] || completeEditorial || labelledFiction || currentStory || null;
     const alternate = continueCards.includes(primary) ? completeEditorial || labelledFiction || currentStory
       : storyCards.includes(primary) ? completeEditorial : labelledFiction || currentStory;
     const second = alternate?.id === primary?.id ? null : alternate;
@@ -125,17 +129,19 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
     });
     const issueLead=issueFeature && issueFeature.id !== primary?.id ? issueFeature : null;
     const issueBriefs=[issueGuide,issueNews].filter(item => item && item.id !== primary?.id);
-    const issueUsed=new Set([primary?.id,issueLead?.id,...issueBriefs.map(item=>item.id)]);
+    const issueResume=editorialPreview && namedResume?.id !== primary?.id ? namedResume : null;
+    const issueUsed=new Set([primary?.id,issueLead?.id,issueResume?.id,...issueBriefs.map(item=>item.id)]);
     const issueArchive=[...continueCards,...articleCards,...storyCards].filter(item => item && !issueUsed.has(item.id) && issueUsed.add(item.id));
     const issueMore=issueFeature ? <>
       {issueLead && <ReadEditionChoice item={issueLead} onOpen={onOpen} onDetails={onDetails} compact/>}
+      {issueResume && <div className="fw-read-issue-resume"><ReadEditionChoice item={issueResume} onOpen={onOpen} onDetails={onDetails} resume compact/></div>}
       {issueBriefs.length > 0 && <div className="fw-read-brief-list" aria-label="Useful reads in this issue">{issueBriefs.map(item=><ReadIssueBrief key={item.id} item={item} onOpen={onOpen} onDetails={onDetails}/>)}</div>}
       <CalmMore enabled={issueArchive.length > 0} title={`Browse all reading · ${issueArchive.length}`}>
         {issueArchive.map(item=><CalmFindRow key={item.id} item={item} onOpen={onOpen} onDetails={onDetails} label={continueCards.includes(item) ? "Continue" : "Read"}/>)}
       </CalmMore>
     </> : more;
     const visibleMore=editorialPreview ? issueMore : more;
-    const hasMore=editorialPreview && issueFeature ? !!(issueLead || issueBriefs.length || issueArchive.length) : !!(second || remaining.length);
+    const hasMore=editorialPreview && issueFeature ? !!(issueLead || issueResume || issueBriefs.length || issueArchive.length) : !!(second || remaining.length);
     if (segment === "lead") return lead;
     if (segment === "rest") return hasMore ? <ReadCard className="fw-selected-reading-rest" eyebrow={editorialPreview && issueFeature ? "In this issue" : "More at the reading desk"} accent="plum">{visibleMore}</ReadCard> : null;
     return <ReadCard className="fw-selected-reading-choice" eyebrow="Your next page" accent="plum">

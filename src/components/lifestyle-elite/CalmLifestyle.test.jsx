@@ -128,9 +128,11 @@ describe("calmer lists preserve exact source tasks", () => {
   it("offers a whole-life editorial draft beside a saved fiction place without hiding the story", () => {
     const onOpen=vi.fn();
     const saved={id:"saved",title:"The Shape of Starting Over",type:"book",_continue:{id:"saved"}};
-    const essay={id:"essay",title:"The plans you actually want to keep",type:"article",_raw:{id:"essay",editorial_local:true},saveable:false};
+    const essay={id:"essay",title:"The plans you actually want to keep",type:"article",_raw:{id:"essay",editorial_local:true,content_type:"ARTICLE"},saveable:false};
     const story={id:"story",title:"The Tuesday Decision",type:"daily_story",_raw:{id:"story",author_name:"FemWell Fiction"}};
-    render(<ReadFocus calmLayout editorialPreview presentation="focused" continueCards={[saved]} articleCards={[essay]} storyCards={[story]} onOpen={onOpen}/>);
+    const {container}=render(<ReadFocus calmLayout editorialPreview presentation="focused" continueCards={[saved]} articleCards={[essay]} storyCards={[story]} onOpen={onOpen}/>);
+    expect(container.querySelector(".fw-selected-reading-choice")).toHaveTextContent("The plans you actually want to keep");
+    expect(screen.getByRole("button",{name:"Continue The Shape of Starting Over"})).toBeVisible();
     fireEvent.click(screen.getByRole("button",{name:"Read The plans you actually want to keep"}));
     expect(onOpen).toHaveBeenCalledExactlyOnceWith(essay);
     fireEvent.click(screen.getByText("Browse all reading · 1"));

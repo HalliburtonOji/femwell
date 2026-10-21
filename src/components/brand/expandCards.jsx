@@ -797,9 +797,10 @@ export function FocusedCardContents({ item: raw, room }) {
   const book = item.type === "book" || !!item.gutenbergId;
   const body = focusedSourceParagraphs(item);
   const synopsis = item.summary || item.subtitle;
-  const readArticle = room === "read-ideas" && (item.type === "article" || item.type === "guide");
-  const visibleSynopsis = room === "books" && synopsis ? firstSentences(synopsis, 2) : synopsis;
   const source = item._raw;
+  const readArticle = room === "read-ideas" && (item.type === "article" || item.type === "guide" ||
+    (source?.editorial_local && /STORY|FICTION/i.test(String(source.content_type || ""))));
+  const visibleSynopsis = room === "books" && synopsis ? firstSentences(synopsis, 2) : synopsis;
   const warnings = source?.trigger_warnings || source?.content_warnings || [];
   const sourceUrl = source?.content_url || source?.source_url || item.externalUrl;
   // Old authored imports carry a placeholder on femwell.app, although the
@@ -808,7 +809,7 @@ export function FocusedCardContents({ item: raw, room }) {
   const ingredients = Array.isArray(item.ingredients) ? item.ingredients : item.ingredients?.items || [];
   return <div className="fw-focused-prose">
     {readArticle && <div className="fw-read-folio">
-      <p className="fw-read-folio-label">{source?.editorial_local ? `Ideas draft · ${/NEWS/i.test(String(source?.content_type || "")) ? "News" : /GUIDE/i.test(String(source?.content_type || "")) ? "Guide" : "Essay"} · unreviewed` : item.archived ? "Archive · source check pending" : /news/i.test(String(source?.content_type || "") + String(source?.provider || "") + String(source?.category || "")) ? "News & context" : source?.category || "Read"}</p>
+      <p className="fw-read-folio-label">{source?.editorial_local ? `Ideas draft · ${/STORY|FICTION/i.test(String(source?.content_type || "")) ? "Fiction" : /NEWS/i.test(String(source?.content_type || "")) ? "News" : /GUIDE/i.test(String(source?.content_type || "")) ? "Guide" : "Essay"} · unreviewed` : item.archived ? "Archive · source check pending" : /news/i.test(String(source?.content_type || "") + String(source?.provider || "") + String(source?.category || "")) ? "News & context" : source?.category || "Read"}</p>
       {synopsis && body.length > 0 && <p className="fw-read-folio-standfirst"><FocusedText text={firstSentences(synopsis, 1)}/></p>}
       <p className="fw-read-folio-credit">{[item.sourceName || item.author || source?.author_name, source?.published_at && !source?.editorial_local && Number.isFinite(Date.parse(source.published_at)) ? new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric" }).format(new Date(source.published_at)) : null].filter(Boolean).join(" · ")}</p>
     </div>}

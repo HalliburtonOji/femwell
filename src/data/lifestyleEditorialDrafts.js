@@ -101,4 +101,38 @@ If your direct debit has changed and the maths feels mysterious, ask your suppli
 
 This edition covers the October–December 2026 cap. It needs another source check before the next cap period; it is not a live tariff comparison. Northern Ireland uses a different system. The best number for your household still lives on your own bill.`,
   },
+  {
+    id: "ideas-read-the-long-way-home-v1",
+    editorial_local: true,
+    status: "NEEDS_REVIEW",
+    media_type: "ARTICLE",
+    content_type: "STORY",
+    category: "Fiction",
+    title: "The long way home",
+    summary: "Mina missed the bus, lost the map and acquired a very opinionated bag of oranges. A small, original story for the journey home.",
+    author_name: "FemWell · original fiction · Ideas draft",
+    source_name: "FemWell · original fiction · Ideas draft",
+    duration_label: "4 min read",
+    lede: `The bus left while Mina was retying her shoe. It did not hesitate at the stop or send a sympathetic blink from its indicator. It simply took her route home and went without her.
+
+“Right,” she said to the empty shelter. Her phone reported six per cent battery and, with remarkable confidence, that the next bus had arrived three minutes ago. She could see the whole road. It had not.
+
+She had stayed late at work to fix a mistake that wasn't hers, then missed a call from her sister, then bought oranges because the man at the corner shop had said they were good. There were seven of them in a paper bag with a damp bottom. Seven was too many oranges for one person and not enough to justify a taxi.
+
+Mina started walking. Ten minutes in, the paper tore. Oranges rolled in six directions; one made a determined break for the gutter. A woman coming out of the launderette stopped it with her foot. “You've got one escaping,” she said, as though Mina were walking a small, badly trained dog.
+
+They gathered the fruit. The woman offered a plastic carrier that had clearly carried many previous emergencies. Mina thanked her, checked her phone and found it dead. The map disappeared mid-blue-line. She knew the main road, though. There would be another stop after the bridge. Probably.
+
+At the bridge the pavement was closed. A handwritten sign pointed left, then another pointed left again, which felt less like a diversion than a joke someone had committed to. Mina followed two people carrying a flat-pack bookcase. They seemed to know where they were going. They didn't. They were looking for the car they had parked before buying the bookcase.
+
+The three of them stood outside a locked gate and considered their options. “We could climb it,” one of them said. They looked at the box between them. “We won't,” said the other. Mina laughed, the first decent sound she had made all evening.
+
+The sister's missed call sat in her head. She hadn't rung back because she wanted to have an answer to “How are you?” that wouldn't turn into a twenty-minute tour of the day. Near the next bus stop she found a café still open and asked to borrow a charger for five minutes. When her phone woke, she sent: “Missed the bus. Long story. I'm okay. Can I call tomorrow?”
+
+Her sister replied before Mina had finished the tea she'd ordered out of guilt. “Yes. Also Mum has bought a karaoke machine. That's the long story here.”
+
+The next bus arrived with a squeal and a driver who waited while Mina hoisted the oranges aboard. She sat upstairs. The city was wet and bright and mostly indifferent; the oranges smelled absurdly hopeful. At home she put them in a bowl, left her work bag by the door and did not fix one more thing that night.
+
+In the morning she would have to explain the late email and answer her sister's call. For now there was tea, a ridiculous photograph of her mother holding a microphone, and seven oranges. No, six. One had stayed with the woman from the launderette.`
+  },
 ];
