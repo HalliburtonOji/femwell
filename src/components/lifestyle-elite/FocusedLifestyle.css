@@ -95,6 +95,13 @@
 .fw-read-folio-label{font:700 12px/1.35 ui-sans-serif,system-ui,sans-serif!important;letter-spacing:.13em;text-transform:uppercase;color:#6d5271!important;margin:0 0 11px!important}
 .fw-read-folio-standfirst{font:italic 500 21px/1.3 "FemWell Editorial","Cormorant Garamond",Georgia,serif!important;color:#51444e!important;margin:0 0 14px!important}
 .fw-read-folio-credit{font:600 12px/1.4 ui-sans-serif,system-ui,sans-serif!important;color:#6e6a61!important;margin:0!important}
+.fw-read-story-voice{margin:-4px 0 23px;padding:13px 0 15px;border-bottom:1px solid #d8c9d8;color:#51444e}
+.fw-read-story-voice-head{display:flex;align-items:center;gap:8px;font:700 13px/1.35 ui-sans-serif,system-ui,sans-serif;letter-spacing:.02em}
+.fw-read-story-voice-head svg{color:#8b6c8e}.fw-read-story-voice-head small{margin-left:auto;font:600 11px/1.3 ui-sans-serif,system-ui,sans-serif;color:#756d74}
+.fw-read-story-voice-takes{display:flex;flex-wrap:wrap;gap:7px;margin:11px 0 7px}
+.fw-read-story-voice-takes button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:8px 12px;border:1px solid #baa7bf;border-radius:999px;background:#f5f0f5;color:#51444e;font:700 12px/1.2 ui-sans-serif,system-ui,sans-serif;cursor:pointer}
+.fw-read-story-voice-takes button.is-active{background:#51444e;color:#fff;border-color:#51444e}.fw-read-story-voice-takes button:disabled{opacity:.58;cursor:wait}
+.fw-read-story-voice p{margin:7px 0 0!important;font:500 12px/1.45 ui-sans-serif,system-ui,sans-serif!important;color:#655d65!important}.fw-read-story-voice p[role=alert]{color:#8c241c!important}.fw-read-story-voice a{color:#51444e;text-decoration:underline;text-underline-offset:3px;font-weight:700}
 .fw-read-folio-sources{border-top:1px solid #d8c9d8;margin:28px 0 12px;padding-top:8px}.fw-read-folio-sources h3{font:700 12px/1.4 ui-sans-serif,system-ui,sans-serif!important;letter-spacing:.09em;text-transform:uppercase;color:#51444e;margin:10px 0!important}.fw-read-folio-sources ul{list-style:none;padding:0;margin:0}.fw-read-folio-sources li{margin:0 0 8px}.fw-read-folio-sources a{display:inline-flex;align-items:center;gap:7px;color:#51444e;text-decoration:underline;text-underline-offset:3px;font:600 13px/1.4 ui-sans-serif,system-ui,sans-serif}
 /* These Ideas room sheets clear the floating nav by ending above it. Keep their
    rounded bottom visible instead of appending a blank nav-height paper strip. */

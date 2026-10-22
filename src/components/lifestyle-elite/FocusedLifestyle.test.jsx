@@ -23,6 +23,8 @@ it('gives an Ideas article a dated folio, complete body and its original fact so
  render(<FocusedCardContents room='read-ideas' item={article}/>);
  expect(screen.getByText('Ideas draft · News · unreviewed')).toBeVisible();
  expect(screen.getByText('The entire article remains readable.')).toBeVisible();
+ expect(screen.getByRole('heading',{name:'Sources for this draft'})).toBeVisible();
+ expect(screen.queryByText('Sources checked for this draft')).not.toBeInTheDocument();
  expect(screen.getByRole('link',{name:/Ofgem · price cap/})).toHaveAttribute('href','https://www.ofgem.gov.uk/example');
  expect(screen.queryByText(/18 October 2026/)).not.toBeInTheDocument();
 });

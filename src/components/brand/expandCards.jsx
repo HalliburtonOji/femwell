@@ -49,6 +49,7 @@ import { playableEpisode, episodeSourceUrl } from "@/components/lifestyle/listen
 import ReadingColumn from "@/components/brand/ReadingColumn";
 import FloraCover from "@/components/brand/FloraCover";
 import FocusedLifestyleSheet, { FocusedText, firstSentences } from "@/components/lifestyle-elite/FocusedLifestyleSheet";
+import ReadStoryVoice from "@/components/lifestyle-elite/ReadStoryVoice";
 import { ChapterBlock } from "@/utils/chapterProse";
 import { cwOf, Pollinator, floraKeyframes, FlowerGlyph } from "@/components/brand/flora";
 import {
@@ -813,6 +814,7 @@ export function FocusedCardContents({ item: raw, room }) {
       {synopsis && body.length > 0 && <p className="fw-read-folio-standfirst"><FocusedText text={firstSentences(synopsis, 1)}/></p>}
       <p className="fw-read-folio-credit">{[item.sourceName || item.author || source?.author_name, source?.published_at && !source?.editorial_local && Number.isFinite(Date.parse(source.published_at)) ? new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric" }).format(new Date(source.published_at)) : null].filter(Boolean).join(" · ")}</p>
     </div>}
+    {room === "read-ideas" && source?.id === "ideas-read-the-long-way-home-v1" && <ReadStoryVoice/>}
     {!readArticle && item.author && <p className="fw-focused-note">{item.author}</p>}
     {!item.external && (item.videoSrc || item.youtubeId) && <MediaBlock item={item} accent="#51444e"/>}
     {!item.external && item.audioSrc && <FloraAudio src={item.audioSrc} label={item.title} accent="#51444e" initialDuration={item.duration || 0} item={item} presentation="focused"/>}
@@ -826,7 +828,7 @@ export function FocusedCardContents({ item: raw, room }) {
     </>}
     {warnings.length > 0 && <details className="fw-focused-depth"><summary>Worth knowing</summary>{(Array.isArray(warnings) ? warnings : [warnings]).map((text,i)=><p key={i}>{text}</p>)}</details>}
     {!book && item.takeaways?.length > 0 && <details className="fw-focused-depth"><summary>A few things to keep</summary><ul>{item.takeaways.map((text,i)=><li key={i}><FocusedText text={text}/></li>)}</ul></details>}
-    {readArticle && source?.source_links?.length > 0 && <section className="fw-read-folio-sources" aria-label="Sources for this draft"><h3>Sources checked for this draft</h3><ul>{source.source_links.filter(link => /^https:\/\//i.test(link?.url || "")).map(link => <li key={link.url}><a href={link.url} target="_blank" rel="noopener noreferrer">{link.label || "Original source"}<ExternalLink size={14}/></a></li>)}</ul></section>}
+    {readArticle && source?.source_links?.length > 0 && <section className="fw-read-folio-sources" aria-label="Sources for this draft"><h3>Sources for this draft</h3><ul>{source.source_links.filter(link => /^https:\/\//i.test(link?.url || "")).map(link => <li key={link.url}><a href={link.url} target="_blank" rel="noopener noreferrer">{link.label || "Original source"}<ExternalLink size={14}/></a></li>)}</ul></section>}
     {!book && !authoredPlaceholder && (room === "good" || item.external || (!item.audioSrc && !item.videoSrc && !item.youtubeId)) && /^https?:\/\//i.test(sourceUrl || "") && <a className="fw-focused-button" href={sourceUrl} target="_blank" rel="noopener noreferrer">{item.type === "video" ? "Watch" : item.type === "audio" ? "Listen" : "Read"} at {item.sourceName || "the source"}<ExternalLink size={15}/></a>}
     {item.meta.some(([,label])=>label && !/duration unavailable/i.test(label)) && <details className="fw-focused-depth"><summary>About this {book ? "book" : "piece"}</summary><div className="fw-focused-note">{item.meta.filter(([,label])=>label && !/duration unavailable/i.test(label)).map(([,label],i)=><p key={i}>{label}</p>)}</div></details>}
   </div>;
