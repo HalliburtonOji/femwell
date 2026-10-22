@@ -162,10 +162,37 @@ describe("calmer lists preserve exact source tasks", () => {
     rerender(<ReadFocus calmLayout editorialPreview presentation="focused" continueCards={[resume]} articleCards={[feature,guide,{...news,_raw:{...news._raw,expires_at:"2026-01-01"}},older]} onOpen={onOpen} onDetails={onDetails}/>);
     expect(within(screen.getByLabelText("Useful reads in this issue")).queryByRole("button",{name:"Read The energy cap changed"})).not.toBeInTheDocument();
     expect(screen.getByText("Browse all reading · 2")).toBeVisible();
+    expect(screen.getByText(/Past edition · source recheck needed/)).toBeInTheDocument();
     const old=new Date(Date.now()-16*86400000).toISOString().slice(0,10),future=new Date(Date.now()+28*86400000).toISOString().slice(0,10);
     rerender(<ReadFocus calmLayout editorialPreview presentation="focused" continueCards={[resume]} articleCards={[feature,guide,{...news,_raw:{...news._raw,published_at:old,expires_at:future}},older]} onOpen={onOpen} onDetails={onDetails}/>);
     expect(within(screen.getByLabelText("Useful reads in this issue")).queryByRole("button",{name:"Read The energy cap changed"})).not.toBeInTheDocument();
     expect(screen.getByText("Browse all reading · 2")).toBeVisible();
+  });
+
+  it("chooses an explicitly followed complete essay, keeps direct fiction and all other sources", () => {
+    const onOpen=vi.fn();
+    const draft=(id,title,category,type="ARTICLE")=>({id,title,type:"article",_raw:{id,category,editorial_local:true,content_type:type,duration_label:"3 min read"},saveable:false});
+    const friendship=draft("friendship","The plans you actually want to keep","Relationships");
+    const dayOff=draft("day-off","Your day off is not a performance review","Lifestyle");
+    const work=draft("work","The meeting after the meeting","Work");
+    const curiosity=draft("curiosity","A rabbit hole with an exit","Culture");
+    const guide=draft("guide","The payment you forgot about","Money","GUIDE");
+    const fiction=draft("fiction","The long way home","Fiction","STORY");
+    const older={id:"older",title:"An older full article",type:"article",_raw:{id:"older"}};
+    const articles=[friendship,dayOff,work,curiosity,guide,fiction,older];
+    const lead=render(<ReadFocus calmLayout editorialPreview presentation="focused" segment="lead" articleCards={articles} followedCategories={["Work"]} onOpen={onOpen}/>);
+    expect(lead.container.querySelector(".fw-selected-reading-choice")).toHaveTextContent("The meeting after the meeting");
+    expect(screen.getByText("Because you follow Work")).toBeVisible();
+    fireEvent.click(screen.getByRole("button",{name:"Read The meeting after the meeting"}));
+    expect(onOpen).toHaveBeenLastCalledWith(work);
+    lead.unmount();
+    render(<ReadFocus calmLayout editorialPreview presentation="focused" segment="rest" articleCards={articles} followedCategories={["Work"]} onOpen={onOpen}/>);
+    expect(screen.getByRole("button",{name:"Read The plans you actually want to keep"})).toBeVisible();
+    expect(screen.getByRole("button",{name:"Read The payment you forgot about"})).toBeVisible();
+    fireEvent.click(screen.getByRole("button",{name:"Read The long way home"}));
+    expect(onOpen).toHaveBeenLastCalledWith(fiction);
+    fireEvent.click(screen.getByText("Browse all reading · 3"));
+    for(const item of [dayOff,curiosity,older]) expect(screen.getByRole("button",{name:new RegExp(item.title)})).toBeVisible();
   });
 
   it("keeps one direct watch alternative and the remaining exact media behind Browse", () => {

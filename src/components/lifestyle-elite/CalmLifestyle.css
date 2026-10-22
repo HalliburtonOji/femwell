@@ -5,6 +5,8 @@
 .fw-read-edition:after{content:"";position:absolute;right:-12px;bottom:10px;width:76px;height:118px;background:url('/images/flora-dream/specimen-iris-v2.webp') 50% 50%/150px auto no-repeat;opacity:.16;mask-image:linear-gradient(90deg,transparent 0%,#000 45%);z-index:-1;pointer-events:none}
 .fw-read-edition-kicker{display:flex;align-items:center;gap:7px;color:#6b506e;font:700 12px/1.3 ui-sans-serif,system-ui,sans-serif;letter-spacing:.13em;text-transform:uppercase}
 .fw-read-edition-kicker svg{color:#8d6d91}
+.fw-read-edition-reason{margin:8px 0 0;color:#51444e;font:600 13px/1.35 ui-sans-serif,system-ui,sans-serif}
+.fw-read-folio-history{margin:10px 0 2px;padding:10px 12px;border-left:2px solid #a8893f;border-radius:0 12px 12px 0;background:#f5f4f1;color:#51444e;font:600 13px/1.4 ui-sans-serif,system-ui,sans-serif}
 .fw-read-edition h2{font:italic 600 clamp(27px,6.6vw,32px)/1.04 "FemWell Editorial","Cormorant Garamond",Georgia,serif;color:#7a1a12;letter-spacing:-.015em;margin:6px 0 3px;max-width:24ch;overflow-wrap:anywhere}
 .fw-read-edition-standfirst{font:500 16px/1.35 "FemWell Editorial","Cormorant Garamond",Georgia,serif;color:#51444e;margin:9px 0 6px;max-width:38ch}
 .fw-read-edition-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #d9cbd8;padding-top:7px;min-height:48px}

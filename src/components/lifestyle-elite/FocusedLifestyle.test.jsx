@@ -28,6 +28,12 @@ it('gives an Ideas article a dated folio, complete body and its original fact so
  expect(screen.getByRole('link',{name:/Ofgem · price cap/})).toHaveAttribute('href','https://www.ofgem.gov.uk/example');
  expect(screen.queryByText(/18 October 2026/)).not.toBeInTheDocument();
 });
+it('marks a retained past news edition at the opened source without hiding its full text',()=>{
+ const article={...base,title:'An older energy note',body:['The complete historical explanation remains here.'],_raw:{id:'old-news',editorial_local:true,content_type:'NEWS',published_at:'2026-01-01',expires_at:'2026-01-31',lede:'The complete historical explanation remains here.'}};
+ render(<FocusedCardContents room='read-ideas' item={article}/>);
+ expect(screen.getByText(/Past edition · source recheck needed/)).toBeVisible();
+ expect(screen.getByText('The complete historical explanation remains here.')).toBeVisible();
+});
 it('keeps the full book blurb reachable while the first view stays brief',()=>{
  const blurb='A family meets a stranger. First impressions go badly. The rest of the novel changes everything.';
  render(<FocusedCardContents room='books' item={{...base,type:'book',summary:blurb}}/>);

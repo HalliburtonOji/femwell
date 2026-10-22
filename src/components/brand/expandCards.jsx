@@ -50,6 +50,7 @@ import ReadingColumn from "@/components/brand/ReadingColumn";
 import FloraCover from "@/components/brand/FloraCover";
 import FocusedLifestyleSheet, { FocusedText, firstSentences } from "@/components/lifestyle-elite/FocusedLifestyleSheet";
 import ReadStoryVoice from "@/components/lifestyle-elite/ReadStoryVoice";
+import { isCurrentEditorialNews } from "@/data/lifestyleEditorialDrafts";
 import { ChapterBlock } from "@/utils/chapterProse";
 import { cwOf, Pollinator, floraKeyframes, FlowerGlyph } from "@/components/brand/flora";
 import {
@@ -813,6 +814,7 @@ export function FocusedCardContents({ item: raw, room }) {
       <p className="fw-read-folio-label">{source?.editorial_local ? `Ideas draft · ${/STORY|FICTION/i.test(String(source?.content_type || "")) ? "Fiction" : /NEWS/i.test(String(source?.content_type || "")) ? "News" : /GUIDE/i.test(String(source?.content_type || "")) ? "Guide" : "Essay"} · unreviewed` : item.archived ? "Archive · source check pending" : /news/i.test(String(source?.content_type || "") + String(source?.provider || "") + String(source?.category || "")) ? "News & context" : source?.category || "Read"}</p>
       {synopsis && body.length > 0 && <p className="fw-read-folio-standfirst"><FocusedText text={firstSentences(synopsis, 1)}/></p>}
       <p className="fw-read-folio-credit">{[item.sourceName || item.author || source?.author_name, source?.published_at && !source?.editorial_local && Number.isFinite(Date.parse(source.published_at)) ? new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric" }).format(new Date(source.published_at)) : null].filter(Boolean).join(" · ")}</p>
+      {source?.editorial_local && /NEWS/i.test(String(source.content_type || "")) && !isCurrentEditorialNews(source) && <p className="fw-read-folio-history">Past edition · source recheck needed before relying on this. The full original draft remains below.</p>}
     </div>}
     {room === "read-ideas" && source?.id === "ideas-read-the-long-way-home-v1" && <ReadStoryVoice/>}
     {!readArticle && item.author && <p className="fw-focused-note">{item.author}</p>}

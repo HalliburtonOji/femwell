@@ -74,6 +74,54 @@ If the amount looks wrong, check the invoice or agreement before acting. MoneyHe
 This is not an invitation to cut every nice thing. A subscription you use and enjoy is doing its job. The win is knowing which ones are yours on purpose. Ten minutes, one decision, kettle on.`,
   },
   {
+    id: "ideas-read-meeting-after-meeting",
+    editorial_local: true,
+    status: "NEEDS_REVIEW",
+    media_type: "ARTICLE",
+    content_type: "ARTICLE",
+    category: "Work",
+    title: "The meeting after the meeting",
+    summary: "You made your point in the room. So why is the real conversation happening by the kettle?",
+    author_name: "FemWell · Ideas draft",
+    source_name: "FemWell · Ideas draft",
+    duration_label: "3 min read",
+    lede: `The meeting ends at eleven. At eleven-oh-three, someone catches you by the kettle and says, “What I actually meant was…” At eleven-oh-seven, a different person messages “Can I be honest?” By lunch, the decision made in the meeting has developed a sequel, three spin-offs and a group chat you are not in.
+
+Sometimes people need a quieter place to think aloud. Sometimes the room made it hard to disagree. And sometimes the meeting was a performance in which everyone agreed to discuss the real thing later. You do not have to diagnose the entire office to notice which version keeps happening.
+
+Try putting the decision into one plain sentence before everybody leaves: “So we are sending the draft on Thursday, and Jo has the final say on the headline.” If nobody can agree to that sentence, the meeting is not finished, however confidently someone says “great, thanks all”.
+
+If the kettle conversation changes the plan, bring it back to the people who were in the room. A short note will do: “We talked again afterwards. The deadline is now Friday; the headline is still Jo's call. Have I got that right?” It is less glamorous than being the person with secret context, and much kinder to the person who otherwise finds out on Friday.
+
+You can also say, “I need to think before I answer.” A silence in a meeting is not a cavity you are obliged to fill. Write down the question, go for the water you came for and return with an answer you mean.
+
+Not every decision needs a meeting. Not every disagreement needs a bigger one. But if the work keeps moving in private, put a little daylight on the bit that matters: what changed, who owns it and when. Then you may finally drink the tea while it is hot. Ambitious, I know.`,
+  },
+  {
+    id: "ideas-read-small-curiosity",
+    editorial_local: true,
+    status: "NEEDS_REVIEW",
+    media_type: "ARTICLE",
+    content_type: "ARTICLE",
+    category: "Culture",
+    title: "A rabbit hole with an exit",
+    summary: "Curiosity doesn't need to become a course, a side hustle or your entire personality by Thursday.",
+    author_name: "FemWell · Ideas draft",
+    source_name: "FemWell · Ideas draft",
+    duration_label: "3 min read",
+    lede: `You look up the name of a bird outside your window. Twenty minutes later you are reading about the history of the colour blue, have seven tabs open and are considering a pottery wheel. The bird has left. It had other plans.
+
+There is a certain kind of internet advice that insists every passing interest must become a skill. Learn it properly. Buy the kit. Make a portfolio. Tell everyone you are on a journey. But a little curiosity is allowed to stay little. It can make an ordinary Tuesday more interesting without demanding a business plan.
+
+Give yourself one question and a stopping point. “What is that flower called?” “Who painted the cover of this record?” “Why does that building have a tiny door?” Follow the thread for ten minutes. Keep the one fact that made you look up from the screen. Close the rest. The tabs will survive without you.
+
+If the question keeps coming back, make room for it in real life. Go to the library. Ask the person who knows the thing. Look at the actual tree rather than six perfect photographs of it. This is not a rule against the internet; the internet is marvellous at showing you a door. It is less good at telling you when you have walked through enough doors for one day.
+
+And if you forget everything you read by tomorrow? Fine. The pleasure was in following the thought. Nobody is checking whether you can identify the bird in a line-up.
+
+The next time something catches your eye, let it. Then let it go when you want to. Curiosity is a window, not another job. The pottery wheel can wait.`,
+  },
+  {
     id: "ideas-read-october-energy-cap",
     editorial_local: true,
     status: "NEEDS_REVIEW",
@@ -136,3 +184,17 @@ The next bus arrived with a squeal and a driver who waited while Mina hoisted th
 In the morning she would have to explain the late email and answer her sister's call. For now there was tea, a ridiculous photograph of her mother holding a microphone, and seven oranges. No, six. One had stayed with the woman from the launderette.`
   },
 ];
+
+// The full Ideas archive is retained after an issue's source-check window.
+// A dated draft may be read as history, never quietly presented as current.
+export function isCurrentEditorialNews(raw, now = Date.now()) {
+  if (!raw?.editorial_local || String(raw.content_type || "").toUpperCase() !== "NEWS") return false;
+  const date = new Date(now), today = [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
+  const published = String(raw.published_at || ""), expires = String(raw.expires_at || ""), checked = String(raw.revalidated_at || published);
+  const starts = /^\d{4}-\d{2}-\d{2}$/.test(published) ? published <= today : Date.parse(published) <= now;
+  const ends = /^\d{4}-\d{2}-\d{2}$/.test(expires) ? expires >= today : Date.parse(expires) >= now;
+  const checkedAt = Date.parse(checked);
+  const checkedIsCurrent = Number.isFinite(checkedAt) && now - checkedAt <= 14 * 86400000 &&
+    (/^\d{4}-\d{2}-\d{2}$/.test(checked) ? checked <= today : checkedAt <= now);
+  return starts && ends && checkedIsCurrent;
+}
