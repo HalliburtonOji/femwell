@@ -1,5 +1,9 @@
 # Critic learning — append dated evidence
 
+## 28 October — LC23 archive truth follows every entry point
+
+A published status and a source field that says “Editorial” do not prove human editing. The actual top engagement Read pool was generated; its chooser, Browse row, in-place full sheet and routed reader all needed the same provenance cue. The independent critic caught the first-fold chooser after the main Browse/reader repair, then caught three stacked warnings; actual 360/390/430 taps and inspected pixels reduced the cue to one. A stored `femwell.app/stories` URL failed DNS, so a broken source exit is not a preserved feature. Keep the complete source and real publisher links, but measure exact destinations before offering them. Controlled auth is not an acknowledged account Save or iPhone proof.
+
 ## 21 October — LC15 exact sound and navigation return
 
 A versioned saved clip needs its own key, route parameters, carousel availability rule and route remount key; preserving only the parent Bulletin silently substitutes another sound edition. The selected Lifestyle room is part of a keep-alive tab's state: a bare nav return must not reset it to Read and shrink the document under its saved scroll position. Browser hashes can fire before a routed section mounts, so verify the untouched arrival after hydration and allow an early user gesture to cancel a delayed anchor move. Source CSS was misleading here: `.fw-sky-worlds .sky-world-body>section` overrode the section's 110px scroll margin to 18px until a specific rule was added. Inspect computed style and actual 360/390/430 pixels, not only the edited declaration. Playback cost is separate from generation: this static short makes no paid TTS call or five-second progress write per Play, while its actual 1.05 MB transfer and production egress remain unpriced.

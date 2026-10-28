@@ -54,9 +54,9 @@
   },
   "manualContent": {
     "id": "LIFESTYLE-CONTENT-2026-10-28-LC23",
-    "stage": "LC23 Read archive provenance and exact full-text/chooser/direct-reader candidate built locally at index-yIkGw2sw.js; push/site deploy and live reproof pending, original Ideas issue still held",
-    "nextAtom": "Finish LC23 normal push, frontend deploy and live three-width reproof. Then R10 named human edit/rights/source check for one original Read lead, approve stored mapping and durable ID, prove authenticated Save/Continue and two-way returns before main publication. Independently audit older published archive endings and linked underlays; V03 and LC17-A02 carried; scheduler PAUSED.",
-    "proofGate": "LC22 54/54 focused, scoped lint zero errors, final production build and deployed controlled 360/390/430 complete published article/related/Back, blocked-video source/Back and Ideas board/sheet/Back taps, zero sampled overflow/page exceptions. Independent P1/P2 sheet corrections and live static-route P1 fixed/reproved. Both origins index-BJnB5rSv.js. Mocked auth is not signed-in Save/write proof; physical iPhone, human editing, mapped draft identity, paid bills, historical endings and voice transcript remain open.",
+    "stage": "LC23 Read archive provenance and exact full-text/chooser/direct-reader live at index-yIkGw2sw.js via 5ec583d0; original Ideas issue remains held",
+    "nextAtom": "R10 named human edit/rights/source check for one original Read lead, approve stored mapping and durable ID, prove authenticated Save/Continue and two-way returns before main publication. Independently audit older published archive endings/linked underlays and source URL health without waiting on editorial choice; V03 and LC17-A02 carried; scheduler PAUSED.",
+    "proofGate": "LC23 84/84 affected, scoped lint zero errors, production build and deployed controlled 360/390/430 chooser/select, Browse/full folio/Details/Close, direct reader/Back, no sampled overflow/page errors. Independent chooser P1 and stacked-cue P2 corrected/reproved; both origins index-yIkGw2sw.js. Mocked auth is not signed-in Save/write proof; physical iPhone, human editing, durable draft identity, paid bills, broader historical endings and voice transcript remain open.",
     "carryForward": [
       "Clean Ideas reader false-open progress repaired in LC08; canonical main reader still follows its held old reached contract until separate promotion",
       "Full Planner/Garden old-paper redesign and signed-in exact read-back remain; preview book ref token is only a bounded return repair",
@@ -84,8 +84,8 @@
   },
   "current": {
     "section": "Lifestyle / Read editorial archive (manual)",
-    "atom": "LC23 release/reproof, then R10 human editor held; independent older Read endings/underlays, V03 and LC17-A02 carried",
-    "status": "LC23 local candidate index-yIkGw2sw.js after 84/84, controlled 360/390/430 chooser/folio/Details/direct reader/Back and bounded independent P1 reproof. Live remains index-BJnB5rSv.js until push/deploy; no original draft publication, account write or scheduler restart."
+    "atom": "R10 human editor held; independent older Read endings/underlays and source URL health, V03 and LC17-A02 carried",
+    "status": "LC23 live index-yIkGw2sw.js via 5ec583d0 after 84/84, deployed controlled 360/390/430 chooser-select/folio/Details/direct reader/Back and independent P1 reproof. No original draft publication, account write or scheduler restart."
   },
   "lastCompleted": {
     "run": 5,
