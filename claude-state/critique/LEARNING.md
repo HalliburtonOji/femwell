@@ -1,5 +1,9 @@
 # Critic learning — append dated evidence
 
+## 28 October — LC24 exact source and return
+
+The current routed Today page gets its Lifestyle choice directly; the scheduled `TodayRecommendations` rows feed Guide context and an old Today route. Map both before changing a recommendation. `?tab=femwell` currently maps to Books, so an exact article needs its ID route. A published status alone is not an editorial or relevance gate: label generated archives and keep unreviewed drafts out of live Today, but retain a separate reviewed-source decision. A plain anchor can destroy the router's scroll memory even when Back reaches the correct page; a scoped Router Link for the one internal card preserves the path without rewriting all actions. Moving the same source list outside an owner loop reduces repeated calls, while `UserProfile.list()` and per-owner reads/deletes/writes remain unbounded until measured and redesigned. Never infer a money saving from two-profile tests.
+
 ## 28 October — LC23 archive truth follows every entry point
 
 A published status and a source field that says “Editorial” do not prove human editing. The actual top engagement Read pool was generated; its chooser, Browse row, in-place full sheet and routed reader all needed the same provenance cue. The independent critic caught the first-fold chooser after the main Browse/reader repair, then caught three stacked warnings; actual 360/390/430 taps and inspected pixels reduced the cue to one. A stored `femwell.app/stories` URL failed DNS, so a broken source exit is not a preserved feature. Keep the complete source and real publisher links, but measure exact destinations before offering them. Controlled auth is not an acknowledged account Save or iPhone proof.
