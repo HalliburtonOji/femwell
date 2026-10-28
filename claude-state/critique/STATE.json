@@ -55,7 +55,7 @@
   "manualContent": {
     "id": "LIFESTYLE-CONTENT-2026-10-28-LC23",
     "stage": "LC23 Read archive provenance and exact full-text/chooser/direct-reader live at index-yIkGw2sw.js via 5ec583d0; original Ideas issue remains held",
-    "nextAtom": "R10 named human edit/rights/source check for one original Read lead, approve stored mapping and durable ID, prove authenticated Save/Continue and two-way returns before main publication. Independently audit older published archive endings/linked underlays and source URL health without waiting on editorial choice; V03 and LC17-A02 carried; scheduler PAUSED.",
+    "nextAtom": "R10 named human edit/rights/source check for first original Read lead, approve stored mapping and durable ID, prove authenticated Save/Continue and two-way returns before main publication. R11 independently map actual generateTodayRecommendations invocation, Guide/Today consumers, dead source routes and old factual claims before a reviewable source-policy/backend proposal. V03 and LC17-A02 carried; scheduler PAUSED.",
     "proofGate": "LC23 84/84 affected, scoped lint zero errors, production build and deployed controlled 360/390/430 chooser/select, Browse/full folio/Details/Close, direct reader/Back, no sampled overflow/page errors. Independent chooser P1 and stacked-cue P2 corrected/reproved; both origins index-yIkGw2sw.js. Mocked auth is not signed-in Save/write proof; physical iPhone, human editing, durable draft identity, paid bills, broader historical endings and voice transcript remain open.",
     "carryForward": [
       "Clean Ideas reader false-open progress repaired in LC08; canonical main reader still follows its held old reached contract until separate promotion",
@@ -84,7 +84,7 @@
   },
   "current": {
     "section": "Lifestyle / Read editorial archive (manual)",
-    "atom": "R10 human editor held; independent older Read endings/underlays and source URL health, V03 and LC17-A02 carried",
+    "atom": "R10 human editor held; R11 actual Today/Guide generated recommendation path and older factual source audit independent; V03 and LC17-A02 carried",
     "status": "LC23 live index-yIkGw2sw.js via 5ec583d0 after 84/84, deployed controlled 360/390/430 chooser-select/folio/Details/direct reader/Back and independent P1 reproof. No original draft publication, account write or scheduler restart."
   },
   "lastCompleted": {
