@@ -108,9 +108,11 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
       ...storyCards.map(item => ({ item, label: "Read" })),
     ].filter(({ item }) => item && !used.has(item.id) && used.add(item.id));
     const primaryIsResume = continueCards.includes(primary);
+    const archiveOnly = !editorialPreview && !primary && (articleCards.length > 0 || storyCards.length > 0);
+    const emptyLine = archiveOnly ? "No fresh page today." : "No new read just now. Try Books next door.";
     const lead = <ReadCard className="fw-selected-reading-choice fw-selected-lead" eyebrow={visualEdition || editorialPreview ? undefined : primaryIsResume ? "Your saved place" : "Your next page"} accent="plum">
       {presentation && <SelectedRoomDetail section="read"/>}
-      {!primary ? <div className="fw-calm-read-empty"><p>No new read just now. Try Books next door.</p>{onBooks && <button type="button" className="fw-focused-button" onClick={onBooks}>Open Books</button>}</div>
+      {!primary ? <div className="fw-calm-read-empty"><p>{emptyLine}</p>{!archiveOnly && onBooks && <button type="button" className="fw-focused-button" onClick={onBooks}>Open Books</button>}</div>
         : visualEdition || editorialPreview ? <ReadEditionChoice item={primary} onOpen={onOpen} onDetails={onDetails} resume={primaryIsResume} reason={editorialPreview && matchingEssay?.id === primary.id ? `Because you follow ${matchingEssay._raw.category}` : undefined}/>
         : <CalmFindRow item={primary} onOpen={onOpen} onDetails={onDetails} label={primaryIsResume ? "Continue" : "Read"}/>}
     </ReadCard>;
@@ -119,7 +121,7 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
         {visualEdition || editorialPreview ? <ReadEditionChoice item={second} onOpen={onOpen} onDetails={onDetails} compact/>
           : <CalmFindRow item={second} onOpen={onOpen} onDetails={onDetails} label="Read"/>}
       </div>}
-      <CalmMore enabled={remaining.length > 0} title={`Browse all reading · ${remaining.length}`}>
+      <CalmMore enabled={remaining.length > 0} title={`${archiveOnly ? "Browse older reads" : "Browse all reading"} · ${remaining.length}`}>
         {remaining.map(({ item, label }) => <CalmFindRow key={item.id} item={item} onOpen={onOpen} onDetails={onDetails} label={label}/>)}
       </CalmMore>
     </>;
@@ -142,7 +144,7 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
     const visibleMore=editorialPreview ? issueMore : more;
     const hasMore=editorialPreview && issueFeature ? !!(issueResume || issueBriefs.length || issueArchive.length) : !!(second || remaining.length);
     if (segment === "lead") return lead;
-    if (segment === "rest") return hasMore ? <ReadCard className="fw-selected-reading-rest" eyebrow={editorialPreview && issueFeature ? "In this issue" : "More at the reading desk"} accent="plum">{visibleMore}</ReadCard> : null;
+    if (segment === "rest") return hasMore ? <ReadCard className="fw-selected-reading-rest" eyebrow={editorialPreview && issueFeature ? "In this issue" : archiveOnly ? "The archive" : "More at the reading desk"} accent="plum">{visibleMore}</ReadCard> : null;
     return <ReadCard className="fw-selected-reading-choice" eyebrow="Your next page" accent="plum">
       {presentation && <SelectedRoomDetail section="read"/>}
       {!primary ? <div className="fw-calm-read-empty"><p>No new read just now. Try Books next door.</p>{onBooks && <button type="button" className="fw-focused-button" onClick={onBooks}>Open Books</button>}</div>

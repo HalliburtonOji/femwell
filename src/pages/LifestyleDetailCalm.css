@@ -14,6 +14,7 @@
 .fw-calm-article .fw-reader-hero--floral:before{content:"";position:absolute;inset:-3% -5% 18% 12%;z-index:1;background:url('/images/flora-dream/specimen-iris-v2.webp') 86% 10%/min(90%,390px) auto no-repeat;opacity:.26;mask-image:linear-gradient(90deg,transparent,#000 45%,transparent 98%);pointer-events:none}
 .fw-calm-article .fw-reader-hero>div:last-of-type{z-index:2}
 .fw-calm-article .fw-reader-hero h1{font-family:"FemWell Editorial","Cormorant Garamond",Georgia,serif!important;font-size:clamp(36px,10vw,50px)!important;font-style:italic!important;font-weight:600!important;line-height:1.03!important;text-shadow:none!important}
+.fw-calm-article .fw-calm-article__provenance{margin:0 0 16px;padding:0 0 12px;border-bottom:1px solid #e6e3dc;color:#51444e;font:600 12px/1.4 system-ui,sans-serif}
 .fw-calm-article .fw-reader-card .fw-body-p{color:#191510!important}
 .fw-calm-article .fw-reader-card :is(.fw-h2,.fw-chapter){font-family:"FemWell Editorial","Cormorant Garamond",Georgia,serif!important;color:#51444e!important}
 .fw-calm-article .fw-reader-card .fw-dropcap{font-family:"FemWell Editorial","Cormorant Garamond",Georgia,serif;color:#7a1a12}

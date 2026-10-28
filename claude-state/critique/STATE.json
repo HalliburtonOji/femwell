@@ -53,9 +53,9 @@
     "reason": "Halli stopped recurring builds: usage consumption and endless loop. Tool and automation.toml confirm PAUSED; explicit user restart required."
   },
   "manualContent": {
-    "id": "LIFESTYLE-CONTENT-2026-10-28-LC22",
-    "stage": "LC22 published Read opened-owner repair and seven-draft Ideas release desk live at index-BJnB5rSv.js via 18056d3c/2cbb9547; main editorial and voice gates held",
-    "nextAtom": "R08 named human editorial owner and final rights/source review for one complete original Read lead, approve its stored mapping, give it a durable row ID and verify authenticated Save/Continue plus two-way returns before any main publication. Independently audit older published Read archive full endings and linked underlays as next Lifestyle cleanup. V03 actual iPhone ear/blind contrast and verified transcript; LC17-A02 carried; scheduler PAUSED.",
+    "id": "LIFESTYLE-CONTENT-2026-10-28-LC23",
+    "stage": "LC23 Read archive provenance and exact full-text/chooser/direct-reader candidate built locally at index-yIkGw2sw.js; push/site deploy and live reproof pending, original Ideas issue still held",
+    "nextAtom": "Finish LC23 normal push, frontend deploy and live three-width reproof. Then R10 named human edit/rights/source check for one original Read lead, approve stored mapping and durable ID, prove authenticated Save/Continue and two-way returns before main publication. Independently audit older published archive endings and linked underlays; V03 and LC17-A02 carried; scheduler PAUSED.",
     "proofGate": "LC22 54/54 focused, scoped lint zero errors, final production build and deployed controlled 360/390/430 complete published article/related/Back, blocked-video source/Back and Ideas board/sheet/Back taps, zero sampled overflow/page exceptions. Independent P1/P2 sheet corrections and live static-route P1 fixed/reproved. Both origins index-BJnB5rSv.js. Mocked auth is not signed-in Save/write proof; physical iPhone, human editing, mapped draft identity, paid bills, historical endings and voice transcript remain open.",
     "carryForward": [
       "Clean Ideas reader false-open progress repaired in LC08; canonical main reader still follows its held old reached contract until separate promotion",
@@ -83,9 +83,9 @@
     "liveBundle": "index-OD-gjaX_.js"
   },
   "current": {
-    "section": "Lifestyle / Read editorial source and older published archive (manual)",
-    "atom": "R08 named human edit/durable Save held; next independent atom older published Read endings/underlays; V03 and LC17-A02 carried",
-    "status": "LC22 live at index-BJnB5rSv.js via 18056d3c/2cbb9547; 54/54 and deployed controlled 360/390/430 reader/video/Ideas exact returns, independent and live P1/P2 corrections root-reproved. Main new Read/Jess/account voices unchanged. Scheduler PAUSED."
+    "section": "Lifestyle / Read editorial archive (manual)",
+    "atom": "LC23 release/reproof, then R10 human editor held; independent older Read endings/underlays, V03 and LC17-A02 carried",
+    "status": "LC23 local candidate index-yIkGw2sw.js after 84/84, controlled 360/390/430 chooser/folio/Details/direct reader/Back and bounded independent P1 reproof. Live remains index-BJnB5rSv.js until push/deploy; no original draft publication, account write or scheduler restart."
   },
   "lastCompleted": {
     "run": 5,

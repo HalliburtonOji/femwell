@@ -802,18 +802,19 @@ export function FocusedCardContents({ item: raw, room }) {
   const source = item._raw;
   const readArticle = room === "read-ideas" && (item.type === "article" || item.type === "guide" ||
     (source?.editorial_local && /STORY|FICTION/i.test(String(source.content_type || ""))));
+  const folioIntro = source?.summary || source?.why_it_matters || (source?.editorial_local ? synopsis : "");
   const visibleSynopsis = room === "books" && synopsis ? firstSentences(synopsis, 2) : synopsis;
   const warnings = source?.trigger_warnings || source?.content_warnings || [];
   const sourceUrl = source?.content_url || source?.source_url || item.externalUrl;
   // Old authored imports carry a placeholder on femwell.app, although the
   // complete article is already here. Keep genuine publisher source exits.
-  const authoredPlaceholder = body.length > 0 && /^https:\/\/femwell\.app\/articles\//i.test(sourceUrl || "");
+  const authoredPlaceholder = body.length > 0 && /^https:\/\/femwell\.app\/(?:articles|stories)\//i.test(sourceUrl || "");
   const ingredients = Array.isArray(item.ingredients) ? item.ingredients : item.ingredients?.items || [];
   return <div className="fw-focused-prose">
     {readArticle && <div className="fw-read-folio">
-      <p className="fw-read-folio-label">{source?.editorial_local ? `Ideas draft · ${/STORY|FICTION/i.test(String(source?.content_type || "")) ? "Fiction" : /NEWS/i.test(String(source?.content_type || "")) ? "News" : /GUIDE/i.test(String(source?.content_type || "")) ? "Guide" : "Essay"} · unreviewed` : item.archived ? "Archive · source check pending" : /news/i.test(String(source?.content_type || "") + String(source?.provider || "") + String(source?.category || "")) ? "News & context" : source?.category || "Read"}</p>
-      {synopsis && body.length > 0 && <p className="fw-read-folio-standfirst"><FocusedText text={firstSentences(synopsis, 1)}/></p>}
-      <p className="fw-read-folio-credit">{[item.sourceName || item.author || source?.author_name, source?.published_at && !source?.editorial_local && Number.isFinite(Date.parse(source.published_at)) ? new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric" }).format(new Date(source.published_at)) : null].filter(Boolean).join(" · ")}</p>
+      {!item.archived && <p className="fw-read-folio-label">{source?.editorial_local ? `Ideas draft · ${/STORY|FICTION/i.test(String(source?.content_type || "")) ? "Fiction" : /NEWS/i.test(String(source?.content_type || "")) ? "News" : /GUIDE/i.test(String(source?.content_type || "")) ? "Guide" : "Essay"} · unreviewed` : /news/i.test(String(source?.content_type || "") + String(source?.provider || "") + String(source?.category || "")) ? "News & context" : source?.category || "Read"}</p>}
+      {folioIntro && body.length > 0 && <p className="fw-read-folio-standfirst"><FocusedText text={firstSentences(folioIntro, 1)}/></p>}
+      <p className="fw-read-folio-credit">{[item.archived ? null : item.sourceName || item.author || source?.author_name, source?.published_at && !source?.editorial_local && Number.isFinite(Date.parse(source.published_at)) ? new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric" }).format(new Date(source.published_at)) : null].filter(Boolean).join(" · ")}</p>
       {source?.editorial_local && /NEWS/i.test(String(source.content_type || "")) && !isCurrentEditorialNews(source) && <p className="fw-read-folio-history">Past edition · source recheck needed before relying on this. The full original draft remains below.</p>}
     </div>}
     {room === "read-ideas" && source?.id === "ideas-read-the-long-way-home-v1" && <ReadStoryVoice/>}
@@ -830,7 +831,7 @@ export function FocusedCardContents({ item: raw, room }) {
     </>}
     {warnings.length > 0 && <details className="fw-focused-depth"><summary>Worth knowing</summary>{(Array.isArray(warnings) ? warnings : [warnings]).map((text,i)=><p key={i}>{text}</p>)}</details>}
     {!book && item.takeaways?.length > 0 && <details className="fw-focused-depth"><summary>A few things to keep</summary><ul>{item.takeaways.map((text,i)=><li key={i}><FocusedText text={text}/></li>)}</ul></details>}
-    {readArticle && source?.source_links?.length > 0 && <section className="fw-read-folio-sources" aria-label="Sources for this draft"><h3>Sources for this draft</h3><ul>{source.source_links.filter(link => /^https:\/\//i.test(link?.url || "")).map(link => <li key={link.url}><a href={link.url} target="_blank" rel="noopener noreferrer">{link.label || "Original source"}<ExternalLink size={14}/></a></li>)}</ul></section>}
+    {readArticle && source?.source_links?.length > 0 && <section className="fw-read-folio-sources" aria-label={source.editorial_local ? "Sources for this draft" : "Sources"}><h3>{source.editorial_local ? "Sources for this draft" : "Sources"}</h3><ul>{source.source_links.filter(link => /^https:\/\//i.test(link?.url || "")).map(link => <li key={link.url}><a href={link.url} target="_blank" rel="noopener noreferrer">{link.label || "Original source"}<ExternalLink size={14}/></a></li>)}</ul></section>}
     {!book && !authoredPlaceholder && (room === "good" || item.external || (!item.audioSrc && !item.videoSrc && !item.youtubeId)) && /^https?:\/\//i.test(sourceUrl || "") && <a className="fw-focused-button" href={sourceUrl} target="_blank" rel="noopener noreferrer">{item.type === "video" ? "Watch" : item.type === "audio" ? "Listen" : "Read"} at {item.sourceName || "the source"}<ExternalLink size={15}/></a>}
     {item.meta.some(([,label])=>label && !/duration unavailable/i.test(label)) && <details className="fw-focused-depth"><summary>About this {book ? "book" : "piece"}</summary><div className="fw-focused-note">{item.meta.filter(([,label])=>label && !/duration unavailable/i.test(label)).map(([,label],i)=><p key={i}>{label}</p>)}</div></details>}
   </div>;

@@ -465,8 +465,11 @@ export default function LifestyleDetail() {
   const decodedSource = decodeHtmlEntities(item.source_name || "");
   const episodeSource = [item.episode_url, item.source_url, item.content_url].map(safeExternalUrl).find(Boolean);
   const isAudio = Boolean(item.audio_url || ["AUDIO", "PODCAST"].includes(String(item.media_type || item.content_type || "").toUpperCase()));
-  const byline = decodedAuthor || decodedSource;
-  const eyebrowSource = (decodedSource || decodedAuthor || "").toUpperCase();
+  // Provider identity is stronger evidence than a source_name set to "FemWell Editorial".
+  // These published generated rows have not been through the new human issue gate.
+  const generatedArchive = isFemwell && !isAudio && !isYouTubeVideo && String(item.media_type || "").toUpperCase() !== "VIDEO";
+  const byline = generatedArchive ? "Generated archive · editorial check pending" : decodedAuthor || decodedSource;
+  const eyebrowSource = (generatedArchive ? "Archive" : decodedSource || decodedAuthor || "").toUpperCase();
   const eyebrowDate = formatRelativeDate(item.published_at).toUpperCase();
   const eyebrowCategory = (item.category || "").toString().toUpperCase();
   const eyebrowBits = [eyebrowSource, eyebrowDate, eyebrowCategory].filter(Boolean);
@@ -816,6 +819,8 @@ export default function LifestyleDetail() {
               `}</style>
             </div>
           )}
+
+          {generatedArchive && <p className="fw-calm-article__provenance">{byline}</p>}
 
           {/* Phase tags — below hero, above body */}
           {item.phase_tags?.length > 0 && (

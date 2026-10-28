@@ -139,6 +139,23 @@ describe("calmer lists preserve exact source tasks", () => {
     expect(screen.getByRole("button",{name:/The Tuesday Decision.*Read/})).toBeVisible();
   });
 
+  it("keeps generated published reads in a plainly named archive when there is no edited lead", () => {
+    const onOpen=vi.fn(), onDetails=vi.fn();
+    const rows=["Cycle-Synced Workweek","The Tuesday Decision"].map((title,index)=>({id:`archive-${index}`,title,type:"article",archived:true,sourceName:"Archive · source review pending",body:["Full ending stays here."],_raw:{id:`archive-${index}`,provider:"FEMWELL_AI",content_type:index?"STORY":"ARTICLE"}}));
+    const lead=render(<ReadFocus calmLayout presentation="focused" segment="lead" articleCards={rows} onOpen={onOpen}/>);
+    expect(lead.container).toHaveTextContent("No fresh page today");
+    expect(lead.container).not.toHaveTextContent("Cycle-Synced Workweek");
+    lead.unmount();
+    render(<ReadFocus calmLayout presentation="focused" segment="rest" articleCards={rows} onOpen={onOpen} onDetails={onDetails}/>);
+    fireEvent.click(screen.getByText("Browse older reads · 2"));
+    rows.forEach(row=>{
+      fireEvent.click(screen.getByRole("button",{name:new RegExp(`^${row.title}.*Read$`)}));
+      expect(onOpen).toHaveBeenLastCalledWith(row);
+      fireEvent.click(screen.getByRole("button",{name:`Details & tools for ${row.title}`}));
+      expect(onDetails).toHaveBeenLastCalledWith(row);
+    });
+  });
+
   it("offers a compact sourced Read issue without hiding an older exact source or its tools", () => {
     const onOpen=vi.fn(),onDetails=vi.fn();
     const date=new Date(),today=[date.getFullYear(),String(date.getMonth()+1).padStart(2,"0"),String(date.getDate()).padStart(2,"0")].join("-");

@@ -22,6 +22,13 @@ function savedEvents(){const events=[];const listen=event=>events.push(event.det
 async function ready(label='Keep this find'){await screen.findByRole('heading',{name:article.title});await waitFor(()=>expect(screen.getByRole('button',{name:label})).toBeEnabled());}
 
 describe('owned keeps and likes authority',()=>{
+  it('labels a generated published reading as an unchecked archive without hiding its full ending or keep',async()=>{
+    api.items.mockImplementation(async q=>q.id?[{...article,source_name:'FemWell Editorial',author_name:'FemWell Editorial'}]:[]);
+    open();await ready();
+    expect(screen.getByText('Generated archive · editorial check pending')).toBeVisible();
+    expect(screen.getByText('Third paragraph & its full ending.')).toBeVisible();
+    expect(screen.getByRole('button',{name:'Keep this find'})).toBeEnabled();
+  });
   it('publishes only the acknowledged complete keep array and identity to existing mounted consumers',async()=>{
     const channel=savedEvents();api.profiles.mockResolvedValue([owned({saved_item_ids:['older'],private_note:'never publish this'})]);
     const pending=deferred();api.update.mockReturnValue(pending.promise);open();await ready();fireEvent.click(screen.getByRole('button',{name:'Keep this find'}));await waitFor(()=>expect(api.update).toHaveBeenCalledTimes(1));expect(channel.events).toEqual([]);
