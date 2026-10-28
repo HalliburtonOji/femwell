@@ -9,7 +9,7 @@ const api=vi.hoisted(()=>({items:vi.fn(),expand:vi.fn(),me:vi.fn(),profiles:vi.f
 vi.mock('@/api/base44Client',()=>({base44:{auth:{me:api.me},functions:{invoke:api.expand},entities:{LifestyleItems:{filter:api.items},UserProfile:{filter:api.profiles,update:api.update,create:api.create},SavedItems:{filter:api.physical,delete:api.remove}}}}));
 vi.mock('@/components/common/ContentActionBar',()=>({default:()=> <div>Journal, Community and Jess tools</div>}));
 vi.mock('@/components/share/ShareButton',()=>({default:()=> <button>Share this read</button>}));
-const article={id:'article',title:'A proper reading',provider:'FEMWELL_AI',category:'Culture',lede:`First paragraph. ${'Actual source words. '.repeat(20)}\n\n## A heading\nThe second paragraph stays separate.\n\nThird paragraph &amp; its full ending.`};
+const article={id:'article',title:'A proper reading',provider:'FEMWELL_AI',status:'PUBLISHED',category:'Culture',lede:`First paragraph. ${'Actual source words. '.repeat(20)}\n\n## A heading\nThe second paragraph stays separate.\n\nThird paragraph &amp; its full ending.`};
 const open=()=>render(<MemoryRouter initialEntries={['/LifestyleDetail?id=article']}><LifestyleDetail/></MemoryRouter>);
 beforeEach(()=>{window.history.replaceState({},'', '/LifestyleDetail?id=article');localStorage.clear();api.items.mockImplementation(async q=>q.id ? [article] : []);api.expand.mockResolvedValue({data:{body:article.lede}});vi.spyOn(window,'scrollTo').mockImplementation(()=>{});Object.defineProperty(window,'scrollY',{configurable:true,value:0});});
 afterEach(()=>{vi.useRealTimers();vi.restoreAllMocks();});
@@ -115,6 +115,35 @@ describe('owned keeps and likes authority',()=>{
 });
 
 describe('complete article and last-place recovery',()=>{
+  it('asks for published neighbours and drops non-published rows even if a response includes them',async()=>{
+    api.items.mockImplementation(async q=>q.id ? [article] : [
+      {...article,id:'review',title:'Unreviewed neighbour',status:'NEEDS_REVIEW'},
+      {...article,id:'hidden',title:'Hidden neighbour',status:'HIDDEN'},
+      {...article,id:'next',title:'Next published read'},
+      {...article,id:'other',title:'Another published read'},
+    ]);
+    open();await screen.findByRole('link',{name:/Next published read/i});
+    expect(api.items).toHaveBeenCalledWith({category:'Culture',status:'PUBLISHED'},'-created_date',7);
+    expect(screen.queryByRole('link',{name:/Unreviewed neighbour/i})).not.toBeInTheDocument();
+    expect(screen.queryByRole('link',{name:/Hidden neighbour/i})).not.toBeInTheDocument();
+  });
+  it('opens a blocked video with a real, keyboard-operable source link',async()=>{
+    api.items.mockImplementation(async q=>q.id ? [{...article,provider:'YOUTUBE',media_type:'VIDEO',video_id:'dQw4w9WgXcQ',content_url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ',is_embeddable:false}] : []);
+    open();const link=await screen.findByRole('link',{name:'Watch at source'});
+    expect(link).toHaveAttribute('href','https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+    expect(link).toHaveAttribute('target','_blank');
+  });
+  it('does not offer a dead or unsafe blocked-video tap',async()=>{
+    api.items.mockImplementation(async q=>q.id ? [{...article,provider:'YOUTUBE',media_type:'VIDEO',video_id:'invalid',content_url:'javascript:alert(1)',is_embeddable:false}] : []);
+    open();await screen.findByText('Video unavailable here. The reading is still below.');
+    expect(screen.queryByRole('link',{name:'Watch at source'})).not.toBeInTheDocument();
+  });
+  it('uses a safe native publisher link for an external article',async()=>{
+    api.items.mockImplementation(async q=>q.id ? [{...article,provider:'RSS',content_url:'https://publisher.example.test/whole-story'}] : []);
+    open();const link=await screen.findByRole('link',{name:'Read at source'});
+    expect(link).toHaveAttribute('href','https://publisher.example.test/whole-story');
+    expect(link).toHaveAttribute('target','_blank');
+  });
   it('opens a saved podcast with its playable episode, full transcript and publisher exit without article expansion',async()=>{
     const podcast={id:'kept-audio',title:'The real episode',provider:'FEMWELL_AI',content_type:'PODCAST',category:'Culture',audio_url:'https://media.example.test/episode.mp3',episode_url:'https://publisher.example.test/episode',transcript:'The complete spoken words, in their own order.',summary:'A short introduction.',source_name:'The publisher'};
     api.items.mockImplementation(async q=>q.id ? [podcast] : []);

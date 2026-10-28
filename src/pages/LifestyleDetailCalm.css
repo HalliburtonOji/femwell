@@ -22,6 +22,10 @@
 .fw-calm-article .fw-calm-article__listen-label{margin:0 0 10px;color:#58765f;font:700 12px/1.4 Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase}
 .fw-calm-article .fw-calm-article__listen-unavailable{margin:0;color:#51444e;line-height:1.5}
 .fw-calm-article .fw-calm-article__source{display:inline-flex;align-items:center;min-height:44px;margin-top:8px;color:#51444e;font-weight:650;text-decoration:underline;text-underline-offset:3px}
+.fw-calm-article .fw-calm-article__video-exit{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 20px;border-radius:999px;background:#fff;color:#51444e;font:700 14px/1.2 system-ui,sans-serif;text-decoration:none}
+.fw-calm-article .fw-calm-article__source-exit{min-height:44px!important;border-radius:999px!important;background:#51444e!important;color:#fff!important;text-decoration:none;font:700 14px/1.2 system-ui,sans-serif!important;box-shadow:0 7px 18px rgba(58,46,57,.13)!important}
+.fw-calm-article .fw-calm-article__related-title{font-family:"FemWell Editorial","Cormorant Garamond",Georgia,serif!important;font-size:26px!important;color:#51444e!important;margin-bottom:12px!important}
+.fw-calm-article .fw-calm-article__video-exit:focus-visible,.fw-calm-article a:focus-visible{outline:3px solid #916b8f;outline-offset:3px}
 .fw-calm-article .fw-related-rail{scroll-padding-inline:1px}
 .fw-calm-article .fw-related-card:focus-visible,.fw-calm-article button:focus-visible{outline:3px solid #916b8f;outline-offset:3px}
 @media(max-width:600px){.fw-calm-article .fw-reader-card{padding-left:15px!important;padding-right:15px!important}.fw-calm-article .fw-reader-hero{margin:-24px -15px 22px!important;width:calc(100% + 30px)!important;min-height:270px!important}.fw-calm-article .fw-reader-hero>div:last-of-type{left:18px!important;right:18px!important;bottom:22px!important}.fw-calm-article .fw-reader-hero h1{font-size:clamp(34px,9vw,43px)!important}}

@@ -20,6 +20,13 @@ const CATEGORY_ROOM = {
 };
 const roomForCategory = (cat) => CATEGORY_ROOM[String(cat || "").toLowerCase()] || "lounge";
 
+function safeExternalUrl(value) {
+  try {
+    const url = new URL(value);
+    return ["https:", "http:"].includes(url.protocol) ? url.href : null;
+  } catch { return null; }
+}
+
 const FEMWELL_GENERATED_PROVIDERS = new Set([
   "FEMWELL_AI",
   "FEMWELL_AI_USER_REQUEST",
@@ -309,8 +316,8 @@ export default function LifestyleDetail() {
     let cancelled = false;
     setRelated([]);
     if (!item?.id || !item.category) return () => { cancelled = true; };
-    base44.entities.LifestyleItems.filter({ category: item.category }, "-created_date", 7).then(rows => {
-      if (!cancelled && Array.isArray(rows)) setRelated(rows.filter(row => row.id !== item.id).slice(0, 6));
+    base44.entities.LifestyleItems.filter({ category: item.category, status: "PUBLISHED" }, "-created_date", 7).then(rows => {
+      if (!cancelled && Array.isArray(rows)) setRelated(rows.filter(row => row?.id && row.id !== item.id && row.status === "PUBLISHED" && row.title).slice(0, 6));
     }).catch(() => { if (!cancelled) setRelated([]); });
     return () => { cancelled = true; };
   }, [item?.id, item?.category]);
@@ -384,15 +391,6 @@ export default function LifestyleDetail() {
   const toggleLiked=()=>changeFind("liked_item_ids",!liked);
   const toggleSaved=()=>changeFind("saved_item_ids",!saved);
 
-  const handleReadFull = () => {
-    try {
-      if (!item?.content_url) return;
-      window.open(item.content_url, "_blank", "noopener,noreferrer");
-    } catch {
-      // do nothing
-    }
-  };
-
   // Loading state — never flash "Article not found" while fetching.
   if (loading) {
     return (
@@ -455,7 +453,9 @@ export default function LifestyleDetail() {
       })()
     : null;
   // Read button hidden for FemWell-generated content, and hidden when we've embedded the video in-app.
-  const showReadFullButton = !isFemwell && !youtubeEmbedUrl && !!item.content_url;
+  const externalArticleUrl = safeExternalUrl(item.content_url);
+  const videoWatchUrl = externalArticleUrl || (/^[\w-]{11}$/.test(String(item.video_id || "")) ? `https://www.youtube.com/watch?v=${item.video_id}` : null);
+  const showReadFullButton = !isFemwell && !youtubeEmbedUrl && !!externalArticleUrl;
   const takeaways = Array.isArray(item.takeaways) ? item.takeaways : [];
 
   // Decoded text for render.
@@ -463,9 +463,7 @@ export default function LifestyleDetail() {
   const decodedWhy = decodeHtmlEntities(item.why_it_matters || "");
   const decodedAuthor = decodeHtmlEntities(item.author_name || "");
   const decodedSource = decodeHtmlEntities(item.source_name || "");
-  const episodeSource = [item.episode_url, item.source_url, item.content_url].find((value) => {
-    try { return ["https:", "http:"].includes(new URL(value).protocol); } catch { return false; }
-  });
+  const episodeSource = [item.episode_url, item.source_url, item.content_url].map(safeExternalUrl).find(Boolean);
   const isAudio = Boolean(item.audio_url || ["AUDIO", "PODCAST"].includes(String(item.media_type || item.content_type || "").toUpperCase()));
   const byline = decodedAuthor || decodedSource;
   const eyebrowSource = (decodedSource || decodedAuthor || "").toUpperCase();
@@ -686,19 +684,16 @@ export default function LifestyleDetail() {
                     justifyContent: "center",
                     gap: 14,
                     padding: 24,
-                    cursor: "pointer",
                     border: "1px solid #D8CFBC",
                     boxShadow: "var(--shadow-card)",
                   }}
-                  onClick={() => item.content_url && window.open(item.content_url, "_blank", "noopener,noreferrer")}
                 >
                   <PlayCircle size={56} color="#ECE7DA" strokeWidth={1.5} />
                   <p style={{ font: "italic 400 18px/1.3 'Fraunces', serif", color: "#ECE7DA", margin: 0, textAlign: "center", maxWidth: 320 }}>
                     {decodedTitle}
                   </p>
-                  <p style={{ font: "600 12px/1 'Inter', sans-serif", color: "rgba(247,240,230,0.8)", margin: 0, letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                    Watch on YouTube
-                  </p>
+                  {videoWatchUrl ? <a href={videoWatchUrl} target="_blank" rel="noopener noreferrer" className="fw-calm-article__video-exit">Watch at source</a>
+                    : <p role="status" style={{ font: "600 13px/1.4 system-ui,sans-serif", color: "#fff", margin: 0, textAlign: "center" }}>Video unavailable here. The reading is still below.</p>}
                 </div>
               )}
 
@@ -1017,8 +1012,11 @@ export default function LifestyleDetail() {
 
           {/* Read full article — ONLY for external articles with a real URL */}
           {showReadFullButton && (
-            <button
-              onClick={handleReadFull}
+            <a
+              href={externalArticleUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="fw-calm-article__source-exit"
               style={{
                 marginTop: 28,
                 display: "inline-flex",
@@ -1035,8 +1033,8 @@ export default function LifestyleDetail() {
                 boxShadow: "var(--shadow-sm)",
               }}
             >
-              Read the full article
-            </button>
+              Read at source
+            </a>
           )}
         </div>
 
@@ -1062,7 +1060,7 @@ export default function LifestyleDetail() {
         {/* More like this rail */}
         {relatedDecorated.length >= 2 && (
           <div style={{ marginTop: 40 }}>
-            <p style={{
+            <p className="fw-calm-article__related-title" style={{
               fontStyle: "italic",
               fontWeight: 400,
               fontSize: 22,
