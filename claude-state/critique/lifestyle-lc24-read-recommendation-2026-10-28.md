@@ -1,0 +1,25 @@
+# LC24 — Read recommendations and exact Today return · 28 October 2026
+
+## Mapped atom and actual paths
+
+R11 followed the existing configured daily workflow `base44/workflows/TodayRecommendations generator.jsonc` (06:00 UTC, cloud execution status not independently observed) into `generateTodayRecommendations`, its `TodayRecommendations` rows, `guideActions.get_context` and the old `src/pages/Today.jsx`. The live `/Today` route instead resolves to `TodayClipboardDemo` and reads `LifestyleItems` directly for its rotating Lifestyle card. Its old query had no status filter. The old scheduled branch chose one published `FEMWELL_AI` item for every profile, described it as written for her and routed `?tab=femwell`, which the current Lifestyle resolver maps to **Books**. The first Read archive audit found generated source text, missing publisher URLs and unreviewed factual claims; see [LC23](lifestyle-lc23-read-archive-2026-10-28.md).
+
+Research for the content atom: [ONS writing for user needs](https://service-manual.ons.gov.uk/content/writing-for-users/user-needs) supports describing what a choice actually gives her, and [GOV.UK writing for interfaces](https://www.gov.uk/service-manual/design/writing-for-user-interfaces) supports a short, clear action. Here the specific evidence is our source-to-opened route map, not a general claim that a generated archive is editorially fit.
+
+## Bounded implementation
+
+- The active Today query and display guard require `PUBLISHED`. Its generated card says **AI archive · An older piece. Source check pending.** The article keeps its exact `LifestyleDetail?id=` destination. Only this card's internal action uses React Router Link; App's persistent scroll memory can then return her to the same place. The other Today actions remain as before.
+- The existing daily function keeps its Lifestyle recommendation branch and all other recommendation types. It reads the shared five-row Lifestyle source once per run rather than once per profile, sorts by the real `published_at` field, labels the archive truthfully, and links the exact item. It leaves `from=lifestyle-main` off that cross-app route so Back uses the actual origin.
+- No draft row, schema, new function, social action, account write, editorial publication or recurring critique run.
+
+## Proof and limits
+
+Two real-handler tests using two simulated profiles passed: one source lookup, exact encoded reader ID, two content recommendations still created and the other types surviving a failed archive source. Scoped ESLint had zero errors; Vite build passed. Root's controlled Chrome mobile touch at 360/390/430 opened `/Today`, exercised the Lifestyle reroll and section rail, verified the published query and that a deliberately returned `NEEDS_REVIEW` draft did not display, opened the published exact reader, tapped Back to Today and sampled zero horizontal overflow or page exceptions. The initial attempt timed out because Today rotates the Lifestyle card and that day's card was Moon; the completed proof actually rerolled to the archive. These are mocked-account browser journeys, not authenticated cloud row read-back or physical iPhone proof.
+
+Independent critique caught and prompted three fixes: malformed `pub_date` sort, a wrong `from=lifestyle-main` return, and a full-document `<a>` that lost Today scroll position on Back. The final exact-position reproof and deployed check are recorded in STATUS when complete. The shared daily branch still offers one older generated item to all profiles; this is an inherited **source-fit P1**, not a personalised daily edition. Existing job also lists all profiles and reads/deletes/recreates recommendations per owner; moving one source lookup changes **N identical list calls to one** in a run with N processed profiles, but does not establish a bill, throughput limit or pounds saved. Failure of the shared archive lookup still clears old daily rows before recreating other types; pre-existing resilience gap.
+
+## Ideas decision and next content build
+
+The [LC24 founder card](../../public/lifestyle-content/index.html#lc24-read-returns) recommends allowing a daily Read lead only from a human-reviewed, dated, rights-checked item, then matching category and explicit interests before saying it is for that person. The complete generated archive remains browseable. This **source policy is staged**, not implemented by the routing repair. The first original Ideas article, *The plans you actually want to keep*, still needs a named human editor, final source and rights review, approved category/type mapping, durable ID and authenticated Save/Continue plus two-way returns before main publication. No silence is approval.
+
+Conformance: Bible §§2.7, 10.5.22–23, 10.5.78, 11, 17.3, 19.7–19.9. The no-strip check retained all recommendation categories and every published archive item; the source truth and reader return were corrected at their actual owners.

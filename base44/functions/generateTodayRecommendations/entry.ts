@@ -31,6 +31,13 @@ Deno.serve(async (req) => {
     const profiles = await base44.asServiceRole.entities.UserProfile.list();
     const allContent = await base44.asServiceRole.entities.ContentItems.list();
     const allPrograms = await base44.asServiceRole.entities.Programs.list();
+    // This published source pool is shared by every profile in the daily run.
+    // Read it once, so a growing audience does not multiply identical queries.
+    let lifestyleItem = null;
+    try {
+      const lifestyleItems = await base44.asServiceRole.entities.LifestyleItems.list('-published_at', 5);
+      lifestyleItem = lifestyleItems.find(i => i.provider === 'FEMWELL_AI' && i.status === 'PUBLISHED') || null;
+    } catch { /* Keep the other recommendation types available when this source fails. */ }
     let processed = 0;
 
     for (const profile of profiles) {
@@ -89,18 +96,16 @@ Deno.serve(async (req) => {
       } catch {}
 
       // Lifestyle recommendation
-      try {
-        const lifestyleItems = await base44.asServiceRole.entities.LifestyleItems.list('-pub_date', 5);
-        const lifestyleItem = lifestyleItems.find(i => i.provider === 'FEMWELL_AI' && i.status === 'PUBLISHED');
-        if (lifestyleItem) {
+      if (lifestyleItem) {
+        try {
           await base44.asServiceRole.entities.TodayRecommendations.create({
             user_id: userId, date: today, type: 'LIFESTYLE',
             title: lifestyleItem.title,
-            reason: 'Written for you by FemWell',
-            action_route: '/Lifestyle?tab=femwell',
+            reason: 'From the FemWell AI archive',
+          action_route: `/LifestyleDetail?id=${encodeURIComponent(lifestyleItem.id)}`,
           });
-        }
-      } catch {}
+        } catch { /* Preserve the other recommendation types if this row fails. */ }
+      }
 
       // Event recommendation
       try {

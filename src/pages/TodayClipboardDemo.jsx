@@ -17,6 +17,7 @@
 // (5) the calendar peeks a day on tap + swipes month-to-month. Calm by default.
 
 import { useState, useEffect, useMemo, useRef } from "react";
+import { Link } from "react-router-dom";
 import {
   T, SERIF, UI, PAPER_BG, Heart, Eyebrow, Script, Hand, InkFilter, useEditorialFonts,
   PHASE_COLORS, PHASE_LABEL,
@@ -372,8 +373,8 @@ export default function TodayClipboardDemo({ routeActive = true }) {
         const s = chapterForDay(chapters)?.chapter;
         if (s) setContent((c) => ({ ...c, story: s }));
       }).catch(() => {});
-      withTimeout(base44.entities.LifestyleItems.filter({}, "-published_at", 12)).then((rows) => {
-        const arr = (rows || []).filter((r) => r && r.title);
+      withTimeout(base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-published_at", 12)).then((rows) => {
+        const arr = (rows || []).filter((r) => r && r.title && r.status === "PUBLISHED");
         if (alive && arr.length) setContent((c) => ({ ...c, foryou: arr }));
       }).catch(() => {});
       withTimeout(base44.entities.BookClubPick.filter({ active: true }, "-created_date", 1)).then((rows) => {
@@ -558,7 +559,7 @@ export default function TodayClipboardDemo({ routeActive = true }) {
   const listen = content.listen;
   const listenHref = listen ? (listen.episode_url || listen.content_url || "/Lifestyle?tab=listen") : "/Lifestyle?tab=listen";
   const phaseWord = PHASE_LABEL[phase] ? PHASE_LABEL[phase].toLowerCase() : "";
-  const foryouItems = content.foryou || [];
+  const foryouItems = (content.foryou || []).filter(item => item?.status === "PUBLISHED");
   const prog = content.program;
 
   // ── THE PER-SECTION SMART CARDS — one card per app section, each a REAL glanceable synthesis of
@@ -569,7 +570,7 @@ export default function TodayClipboardDemo({ routeActive = true }) {
   const pickMode = (modes, offset) => { const list = modes.filter(Boolean); if (!list.length) return null; return list[(((daySeed + offset) % list.length) + list.length) % list.length]; };
   const audioUrl = listen ? (listen.audio_url || listen.audio_file_url || listen.episode_url || listen.media_url || listen.content_url || null) : null;
   const foryouItem = foryouItems[0];
-  const foryouHref = foryouItem?.id ? `/LifestyleDetail?id=${foryouItem.id}` : "/Lifestyle";
+  const foryouHref = foryouItem?.id ? `/LifestyleDetail?id=${encodeURIComponent(foryouItem.id)}` : "/Lifestyle";
 
   const health = buildHealthInsight({ phase, cycleDay: cycle.cycleDay, season, symptoms, hasCycle });
   const nutI = buildNutritionInsight(nut, phase);
@@ -628,7 +629,7 @@ export default function TodayClipboardDemo({ routeActive = true }) {
         listen && { tag: "Listen", hook: clip(listen.title, 52), line: listen.source_name ? `${listen.source_name} · play it here` : "An episode you can play here.", flower: "bluebell", action: { type: "audio", url: audioUrl, title: listen.title, href: listenHref, Icon: Headphones } },
         content.book && { tag: "Book of the day", hook: clip(content.book.title, 46), line: content.book.author ? `${content.book.author} — opens straight in the reader, full screen.` : "Opens straight in the reader, full screen.", flower: "rose", action: { type: "deeplink", Icon: BookOpen, label: "Open in the reader", href: bookHref } },
         content.story && { tag: "Daily story", hook: clip(storyTitle, 44), line: content.story.segment_text ? clip(storyPreview(content.story.segment_text), 80) : "A chapter you can read now.", flower: "poppy", action: { type: "deeplink", Icon: Feather, label: "Read today's chapter", href: "/Lifestyle?tab=daily_story" } },
-        foryouItem && { tag: "For you", hook: clip(foryouItem.title, 50), line: "One from Lifestyle. Take it or leave it.", flower: "primrose", action: { type: "deeplink", Icon: Sparkles, label: "Open this", href: foryouHref } },
+        foryouItem && { tag: foryouItem.provider === "FEMWELL_AI" ? "AI archive" : "Lifestyle", hook: clip(foryouItem.title, 50), line: foryouItem.provider === "FEMWELL_AI" ? "An older piece. Source check pending." : "From Lifestyle. Open if it grabs you.", flower: "primrose", action: { type: "deeplink", Icon: Sparkles, label: "Open this", href: foryouHref, internal: true } },
       ];
       const m = pickMode(modes, 0) || modes[0];
       return { key: "lifestyle", section: "Lifestyle", accent, Icon: Sparkles, open: { href: "/Lifestyle", label: "Open Lifestyle" }, ...m };
@@ -1235,7 +1236,7 @@ function inlineBtn(accent, disabled) {
 }
 function InlineAction({ action, accent, uid, cycle, onSheet, onTend }) {
   const { type } = action || {};
-  if (type === "deeplink") { const A = action.Icon || ChevronRight; return <a href={action.href} style={inlineBtn(accent)}><A size={15} /> {action.label}</a>; }
+  if (type === "deeplink") { const A = action.Icon || ChevronRight; return action.internal ? <Link to={action.href} style={inlineBtn(accent)}><A size={15} /> {action.label}</Link> : <a href={action.href} style={inlineBtn(accent)}><A size={15} /> {action.label}</a>; }
   if (type === "sheet") { const A = action.Icon || Plus; return <button onClick={() => onSheet(action.sheet)} style={inlineBtn(accent)}><A size={15} /> {action.label}</button>; }
   if (type === "audio") return <AudioAction action={action} accent={accent} />;
   if (type === "water") return <WaterAction action={action} accent={accent} uid={uid} />;
