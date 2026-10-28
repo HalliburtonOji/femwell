@@ -34,3 +34,7 @@ Focused `LifestyleDetail` tests **54/54**, scoped ESLint zero errors, production
 Bible conformance: §§2.7, 6.7.8, 10.5.22–23, 10.5.78, 11, 17.3 and 19.7–19.9. No new Halli design direction arrived in this cycle, so no Bible rule was added. Main article *repair* is separate from held publication of the seven new Ideas drafts. Final source push, site release and live identity follow.
 
 Build size evidence: raw `index-BJnB5rSv.js` is 11,698,013 bytes; the new static review sheet is 6,990 bytes. These are not wire transfer, provider bills or a supported-user count.
+
+## Live routing correction
+
+The first normal source push (`18056d3c`) and deploy served `index-BJnB5rSv.js` on both origins, and the new sheet returned HTTP 200. A live custom-domain tap exposed a P1 static-directory routing mismatch: `/lifestyle-content/` opened the app shell, while `/lifestyle-content/index.html` opened the actual organised board. The sheet's Back and the STATUS board URL were corrected to the explicit file. Repeating the **deployed** controlled 360/390/430 published article/blocked-video/source/return and board→release-sheet taps passed with zero sampled overflow/page exceptions. The Back correction needs its own fresh build/deploy and explicit live tap before final release. This is why a source screenshot alone was not accepted as live proof.
