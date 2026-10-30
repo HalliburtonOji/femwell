@@ -10,21 +10,22 @@ export const LIFESTYLE_EDITORIAL_DRAFTS = [
     content_type: "ARTICLE",
     category: "Relationships",
     title: "The plans you actually want to keep",
-    summary: "A friendship doesn't need a three-hour dinner reservation. Sometimes it needs a walk, a voice note and someone willing to choose Tuesday.",
-    author_name: "FemWell · Ideas draft",
+    summary: "The group chat says ‘we must catch up’. Your calendar says ‘in this economy?’ Try a smaller plan.",
+    author_name: "FemWell editorial · Halli, editor",
     source_name: "FemWell · Ideas draft",
     duration_label: "3 min read",
-    lede: `“We should catch up properly” is a lovely sentence with a terrible completion rate. It asks for a free evening, a place with decent lighting, two working calendars and perhaps a new outfit. By the time those planets align, someone has changed jobs or moved to Bristol.
+    source_links: [{ label: "Communications Psychology · research on reaching out to old friends (2024)", url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC11332216/" }],
+    lede: `“We should catch up properly” is a lovely sentence that can sit in a group chat for six months. It asks for a free evening, a booking, two working calendars and perhaps an outfit that isn't drying on the radiator. By the time those planets align, someone has moved to Bristol.
 
-Try a smaller invitation. “I'm walking to the market on Saturday; fancy twenty minutes?” “I can phone while I fold the washing.” “Coffee at half ten, and I have to leave by eleven.” The end time is part of the kindness. It lets both people say yes without surrendering a whole day.
+Try a smaller invitation. “I'm walking to the market on Saturday; fancy twenty minutes?” “I can phone while I fold the washing.” “Coffee at half ten, and I have to leave by eleven.” An end time is kind. Nobody has to donate a whole day to prove they care.
 
-This is not an argument against long, delicious evenings. Keep those. It is an argument against making every friendship wait for one. Some of the best conversations happen because nobody had time to perform being fascinating. You turned up in the coat you already owned, said the thing that was actually happening, and went home with the shopping.
+Long, delicious evenings still have their place. But a friendship shouldn't have to wait for one. Sometimes the good conversation happens because nobody has time to perform being fascinating. You turn up in the coat you already own, say what's actually going on, and go home with the shopping.
 
-There is a useful difference between “I miss you” and “We ought to meet”. One is a feeling; the other is a vague administrative project. Give the feeling a shape. Offer one actual time, one ordinary activity and an easy out. “No pressure” only works if you really mean it, so let a no remain a no.
+Reaching out can feel weirdly hard even when you want to. In a 2024 study, people who wanted to contact an old friend often still hesitated. That doesn't mean a short invitation fixes everything. It does mean you aren't the only person staring at the send button.
 
-And if you are always the one making the plan? Notice it. You can love someone and still stop managing the entire diary. A friendship can have seasons, and a quiet spell is not automatically a verdict. Try once, plainly. Then leave a little room for them to come towards you.
+Give the feeling a shape: one time, one ordinary thing and an easy out. “No pressure” only works if you mean it; let a no remain a no. And if you're always the one making the plan, notice that too. You can love someone and stop managing the entire diary.
 
-The next message doesn't need to be perfect. It just needs a day of the week. Tuesday is underrated.`,
+The message doesn't need to be perfect. It just needs a day of the week. Tuesday is underrated.`,
   },
   {
     id: "ideas-read-day-off",

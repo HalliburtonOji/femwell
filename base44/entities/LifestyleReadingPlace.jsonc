@@ -1,0 +1,21 @@
+{
+  // Private place per owned article. The client keeps device storage as an
+  // offline fallback; this row carries only an exact article ID and paragraph.
+  "name": "LifestyleReadingPlace",
+  "type": "object",
+  "properties": {
+    "user_id": { "type": "string" },
+    "item_id": { "type": "string" },
+    "paragraph_index": { "type": "number", "default": 0 },
+    "content_revision": { "type": "string" },
+    "updated_at": { "type": "string" }
+  },
+  "required": ["user_id", "item_id", "paragraph_index", "content_revision"],
+  "indexes": [{ "fields": ["user_id", "item_id"] }, { "fields": ["user_id", "updated_date"] }],
+  "rls": {
+    "create": true,
+    "read": { "created_by": "{{user.email}}" },
+    "update": { "created_by": "{{user.email}}" },
+    "delete": { "created_by": "{{user.email}}" }
+  }
+}

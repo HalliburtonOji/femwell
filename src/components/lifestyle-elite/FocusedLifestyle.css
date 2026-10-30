@@ -89,7 +89,7 @@
 .fw-focused-sheet[data-room=read-ideas] .fw-focused-sheet-body{background:#fff;padding-top:18px}
 .fw-focused-sheet[data-room=read-ideas] .fw-focused-prose{max-width:44ch;margin:0 auto;font:500 19px/1.57 "FemWell Editorial","Cormorant Garamond",Georgia,serif}
 .fw-focused-sheet[data-room=read-ideas] .fw-focused-prose>p{margin:0 0 1.1em}
-.fw-focused-sheet[data-room=read-ideas] .fw-focused-prose>p:first-of-type:not(.fw-focused-note)::first-letter{font:italic 600 2.6em/.76 "FemWell Editorial","Cormorant Garamond",Georgia,serif;color:#7a1a12;float:left;margin:8px 5px 0 0}
+.fw-focused-sheet[data-room=read-ideas] .fw-focused-prose>p:first-of-type:not(.fw-focused-note,.fw-read-quoted)::first-letter{font:italic 600 2.6em/.76 "FemWell Editorial","Cormorant Garamond",Georgia,serif;color:#7a1a12;float:left;margin:8px 5px 0 0}
 .fw-focused-sheet[data-room=read-ideas] .fw-focused-prose h3{font:italic 600 25px/1.15 "FemWell Editorial","Cormorant Garamond",Georgia,serif;color:#51444e;margin:1.4em 0 .5em}
 .fw-read-folio{border-bottom:1px solid #d8c9d8;margin:0 0 22px;padding:0 0 14px}
 .fw-read-folio-label{font:700 12px/1.35 ui-sans-serif,system-ui,sans-serif!important;letter-spacing:.13em;text-transform:uppercase;color:#6d5271!important;margin:0 0 11px!important}

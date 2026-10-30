@@ -23,6 +23,7 @@ import {
   PHASE_COLORS, PHASE_LABEL,
 } from "@/components/journal/Editorial";
 import { base44 } from "@/api/base44Client";
+import { eligiblePublishedRead, isReviewedEditorial } from "@/lib/editorialRelease";
 import { pickProfile, displayFirstName } from "@/utils/userProfile";
 import { storyPreview } from "@/utils/chapterProse";
 import { loadStoryChapters, chapterForDay } from "@/components/lifestyle/dailyStory";
@@ -373,9 +374,17 @@ export default function TodayClipboardDemo({ routeActive = true }) {
         const s = chapterForDay(chapters)?.chapter;
         if (s) setContent((c) => ({ ...c, story: s }));
       }).catch(() => {});
-      withTimeout(base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-published_at", 12)).then((rows) => {
-        const arr = (rows || []).filter((r) => r && r.title && r.status === "PUBLISHED");
-        if (alive && arr.length) setContent((c) => ({ ...c, foryou: arr }));
+      Promise.all([
+        withTimeout(base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-published_at", 12)).catch(() => []),
+        withTimeout(base44.entities.LifestyleItems.filter({ provider: "FEMWELL_EDITORIAL", status: "PUBLISHED" }, "-published_at", 8), 2500).catch(() => []),
+      ]).then(([rows, editorial]) => {
+        const seen = new Set();
+        const arr = [...(editorial || []), ...(rows || [])].filter(row => eligiblePublishedRead(row) && !seen.has(row.id) && seen.add(row.id));
+        const followed = new Set((Array.isArray(prof?.followed_categories) ? prof.followed_categories : []).map(value => String(value).toLowerCase()));
+        const reviewed = arr.filter(isReviewedEditorial);
+        const preferred = reviewed.find(row => followed.has(String(row.category || '').toLowerCase())) || reviewed[0];
+        const ordered = preferred ? [preferred, ...arr.filter(row => row.id !== preferred.id)] : arr;
+        if (alive && ordered.length) setContent((c) => ({ ...c, foryou: ordered }));
       }).catch(() => {});
       withTimeout(base44.entities.BookClubPick.filter({ active: true }, "-created_date", 1)).then((rows) => {
         const b = (rows || []).filter(Boolean)[0]; if (alive && b) setContent((c) => ({ ...c, book: b }));
@@ -559,7 +568,7 @@ export default function TodayClipboardDemo({ routeActive = true }) {
   const listen = content.listen;
   const listenHref = listen ? (listen.episode_url || listen.content_url || "/Lifestyle?tab=listen") : "/Lifestyle?tab=listen";
   const phaseWord = PHASE_LABEL[phase] ? PHASE_LABEL[phase].toLowerCase() : "";
-  const foryouItems = (content.foryou || []).filter(item => item?.status === "PUBLISHED");
+  const foryouItems = (content.foryou || []).filter(eligiblePublishedRead);
   const prog = content.program;
 
   // ── THE PER-SECTION SMART CARDS — one card per app section, each a REAL glanceable synthesis of

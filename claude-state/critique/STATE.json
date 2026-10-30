@@ -53,10 +53,10 @@
     "reason": "Halli stopped recurring builds: usage consumption and endless loop. Tool and automation.toml confirm PAUSED; explicit user restart required."
   },
   "manualContent": {
-    "id": "LIFESTYLE-CONTENT-2026-10-28-LC24",
-    "stage": "LC24 Today published-only and exact Read return live at index-Cnh-d1i_.js via db8f4061; existing daily function deployed 1/1; original Ideas issue held",
-    "nextAtom": "R10 named human edit/rights/source check for first original Read lead, approved mapping and durable ID, authenticated Save/Continue and two-way returns before main publication. R12 reviewed, dated and topic-relevant daily Read source policy plus measured scheduled-job capacity after LC24 exact return and live release. V03 and LC17-A02 carried; scheduler PAUSED.",
-    "proofGate": "LC24 2/2 real-handler tests, scoped lint zero errors, production build, root controlled 360/390/430 local and deployed Today reroll/published-only/draft exclusion/exact reader/Back, no sampled overflow/page errors. Independent 390 scroll return exact 1409-to-1409 with archive card visible and no sampled errors. Normal push; function deploy 1/1; both origins index-Cnh-d1i_.js; Ideas LC24 live. Mocked auth is not signed-in Save/write; physical iPhone, human editing, durable draft identity, source-fit policy, paid bills, broader endings and voice transcript remain open.",
+    "id": "LIFESTYLE-CONTENT-2026-10-30-LC25",
+    "stage": "LC25 first original Read reviewed-source and account-owned continuation candidate; Halli appointed editor, final text/rights signoff held; seven original Ideas drafts unpublished; scheduler PAUSED",
+    "nextAtom": "Finish LC25 independent routed-Back reproof, own-account RLS/write/read-back, schema/function/site release and live 360/390/430 tap. Then Halli's concrete first-essay text/rights approval, one durable reviewed row and actual two-session exact Save/Continue/return before that article enters main. Continue R11 archive and R12 job-cost audit independently; V03/LC17 carry.",
+    "proofGate": "Candidate 51/51 targeted tests, scoped lint zero errors and build; mocked 360/390/430 Ideas folio/source/Close/explicit legacy recovery and Today exact return pass. Independent quick native exit failed remote POST, so in-app Back now awaits a bounded owner write and direct article no longer opens morning brief; independent reproof underway. Schema RLS, real account write/read-back, deployed pixels, two-session sync, physical iPhone and first-essay approval remain unproved.",
     "carryForward": [
       "Clean Ideas reader false-open progress repaired in LC08; canonical main reader still follows its held old reached contract until separate promotion",
       "Full Planner/Garden old-paper redesign and signed-in exact read-back remain; preview book ref token is only a bounded return repair",
@@ -83,9 +83,9 @@
     "liveBundle": "index-OD-gjaX_.js"
   },
   "current": {
-    "section": "Lifestyle / Read editorial archive (manual)",
-    "atom": "R10 human editor held; R11 actual Today/Guide generated recommendation path and older factual source audit independent; V03 and LC17-A02 carried",
-    "status": "LC23 live index-yIkGw2sw.js via 5ec583d0 after 84/84, deployed controlled 360/390/430 chooser-select/folio/Details/direct reader/Back and independent P1 reproof. No original draft publication, account write or scheduler restart."
+    "section": "Lifestyle / Read first original piece (manual)",
+    "atom": "LC25 R10 review package and owned Continue release gate; R11 archive source and R12 daily job-cost audit independent; V03 and LC17-A02 carried",
+    "status": "LC24 live index-Cnh-d1i_.js; LC25 source candidate and Ideas review staged locally, final independent exit/release proof in progress. Halli appointed editor, no final copy/rights signoff or original row publication, scheduler PAUSED."
   },
   "lastCompleted": {
     "run": 5,

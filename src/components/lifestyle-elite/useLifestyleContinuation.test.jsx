@@ -1,11 +1,11 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import useLifestyleContinuation from './useLifestyleContinuation';
-const api=vi.hoisted(()=>({filter:vi.fn()}));
-vi.mock('@/api/base44Client',()=>({base44:{entities:{LifestyleItems:{filter:api.filter}}}}));
+const api=vi.hoisted(()=>({filter:vi.fn(),places:vi.fn(),me:vi.fn()}));
+vi.mock('@/api/base44Client',()=>({base44:{auth:{me:api.me},entities:{LifestyleItems:{filter:api.filter},LifestyleReadingPlace:{filter:api.places}}}}));
 function store(values={}) { return Object.assign(Object.create({getItem(key){return this[key] ?? null;},setItem(key,value){this[key]=String(value);}}),values); }
 function deferred(){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};}
-beforeEach(()=>{vi.clearAllMocks();vi.stubGlobal('localStorage',store());api.filter.mockResolvedValue([]);});
+beforeEach(()=>{vi.clearAllMocks();vi.stubGlobal('localStorage',store());api.filter.mockResolvedValue([]);api.places.mockResolvedValue([]);api.me.mockResolvedValue({id:'owner'});});
 afterEach(()=>vi.unstubAllGlobals());
 it('keeps three actually recent classics ahead of a valid place with a nonfinite timestamp',async()=>{
   localStorage.setItem('fw_reader_pos_37106','{"chapterIndex":1,"pageInChapter":2,"ts":1e400}');
@@ -28,7 +28,7 @@ it('enriches local classics on late metadata without refetching, fetching text, 
 });
 it('returns to the same mounted route with fresh positions, retaining exact fiction/article resolution without catalogue-triggered queries',async()=>{
   localStorage.setItem('fw_reader_pos_fiction_source_1',JSON.stringify({chapterIndex:2,ts:9}));
-  localStorage.setItem('fw_article_pos_article_source_1',JSON.stringify({scrollY:320,ts:8}));
+  localStorage.setItem('fw_article_pos_v2_owner__article_source_1',JSON.stringify({scrollY:320,ts:8}));
   api.filter.mockImplementation(async({id})=>[{id,title:id,content_type:id.startsWith('fiction')?'FICTION':'ARTICLE'}]);
   const props={enabled:true,active:true,routePathname:'/Lifestyle',catalogue:[]};
   const {result,rerender}=renderHook(p=>useLifestyleContinuation(p),{initialProps:props});
@@ -43,6 +43,20 @@ it('returns to the same mounted route with fresh positions, retaining exact fict
   await waitFor(()=>expect(api.filter).toHaveBeenCalledTimes(4));
   expect(api.filter.mock.calls.every(([filter])=>!/^\d+$/.test(filter.id))).toBe(true);
 });
+it('never assigns another account old article marks without an explicit recovery tap',async()=>{
+  localStorage.setItem('fw_article_pos_old_article_source_1',JSON.stringify({scrollY:320,ts:8}));
+  api.filter.mockResolvedValue([{id:'old_article_source_1',title:'Old page',status:'PUBLISHED'}]);
+  const {result}=renderHook(()=>useLifestyleContinuation({enabled:true,active:true,routePathname:'/Lifestyle',catalogue:[]}));
+  await waitFor(()=>expect(result.current.legacyRecovery).toBe(true));
+  expect(result.current.items).toHaveLength(0);
+  await act(()=>result.current.recoverLegacy());
+  await waitFor(()=>expect(result.current.items[0]?.item.title).toBe('Old page'));
+  expect(localStorage.getItem('fw_article_pos_old_article_source_1')).toBeTruthy();
+  expect(localStorage.getItem('fw_article_pos_v2_owner__old_article_source_1')).toBeTruthy();
+  api.me.mockResolvedValue({id:'someone-else'});
+  await act(()=>result.current.refresh());
+  expect(result.current.items).toHaveLength(0);
+});
 it('rejects a superseded or unmounted lookup and distinguishes failed reads from successful absence',async()=>{
   localStorage.setItem('fw_reader_pos_fiction_source_1',JSON.stringify({chapterIndex:2,ts:9}));
   api.filter.mockResolvedValue([{id:'fiction_source_1',title:'Original book'}]);
@@ -54,6 +68,7 @@ it('rejects a superseded or unmounted lookup and distinguishes failed reads from
   expect(result.current.items[0].item.title).toBe('Original book');
   const stale=deferred();api.filter.mockReturnValueOnce(stale.promise);
   let pending;act(()=>{pending=result.current.refresh();});
+  await waitFor(()=>expect(api.filter).toHaveBeenCalledTimes(3));
   rerender({...props,active:false,routePathname:'/BookReader'});
   api.filter.mockResolvedValue([]);rerender(props);
   await waitFor(()=>expect(result.current.items).toHaveLength(0));
@@ -72,7 +87,7 @@ it('removes an absent old fiction immediately while a different current source i
   localStorage.setItem('fw_reader_pos_fiction_source_2',JSON.stringify({chapterIndex:3,ts:10}));
   const next=deferred();api.filter.mockReturnValueOnce(next.promise);let pending;
   act(()=>{pending=result.current.refresh();});
-  expect(result.current.items).toHaveLength(0);
+  await waitFor(()=>expect(result.current.items).toHaveLength(0));
   await act(async()=>{next.resolve([{id:'fiction_source_2',title:'Current device source'}]);await pending;});
   expect(result.current.items[0]).toMatchObject({item:{id:'fiction_source_2'},pos:{chapterIndex:3}});
 });

@@ -9,6 +9,7 @@ import ContentActionBar from "@/components/common/ContentActionBar";
 import ShareButton from "@/components/share/ShareButton";
 import ReadingColumn, { readTimeLabel, countWords } from "@/components/brand/ReadingColumn";
 import { FloraAudio } from "@/components/brand/expandCards";
+import useReadingPlace from "@/components/lifestyle-elite/useReadingPlace";
 import "./LifestyleDetailCalm.css";
 
 // Map a content category to the best-fit whole-life Community room (default: the Lounge).
@@ -163,7 +164,6 @@ export default function LifestyleDetail() {
   const originSection = urlParams.get("return_section") === "yours" ? "yours" : "read";
   const savedTab = fromLifestyleMain && urlParams.get("via") === "saved" && ["ADVICE", "LIFESTYLE", "CONTENT", "PROGRAM", "JOURNAL", "EVENT"].includes(urlParams.get("saved_tab")) ? urlParams.get("saved_tab") : null;
   const backTo = savedTab ? `/Saved?tab=${savedTab}&appearance=calm&from=lifestyle-main` : fromLifestyleMain ? `/Lifestyle?section=${originSection}` : "/Lifestyle?section=read";
-  const goBack = () => fromLifestyleMain ? navigate(backTo) : window.history.length > 1 ? window.history.back() : window.location.assign(backTo);
 
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -179,6 +179,7 @@ export default function LifestyleDetail() {
   const [actionError,setActionError]=useState("");
   const [actionRetry,setActionRetry]=useState(0);
   const actionLock=useRef(false);
+  const backLock=useRef(false);
   const actionIntent=useRef(null);
   const acknowledgedRemovals=useRef(new Set());
   const actionScope=useRef({id,owner:null,mounted:true});
@@ -190,6 +191,19 @@ export default function LifestyleDetail() {
   const [loadError, setLoadError] = useState("");
   const [bodyError, setBodyError] = useState("");
   const [retry, setRetry] = useState(0);
+  const saveReadingPlace = useReadingPlace({ itemId: id, content: item?.provider === 'FEMWELL_EDITORIAL' ? item?.lede : fullBody,
+    active: !!(id && item?.id === id && fullBody && !loading && !bodyLoading && item.status === 'PUBLISHED'),
+    ownable: item?.provider === 'FEMWELL_EDITORIAL' && !bodyError && fullBody === stripHtml(item.lede || ''), knownOwnerId: viewer?.id });
+  const goBack = async () => {
+    if (backLock.current) return;
+    backLock.current = true;
+    // Route exits can wait for a private, acknowledged place; native browser
+    // exits still rely on the local fallback because unload cannot await fetch.
+    await Promise.race([saveReadingPlace(), new Promise(resolve => setTimeout(resolve, 3500))]);
+    if (fromLifestyleMain) navigate(backTo);
+    else if (window.history.length > 1) window.history.back();
+    else window.location.assign(backTo);
+  };
 
   // YouTube embed errors (153, 101, 150) don't fire iframe.onError — they're
   // surfaced via postMessage from the IFrame Player API. Listen for those and
@@ -209,37 +223,6 @@ export default function LifestyleDetail() {
     window.addEventListener("message", onMsg);
     return () => window.removeEventListener("message", onMsg);
   }, []);
-
-  // §6.7.8 — SILENT auto-resume. She comes back to where she was, with no ceremony and no
-  // "continue reading?" prompt. (Precedent: Pocket/Instapaper restore position; there's no
-  // measured benefit in the literature, so we ship it quietly and claim nothing.)
-  useEffect(() => {
-    if (!id || !fullBody || loading || bodyLoading) return;
-    const key = `fw_article_pos_${id}`;
-    let ready = false, dirty = false, snapshot = null;
-    let y = 0;
-    try {
-      const saved = JSON.parse(localStorage.getItem(key) || "0");
-      y = Number(typeof saved === "number" ? saved : saved?.scrollY) || 0;
-    } catch { /* ignore */ }
-    const frame = window.requestAnimationFrame(() => { if (y > 40) window.scrollTo(0,y); ready = true; });
-    let t = null;
-    const flush = () => {
-      if (t) window.clearTimeout(t); t = null;
-      if (!dirty || !snapshot) return;
-      try { localStorage.setItem(key,JSON.stringify(snapshot)); dirty = false; } catch { /* device storage unavailable */ }
-    };
-    const onScroll = () => {
-      if (!ready) return;
-      snapshot = {scrollY:Math.max(0,Math.round(window.scrollY)),ts:Date.now()}; dirty = true;
-      if (t) return;
-      t = window.setTimeout(flush,400);
-    };
-    const onHidden = () => { if (document.visibilityState === "hidden") flush(); };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("pagehide",flush);document.addEventListener("visibilitychange",onHidden);
-    return () => { flush(); window.cancelAnimationFrame(frame); window.removeEventListener("scroll",onScroll);window.removeEventListener("pagehide",flush);document.removeEventListener("visibilitychange",onHidden); };
-  }, [id, fullBody, loading, bodyLoading]);
 
   useEffect(() => {
     let cancelled = false;
@@ -889,14 +872,14 @@ export default function LifestyleDetail() {
                     const firstChar = text.charAt(0);
                     const rest = text.slice(1);
                     rendered.push(
-                      <p key={`p-${idx}`} className="fw-body-p">
+                      <p key={`p-${idx}`} className="fw-body-p" data-fw-reading-paragraph={idx}>
                         <span className="fw-dropcap">{firstChar}</span>
                         {rest}
                       </p>
                     );
                   } else {
                     rendered.push(
-                      <p key={`p-${idx}`} className="fw-body-p">
+                      <p key={`p-${idx}`} className="fw-body-p" data-fw-reading-paragraph={idx}>
                         {text}
                       </p>
                     );
@@ -950,6 +933,13 @@ export default function LifestyleDetail() {
               })}
             </ReadingColumn>
           )}
+
+          {item.provider === 'FEMWELL_EDITORIAL' && Array.isArray(item.source_links) && item.source_links.some(link => safeExternalUrl(link?.url)) &&
+            <section className="fw-calm-article__sources" aria-label="Sources for this article">
+              <h2>Where this came from</h2>
+              <ul>{item.source_links.filter(link => safeExternalUrl(link?.url)).map(link =>
+                <li key={link.url}><a href={safeExternalUrl(link.url)} target="_blank" rel="noopener noreferrer">{link.label || 'Original source'}</a></li>)}</ul>
+            </section>}
 
           {/* Takeaways */}
           {takeaways.length > 0 && (

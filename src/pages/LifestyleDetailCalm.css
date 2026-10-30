@@ -19,6 +19,9 @@
 .fw-calm-article .fw-reader-card :is(.fw-h2,.fw-chapter){font-family:"FemWell Editorial","Cormorant Garamond",Georgia,serif!important;color:#51444e!important}
 .fw-calm-article .fw-reader-card .fw-dropcap{font-family:"FemWell Editorial","Cormorant Garamond",Georgia,serif;color:#7a1a12}
 .fw-calm-article .fw-reader-card .fw-ornament{color:#b9a5bd}
+.fw-calm-article__sources{margin:30px 0 4px;padding:16px 18px;border:1px solid #e6e3dc;border-radius:20px;background:#f8f7f5}
+.fw-calm-article__sources h2{margin:0 0 8px;color:#51444e;font:italic 600 20px/1.2 "FemWell Editorial","Cormorant Garamond",Georgia,serif}
+.fw-calm-article__sources ul{margin:0;padding-left:20px}.fw-calm-article__sources a{display:inline-flex;align-items:center;min-height:44px;color:#51444e;text-underline-offset:3px}
 .fw-calm-article .fw-calm-article__listen{margin:12px 0 26px;padding:18px;border:1px solid #dfe7df;border-radius:22px;background:linear-gradient(145deg,#f7faf6,#fff 70%)}
 .fw-calm-article .fw-calm-article__listen-label{margin:0 0 10px;color:#58765f;font:700 12px/1.4 Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase}
 .fw-calm-article .fw-calm-article__listen-unavailable{margin:0;color:#51444e;line-height:1.5}

@@ -65,7 +65,7 @@ export function rankedReads(feed, rows) {
   return [...(feed || []), ...(rows || [])].filter(row => row?.id && row.title && !seen.has(row.id) && seen.add(row.id));
 }
 
-export function continuePositions(storage) {
+export function continuePositions(storage, { ownerId = null, includeLegacyArticle = true } = {}) {
   const rows = [];
   // Reader timestamps come from Date.now(). Damage to recency must never
   // delete a valid place or let Infinity/string coercion lead the selection.
@@ -83,7 +83,13 @@ export function continuePositions(storage) {
             !Number.isSafeInteger(pos.chapterIndex) || pos.chapterIndex < 0 ||
             ['pageInChapter', 'paragraphIndex'].some(field => pos[field] != null && (!Number.isSafeInteger(pos[field]) || pos[field] < 0)))) continue;
           rows.push({ ...pos, bookId, kind: 'book', ts: timestamp(pos.ts) });
-        } else if (key.startsWith('fw_article_pos_')) {
+        } else if (ownerId && key.startsWith(`fw_article_pos_v2_${encodeURIComponent(ownerId)}__`)) {
+          const saved = JSON.parse(storage.getItem(key) || 'null');
+          const scrollY = Number(saved?.scrollY);
+          const encodedId = key.slice(`fw_article_pos_v2_${encodeURIComponent(ownerId)}__`.length);
+          const bookId = decodeURIComponent(encodedId);
+          if (Number.isFinite(scrollY) && scrollY > 40 && bookId) rows.push({ bookId, kind: 'article', scrollY, paragraphIndex: saved?.paragraphIndex, ts: timestamp(saved?.ts) });
+        } else if (includeLegacyArticle && key.startsWith('fw_article_pos_') && !key.startsWith('fw_article_pos_v2_')) {
           const saved = JSON.parse(storage.getItem(key) || '0');
           const scrollY = Number(typeof saved === 'number' ? saved : saved?.scrollY);
           if (Number.isFinite(scrollY) && scrollY > 40) rows.push({ bookId: key.slice(15), kind: 'article', scrollY, ts: timestamp(saved?.ts) });
@@ -92,6 +98,22 @@ export function continuePositions(storage) {
     }
   } catch { return []; }
   return rows.filter(p => p.bookId).sort((a, b) => (Number(b.ts) || 0) - (Number(a.ts) || 0));
+}
+
+// Old article keys have no owner. Never import them silently into whoever is
+// signed in now; offer a one-time, explicit recovery on this device instead.
+export function recoverLegacyArticlePositions(storage, ownerId) {
+  if (!ownerId) return 0;
+  let copied = 0;
+  for (const pos of continuePositions(storage).filter(row => row.kind === 'article')) {
+    const key = `fw_article_pos_v2_${encodeURIComponent(ownerId)}__${encodeURIComponent(pos.bookId)}`;
+    try {
+      if (storage.getItem(key)) continue;
+      storage.setItem(key, JSON.stringify({ scrollY: pos.scrollY, ts: pos.ts, legacyImported: true }));
+      copied++;
+    } catch { /* storage unavailable: leave the old mark untouched */ }
+  }
+  return copied;
 }
 // Both the initial/background shell load and Sky's settled publisher use this
 // owner/date contract, so a late stale fetch cannot undo a newly produced reading.

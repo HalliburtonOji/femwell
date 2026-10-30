@@ -33,10 +33,10 @@ Deno.serve(async (req) => {
     const allPrograms = await base44.asServiceRole.entities.Programs.list();
     // This published source pool is shared by every profile in the daily run.
     // Read it once, so a growing audience does not multiply identical queries.
-    let lifestyleItem = null;
+    let lifestylePool = [];
     try {
-      const lifestyleItems = await base44.asServiceRole.entities.LifestyleItems.list('-published_at', 5);
-      lifestyleItem = lifestyleItems.find(i => i.provider === 'FEMWELL_AI' && i.status === 'PUBLISHED') || null;
+      const lifestyleItems = await base44.asServiceRole.entities.LifestyleItems.list('-published_at', 30);
+      lifestylePool = Array.isArray(lifestyleItems) ? lifestyleItems.filter(i => i.status === 'PUBLISHED' && i.id && i.title) : [];
     } catch { /* Keep the other recommendation types available when this source fails. */ }
     let processed = 0;
 
@@ -96,13 +96,20 @@ Deno.serve(async (req) => {
       } catch {}
 
       // Lifestyle recommendation
+      const followed = new Set((Array.isArray(profile.followed_categories) ? profile.followed_categories : []).map(value => String(value).toLowerCase()));
+      const dated = value => typeof value === 'string' && Number.isFinite(Date.parse(value));
+      const reviewed = lifestylePool.filter(i => i.provider === 'FEMWELL_EDITORIAL' && i.source_id && i.editor_name && i.rights_basis && i.lede && dated(i.published_at) && dated(i.editorial_reviewed_at) && dated(i.rights_confirmed_at));
+      const lifestyleItem = reviewed.find(i => followed.has(String(i.category || '').toLowerCase())) || reviewed[0] ||
+        lifestylePool.find(i => i.provider === 'FEMWELL_AI') || null;
       if (lifestyleItem) {
         try {
           await base44.asServiceRole.entities.TodayRecommendations.create({
             user_id: userId, date: today, type: 'LIFESTYLE',
             title: lifestyleItem.title,
-            reason: 'From the FemWell AI archive',
-          action_route: `/LifestyleDetail?id=${encodeURIComponent(lifestyleItem.id)}`,
+            reason: lifestyleItem.provider === 'FEMWELL_EDITORIAL'
+              ? followed.has(String(lifestyleItem.category || '').toLowerCase()) ? `Because you follow ${lifestyleItem.category}` : 'From the FemWell editorial desk'
+              : 'From the FemWell AI archive',
+            action_route: `/LifestyleDetail?id=${encodeURIComponent(lifestyleItem.id)}`,
           });
         } catch { /* Preserve the other recommendation types if this row fails. */ }
       }

@@ -41,6 +41,7 @@
 // repurpose these cards for people.
 // ─────────────────────────────────────────────────────────────────────────────
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import useReadingPlace from "@/components/lifestyle-elite/useReadingPlace";
 import { T, SERIF, UI, PAPER_BG, Heart } from "@/components/journal/Editorial";
 import { OXBLOOD } from "@/components/brand/SliderKit";
 import { base44 } from "@/api/base44Client";
@@ -823,7 +824,7 @@ export function FocusedCardContents({ item: raw, room }) {
     {!item.external && item.audioSrc && <FloraAudio src={item.audioSrc} label={item.title} accent="#51444e" initialDuration={item.duration || 0} item={item} presentation="focused"/>}
     {book ? synopsis && <><p><FocusedText text={visibleSynopsis}/></p>{visibleSynopsis !== synopsis && <details className="fw-focused-depth"><summary>The whole blurb</summary><p><FocusedText text={synopsis}/></p></details>}</> : <>
       {item.quote && <blockquote><FocusedText text={typeof item.quote === "string" ? item.quote : item.quote.text}/>{item.quote.attrib && <cite className="fw-focused-note">{item.quote.attrib}</cite>}</blockquote>}
-      {body.length ? body.map((text,i)=>/^\s*#{1,6}\s/.test(text) ? <h3 key={i}><FocusedText text={text.replace(/^\s*#{1,6}\s+/,"")}/></h3> : <p key={i}><FocusedText text={text}/></p>) : synopsis && <p><FocusedText text={synopsis}/></p>}
+      {body.length ? body.map((text,i)=>/^\s*#{1,6}\s/.test(text) ? <h3 key={i}><FocusedText text={text.replace(/^\s*#{1,6}\s+/,"")}/></h3> : <p key={i} className={i === 0 && /^[“\"'‘]/.test(text) ? 'fw-read-quoted' : undefined} data-fw-reading-paragraph={readArticle ? i : undefined}><FocusedText text={text}/></p>) : synopsis && <p><FocusedText text={synopsis}/></p>}
       {item.reading && <section><h3>Your reading</h3>{item.reading.headline && <p><FocusedText text={item.reading.headline}/></p>}{(item.reading.lines || []).map((line,i)=><p key={i}><FocusedText text={line}/></p>)}</section>}
       {item.excerpt && !body.includes(item.excerpt) && <blockquote><FocusedText text={item.excerpt}/></blockquote>}
       {ingredients.length > 0 && <><h3>Ingredients</h3>{(item.ingredients.serves || item.ingredients.time) && <p className="fw-focused-note">{[item.ingredients.serves ? `Serves ${item.ingredients.serves}` : null,item.ingredients.time].filter(Boolean).join(" · ")}</p>}<ul>{ingredients.map((value,i)=><li key={i}>{typeof value === "string" ? value : value.name || value.text}</li>)}</ul></>}
@@ -837,21 +838,25 @@ export function FocusedCardContents({ item: raw, room }) {
   </div>;
 }
 
-function FocusedCardDetail({ item, active, onClose, saved, saving, onSave, room, error }) {
+function FocusedCardDetail({ item, active, onClose, saved, saving, onSave, room, error, ownerId }) {
   const body = focusedSourceParagraphs(item);
+  const sheet = useRef(null);
+  const source = item._raw || {};
+  useReadingPlace({ itemId: source.id, content: source.lede || body.join('\n\n'), active: active && room === 'read-ideas' && body.length > 1 && !source.editorial_local,
+    containerRef: sheet, ownable: !!source.id && source.provider === 'FEMWELL_EDITORIAL' && source.status === 'PUBLISHED', knownOwnerId: ownerId });
   const media = !!(item.audioSrc || item.videoSrc || item.youtubeId);
   // Already reading/playing here. Keep genuine external and book/tool actions.
   const sourceUrl = item._raw?.content_url || item._raw?.source_url;
   const readableSource = !media && item.type !== "book" && /^https?:\/\//i.test(sourceUrl || "");
   const actions = item.actions.filter(action => item.type === "book" || item.external || (!body.length && !media && !readableSource) || !/^(read this|open episode|open full-screen)$/i.test(action.label));
-  return <FocusedLifestyleSheet title={item.title} eyebrow={item.kind} active={active} onClose={onClose} room={room}
+  return <FocusedLifestyleSheet title={item.title} eyebrow={item.kind} active={active} onClose={onClose} room={room} contentRef={sheet}
     footer={<>{error && <p role="alert" className="fw-focused-note">{error}</p>}{item.saveable !== false && <button className="fw-focused-button" onClick={onSave} disabled={saving} aria-busy={saving} aria-pressed={saved}>{saved ? <BookmarkCheck size={16}/> : <Bookmark size={16}/>} {saving ? "Saving…" : saved ? "Saved" : "Save"}</button>}{actions.map(action=><button key={action.label} className={`fw-focused-button${action.primary ? " fw-focused-button--primary" : ""}`} onClick={()=>{onClose();action.onClick?.(item);}}>{action.label}</button>)}</>}>
     <FocusedCardContents item={item} room={room}/>
     {!body.length && !media && !readableSource && !item.quote && item.type !== "book" && !item.showDirectory && <p className="fw-focused-note">Only a summary is published here so far.</p>}
   </FocusedLifestyleSheet>;
 }
 
-export function ExpandDetailCard({ item: raw, onClose, saved: savedProp, onSave, presentation, active = true, room, error }) {
+export function ExpandDetailCard({ item: raw, onClose, saved: savedProp, onSave, presentation, active = true, room, error, ownerId }) {
   const item = resolveCard(raw);
   const [show, setShow] = useState(false);
   // SAVE is controlled when `saved`/`onSave` are supplied (so a page can persist it);
@@ -881,7 +886,7 @@ export function ExpandDetailCard({ item: raw, onClose, saved: savedProp, onSave,
   }, [close,presentation,active]);
   const anim = reduceMotion() ? {} : { opacity: show ? 1 : 0, transform: show ? "scale(1) translateY(0)" : "scale(0.96) translateY(14px)", transition: "opacity .28s ease, transform .32s cubic-bezier(.32,.72,.24,1)" };
 
-  if (presentation === "focused") return <FocusedCardDetail item={item} active={active} onClose={onClose} saved={saved} saving={saving} onSave={toggleSave} room={room} error={error}/>;
+  if (presentation === "focused") return <FocusedCardDetail item={item} active={active} onClose={onClose} saved={saved} saving={saving} onSave={toggleSave} room={room} error={error} ownerId={ownerId}/>;
 
   return (
     <div className={presentation === "folio" ? "fw-selected-detail" : undefined} style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(28,20,12,0.28)", backdropFilter: "blur(2px)", display: "flex", justifyContent: "center" }} onClick={close}>
