@@ -11,7 +11,6 @@
     "updated_at": { "type": "string" }
   },
   "required": ["user_id", "item_id", "paragraph_index", "content_revision"],
-  "indexes": [{ "fields": ["user_id", "item_id"] }, { "fields": ["user_id", "updated_date"] }],
   "rls": {
     "create": true,
     "read": { "created_by": "{{user.email}}" },
