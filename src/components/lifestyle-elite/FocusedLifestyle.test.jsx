@@ -41,6 +41,12 @@ it('keeps the full book blurb reachable while the first view stays brief',()=>{
  expect(more).not.toHaveAttribute('open');expect(more).toHaveTextContent(blurb);
  fireEvent.click(screen.getByText('The whole blurb'));expect(more).toHaveAttribute('open');
 });
+it('keeps research sources but does not link a complete FemWell folio back to itself',()=>{
+ const article={...base,id:'own-essay',body:['The complete first paragraph.','The second paragraph.'],_raw:{id:'own-essay',provider:'FEMWELL_EDITORIAL',status:'PUBLISHED',content_url:'https://femwells.com/LifestyleDetail?id=own-essay',source_links:[{label:'Original research',url:'https://research.example/paper'}]}};
+ render(<FocusedCardContents room='read-ideas' item={article}/>);
+ expect(screen.getByRole('link',{name:/Original research/})).toHaveAttribute('href','https://research.example/paper');
+ expect(screen.queryByRole('link',{name:/Read at FemWell/})).not.toBeInTheDocument();
+});
 it('retains full external article access when the inline lede is only an opening',()=>{
  const open=vi.fn();render(<ExpandDetailCard presentation='focused' item={{...base,_raw:{lede:'An opening from this article.',content_url:'https://example.com/full-article'},actions:[{label:'Read this',onClick:open}]}} onClose={()=>{}} saved={false} onSave={()=>{}}/>);
  expect(screen.getByRole('link',{name:/Read at/})).toHaveAttribute('href','https://example.com/full-article');

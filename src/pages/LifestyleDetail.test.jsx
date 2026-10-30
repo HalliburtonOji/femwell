@@ -140,6 +140,12 @@ describe('complete article and last-place recovery',()=>{
     expect(link).toHaveAttribute('href','https://www.youtube.com/watch?v=dQw4w9WgXcQ');
     expect(link).toHaveAttribute('target','_blank');
   });
+  it('does not offer the published article as its own external source',async()=>{
+    api.items.mockImplementation(async q=>q.id ? [{...article,id:'article',provider:'FEMWELL_EDITORIAL',content_url:'https://femwells.com/LifestyleDetail?id=article',source_links:[{label:'Research',url:'https://research.example/paper'}]}] : []);
+    open();await ready();
+    expect(screen.queryByRole('link',{name:'Read at source'})).not.toBeInTheDocument();
+    expect(screen.getByRole('link',{name:'Research'})).toHaveAttribute('href','https://research.example/paper');
+  });
   it('does not offer a dead or unsafe blocked-video tap',async()=>{
     api.items.mockImplementation(async q=>q.id ? [{...article,provider:'YOUTUBE',media_type:'VIDEO',video_id:'invalid',content_url:'javascript:alert(1)',is_embeddable:false}] : []);
     open();await screen.findByText('Video unavailable here. The reading is still below.');

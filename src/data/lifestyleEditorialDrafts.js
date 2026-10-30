@@ -1,10 +1,11 @@
-// Ideas-only, complete original editorial drafts. These are not Base44 rows or
-// a pretend personal recommendation. Do not show them on main or offer a
-// cross-app keep until they have a reviewed, persistent source identity.
+// Historical Ideas previews and unreviewed original drafts. These local rows
+// are not Base44 identities or personal recommendations; even the released
+// first preview keeps Save attached only to its separate stored article.
 export const LIFESTYLE_EDITORIAL_DRAFTS = [
   {
     id: "ideas-read-friendship-plans",
     editorial_local: true,
+    release_href: "/LifestyleDetail?id=6ae4ce185898ccc64e34654b",
     status: "NEEDS_REVIEW",
     media_type: "ARTICLE",
     content_type: "ARTICLE",

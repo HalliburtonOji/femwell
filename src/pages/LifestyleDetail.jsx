@@ -10,6 +10,7 @@ import ShareButton from "@/components/share/ShareButton";
 import ReadingColumn, { readTimeLabel, countWords } from "@/components/brand/ReadingColumn";
 import { FloraAudio } from "@/components/brand/expandCards";
 import useReadingPlace from "@/components/lifestyle-elite/useReadingPlace";
+import { isOwnLifestyleDetailUrl } from "@/lib/editorialRelease";
 import "./LifestyleDetailCalm.css";
 
 // Map a content category to the best-fit whole-life Community room (default: the Lounge).
@@ -438,7 +439,8 @@ export default function LifestyleDetail() {
   // Read button hidden for FemWell-generated content, and hidden when we've embedded the video in-app.
   const externalArticleUrl = safeExternalUrl(item.content_url);
   const videoWatchUrl = externalArticleUrl || (/^[\w-]{11}$/.test(String(item.video_id || "")) ? `https://www.youtube.com/watch?v=${item.video_id}` : null);
-  const showReadFullButton = !isFemwell && !youtubeEmbedUrl && !!externalArticleUrl;
+  const showReadFullButton = !isFemwell && !youtubeEmbedUrl && !!externalArticleUrl &&
+    !isOwnLifestyleDetailUrl(externalArticleUrl, item.id);
   const takeaways = Array.isArray(item.takeaways) ? item.takeaways : [];
 
   // Decoded text for render.

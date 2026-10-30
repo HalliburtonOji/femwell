@@ -139,6 +139,37 @@ describe("calmer lists preserve exact source tasks", () => {
     expect(screen.getByRole("button",{name:/The Tuesday Decision.*Read/})).toBeVisible();
   });
 
+  it("puts the approved stored essay first on main while keeping the exact saved place directly below", () => {
+    const onOpen=vi.fn();
+    const saved={id:"saved-book",title:"The Shape of Starting Over",type:"book",_continue:{id:"saved-book"}};
+    const older={id:"older",title:"An older full article",type:"article",body:["Older full ending."],_raw:{id:"older",provider:"BLOG",status:"PUBLISHED"}};
+    const reviewed={id:"stored-essay",title:"The plans you actually want to keep",type:"article",body:["Whole article."],_raw:{
+      id:"stored-essay",source_id:"femwell-read-friendship-plans-v1",provider:"FEMWELL_EDITORIAL",status:"PUBLISHED",category:"Relationships",title:"The plans you actually want to keep",lede:"Whole article.",editor_name:"Halli",rights_basis:"Original FemWell prose",published_at:"2026-10-30T17:00:00Z",editorial_reviewed_at:"2026-10-30T17:00:00Z",rights_confirmed_at:"2026-10-30T17:00:00Z",
+    }};
+    const lead=render(<ReadFocus calmLayout presentation="focused" visualEdition segment="lead" continueCards={[saved]} articleCards={[older,reviewed]} followedCategories={["Relationships"]} onOpen={onOpen}/>);
+    expect(lead.container.querySelector(".fw-selected-reading-choice")).toHaveTextContent(reviewed.title);
+    expect(screen.getByText("Because you follow Relationships")).toBeVisible();
+    fireEvent.click(screen.getByRole("button",{name:`Read ${reviewed.title}`}));
+    expect(onOpen).toHaveBeenLastCalledWith(reviewed);
+    lead.unmount();
+    render(<ReadFocus calmLayout presentation="focused" visualEdition segment="rest" continueCards={[saved]} articleCards={[older,reviewed]} onOpen={onOpen}/>);
+    expect(screen.getByRole("button",{name:`Continue ${saved.title}`})).toBeVisible();
+    fireEvent.click(screen.getByText("Browse all reading · 1"));
+    expect(screen.getByRole("button",{name:/An older full article.*Read/})).toBeVisible();
+  });
+
+  it("shows Continue on the reviewed lead itself when its saved place has the same stored ID", () => {
+    const raw={id:"stored-essay",source_id:"femwell-read-friendship-plans-v1",provider:"FEMWELL_EDITORIAL",status:"PUBLISHED",category:"Relationships",lede:"Whole article.",editor_name:"Halli",rights_basis:"Original FemWell prose",published_at:"2026-10-30T17:00:00Z",editorial_reviewed_at:"2026-10-30T17:00:00Z",rights_confirmed_at:"2026-10-30T17:00:00Z"};
+    const reviewed={id:raw.id,title:"The plans you actually want to keep",type:"article",body:[raw.lede],_raw:raw};
+    const saved={id:raw.id,title:reviewed.title,type:"article",_continue:{id:raw.id}};
+    const story={id:"story-next",title:"A second story",type:"article",body:["The whole story."],_raw:{id:"story-next"}};
+    const {container}=render(<ReadFocus calmLayout presentation="focused" visualEdition segment="lead" continueCards={[saved]} articleCards={[reviewed]} storyCards={[story]} onOpen={vi.fn()}/>);
+    expect(screen.getByRole("button",{name:`Continue ${reviewed.title}`})).toBeVisible();
+    expect(container.querySelectorAll(".fw-read-edition")).toHaveLength(1);
+    render(<ReadFocus calmLayout presentation="focused" visualEdition segment="rest" continueCards={[saved]} articleCards={[reviewed]} storyCards={[story]} onOpen={vi.fn()}/>);
+    expect(screen.getByRole("button",{name:`Read ${story.title}`})).toBeVisible();
+  });
+
   it("keeps generated published reads in a plainly named archive when there is no edited lead", () => {
     const onOpen=vi.fn(), onDetails=vi.fn();
     const rows=["Cycle-Synced Workweek","The Tuesday Decision"].map((title,index)=>({id:`archive-${index}`,title,type:"article",archived:true,sourceName:"Archive · source review pending",body:["Full ending stays here."],_raw:{id:`archive-${index}`,provider:"FEMWELL_AI",content_type:index?"STORY":"ARTICLE"}}));

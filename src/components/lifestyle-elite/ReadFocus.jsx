@@ -13,13 +13,14 @@ import { SelectedRoomDetail } from "./SelectedLifestyleHeader";
 import { CalmFindRow, CalmMore } from "./CalmLifestyle";
 import { firstSentences } from "./FocusedLifestyleSheet";
 import { isCurrentEditorialNews } from "@/data/lifestyleEditorialDrafts";
+import { isReviewedEditorial } from "@/lib/editorialRelease";
 
 function ReadEditionChoice({ item, onOpen, onDetails, resume = false, compact = false, reason }) {
   if (!item) return null;
   const raw = item._raw || {};
   const archive = item.archived || /^FEMWELL_AI/i.test(String(raw.provider || ""));
   const draftType = /NEWS/i.test(String(raw.content_type || "")) ? "News" : /GUIDE/i.test(String(raw.content_type || "")) ? "Guide" : /STORY|FICTION/i.test(String(raw.content_type || "")) ? "Fiction" : "Essay";
-  const kind = resume ? "Continue reading" : raw.editorial_local ? `Ideas · ${draftType} · unreviewed` : archive ? "Archive · source check pending"
+  const kind = resume ? "Continue reading" : raw.release_href ? `Ideas original · ${draftType} · published` : raw.editorial_local ? `Ideas · ${draftType} · unreviewed` : archive ? "Archive · source check pending"
     : /news/i.test(String(raw.provider || "") + String(raw.category || "")) ? "News & context"
     : /guide/i.test(String(raw.content_type || "") + String(raw.media_type || "")) ? "Useful guide"
     : /fiction|story/i.test(String(raw.content_type || "") + String(item.type || "")) ? "Story" : "Article";
@@ -34,6 +35,7 @@ function ReadEditionChoice({ item, onOpen, onDetails, resume = false, compact = 
       <button className="fw-read-edition-open" aria-label={`${resume ? "Continue" : "Read"} ${item.title}`} onClick={() => onOpen?.(item)}>{resume ? "Continue" : "Read"} <span aria-hidden="true">→</span></button>
     </div>
     {line && !resume && <p className="fw-read-edition-standfirst">{line}</p>}
+    {raw.release_href && <a className="fw-read-edition-details" href={raw.release_href}>Open published version</a>}
     {onDetails && <button className="fw-read-edition-details" onClick={() => onDetails(item)} aria-label={`Details & tools for ${item.title}`}>Details &amp; tools</button>}
   </div>;
 }
@@ -92,36 +94,41 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
     const previewEssays = editorialPreview ? articleCards.filter(item => item._raw?.editorial_local && String(item._raw.content_type).toUpperCase() === "ARTICLE") : [];
     const followed = Array.isArray(followedCategories) ? followedCategories : [];
     const matchingEssay = followed.map(value => previewEssays.find(item => String(item._raw?.category || "").toLowerCase() === String(value).toLowerCase())).find(Boolean);
+    const reviewedEssays = editorialPreview ? [] : articleCards.filter(item => isReviewedEditorial(item._raw));
+    const matchingReviewed = followed.map(value => reviewedEssays.find(item => String(item._raw?.category || "").toLowerCase() === String(value).toLowerCase())).find(Boolean);
+    const reviewedLead = matchingReviewed || reviewedEssays[0] || null;
     const completeEditorial = (editorialPreview && (matchingEssay || previewEssays[0])) ||
-      articleCards.find(item => item._raw?.editorial_local || (!item.archived && item.body?.length));
+      reviewedLead || articleCards.find(item => item._raw?.editorial_local || (!item.archived && item.body?.length));
     const currentStory = storyCards.find(item => !item.archived && item.body?.length);
-    // An Ideas issue opens with its complete editorial piece. A saved place
-    // stays one direct tap below it; main keeps its existing resume-first order.
+    // A reviewed first-party essay opens the main Read issue, with her saved
+    // place directly beneath. Without one, retain the prior resume-first order.
     const primary = editorialPreview && completeEditorial?._raw?.editorial_local
       ? completeEditorial || namedResume || continueCards[0] || labelledFiction || currentStory || null
-      : namedResume || continueCards[0] || completeEditorial || labelledFiction || currentStory || null;
-    const alternate = continueCards.includes(primary) ? completeEditorial || labelledFiction || currentStory
-      : storyCards.includes(primary) ? completeEditorial : labelledFiction || currentStory;
-    const second = alternate?.id === primary?.id ? null : alternate;
+      : reviewedLead || namedResume || continueCards[0] || completeEditorial || labelledFiction || currentStory || null;
+    const isResume = item => !!item?.id && continueCards.some(saved => saved.id === item.id);
+    const nextDifferent = (...choices) => choices.find(item => item?.id && item.id !== primary?.id) || null;
+    const second = isResume(primary) ? nextDifferent(completeEditorial, labelledFiction, currentStory)
+      : reviewedLead && primary?.id === reviewedLead.id ? nextDifferent(namedResume, continueCards[0], labelledFiction, currentStory)
+      : storyCards.includes(primary) ? nextDifferent(completeEditorial) : nextDifferent(labelledFiction, currentStory);
     const used = new Set([primary?.id, second?.id]);
     const remaining = [
       ...continueCards.map(item => ({ item, label: "Continue" })),
       ...articleCards.map(item => ({ item, label: "Read" })),
       ...storyCards.map(item => ({ item, label: "Read" })),
     ].filter(({ item }) => item && !used.has(item.id) && used.add(item.id));
-    const primaryIsResume = continueCards.includes(primary);
+    const primaryIsResume = isResume(primary);
     const archiveOnly = !editorialPreview && !primary && (articleCards.length > 0 || storyCards.length > 0);
     const emptyLine = archiveOnly ? "No fresh page today." : "No new read just now. Try Books next door.";
     const lead = <ReadCard className="fw-selected-reading-choice fw-selected-lead" eyebrow={visualEdition || editorialPreview ? undefined : primaryIsResume ? "Your saved place" : "Your next page"} accent="plum">
       {presentation && <SelectedRoomDetail section="read"/>}
       {!primary ? <div className="fw-calm-read-empty"><p>{emptyLine}</p>{!archiveOnly && onBooks && <button type="button" className="fw-focused-button" onClick={onBooks}>Open Books</button>}</div>
-        : visualEdition || editorialPreview ? <ReadEditionChoice item={primary} onOpen={onOpen} onDetails={onDetails} resume={primaryIsResume} reason={editorialPreview && matchingEssay?.id === primary.id ? `Because you follow ${matchingEssay._raw.category}` : undefined}/>
+        : visualEdition || editorialPreview ? <ReadEditionChoice item={primary} onOpen={onOpen} onDetails={onDetails} resume={primaryIsResume} reason={(editorialPreview && matchingEssay?.id === primary.id) || (matchingReviewed?.id === primary.id) ? `Because you follow ${primary._raw.category}` : undefined}/>
         : <CalmFindRow item={primary} onOpen={onOpen} onDetails={onDetails} label={primaryIsResume ? "Continue" : "Read"}/>}
     </ReadCard>;
     const more = <>
       {second && <div style={segment === "all" ? { marginTop: 16 } : undefined}>
-        {visualEdition || editorialPreview ? <ReadEditionChoice item={second} onOpen={onOpen} onDetails={onDetails} compact/>
-          : <CalmFindRow item={second} onOpen={onOpen} onDetails={onDetails} label="Read"/>}
+        {visualEdition || editorialPreview ? <ReadEditionChoice item={second} onOpen={onOpen} onDetails={onDetails} resume={isResume(second)} compact/>
+          : <CalmFindRow item={second} onOpen={onOpen} onDetails={onDetails} label={isResume(second) ? "Continue" : "Read"}/>}
       </div>}
       <CalmMore enabled={remaining.length > 0} title={`${archiveOnly ? "Browse older reads" : "Browse all reading"} · ${remaining.length}`}>
         {remaining.map(({ item, label }) => <CalmFindRow key={item.id} item={item} onOpen={onOpen} onDetails={onDetails} label={label}/>)}
@@ -140,7 +147,7 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
       {issueResume && <div className="fw-read-issue-resume"><ReadEditionChoice item={issueResume} onOpen={onOpen} onDetails={onDetails} resume compact/></div>}
       {issueBriefs.length > 0 && <div className="fw-read-brief-list" aria-label="Useful reads in this issue">{issueBriefs.map(item=><ReadIssueBrief key={item.id} item={item} onOpen={onOpen} onDetails={onDetails}/>)}</div>}
       <CalmMore enabled={issueArchive.length > 0} title={`Browse all reading · ${issueArchive.length}`}>
-        {issueArchive.map(item=><CalmFindRow key={item.id} item={item} onOpen={onOpen} onDetails={onDetails} label={continueCards.includes(item) ? "Continue" : "Read"} context={item._raw?.editorial_local && /NEWS/i.test(String(item._raw.content_type || "")) && !isCurrentEditorialNews(item._raw) ? "Past edition · source recheck needed before relying on this" : undefined}/>)}
+        {issueArchive.map(item=><CalmFindRow key={item.id} item={item} onOpen={onOpen} onDetails={onDetails} label={isResume(item) ? "Continue" : "Read"} context={item._raw?.editorial_local && /NEWS/i.test(String(item._raw.content_type || "")) && !isCurrentEditorialNews(item._raw) ? "Past edition · source recheck needed before relying on this" : undefined}/>)}
       </CalmMore>
     </> : more;
     const visibleMore=editorialPreview ? issueMore : more;
@@ -150,7 +157,7 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
     return <ReadCard className="fw-selected-reading-choice" eyebrow="Your next page" accent="plum">
       {presentation && <SelectedRoomDetail section="read"/>}
       {!primary ? <div className="fw-calm-read-empty"><p>No new read just now. Try Books next door.</p>{onBooks && <button type="button" className="fw-focused-button" onClick={onBooks}>Open Books</button>}</div>
-        : visualEdition || editorialPreview ? <ReadEditionChoice item={primary} onOpen={onOpen} onDetails={onDetails} resume={primaryIsResume} reason={editorialPreview && matchingEssay?.id === primary.id ? `Because you follow ${matchingEssay._raw.category}` : undefined}/>
+        : visualEdition || editorialPreview ? <ReadEditionChoice item={primary} onOpen={onOpen} onDetails={onDetails} resume={primaryIsResume} reason={(editorialPreview && matchingEssay?.id === primary.id) || (matchingReviewed?.id === primary.id) ? `Because you follow ${primary._raw.category}` : undefined}/>
         : <CalmFindRow item={primary} onOpen={onOpen} onDetails={onDetails} label={primaryIsResume ? "Continue" : "Read"}/>}
       {recovery}{visibleMore}
     </ReadCard>;

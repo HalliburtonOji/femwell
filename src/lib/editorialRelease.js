@@ -11,3 +11,14 @@ export function eligiblePublishedRead(row) {
   return !!(row?.id && row.title && row.status === 'PUBLISHED' &&
     (row.provider !== 'FEMWELL_EDITORIAL' || isReviewedEditorial(row)));
 }
+
+// The stored route is an identity for Save/Continue, not an external publisher.
+export function isOwnLifestyleDetailUrl(value, itemId) {
+  if (!value || !itemId) return false;
+  try {
+    const url = new URL(value, 'https://femwells.com');
+    return ['femwells.com', 'www.femwells.com'].includes(url.hostname.toLowerCase()) &&
+      url.pathname.replace(/\/$/, '').toLowerCase() === '/lifestyledetail' &&
+      url.searchParams.get('id') === String(itemId);
+  } catch { return false; }
+}

@@ -1,5 +1,9 @@
 # Critic learning — append dated evidence
 
+## 30 October — LC26 first published Read identity
+
+One editor-approved, complete original article can enter main without releasing the whole Ideas issue. A saved card and reviewed article card may be separate objects for the same ID: compare their exact IDs so the lead says Continue once, never object identity. A stored `content_url` pointing to that same article is a routing identity, not an external publisher; retain actual research links while suppressing self-exit buttons in both in-place and routed readers. Historical Ideas receipts should state their date when a later release changes the present truth. Three fresh CLI processes under one authenticated account prove remote persistence and cleanup, but do not prove two devices, native iPhone or another account's RLS denial.
+
 ## 30 October — LC25 first-party Read owner and exit
 
 Naming Halli as editor appoints the human reviewer; it does not mean the final manuscript or rights claim is approved. `PUBLISHED` alone cannot certify a first-party piece: the selector must require a stable source ID, editor, rights and review dates, and complete body. A paragraph coordinate needs a content revision and account-scoped device key; old unowned keys need an explicit, nondestructive recovery action. A 20-second settle plus pagehide did not send a remote write on quick full-document exit in the critic's mocked touch fixture. An in-app Back now awaits the save briefly; native unload still cannot guarantee async transport. A direct article entry must not be covered by a global morning brief. Base44 composite uniqueness/upsert is unverified, so two simultaneous first writes can leave private twin rows; client convergence is not proof of physical uniqueness or a real two-device experience. Test actual account RLS/write/read-back and measure request fan-out before a sync or scale promise.
