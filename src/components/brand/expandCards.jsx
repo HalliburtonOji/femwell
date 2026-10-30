@@ -842,17 +842,23 @@ export function FocusedCardContents({ item: raw, room }) {
 
 function FocusedCardDetail({ item, active, onClose, saved, saving, onSave, room, error, ownerId }) {
   const body = focusedSourceParagraphs(item);
-  const sheet = useRef(null);
+  const [sheetNode, setSheetNode] = useState(null);
   const source = item._raw || {};
-  useReadingPlace({ itemId: source.id, content: source.lede || body.join('\n\n'), active: active && room === 'read-ideas' && body.length > 1 && !source.editorial_local,
-    containerRef: sheet, ownable: !!source.id && source.provider === 'FEMWELL_EDITORIAL' && source.status === 'PUBLISHED', knownOwnerId: ownerId });
+  const readingInSheet = active && !!sheetNode && room === 'read-ideas' && body.length > 1 && !source.editorial_local;
+  // Radix portals the scrollable sheet after this component's first render.
+  // Wait for its ref before binding scroll/progress; window is not the scroller.
+  const saveReadingPlace = useReadingPlace({ itemId: source.id, content: source.lede || body.join('\n\n'), active: readingInSheet,
+    containerNode: sheetNode, ownable: !!source.id && source.provider === 'FEMWELL_EDITORIAL' && source.status === 'PUBLISHED', knownOwnerId: ownerId });
+  const closeWithPlace = () => readingInSheet
+    ? Promise.race([saveReadingPlace(), new Promise(resolve => setTimeout(resolve, 3500))]).then(onClose)
+    : onClose();
   const media = !!(item.audioSrc || item.videoSrc || item.youtubeId);
   // Already reading/playing here. Keep genuine external and book/tool actions.
   const sourceUrl = item._raw?.content_url || item._raw?.source_url;
   const readableSource = !media && item.type !== "book" && /^https?:\/\//i.test(sourceUrl || "");
   const actions = item.actions.filter(action => item.type === "book" || item.external || (!body.length && !media && !readableSource) || !/^(read this|open episode|open full-screen)$/i.test(action.label));
-  return <FocusedLifestyleSheet title={item.title} eyebrow={item.kind} active={active} onClose={onClose} room={room} contentRef={sheet}
-    footer={<>{error && <p role="alert" className="fw-focused-note">{error}</p>}{item.saveable !== false && <button className="fw-focused-button" onClick={onSave} disabled={saving} aria-busy={saving} aria-pressed={saved}>{saved ? <BookmarkCheck size={16}/> : <Bookmark size={16}/>} {saving ? "Saving…" : saved ? "Saved" : "Save"}</button>}{actions.map(action=><button key={action.label} className={`fw-focused-button${action.primary ? " fw-focused-button--primary" : ""}`} onClick={()=>{onClose();action.onClick?.(item);}}>{action.label}</button>)}</>}>
+  return <FocusedLifestyleSheet title={item.title} eyebrow={item.kind} active={active} onClose={closeWithPlace} room={room} contentRef={setSheetNode}
+    footer={<>{error && <p role="alert" className="fw-focused-note">{error}</p>}{item.saveable !== false && <button className="fw-focused-button" onClick={onSave} disabled={saving} aria-busy={saving} aria-pressed={saved}>{saved ? <BookmarkCheck size={16}/> : <Bookmark size={16}/>} {saving ? "Saving…" : saved ? "Saved" : "Save"}</button>}{actions.map(action=><button key={action.label} className={`fw-focused-button${action.primary ? " fw-focused-button--primary" : ""}`} onClick={()=>{if(readingInSheet) closeWithPlace().then(()=>action.onClick?.(item)); else {onClose(); action.onClick?.(item);}}}>{action.label}</button>)}</>}>
     <FocusedCardContents item={item} room={room}/>
     {!body.length && !media && !readableSource && !item.quote && item.type !== "book" && !item.showDirectory && <p className="fw-focused-note">Only a summary is published here so far.</p>}
   </FocusedLifestyleSheet>;

@@ -4,14 +4,14 @@ import { readOwnedPlace, readingRevision, writeOwnedPlace } from '@/lib/lifestyl
 
 // The same paragraph coordinate works in the in-place folio and routed reader.
 // Device storage remains the offline fallback. No timer writes while idle.
-export default function useReadingPlace({ itemId, content, active, containerRef, ownable = true, knownOwnerId = null }) {
+export default function useReadingPlace({ itemId, content, active, containerRef, containerNode = null, ownable = true, knownOwnerId = null }) {
   const saveRef = useRef(async () => false);
   useEffect(() => {
     if (!active || !itemId || !content) { saveRef.current = async () => false; return; }
     const revision = readingRevision(content);
     let key = null;
-    const scroller = containerRef?.current || window;
-    const root = containerRef?.current || document;
+    const scroller = containerNode || containerRef?.current || window;
+    const root = containerNode || containerRef?.current || document;
     const elements = () => [...root.querySelectorAll('[data-fw-reading-paragraph]')];
     const scrollTop = () => scroller === window ? window.scrollY : scroller.scrollTop;
     const viewportTop = () => scroller === window ? 0 : scroller.getBoundingClientRect().top;
@@ -112,6 +112,6 @@ export default function useReadingPlace({ itemId, content, active, containerRef,
       window.removeEventListener('pagehide', flush);
       document.removeEventListener('visibilitychange', onHidden);
     };
-  }, [itemId, content, active, containerRef, ownable, knownOwnerId]);
+  }, [itemId, content, active, containerRef, containerNode, ownable, knownOwnerId]);
   return useCallback(() => saveRef.current(), []);
 }
