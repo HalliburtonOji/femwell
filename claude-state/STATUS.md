@@ -7,6 +7,10 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 
+> ### CURRENT STATE - 2026-10-30 - LC26 DURABLE FIRST READ IDENTITY CREATED IN REVIEW STATE
+>
+> - Halli's first-essay approval is recorded by **`d4550be8`** after claim **`f5c12003`**. Exact `source_id=femwell-read-friendship-plans-v1` preflight found **zero** rows. One `LifestyleItems` record **`6ae4ce185898ccc64e34654b`** was created as **`NEEDS_REVIEW`**, with the approved six-paragraph body, Halli as editor, approval/rights time `2026-10-30T17:04:19.006Z`, primary research link and exact reader URL; a fresh read-back matched all fields. This is a durable identity for test and **not yet main publication**. Live site remains **`index-hnPxEI8W.js`**. Exact read/Save/Continue tests, source priority, receipt, final PUBLISHED update and mobile live proof are in flight; the other six drafts and four-hour automation remain held/PAUSED.
+
 > ### CURRENT STATE - 2026-10-30 - HALLI APPROVES FIRST ORIGINAL READ RELEASE; LC26 CLAIMED
 >
 > - Halli's “Go ahead and continue” follows the full first essay and rights/source note in the Ideas release desk. Record this as final approval for ***The plans you actually want to keep*** only; the other six original drafts remain unreviewed. Claim **`f5c12003`** owns the durable article row, exact Read/Today/Yours/Planner/Community/Jess consumer proof, two-session owned Save/Continue and main promotion. Existing live/source remains **`index-hnPxEI8W.js`** / `e19232a0` until the release is proved and deployed. No account row, scheduled job or other content has changed in LC26 yet. The four-hour automation remains **PAUSED**.
