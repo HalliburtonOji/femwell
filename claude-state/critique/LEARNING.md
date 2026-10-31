@@ -1,5 +1,9 @@
 # Critic learning — append dated evidence
 
+## 31 October — LC27 approval parity and opened overlays
+
+The six accepted Lifestyle headers were already main; compare actual routed props before duplicating a demo promotion. A single Books chooser branch still differed: main expanded a generic card where the accepted demo used labelled exact openers. Inspect the overlay itself, because Good life's launcher was clean while its Becoming→Journal and Carry it on anchors still reloaded the document. The independent critic reproduced that P1 and re-proved routed exits at three touch widths. Capture reading scroll on the observed event before a route reset; a delayed persistence callback that re-reads scroll can save zero. Controlled no-reload taps are stronger than source review, but mocked content does not certify live owners, iPhone Safari, all 11 rooms or affordability.
+
 ## 30 October — LC26 first published Read identity
 
 One editor-approved, complete original article can enter main without releasing the whole Ideas issue. A saved card and reviewed article card may be separate objects for the same ID: compare their exact IDs so the lead says Continue once, never object identity. A stored `content_url` pointing to that same article is a routing identity, not an external publisher; retain actual research links while suppressing self-exit buttons in both in-place and routed readers. Historical Ideas receipts should state their date when a later release changes the present truth. A portalled sheet can mount after a hook's first effect: give the hook the actual scroll node as reactive state, then await an acknowledged write on Close and refresh the owning shelf. Source inspection alone missed the window-versus-sheet listener until the independent critic scrolled it. Three fresh CLI processes under one authenticated account prove remote persistence and cleanup, but do not prove two devices, native iPhone or another account's RLS denial.

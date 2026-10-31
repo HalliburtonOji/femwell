@@ -53,10 +53,10 @@
     "reason": "Halli stopped recurring builds: usage consumption and endless loop. Tool and automation.toml confirm PAUSED; explicit user restart required."
   },
   "manualContent": {
-    "id": "LIFESTYLE-CONTENT-2026-10-30-LC26",
-    "stage": "LC26 first Halli-approved original Read essay live on main under exact ID 6ae4ce185898ccc64e34654b at index-D4bbt6IG.js; other six Ideas drafts unpublished; scheduler PAUSED",
-    "nextAtom": "Repair six broader LifestyleDetail test fixtures against awaited Back and owner-scoped v2 scroll and reprove routed owner scroll; review the second original Read piece individually in Ideas; audit R11 generated archive and R12 daily-job cost/selection, exact article consumers and returns, LC17 old opened destinations and V03 voice proposal. No automatic recurrence or other article publication from this release.",
-    "proofGate": "One exact published row read back with six paragraphs; three fresh same-account CLI processes proved physical Save and paragraph2-to-4 persistence then cleanup. Independent critic found/reproved repaired in-place progress P1 and final P0/P1/P2 none in scope; 40/40 focused tests and added direct-reader self-link test pass, but broader LifestyleDetail suite is 50 pass/6 fail on older awaited-Back/legacy-scroll fixtures. Normal push/site deploy, both domains index-D4bbt6IG.js, deployed controlled 360/390/430 mocked-auth lead/folio/source/Close zero sampled overflow/page errors. Second device, native iPhone, other-account RLS denial, signed-in UI and physical uniqueness remain unproved.",
+    "id": "LIFESTYLE-CONTENT-2026-10-31-LC27",
+    "stage": "LC27 approved Lifestyle main consolidation live on both origins at index-DSgTdi2n.js; six unreviewed Read pieces and account voice default held; scheduler PAUSED",
+    "nextAtom": "LC28 one coherent opened-owner and content-suitability sweep: all 11 Good life rooms and remaining Read/Listen/Books/Sky/Yours direct actions, secondary states, actual source/return and cost; reproduce priority defects, stage substantive decisions in Ideas. Second original Read article still needs its own review. No automatic recurrence.",
+    "proofGate": "Source 0f9b6af8, 148/148 four-file tests, lint/build, independent finite P0/P1/P2 after repaired Good life overlay P1, and local/deployed controlled 360/390/430 Books exact Gutenberg/Back, Saved/Yours, Good life Becoming/Journal no added document loads, overflow or page errors. Real signed-in data, live Sky saved edition, club age gate, other 10 rooms and iPhone/WebKit remain unproved.",
     "carryForward": [
       "Clean Ideas reader false-open progress repaired in LC08; canonical main reader still follows its held old reached contract until separate promotion",
       "Full Planner/Garden old-paper redesign and signed-in exact read-back remain; preview book ref token is only a bounded return repair",
@@ -83,9 +83,9 @@
     "liveBundle": "index-OD-gjaX_.js"
   },
   "current": {
-    "section": "Lifestyle / Read first original piece (manual)",
-    "atom": "LC26 first article live; next routed-reader test/current-contract repair, R11 generated archive source and R12 daily job-cost/selection audit, second article separate Ideas edit; V03 and LC17-A02 carried",
-    "status": "LC26 exact first article PUBLISHED and main live index-D4bbt6IG.js after independent repaired P1 and deployed three-width proof; six other drafts held, scheduler PAUSED."
+    "section": "Lifestyle / accepted main consolidated (manual)",
+    "atom": "LC27 released; LC28 large opened-owner and content-suitability sweep next; second Read piece separately held",
+    "status": "Main LC27 live index-DSgTdi2n.js on both origins; six unreviewed Read pieces and voice default held; scheduler PAUSED."
   },
   "lastCompleted": {
     "run": 5,
