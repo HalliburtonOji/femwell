@@ -28,17 +28,17 @@ export default function useReadingPlace({ itemId, content, active, containerRef,
     };
     let local = null;
     let disposed = false, ready = false, moved = false, owner = null;
-    let lastIndex = -1, writtenIndex = -1, localTimer = null, remoteTimer = null;
+    let lastIndex = -1, writtenIndex = -1, lastObservedScroll = 0, localTimer = null, remoteTimer = null;
     let writeChain = Promise.resolve();
     let frame = null;
     const persistLocal = async () => {
       if (localTimer) clearTimeout(localTimer);
       localTimer = null;
-      if (!key || lastIndex < 0 || scrollTop() <= 40) return;
+      if (!key || lastIndex < 0 || lastObservedScroll <= 40) return;
       try {
         try { if ((await base44.auth.me())?.id !== owner) return; }
         catch { if (knownOwnerId !== owner) return; }
-        localStorage.setItem(key, JSON.stringify({ paragraphIndex: lastIndex, revision, scrollY: Math.round(scrollTop()), ts: Date.now() }));
+        localStorage.setItem(key, JSON.stringify({ paragraphIndex: lastIndex, revision, scrollY: Math.round(lastObservedScroll), ts: Date.now() }));
       }
       catch { /* device storage unavailable */ }
     };
@@ -57,6 +57,7 @@ export default function useReadingPlace({ itemId, content, active, containerRef,
     const markUserGesture = () => { moved = true; };
     const onScroll = () => {
       if (!ready || Date.now() < suppressScrollUntil) return;
+      lastObservedScroll = scrollTop();
       const visible = elements().filter(el => el.getBoundingClientRect().top <= viewportTop() + 130);
       const index = Number(visible.at(-1)?.dataset.fwReadingParagraph);
       if (!Number.isSafeInteger(index) || index < 0 || index === lastIndex) return;

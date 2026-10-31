@@ -71,7 +71,7 @@ function GoodCard({ eyebrow, title, accent = "gold", children, style, className 
   );
 }
 
-export default function GoodLifeFocus({ timeLens, joys = [], onSlip, onPlan, timeOfDay, presentation, onOpenRooms, calmLayout = false, ideasEdition = false }) {
+export default function GoodLifeFocus({ timeLens, joys = [], onSlip, onPlan, onNavigate, timeOfDay, presentation, onOpenRooms, calmLayout = false, ideasEdition = false }) {
   const [moreJoys,setMoreJoys]=React.useState(false);
   const visibleJoys = onOpenRooms && !moreJoys ? joys.slice(0,3) : joys;
   const greet = timeOfDay === "morning" ? "What have you got time for this morning?"
@@ -117,7 +117,7 @@ export default function GoodLifeFocus({ timeLens, joys = [], onSlip, onPlan, tim
       {onOpenRooms ? <button className={`fw-focused-button${ideasEdition ? " fw-good-rooms-door" : ""}`} onClick={onOpenRooms} style={{alignSelf:"flex-start"}}><Sprout size={17}/>Explore life’s rooms</button> : <GoodCard className="fw-selected-doors" eyebrow="The rest of your life" title="Step into a room" accent="crimson">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           {ROOMS.map((r) => (
-            <a key={r.href} href={createPageUrl(r.href)} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", background: C.sunk, border: `1px solid ${C.hair}`, borderRadius: 13, padding: "11px 12px" }}>
+            <a key={r.href} href={createPageUrl(r.href)} onClick={event=>{if(onNavigate && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey && event.button===0){event.preventDefault();onNavigate(createPageUrl(r.href));}}} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", background: C.sunk, border: `1px solid ${C.hair}`, borderRadius: 13, padding: "11px 12px" }}>
               <span style={{ width: 32, height: 32, borderRadius: 9, background: `${cwOf(r.cw).petal}1f`, display: "grid", placeItems: "center", flexShrink: 0 }}><r.Icon size={16} color={cwOf(r.cw).petal} /></span>
               <span style={{ minWidth: 0 }}>
                 <span style={{ display: "block", fontFamily: SERIF, fontSize: 15.5, fontWeight: 600, color: C.ink, lineHeight: 1.1 }}>{r.label}</span>

@@ -177,8 +177,8 @@ function GoddessBench({ signs, goddessRead, complete=false }) {
 }
 
 // ── "carry it with you" — reflect · discuss · ask Jess · mark read (the connectivity keystone) ──
-function CarryItWithYou({ seed, onMarkRead, read, connectedDemo = false, readDisabled = false, readError = "", calmLayout = false }) {
-  const go = (href) => window.location.assign(href);
+function CarryItWithYou({ seed, onMarkRead, read, connectedDemo = false, readDisabled = false, readError = "", calmLayout = false, onNavigate }) {
+  const go = (href) => onNavigate ? onNavigate(href) : window.location.assign(href);
   const act = { display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flex: 1, background: "transparent", border: "none", cursor: "pointer", padding: "10px 4px", fontFamily: UI, fontSize: calmLayout ? 14 : 12, fontWeight: 700, color: C.slate };
   const s = encodeURIComponent(String(seed || "").slice(0, 180));
   return (
@@ -210,7 +210,7 @@ function LegacySkyFocus(props) {
   const chartState = useBirthChart(props.userProfile);
   return <SkyFocusBody {...props} chartState={chartState}/>;
 }
-function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onActionState, onActionHandled, onReadingState, portalChart = false, continuous = false, celestial = false, dailyLessons = false, direction, artDirection, cycleContext, contentRoute, focusedPreview = false, calmLayout = false, routeActive = true }) {
+function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onActionState, onActionHandled, onReadingState, onNavigate, portalChart = false, continuous = false, celestial = false, dailyLessons = false, direction, artDirection, cycleContext, contentRoute, focusedPreview = false, calmLayout = false, routeActive = true }) {
   const world = artDirection === "sky-worlds";
   const complete = world && direction === "petal-press";
   const artful = world || ["marginalia","reading-room"].includes(artDirection);
@@ -315,7 +315,7 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
   const currentSkyUrl = new URL(window.location.href);
   if(contentRoute && lessonRoute===contentRoute)currentSkyUrl.pathname=contentRoute;
   currentSkyUrl.searchParams.delete("reading");currentSkyUrl.searchParams.delete("tab");currentSkyUrl.searchParams.set("section","sky");currentSkyUrl.hash="";
-  const exactReadingNote = complete && chartState.exactReading ? <p className="sky-note">{readingDate ? `Saved reading · ${readingDate}. Moon facts, lessons and your chart are current.` : "This link opens a particular saved reading. Your other Sky tools are still here."} <a className="daily-sky-link" href={`${currentSkyUrl.pathname}${currentSkyUrl.search}`}>Open today’s sky</a></p> : null;
+  const exactReadingNote = complete && chartState.exactReading ? <p className="sky-note">{readingDate ? `Saved reading · ${readingDate}. Moon facts, lessons and your chart are current.` : "This link opens a particular saved reading. Your other Sky tools are still here."} <a className="daily-sky-link" href={`${currentSkyUrl.pathname}${currentSkyUrl.search}`} onClick={event=>{if(onNavigate && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey && event.button===0){event.preventDefault();onNavigate(`${currentSkyUrl.pathname}${currentSkyUrl.search}`);}}}>Open today’s sky</a></p> : null;
 
   const diaryTask = calmLayout && visitedTools.diary && <CalmTaskDialog motif="sky" title="Sky diary" open={tool==="diary"} active={routeActive} onClose={()=>setTool(null)}><PrivateSkyNotes userId={user?.id} moon={moon}/><ObservedSkyDiary human={world} userId={user?.id}/></CalmTaskDialog>;
   const pairingTask = calmLayout && visitedTools.pairing && <CalmTaskDialog motif="sky" title="You & someone" open={tool==="pairing"} active={routeActive} onClose={()=>setTool(null)}><Compatibility calmLayout={calmLayout} key={`pairing:${user?.id || "signed-out"}`} complete={complete} human={world} celestial={celestial} userId={user?.id}/></CalmTaskDialog>;
@@ -409,7 +409,7 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
         ) : null}
         {dailyLessons && !focusedPreview && <div className={world ? "fw-world-weather-notes" : artful ? "fw-atelier-weather-notes" : undefined}>{[["Power",reading?.power_title,reading?.power_body],["Pressure",reading?.pressure_title,reading?.pressure_body],["Trouble",reading?.trouble_title,reading?.trouble_body]].map(([label,title,body])=>title || body ? <div key={label} className={world ? `fw-world-weather-entry fw-world-weather-entry--${label.toLowerCase()}` : artful ? `fw-atelier-weather-entry fw-atelier-weather-entry--${label.toLowerCase()}` : undefined} style={artful ? undefined : {borderTop:`1px solid ${C.hair}`,padding:"14px 0 0",marginTop:14}}>{artful ? <span className={world ? "fw-world-note-label" : "fw-atelier-note-label"}>{label}</span> : <Eyebrow cw="gold" align="left">{label}</Eyebrow>}{title && <Title align="left" size={26}>{clean(title)}</Title>}{body && (complete ? skyParagraphs(body).map((text,i)=><Body key={i}>{text}</Body>) : <Body>{clean(body)}</Body>)}</div> : null)}</div>}
         {focusedPreview && reading && <details className="fw-focused-depth"><summary>Read the whole reading</summary><div className="fw-focused-prose">{skyParagraphs(reading.narrative).map((line,i)=><p key={i}><FocusedText text={line}/></p>)}{[[reading.power_title,reading.power_body],[reading.pressure_title,reading.pressure_body],[reading.trouble_title,reading.trouble_body]].filter(([title,body])=>title || body).map(([title,body],i)=><section key={i}><h3><FocusedText text={title}/></h3><p><FocusedText text={body}/></p></section>)}</div></details>}
-        <fieldset disabled={exactUnavailable} style={{border:0,padding:0,margin:0,minWidth:0}}><CarryItWithYou calmLayout={calmLayout} connectedDemo={dailyLessons} seed={headline} read={markedRead} onMarkRead={markReading} readDisabled={complete && (!readingKey || markedRead)} readError={readError} /></fieldset>
+        <fieldset disabled={exactUnavailable} style={{border:0,padding:0,margin:0,minWidth:0}}><CarryItWithYou calmLayout={calmLayout} connectedDemo={dailyLessons} seed={headline} read={markedRead} onMarkRead={markReading} readDisabled={complete && (!readingKey || markedRead)} readError={readError} onNavigate={onNavigate} /></fieldset>
       </Movement>
 
       {artful && !world && <AtelierIncident/>}
@@ -443,7 +443,7 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
           <CycleMoonDial calmLayout={calmLayout} complete={complete} moon={moon} cyclePhase={cyc.phase} cycleDay={cyc.day} cycleLen={cyc.len || 28} body={calmLayout ? null : reading?.cycle_moon_body} />
           {calmLayout && reading?.cycle_moon_body && <details className="fw-calm-depth fw-calm-tides-reading"><summary><span className="fw-calm-depth-closed">Read my tides</span><span className="fw-calm-depth-open">Close my tides</span><ChevronDown size={18} aria-hidden="true"/></summary><div className="fw-calm-tides-prose">{skyParagraphs(reading.cycle_moon_body).map((text,i)=><Body key={i}>{text}</Body>)}</div></details>}
           {celestial && !dailyLessons && <MoonLesson moon={moon} />}
-          {!cyc.phase ? <Quiet onClick={() => window.location.assign(createPageUrl("Health"))}>Add your dates to see both tides ›</Quiet> : null}
+          {!cyc.phase ? <Quiet onClick={() => onNavigate ? onNavigate(createPageUrl("Health")) : window.location.assign(createPageUrl("Health"))}>Add your dates to see both tides ›</Quiet> : null}
         </Card>
       </Movement>
 

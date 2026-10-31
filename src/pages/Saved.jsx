@@ -4,6 +4,7 @@ import SavedItemCard from "@/components/saved/SavedItemCard";
 import { ArrowLeft, Bookmark, BookMarked } from "lucide-react";
 import { pickProfile } from "@/utils/userProfile";
 import { parseSavedMeta } from "@/lib/savedItems";
+import { useInRouterContext, useNavigate } from "react-router-dom";
 
 import { mergeSavedCollections, readOwnerSavedRows } from "@/lib/savedCollections";
 export { savedReturnRoute, mergeSavedCollections } from "@/lib/savedCollections";
@@ -46,6 +47,14 @@ function confirmedKeepRemoval(profile, id, ownerId, intendedIds) {
 }
 
 export default function Saved() {
+  const routed = useInRouterContext();
+  return routed ? <RoutedSaved /> : <SavedPage navigate={href=>window.location.assign(href)} />;
+}
+function RoutedSaved() {
+  const navigate = useNavigate();
+  return <SavedPage navigate={navigate} />;
+}
+function SavedPage({ navigate }) {
   const params = new URLSearchParams(window.location.search);
   const calm = params.get("appearance") === "calm";
   const returnToMain = params.get("from") === "lifestyle-main";
@@ -243,7 +252,7 @@ export default function Saved() {
     <div className={calm ? "min-h-screen pb-28 fw-calm-saved" : "min-h-screen pb-28"} style={{ backgroundColor: calm ? "#f5f4f1" : "var(--ivory)" }}>
       {calm && <style>{`.fw-calm-saved .fw-calm-saved-head{position:relative;overflow:hidden}.fw-calm-saved .fw-calm-saved-head:after{content:"";position:absolute;right:-15px;top:-45px;width:160px;height:190px;background:url('/images/flora-dream/specimen-forget-me-not-v2.webp') right top/contain no-repeat;opacity:.24;mask-image:linear-gradient(90deg,transparent,#000 50%);pointer-events:none}.fw-calm-saved .fw-display{font:400 clamp(48px,13vw,62px)/1 Ephesis,cursive!important;color:#7a1a12!important;text-shadow:none!important}.fw-calm-saved .fw-calm-saved-tabs{scrollbar-width:none}.fw-calm-saved .fw-calm-saved-tabs::-webkit-scrollbar{display:none}.fw-calm-saved :is(button,a):focus-visible{outline:3px solid #8ba5b2;outline-offset:3px}`}</style>}
       <div className="mx-auto max-w-4xl px-4 pt-12 md:px-6">
-        {calm && <button type="button" onClick={()=>window.location.assign(returnToMain ? "/Lifestyle?section=yours" : "/CalmLifestyleDemo?section=yours")} style={{display:"inline-flex",alignItems:"center",gap:8,minHeight:44,marginBottom:12,padding:"8px 15px",border:"1px solid #e6e3dc",borderRadius:999,background:"#fff",color:"#51444e",font:"700 14px system-ui"}}><ArrowLeft size={17}/> Back to Yours</button>}
+        {calm && <button type="button" onClick={()=>navigate(returnToMain ? "/Lifestyle?section=yours" : "/CalmLifestyleDemo?section=yours")} style={{display:"inline-flex",alignItems:"center",gap:8,minHeight:44,marginBottom:12,padding:"8px 15px",border:"1px solid #e6e3dc",borderRadius:999,background:"#fff",color:"#51444e",font:"700 14px system-ui"}}><ArrowLeft size={17}/> Back to Yours</button>}
 
         <div className={calm ? "fw-calm-saved-head" : undefined} style={{ ...(calm ? {backgroundColor:"#fff",border:"1px solid #e6e3dc",borderRadius:22,boxShadow:"0 8px 28px rgba(58,46,57,.05)"} : card), padding: "20px", marginBottom: "16px" }}>
           <p style={{ ...sLabel, marginBottom: "8px",color:calm?"#4e6973":undefined,fontSize:calm?12:undefined }}>Your library</p>

@@ -160,7 +160,7 @@ export const TOPIC_STARTS = {
   },
 };
 
-export default function FocusedLifestyleRooms({ active, onClose, user, profile, shellItems, toCard, isSaved, onSave, onStory, onSky, horoscope, phaseKey, editorialPreview = false, visualEdition = editorialPreview }) {
+export default function FocusedLifestyleRooms({ active, onClose, onNavigate, user, profile, shellItems, toCard, isSaved, onSave, onStory, onSky, horoscope, phaseKey, editorialPreview = false, visualEdition = editorialPreview }) {
   const [room,setRoom]=useState("Becoming"), [choices,setChoices]=useState({}), [turns,setTurns]=useState({}), [visibleCounts,setVisibleCounts]=useState({});
   const [library,setLibrary]=useState(null), [libraryError,setLibraryError]=useState(""), [revision,setRevision]=useState(0), [loading,setLoading]=useState(false);
   const [browseRequested,setBrowseRequested]=useState(!visualEdition);
@@ -241,6 +241,12 @@ export default function FocusedLifestyleRooms({ active, onClose, user, profile, 
     {libraryHasMore && <details className="fw-focused-depth"><summary>Browse the wider library</summary><button className="fw-focused-button" disabled={loading} onClick={loadMoreLibrary}>{loading ? "Loading…" : "Load more published pieces"}</button></details>}
     {!rows.length && !loading && !libraryError && topic.key!=="solitude" && <p role="status" className="fw-focused-note">{topic.key === "all" ? "No published pieces here yet." : `No ${topic.label.toLowerCase()} in this selection. Try All reads in this room${libraryHasMore ? " or load more" : ""}.`}</p>}
   </>;
+  const followInternal = (event, href) => {
+    if (!onNavigate || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+    event.preventDefault();
+    onClose();
+    onNavigate(href);
+  };
   return <FocusedLifestyleSheet title={item ? item.title : visualEdition ? room : "Life’s rooms"} eyebrow={item ? `Good life · ${room}` : visualEdition ? "Good life · Life’s rooms" : "The rest of your life"} room="good" active={active} onClose={onClose} contentRef={sheet}
     footer={item && <><button className="fw-focused-button" onClick={()=>setItem(null)}><ArrowLeft size={16}/>Back to {room}</button>{item.saveable !== false && <button className="fw-focused-button" onClick={save} disabled={saving} aria-pressed={isSaved(item)}><Bookmark size={16}/>{saving ? "Saving…" : isSaved(item) ? "Saved" : "Save"}</button>}</>}>
     {item ? <div className={visualEdition ? "fw-life-article" : undefined}><FocusedCardContents item={item} room={visualEdition && ["article","guide"].includes(item.type) ? "read-ideas" : "good"}/>{saveError && <p role="alert" className="fw-focused-note">{saveError}</p>}{!focusedSourceParagraphs(item).length && !item.audioSrc && !item.videoSrc && !item.youtubeId && !item._raw?.content_url && !item._raw?.source_url && item.actions?.map(action=><button key={action.label} className="fw-focused-button" onClick={()=>{onClose();action.onClick?.(item);}}>{action.label}</button>)}</div> : <div className={visualEdition ? "fw-life-preview" : undefined} data-life-room={visualEdition ? room.toLowerCase() : undefined} style={visualEdition ? {"--good-accent":accent,"--good-wash":wash} : undefined}>
@@ -254,9 +260,9 @@ export default function FocusedLifestyleRooms({ active, onClose, user, profile, 
         <div className="fw-focused-room-bar"><span className="fw-focused-room-mark"><RoomIcon size={20}/></span><h2>{room}</h2><Flower2 size={17} color="#A8893F" aria-hidden="true"/></div>
       </>}
       {prompt && (!visualEdition || roomDraft) ? visualEdition && roomDraft
-        ? <details className="fw-focused-depth"><summary>Another small start</summary><div className="fw-focused-prose"><p><FocusedText text={prompt}/></p><div className="fw-focused-room-links"><button className="fw-focused-button" onClick={anotherIdea}>{topicStart ? "Surprise me" : "Another little thing"} <ArrowRight size={15}/></button>{room === "Becoming" && <a className="fw-focused-button" href="/Journal">Write in Journal</a>}</div></div></details>
-        : <div className="fw-focused-prose"><p><FocusedText text={prompt}/></p><div className="fw-focused-room-links"><button className="fw-focused-button" onClick={anotherIdea}>{topicStart ? "Surprise me" : "Another little thing"} <ArrowRight size={15}/></button>{room === "Becoming" && <a className="fw-focused-button" href="/Journal">Write in Journal</a>}</div></div> : null}
-      {visualEdition && !roomDraft && room === "Becoming" && <a className="fw-focused-button" href="/Journal">Write in Journal</a>}
+        ? <details className="fw-focused-depth"><summary>Another small start</summary><div className="fw-focused-prose"><p><FocusedText text={prompt}/></p><div className="fw-focused-room-links"><button className="fw-focused-button" onClick={anotherIdea}>{topicStart ? "Surprise me" : "Another little thing"} <ArrowRight size={15}/></button>{room === "Becoming" && <a className="fw-focused-button" href="/Journal" onClick={event=>followInternal(event,"/Journal")}>Write in Journal</a>}</div></div></details>
+        : <div className="fw-focused-prose"><p><FocusedText text={prompt}/></p><div className="fw-focused-room-links"><button className="fw-focused-button" onClick={anotherIdea}>{topicStart ? "Surprise me" : "Another little thing"} <ArrowRight size={15}/></button>{room === "Becoming" && <a className="fw-focused-button" href="/Journal" onClick={event=>followInternal(event,"/Journal")}>Write in Journal</a>}</div></div> : null}
+      {visualEdition && !roomDraft && room === "Becoming" && <a className="fw-focused-button" href="/Journal" onClick={event=>followInternal(event,"/Journal")}>Write in Journal</a>}
       {room === "Mirror" && <details className="fw-focused-depth"><summary>A three-minute getting-ready ritual</summary><p className="fw-focused-prose">One song, one thing you like in the mirror, out the door lighter.</p>{phaseKey && d.SKIN_NOTE[phaseKey] && <p className="fw-focused-note">{d.SKIN_NOTE[phaseKey]}</p>}</details>}
       {room === "Move" && phaseKey && d.ENERGY_NOTE[phaseKey] && <details className="fw-focused-depth"><summary>Your energy, your call</summary><p className="fw-focused-note">{d.ENERGY_NOTE[phaseKey]}</p></details>}
       {room === "Tonight" && <div className="fw-focused-room-links"><button className="fw-focused-button" onClick={()=>{onClose();onStory();}}>Tonight’s chapter</button><button className="fw-focused-button" disabled={!horoscope?.id} onClick={()=>{onClose();onSky();}}>Your sky</button></div>}
@@ -270,7 +276,7 @@ export default function FocusedLifestyleRooms({ active, onClose, user, profile, 
         {visualEdition ? <details className="fw-focused-depth" onToggle={event=>{if(event.currentTarget.open)setBrowseRequested(true);}}><summary>{editorialPreview ? "Browse unreviewed library" : "Browse the wider library"}{library ? ` · ${ordered.length}` : ""}</summary>{browseRequested ? libraryResults : <p className="fw-focused-note">Open to see older pieces from this room.</p>}</details> : libraryResults}
       </section>}
       {visualEdition && moneyIntention}
-      <details className="fw-focused-depth"><summary>Carry it on</summary><div className="fw-focused-room-links">{CONNECT[room].map(destination=>destination === "Jess" ? <button key={destination} className="fw-focused-button" onClick={()=>{onClose();window.dispatchEvent(new CustomEvent("fw_open_assistant",{detail:{prompt:`I’d like to talk about ${room.toLowerCase()}.`}}));}}>Ask Jess</button> : <a key={destination} className="fw-focused-button" href={`/${destination}`}>{destination}</a>)}</div></details>
+      <details className="fw-focused-depth"><summary>Carry it on</summary><div className="fw-focused-room-links">{CONNECT[room].map(destination=>destination === "Jess" ? <button key={destination} className="fw-focused-button" onClick={()=>{onClose();window.dispatchEvent(new CustomEvent("fw_open_assistant",{detail:{prompt:`I’d like to talk about ${room.toLowerCase()}.`}}));}}>Ask Jess</button> : <a key={destination} className="fw-focused-button" href={`/${destination}`} onClick={event=>followInternal(event,`/${destination}`)}>{destination}</a>)}</div></details>
     </div>}
   </FocusedLifestyleSheet>;
 }

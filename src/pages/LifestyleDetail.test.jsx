@@ -181,7 +181,7 @@ describe('complete article and last-place recovery',()=>{
     const related=await screen.findByRole('link',{name:/Next read/i});
     expect(related.getAttribute('href')).toBe('/LifestyleDetail?id=next&appearance=calm&from=lifestyle-main&return_section=yours');
     fireEvent.click(screen.getByRole('button',{name:'Back'}));
-    expect(screen.getByTestId('path')).toHaveTextContent('/Lifestyle?section=yours');
+    await waitFor(()=>expect(screen.getByTestId('path')).toHaveTextContent('/Lifestyle?section=yours'));
   });
   it('returns a Saved article and related read to the exact Saved tab',async()=>{
     api.items.mockImplementation(async q=>q.id ? [{...article,id:q.id,title:q.id==='next'?'Next read':article.title}] : [{...article,id:'next',title:'Next read'},{...article,id:'other',title:'Another read'}]);
@@ -193,21 +193,21 @@ describe('complete article and last-place recovery',()=>{
     fireEvent.click(related);
     await screen.findByRole('heading',{name:'Next read'});
     fireEvent.click(screen.getByRole('button',{name:'Back'}));
-    expect(screen.getByTestId('path')).toHaveTextContent('/Saved?tab=LIFESTYLE&appearance=calm&from=lifestyle-main');
+    await waitFor(()=>expect(screen.getByTestId('path')).toHaveTextContent('/Saved?tab=LIFESTYLE&appearance=calm&from=lifestyle-main'));
   });
   it('ignores an unrecognised Saved tab on a main Read article',async()=>{
     function Path(){const location=useLocation();return <output data-testid="path">{location.pathname+location.search}</output>;}
     render(<MemoryRouter initialEntries={['/LifestyleDetail?id=article&appearance=calm&from=lifestyle-main&via=saved&saved_tab=UNKNOWN']}><Path/><LifestyleDetail/></MemoryRouter>);
     await screen.findByRole('heading',{name:article.title});
     fireEvent.click(screen.getByRole('button',{name:'Back'}));
-    expect(screen.getByTestId('path')).toHaveTextContent('/Lifestyle?section=read');
+    await waitFor(()=>expect(screen.getByTestId('path')).toHaveTextContent('/Lifestyle?section=read'));
   });
   it('returns an explicit main Read source to Read even with unrelated browser history',async()=>{
     function Path(){const location=useLocation();return <output data-testid="path">{location.pathname+location.search}</output>;}
     render(<MemoryRouter initialEntries={['/Unrelated','/LifestyleDetail?id=article&appearance=calm&from=lifestyle-main']} initialIndex={1}><Path/><LifestyleDetail/></MemoryRouter>);
     await screen.findByRole('heading',{name:article.title});
     fireEvent.click(screen.getByRole('button',{name:'Back'}));
-    expect(screen.getByTestId('path')).toHaveTextContent('/Lifestyle?section=read');
+    await waitFor(()=>expect(screen.getByTestId('path')).toHaveTextContent('/Lifestyle?section=read'));
   });
   it('shows all available external source prose when its summary is only a teaser',async()=>{
     api.items.mockImplementation(async q=>q.id ? [{...article,provider:'PARTNER',summary:'A short teaser.',lede:'The whole opening.\n\nThe complete ending stays here.'}] : []);
@@ -253,19 +253,22 @@ describe('complete article and last-place recovery',()=>{
     expect(screen.queryByRole('button',{name:'Retry article'})).not.toBeInTheDocument();
   });
   it('flushes the last observed scroll before a route exit inside the debounce',async()=>{
-    const view=open();await screen.findByRole('heading',{name:article.title});await act(async()=>new Promise(window.requestAnimationFrame));vi.useFakeTimers();
+    const view=open();await screen.findByRole('heading',{name:article.title});await act(async()=>new Promise(window.requestAnimationFrame));
+    // The hook ignores its own initial restore scroll for 350 ms.
+    await new Promise(resolve=>setTimeout(resolve,400));vi.useFakeTimers();
     Object.defineProperty(window,'scrollY',{configurable:true,value:690});fireEvent.scroll(window);
     // Router destination resetting scroll must not be read by the delayed writer.
     Object.defineProperty(window,'scrollY',{configurable:true,value:0});view.unmount();
-    const saved=JSON.parse(localStorage.getItem('fw_article_pos_article'));
+    await act(async()=>{ await Promise.resolve(); await Promise.resolve(); });
+    const saved=JSON.parse(localStorage.getItem('fw_article_pos_v2_reader__article'));
     expect(saved.scrollY).toBe(690);expect(saved.ts).toBeGreaterThan(0);
-    expect(continuePositions(localStorage)[0]).toMatchObject({bookId:'article',kind:'article',scrollY:690});
+    expect(continuePositions(localStorage,{ownerId:'reader',includeLegacyArticle:false})[0]).toMatchObject({bookId:'article',kind:'article',scrollY:690});
   });
   it('opens and restores the full source while optional related reads are still pending',async()=>{
     let finishRelated;
     const related=new Promise(resolve=>{finishRelated=resolve;});
     api.items.mockImplementation(async q=>q.id ? [article] : related);
-    localStorage.setItem('fw_article_pos_article',JSON.stringify({scrollY:833,ts:10}));
+    localStorage.setItem('fw_article_pos_v2_reader__article',JSON.stringify({scrollY:833,ts:10}));
     open();await act(async()=>{});await act(async()=>new Promise(window.requestAnimationFrame));
     expect(await screen.findByRole('heading',{name:article.title})).toBeVisible();
     expect(screen.getByText('Third paragraph & its full ending.')).toBeVisible();
