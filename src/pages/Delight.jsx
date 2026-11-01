@@ -20,7 +20,7 @@ import { ArrowLeft, Tv, Laugh, Star, Music, Shuffle, Sparkles, Dices, MessageCir
 import { T, SERIF, UI } from "@/components/journal/Editorial";
 import { OXBLOOD } from "@/components/brand/SliderKit";
 import { ExpandDetailCard, decodeEntities } from "@/components/brand/expandCards";
-import { GoodLifeSection as Section, GoodLifeShelf as Shelf } from "./GoodLifeRoomParts";
+import { GoodLifeSection as Section, GoodLifeShelf as Shelf, GoodLifeRouteLink } from "./GoodLifeRoomParts";
 import { useGoodLifeKeep } from "@/components/lifestyle-elite/useGoodLifeKeep";
 import "./GoodLifeRoomsClean.css";
 import { cwOf } from "@/components/brand/flora";
@@ -131,8 +131,8 @@ export default function Delight() {
   return (
     <div className="fw-good-clean fw-delight-clean" style={{ minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "12px 16px 0" }}>
-        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/Lifestyle?section=good")} aria-label="Back to Good life" className="fw-elite-press"
-          style={{ width: 44, height: 44, borderRadius: 999, border: "1px solid #EAE7E0", background: "#fff", color: OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer" }}><ArrowLeft size={19} /></button>
+        <GoodLifeRouteLink href="/Lifestyle?section=good" aria-label="Back to Good life" className="fw-elite-press"
+          style={{ width: 44, height: 44, borderRadius: 999, border: "1px solid #EAE7E0", background: "#fff", color: OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer" }}><ArrowLeft size={19} /></GoodLifeRouteLink>
 
         <header className="fw-good-hero fw-delight-hero"><span className="fw-good-path">GOOD LIFE / DELIGHT</span><span className="fw-delight-petals" aria-hidden="true"/><span className="fw-delight-halo" aria-hidden="true"/><h1>Delight</h1><p>What sounds fun? Pick a mood. The rest can wait.</p></header>
         <details className="fw-good-context"><summary>A note for today <span aria-hidden="true">+</span></summary><div className="fw-good-context-body">{summaryRows.map(({ Icon, label, text }) => <div key={label} className="fw-good-context-row"><Icon size={16} aria-hidden="true"/><div><strong>{label}</strong><p>{text}</p></div></div>)}</div></details>
@@ -153,7 +153,7 @@ export default function Delight() {
           {itemsStatus === "error" && <div className="fw-good-load-error" role="alert">The picks didn't arrive. <button type="button" onClick={() => { setItemsStatus("loading"); setRetryKey(value => value + 1); }}>Try again</button></div>}
         </Section>
 
-        <a href={createPageUrl("Community?view=games")} className="fw-elite-press fw-delight-play"><Dices size={22} aria-hidden="true"/><span><strong>Fancy a game?</strong><small>Open the Games Room in Community</small></span><span aria-hidden="true">→</span></a>
+        <GoodLifeRouteLink href={createPageUrl("Community?view=games")} className="fw-elite-press fw-delight-play"><Dices size={22} aria-hidden="true"/><span><strong>Fancy a game?</strong><small>Open the Games Room in Community</small></span><span aria-hidden="true">→</span></GoodLifeRouteLink>
 
         <details className="fw-good-library"><summary>Today's extra pick · watch · laugh · pop culture <span aria-hidden="true">+</span></summary>
 
@@ -197,13 +197,13 @@ export default function Delight() {
             ].map((r) => {
               const c = cwOf(r.cw).petal;
               return (
-                <a key={r.label} href={r.href} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", textAlign: "left", background: "#fff", border: "1px solid #EAE7E0", borderLeft: `3px solid ${c}`, borderRadius: 16, padding: "11px 13px", cursor: "pointer", textDecoration: "none" }}>
+                <GoodLifeRouteLink key={r.label} href={r.href} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", textAlign: "left", background: "#fff", border: "1px solid #EAE7E0", borderLeft: `3px solid ${c}`, borderRadius: 16, padding: "11px 13px", cursor: "pointer", textDecoration: "none" }}>
                   <span style={{ width: 34, height: 34, borderRadius: 10, background: `${c}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><r.Icon size={16} color={c} /></span>
                   <span style={{ flex: 1, minWidth: 0 }}>
                     <span style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink, display: "block", lineHeight: 1.2 }}>{r.label}</span>
                     <span style={{ fontFamily: UI, fontSize: 12.5, color: T.muted }}>{r.sub}</span>
                   </span>
-                </a>
+                </GoodLifeRouteLink>
               );
             })}
           </div>

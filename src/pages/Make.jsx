@@ -19,6 +19,7 @@ import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Palette, Pencil, MessageCircle, Feather, CalendarHeart, Sparkles } from "lucide-react";
 import { pickProfile } from "@/utils/userProfile";
 import { createPageUrl } from "@/utils";
+import { GoodLifeRouteLink } from "./GoodLifeRoomParts";
 import "./GoodLifeRoomsClean.css";
 
 const dayOffset = () => Math.floor(Date.now() / 86400000);
@@ -81,7 +82,7 @@ export default function Make() {
   return (
     <div className="fw-good-clean fw-make-clean" style={{ minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "12px 16px 0" }}>
-        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/Lifestyle?section=good")} aria-label="Back to Good life" className="fw-elite-press fw-good-back"><ArrowLeft size={19}/></button>
+        <GoodLifeRouteLink href="/Lifestyle?section=good" aria-label="Back to Good life" className="fw-elite-press fw-good-back"><ArrowLeft size={19}/></GoodLifeRouteLink>
         <header className="fw-good-hero fw-make-hero"><span className="fw-good-path">GOOD LIFE / MAKE</span><span className="fw-make-sheet" aria-hidden="true"/><span className="fw-make-petal" aria-hidden="true"/><span className="fw-make-pencil" aria-hidden="true"/><h1>Make</h1><p>Make a little something. It can be wonderfully wonky.</p></header>
         <details className="fw-good-context"><summary>A note for the maker <span aria-hidden="true">+</span></summary><div className="fw-good-context-body">
           <div className="fw-good-context-row"><Palette size={16}/><div><strong>No masterpiece needed</strong><p>{firstName ? `${firstName}, ` : ""}a biro, a scrap of paper and ten minutes will do.</p></div></div>
@@ -91,13 +92,13 @@ export default function Make() {
 
         <section className="fw-make-first" aria-label="Make something today"><div className="fw-make-first-mark" aria-hidden="true"><Pencil size={24}/></div><span>TRY THIS TODAY</span><p>{makes[0]}</p><small>Ten minutes, or ten seconds. You decide.</small></section>
 
-        <a className="fw-make-community" href={createPageUrl("Community")}><MessageCircle size={20}/><span><strong>Meet the Community</strong><small>Share what you made if you want to</small></span><span aria-hidden="true">→</span></a>
+        <GoodLifeRouteLink className="fw-make-community" href={createPageUrl("Community")}><MessageCircle size={20}/><span><strong>Meet the Community</strong><small>Share what you made if you want to</small></span><span aria-hidden="true">→</span></GoodLifeRouteLink>
 
         <details className="fw-good-library"><summary>Three more things to try <span aria-hidden="true">+</span></summary><div className="fw-make-more">{makes.slice(1).map((idea,i)=><p key={i}><span aria-hidden="true">0{i+2}</span>{idea}</p>)}</div></details>
         <details className="fw-good-library"><summary>Make it elsewhere · Journal, Jess, Events <span aria-hidden="true">+</span></summary><div className="fw-good-door-list">
-          <a href={createPageUrl("Journal")}><Feather size={18}/><span>Write something<small>A note, a line, a glorious bad poem</small></span><span aria-hidden="true">→</span></a>
-          <a href={createPageUrl("Jess")}><Sparkles size={18}/><span>Ask Jess for an idea<small>Tell her what you have to hand</small></span><span aria-hidden="true">→</span></a>
-          <a href={createPageUrl("Events")}><CalendarHeart size={18}/><span>Look at Events<small>Find a class, just for the fun of it</small></span><span aria-hidden="true">→</span></a>
+          <GoodLifeRouteLink href={createPageUrl("Journal")}><Feather size={18}/><span>Write something<small>A note, a line, a glorious bad poem</small></span><span aria-hidden="true">→</span></GoodLifeRouteLink>
+          <GoodLifeRouteLink href={createPageUrl("Jess")}><Sparkles size={18}/><span>Ask Jess for an idea<small>Tell her what you have to hand</small></span><span aria-hidden="true">→</span></GoodLifeRouteLink>
+          <GoodLifeRouteLink href={createPageUrl("Events")}><CalendarHeart size={18}/><span>Look at Events<small>Find a class, just for the fun of it</small></span><span aria-hidden="true">→</span></GoodLifeRouteLink>
         </div></details>
       </div>
     </div>

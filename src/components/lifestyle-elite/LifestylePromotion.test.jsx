@@ -1,5 +1,5 @@
 import React from 'react';
-import {beforeEach,describe,expect,it,vi} from 'vitest';
+import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
 import {act,fireEvent,render,screen,waitFor,within} from '@testing-library/react';
 import Lifestyle from '@/pages/LifestyleElite';
 import CalmLifestyleDemo from '@/pages/CalmLifestyleDemo';
@@ -10,6 +10,7 @@ vi.mock('@/api/base44Client',()=>({base44:{auth:{me:async()=>({id:'owner'})},fun
 vi.mock('@/components/lifestyle/DailyStoryReader',()=>({default:({goToChapter,onExit})=><div role="dialog" aria-label="Actual chapter reader"><p>Chapter index: {goToChapter}</p><button onClick={onExit}>Exit chapter reader</button></div>}));
 vi.mock('./SelectedLifestyleHeader',()=>({default:({active})=><h1>{active.title}</h1>,SelectedRoomDetail:()=>null}));
 beforeEach(()=>{mock.empty.mockResolvedValue([]);mock.profiles.mockResolvedValue([]);mock.articles.mockResolvedValue([]);mock.chapters.mockResolvedValue([]);mock.readings.mockResolvedValue([]);vi.spyOn(globalThis,'fetch').mockResolvedValue({ok:true,json:async()=>({results:[]})});window.history.replaceState({},'', '/Lifestyle');});
+afterEach(()=>vi.useRealTimers());
 describe('approved main Lifestyle parity',()=>{
   it('does not call profile-only keeps empty after a failed profile read and retries that source',async()=>{
     window.history.replaceState({},'', '/Lifestyle?section=yours');
@@ -81,8 +82,8 @@ describe('approved main Lifestyle parity',()=>{
     window.history.replaceState({},'', '/Lifestyle?section=read');
     mock.articles.mockResolvedValue([{id:'old-story',title:'An archived story',summary:'A whole fictional scene.',lede:'The complete fictional scene. '.repeat(60),category:'Fiction',provider:'FEMWELL_AI',content_type:'STORY',media_type:'ARTICLE',status:'PUBLISHED'}]);
     render(<Lifestyle/>);
-    expect(await screen.findByText('No new read just now. Try Books next door.')).toBeVisible();
-    fireEvent.click(screen.getByText('Browse all reading · 1'));
+    expect(await screen.findByText('No fresh page today.')).toBeVisible();
+    fireEvent.click(screen.getByText('Browse older reads · 1'));
     expect(screen.getByRole('button',{name:/An archived story.*Read/})).toBeVisible();
   });
   it('takes the no-current-read suggestion straight to Books on the same page',async()=>{
@@ -143,8 +144,8 @@ describe('approved main Lifestyle parity',()=>{
     window.history.replaceState({},'', '/Lifestyle?section=read');
     mock.articles.mockResolvedValue([{id:'old-news',title:'An old price-cap story',summary:'Historical news.',lede:'The entire dated source. '.repeat(55),category:'Money',provider:'RSS',content_type:'NEWS',media_type:'ARTICLE',status:'PUBLISHED',published_at:'2024-01-01'}]);
     render(<Lifestyle/>);
-    expect(await screen.findByText('No new read just now. Try Books next door.')).toBeVisible();
-    const browse=screen.getByText('Browse all reading · 1');
+    expect(await screen.findByText('No fresh page today.')).toBeVisible();
+    const browse=screen.getByText('Browse older reads · 1');
     fireEvent.click(browse);
     expect(screen.getByRole('button',{name:/An old price-cap story.*Read/})).toBeVisible();
     expect(screen.getByText('News archive · date check pending')).toBeVisible();
@@ -195,6 +196,17 @@ describe('approved main Lifestyle parity',()=>{
     expect(within(room).getByRole('combobox',{name:'Room'})).toBeVisible();
     expect(within(room).queryByText('Ideas draft · unreviewed')).not.toBeInTheDocument();
   });
+  it('keeps one direct full-room door for each selected Good life room',async()=>{
+    window.history.replaceState({},'', '/Lifestyle?section=good');render(<Lifestyle/>);
+    fireEvent.click(await screen.findByRole('button',{name:/Explore life’s rooms/}));
+    const room=screen.getByRole('dialog',{name:'Becoming'});
+    const choice=within(room).getByRole('combobox',{name:'Room'});
+    for(const name of ['Mirror','Move','Kindred','Curious','Delight','Nest','Tonight','Becoming','Make','Outside','Money']){
+      fireEvent.change(choice,{target:{value:name}});
+      expect(within(room).getByRole('link',{name:`Open full ${name} room`})).toHaveAttribute('href',`/${name}`);
+    }
+    expect(within(room).getAllByRole('link',{name:/Open full .* room/})).toHaveLength(1);
+  });
   it('keeps Sky-only owned content ahead of optional discoveries',()=>{
     const view=render(<YoursFocus calmLayout presentation editorialPreview savedCards={[]} skySavedCount={2} skyKeepsakes={<div data-testid="owned-sky">Two exact Sky keeps</div>} phaseCards={[{id:'other-read',type:'article',title:'A wider read',summary:'An actual other read.'}]}/>);
     const owned=screen.getByTestId('owned-sky');
@@ -221,6 +233,9 @@ describe('approved main Lifestyle parity',()=>{
     expect(window.location.search).toBe('?section=sky&reading=old-reading');
   });
   it('resets manual chapter choice only when she asks for another open chapter, preserving the original notes sheet',async()=>{
+    // Day one only unlocks one chapter; pin this journey to a later day so
+    // the second chapter is genuinely available in every calendar month.
+    vi.useFakeTimers({toFake:['Date']});vi.setSystemTime(new Date('2026-10-10T12:00:00Z'));
     const today=new Date().toISOString().slice(0,10);
     mock.chapters.mockResolvedValue([{id:'first',series_key:'real-run',day_number:1,segment_text:'First chapter',published_date:'2020-01-01'},{id:'today',series_key:'real-run',day_number:2,segment_text:'Today’s actual text',published_date:today}]);
     window.history.replaceState({},'', '/Lifestyle?section=books');render(<Lifestyle/>);
@@ -230,7 +245,7 @@ describe('approved main Lifestyle parity',()=>{
     fireEvent.click(screen.getByRole('button',{name:'Exit chapter reader'}));
     const chapterIndex=screen.getByText('Chapters & short reads').closest('details');
     if(!chapterIndex.open)fireEvent.click(screen.getByText('Chapters & short reads'));
-    fireEvent.click(screen.getByRole('button',{name:/Another available chapter/}));
+    fireEvent.click(within(chapterIndex).getByRole('button',{name:'Chapter 2'}));
     expect(screen.getByRole('dialog',{name:'Actual chapter reader'})).toHaveTextContent('Chapter index: 1');
     fireEvent.click(screen.getByRole('button',{name:'Exit chapter reader'}));
     fireEvent.click(screen.getByRole('button',{name:/Notes & reflection/}));

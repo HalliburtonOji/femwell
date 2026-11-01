@@ -259,6 +259,9 @@ export default function FocusedLifestyleRooms({ active, onClose, onNavigate, use
         <label className="fw-focused-note" htmlFor="fw-life-room">Room</label><select id="fw-life-room" className="fw-focused-button" style={{width:"100%",margin:"5px 0 20px"}} value={room} onChange={event=>switchRoom(event.target.value)}>{ROOMS.map(([name])=><option key={name}>{name}</option>)}</select>
         <div className="fw-focused-room-bar"><span className="fw-focused-room-mark"><RoomIcon size={20}/></span><h2>{room}</h2><Flower2 size={17} color="#A8893F" aria-hidden="true"/></div>
       </>}
+      <a className={visualEdition ? "fw-life-full-room" : "fw-focused-button"} href={`/${room}`} onClick={event=>followInternal(event,`/${room}`)}>
+        <span>Open full {room} room</span><ArrowRight size={17} aria-hidden="true"/>
+      </a>
       {prompt && (!visualEdition || roomDraft) ? visualEdition && roomDraft
         ? <details className="fw-focused-depth"><summary>Another small start</summary><div className="fw-focused-prose"><p><FocusedText text={prompt}/></p><div className="fw-focused-room-links"><button className="fw-focused-button" onClick={anotherIdea}>{topicStart ? "Surprise me" : "Another little thing"} <ArrowRight size={15}/></button>{room === "Becoming" && <a className="fw-focused-button" href="/Journal" onClick={event=>followInternal(event,"/Journal")}>Write in Journal</a>}</div></div></details>
         : <div className="fw-focused-prose"><p><FocusedText text={prompt}/></p><div className="fw-focused-room-links"><button className="fw-focused-button" onClick={anotherIdea}>{topicStart ? "Surprise me" : "Another little thing"} <ArrowRight size={15}/></button>{room === "Becoming" && <a className="fw-focused-button" href="/Journal" onClick={event=>followInternal(event,"/Journal")}>Write in Journal</a>}</div></div> : null}

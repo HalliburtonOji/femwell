@@ -16,7 +16,7 @@ import { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Moon, Feather, Sparkles, Wind, BookOpen, MessageCircle, CalendarCheck, Stars } from "lucide-react";
 import { ExpandDetailCard, decodeEntities } from "@/components/brand/expandCards";
-import { GoodLifeSection as Section, GoodLifeShelf as Shelf } from "./GoodLifeRoomParts";
+import { GoodLifeSection as Section, GoodLifeShelf as Shelf, GoodLifeRouteLink } from "./GoodLifeRoomParts";
 import { useGoodLifeKeep } from "@/components/lifestyle-elite/useGoodLifeKeep";
 import { chapterForDay, chapterForHer, isoDay } from "@/components/lifestyle/dailyStory";
 import "./GoodLifeRoomsClean.css";
@@ -164,7 +164,7 @@ export default function Tonight() {
   return (
     <div className="fw-good-clean fw-tonight-clean" style={{ minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "12px 16px 0" }}>
-        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/Lifestyle?section=good")} aria-label="Back to Good life" className="fw-elite-press fw-good-back"><ArrowLeft size={19} /></button>
+        <GoodLifeRouteLink href="/Lifestyle?section=good" aria-label="Back to Good life" className="fw-elite-press fw-good-back"><ArrowLeft size={19} /></GoodLifeRouteLink>
         <header className="fw-good-hero fw-tonight-hero"><span className="fw-good-path">GOOD LIFE / TONIGHT</span><span className="fw-tonight-iris" aria-hidden="true"/><span className="fw-tonight-moon" aria-hidden="true"/><span className="fw-tonight-orbit" aria-hidden="true"/><h1>Tonight</h1><p>The day can end here. The rest can wait.</p></header>
         <details className="fw-good-context"><summary>A note for tonight <span aria-hidden="true">+</span></summary><div className="fw-good-context-body">
           <div className="fw-good-context-row"><Moon size={16}/><div><strong>No score</strong><p>{firstName ? `${firstName}, ` : ""}rest doesn't need a perfect night's sleep to count.</p></div></div>
@@ -177,7 +177,7 @@ export default function Tonight() {
         <Section Icon={BookOpen} title="Keep you company" accent={lav} sub="A chapter or a little sky. Both open here.">
           <div className="fw-tonight-choices">
             {chapterCard ? <button type="button" onClick={() => setExpanded(chapterCard)}><BookOpen size={20}/><span><strong>Tonight's chapter</strong><small>{chapterCard.title} · {chapterCard.subtitle}</small></span><span aria-hidden="true">→</span></button> : <p>{storyStatus === "loading" ? "Finding tonight's chapter…" : storyStatus === "error" ? "The chapter didn't arrive." : "No chapter is published tonight."}</p>}
-            {skyCard ? <button type="button" onClick={() => setExpanded(skyCard)}><Stars size={20}/><span><strong>Your sky tonight</strong><small>{skyCard.subtitle || "A little night sky"}</small></span><span aria-hidden="true">→</span></button> : <a href="/Lifestyle?section=sky"><Stars size={20}/><span><strong>Open Sky</strong><small>{skyStatus === "error" ? "Your reading didn't arrive here" : "Moon, stars and your reading"}</small></span><span aria-hidden="true">→</span></a>}
+            {skyCard ? <button type="button" onClick={() => setExpanded(skyCard)}><Stars size={20}/><span><strong>Your sky tonight</strong><small>{skyCard.subtitle || "A little night sky"}</small></span><span aria-hidden="true">→</span></button> : <GoodLifeRouteLink href="/Lifestyle?section=sky"><Stars size={20}/><span><strong>Open Sky</strong><small>{skyStatus === "error" ? "Your reading didn't arrive here" : "Moon, stars and your reading"}</small></span><span aria-hidden="true">→</span></GoodLifeRouteLink>}
           </div>
           {storyStatus === "error" && <div role="alert" className="fw-good-load-error">The chapter didn't arrive. <button type="button" onClick={() => { setStoryStatus("loading"); setRetryKey(x => x + 1); }}>Try again</button></div>}
           {skyStatus === "error" && <div role="alert" className="fw-good-load-error">Your sky didn't arrive. <button type="button" onClick={() => { setSkyStatus("loading"); setRetryKey(x => x + 1); }}>Try again</button></div>}
@@ -193,9 +193,9 @@ export default function Tonight() {
 
         <details className="fw-good-library"><summary>Elsewhere tonight · Jess, Journal, Planner <span aria-hidden="true">+</span></summary>
           <Section Icon={Sparkles} title="Elsewhere tonight" accent={lav}><div className="fw-good-door-list">
-            <a href={createPageUrl("Jess")}><MessageCircle size={18}/><span>Talk with Jess<small>Company for a wide-awake hour</small></span><span aria-hidden="true">→</span></a>
-            <a href={createPageUrl("Journal")}><Feather size={18}/><span>Put the day down<small>Write whatever is still on your mind</small></span><span aria-hidden="true">→</span></a>
-            <a href={createPageUrl("Planner")}><CalendarCheck size={18}/><span>Plan a quiet evening<small>Leave tomorrow a little room</small></span><span aria-hidden="true">→</span></a>
+            <GoodLifeRouteLink href={createPageUrl("Jess")}><MessageCircle size={18}/><span>Talk with Jess<small>Company for a wide-awake hour</small></span><span aria-hidden="true">→</span></GoodLifeRouteLink>
+            <GoodLifeRouteLink href={createPageUrl("Journal")}><Feather size={18}/><span>Put the day down<small>Write whatever is still on your mind</small></span><span aria-hidden="true">→</span></GoodLifeRouteLink>
+            <GoodLifeRouteLink href={createPageUrl("Planner")}><CalendarCheck size={18}/><span>Plan a quiet evening<small>Leave tomorrow a little room</small></span><span aria-hidden="true">→</span></GoodLifeRouteLink>
           </div></Section>
         </details>
       </div>

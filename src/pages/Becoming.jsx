@@ -24,6 +24,7 @@ import { CoverCard, ExpandDetailCard, decodeEntities } from "@/components/brand/
 import { cwOf } from "@/components/brand/flora";
 import { pickProfile } from "@/utils/userProfile";
 import { createPageUrl } from "@/utils";
+import { GoodLifeRouteLink } from "./GoodLifeRoomParts";
 import { fmtDuration } from "@/utils/duration";
 import { isClickbait } from "@/utils/clickbait";
 import { cleanTitle } from "@/utils/cleanTitle";
@@ -224,8 +225,8 @@ export default function Becoming() {
   return (
     <div className="fw-becoming-clean" style={{ minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "12px 16px 0" }}>
-        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/Lifestyle?section=good")} aria-label="Back to Good life" className="fw-elite-press"
-          style={{ width: 44, height: 44, borderRadius: 999, border: "1px solid #EAE7E0", background: "#fff", color: OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer" }}><ArrowLeft size={19} /></button>
+        <GoodLifeRouteLink href="/Lifestyle?section=good" aria-label="Back to Good life" className="fw-elite-press"
+          style={{ width: 44, height: 44, borderRadius: 999, border: "1px solid #EAE7E0", background: "#fff", color: OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer" }}><ArrowLeft size={19} /></GoodLifeRouteLink>
 
         <header className="fw-becoming-hero">
           <span className="fw-becoming-path">GOOD LIFE / BECOMING</span>
@@ -246,9 +247,9 @@ export default function Becoming() {
             <span style={{ width: 34, height: 34, borderRadius: 10, background: `${plum}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><Feather size={17} color={plum} /></span>
             <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 19, color: OXBLOOD, lineHeight: 1.45 }}>{question}</span>
           </div>
-          <a href={createPageUrl("Journal")} className="fw-elite-press" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: plum, textDecoration: "none", padding: "2px 2px 4px" }}>
+          <GoodLifeRouteLink href={createPageUrl("Journal")} className="fw-elite-press" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: plum, textDecoration: "none", padding: "2px 2px 4px" }}>
             <Feather size={14} /> Sit with it in your Journal, if you want to
-          </a>
+          </GoodLifeRouteLink>
         </Section>
 
         {/* the lens — where are you becoming */}
@@ -302,13 +303,13 @@ export default function Becoming() {
             ].map((r) => {
               const c = cwOf(r.cw).petal;
               return (
-                <a key={r.label} href={r.href} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", textAlign: "left", background: "#fff", border: "1px solid #EAE7E0", borderLeft: `3px solid ${c}`, borderRadius: 16, padding: "11px 13px", cursor: "pointer", textDecoration: "none" }}>
+                <GoodLifeRouteLink key={r.label} href={r.href} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", textAlign: "left", background: "#fff", border: "1px solid #EAE7E0", borderLeft: `3px solid ${c}`, borderRadius: 16, padding: "11px 13px", cursor: "pointer", textDecoration: "none" }}>
                   <span style={{ width: 34, height: 34, borderRadius: 10, background: `${c}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><r.Icon size={16} color={c} /></span>
                   <span style={{ flex: 1, minWidth: 0 }}>
                     <span style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink, display: "block", lineHeight: 1.2 }}>{r.label}</span>
                     <span style={{ fontFamily: UI, fontSize: 12.5, color: T.muted }}>{r.sub}</span>
                   </span>
-                </a>
+                </GoodLifeRouteLink>
               );
             })}
           </div>

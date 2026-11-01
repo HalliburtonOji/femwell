@@ -16,7 +16,7 @@ import { ArrowLeft, Shirt, Sparkles, Sun, HeartHandshake, Palette, Wind, Clock, 
 import { T, SERIF, UI } from "@/components/journal/Editorial";
 import { OXBLOOD } from "@/components/brand/SliderKit";
 import { ExpandDetailCard, decodeEntities } from "@/components/brand/expandCards";
-import { GoodLifeSection as Section, GoodLifeShelf as Shelf } from "./GoodLifeRoomParts";
+import { GoodLifeSection as Section, GoodLifeShelf as Shelf, GoodLifeRouteLink } from "./GoodLifeRoomParts";
 import { cwOf } from "@/components/brand/flora";
 import { pickProfile } from "@/utils/userProfile";
 import { computeCycleDay } from "@/hooks/useCycleDay";
@@ -158,8 +158,8 @@ export default function Mirror() {
   return (
     <div className="fw-good-clean fw-mirror-clean" style={{ minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "12px 16px 0" }}>
-        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/Lifestyle?section=good")} aria-label="Back to Good life" className="fw-elite-press"
-          style={{ width: 44, height: 44, borderRadius: 999, border: "1px solid #EAE7E0", background: "#fff", color: OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer" }}><ArrowLeft size={19} /></button>
+        <GoodLifeRouteLink href="/Lifestyle?section=good" aria-label="Back to Good life" className="fw-elite-press"
+          style={{ width: 44, height: 44, borderRadius: 999, border: "1px solid #EAE7E0", background: "#fff", color: OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer" }}><ArrowLeft size={19} /></GoodLifeRouteLink>
 
         <header className="fw-good-hero fw-mirror-hero">
           <span className="fw-good-path">GOOD LIFE / MIRROR</span>
@@ -224,7 +224,7 @@ export default function Mirror() {
               );
               const style = { display: "flex", alignItems: "center", gap: 11, width: "100%", textAlign: "left", background: "#fff", border: "1px solid #EAE7E0", borderLeft: `3px solid ${c}`, borderRadius: 16, padding: "11px 13px", cursor: "pointer", textDecoration: "none" };
               return r.href
-                ? <a key={r.label} href={r.href} className="fw-elite-press" style={style}>{inner}</a>
+                ? <GoodLifeRouteLink key={r.label} href={r.href} className="fw-elite-press" style={style}>{inner}</GoodLifeRouteLink>
                 : <button key={r.label} type="button" onClick={() => setRitualOpen(value => !value)} aria-expanded={ritualOpen} className="fw-elite-press" style={style}>{inner}</button>;
             })}
           </div>

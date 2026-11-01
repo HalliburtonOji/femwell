@@ -2,6 +2,17 @@ import React from "react";
 import { T, SERIF } from "@/components/journal/Editorial";
 import { OXBLOOD } from "@/components/brand/SliderKit";
 import { CoverCard } from "@/components/brand/expandCards";
+import { Link, useInRouterContext } from "react-router-dom";
+
+// Keep the exact link destination while letting routed rooms retain the app shell.
+// Standalone previews/tests and genuine external publisher links remain anchors.
+export function GoodLifeRouteLink({ href, children, ...props }) {
+  const routed = useInRouterContext();
+  const internal = typeof href === "string" && href.startsWith("/") && !href.startsWith("//");
+  return routed && internal
+    ? <Link to={href} {...props}>{children}</Link>
+    : <a href={href} {...props}>{children}</a>;
+}
 
 // Stable component identities keep focus and scroll position when a room choice changes.
 export function GoodLifeSection({ Icon, title, sub, accent, children }) {

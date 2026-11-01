@@ -20,7 +20,7 @@ import { ArrowLeft, Zap, Wind, Feather as FeatherIcon, Cloud, Sparkles, Moon, Du
 import { T, SERIF, UI } from "@/components/journal/Editorial";
 import { OXBLOOD } from "@/components/brand/SliderKit";
 import { ExpandDetailCard, decodeEntities } from "@/components/brand/expandCards";
-import { GoodLifeSection as Section, GoodLifeShelf as Shelf } from "./GoodLifeRoomParts";
+import { GoodLifeSection as Section, GoodLifeShelf as Shelf, GoodLifeRouteLink } from "./GoodLifeRoomParts";
 import { cwOf } from "@/components/brand/flora";
 import { pickProfile } from "@/utils/userProfile";
 import { computeCycleDay } from "@/hooks/useCycleDay";
@@ -169,8 +169,8 @@ export default function Move() {
   return (
     <div className="fw-good-clean fw-move-clean" style={{ minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "12px 16px 0" }}>
-        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/Lifestyle?section=good")} aria-label="Back to Good life" className="fw-elite-press"
-          style={{ width: 44, height: 44, borderRadius: 999, border: "1px solid #EAE7E0", background: "#fff", color: OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer" }}><ArrowLeft size={19} /></button>
+        <GoodLifeRouteLink href="/Lifestyle?section=good" aria-label="Back to Good life" className="fw-elite-press"
+          style={{ width: 44, height: 44, borderRadius: 999, border: "1px solid #EAE7E0", background: "#fff", color: OXBLOOD, display: "grid", placeItems: "center", cursor: "pointer" }}><ArrowLeft size={19} /></GoodLifeRouteLink>
 
         <header className="fw-good-hero fw-move-hero">
           <span className="fw-good-path">GOOD LIFE / MOVE</span>
@@ -235,13 +235,13 @@ export default function Move() {
             ].map((r) => {
               const c = cwOf(r.cw).petal;
               return (
-                <a key={r.label} href={r.href} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", textAlign: "left", background: "#fff", border: "1px solid #EAE7E0", borderLeft: `3px solid ${c}`, borderRadius: 16, padding: "11px 13px", cursor: "pointer", textDecoration: "none" }}>
+                <GoodLifeRouteLink key={r.label} href={r.href} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", textAlign: "left", background: "#fff", border: "1px solid #EAE7E0", borderLeft: `3px solid ${c}`, borderRadius: 16, padding: "11px 13px", cursor: "pointer", textDecoration: "none" }}>
                   <span style={{ width: 34, height: 34, borderRadius: 10, background: `${c}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><r.Icon size={16} color={c} /></span>
                   <span style={{ flex: 1, minWidth: 0 }}>
                     <span style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink, display: "block", lineHeight: 1.2 }}>{r.label}</span>
                     <span style={{ fontFamily: UI, fontSize: 12.5, color: T.muted }}>{r.sub}</span>
                   </span>
-                </a>
+                </GoodLifeRouteLink>
               );
             })}
           </div>

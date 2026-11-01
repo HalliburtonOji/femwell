@@ -16,7 +16,7 @@ import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Wallet, PiggyBank, Coins, HeartHandshake, Sparkles, MessageCircle, Feather, Tag } from "lucide-react";
 import { ExpandDetailCard, decodeEntities } from "@/components/brand/expandCards";
 import { cwOf } from "@/components/brand/flora";
-import { GoodLifeSection as Section, GoodLifeShelf as Shelf } from "./GoodLifeRoomParts";
+import { GoodLifeSection as Section, GoodLifeShelf as Shelf, GoodLifeRouteLink } from "./GoodLifeRoomParts";
 import { useGoodLifeKeep } from "@/components/lifestyle-elite/useGoodLifeKeep";
 import "./GoodLifeRoomsClean.css";
 import { pickProfile } from "@/utils/userProfile";
@@ -199,7 +199,7 @@ export default function Money() {
   return (
     <div className="fw-good-clean fw-money-clean" style={{ minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "12px 16px 0" }}>
-        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/Lifestyle?section=good")} aria-label="Back to Good life" className="fw-elite-press fw-good-back"><ArrowLeft size={19}/></button>
+        <GoodLifeRouteLink href="/Lifestyle?section=good" aria-label="Back to Good life" className="fw-elite-press fw-good-back"><ArrowLeft size={19}/></GoodLifeRouteLink>
         <header className="fw-good-hero fw-money-hero"><span className="fw-good-path">GOOD LIFE / MONEY</span><span className="fw-money-ledger" aria-hidden="true"/><span className="fw-money-bloom" aria-hidden="true"/><span className="fw-money-ring" aria-hidden="true"/><h1>Money</h1><p>Gently, and at your pace. No maths lecture.</p></header>
         <details className="fw-good-context"><summary>A note before you begin <span aria-hidden="true">+</span></summary><div className="fw-good-context-body">
           <div className="fw-good-context-row"><HeartHandshake size={16}/><div><strong>No verdict here</strong><p>{firstName ? `${firstName}, ` : ""}money can feel complicated. One small look is enough.</p></div></div>
@@ -220,10 +220,10 @@ export default function Money() {
           {itemsStatus === "error" && <div role="alert" className="fw-good-load-error">The reads didn't arrive. <button type="button" onClick={() => { setItemsStatus("loading"); setItemsRetryKey(x => x + 1); }}>Try again</button></div>}
         </details>
         <details className="fw-good-library"><summary>Elsewhere · Jess, Community, Journal, Deals <span aria-hidden="true">+</span></summary><div className="fw-good-door-list">
-          <a href={createPageUrl("Jess")}><Sparkles size={18}/><span>Talk it through with Jess<small>Start with what feels awkward</small></span><span aria-hidden="true">→</span></a>
-          <a href={createPageUrl("Community")}><MessageCircle size={18}/><span>Visit Community<small>Ask or share only if you want to</small></span><span aria-hidden="true">→</span></a>
-          <a href={createPageUrl("Journal")}><Feather size={18}/><span>Put the worry into words<small>A private page, no numbers required</small></span><span aria-hidden="true">→</span></a>
-          <a href={createPageUrl("Deals")}><Tag size={18}/><span>See Deals<small>Offers, only for things you already need</small></span><span aria-hidden="true">→</span></a>
+          <GoodLifeRouteLink href={createPageUrl("Jess")}><Sparkles size={18}/><span>Talk it through with Jess<small>Start with what feels awkward</small></span><span aria-hidden="true">→</span></GoodLifeRouteLink>
+          <GoodLifeRouteLink href={createPageUrl("Community")}><MessageCircle size={18}/><span>Visit Community<small>Ask or share only if you want to</small></span><span aria-hidden="true">→</span></GoodLifeRouteLink>
+          <GoodLifeRouteLink href={createPageUrl("Journal")}><Feather size={18}/><span>Put the worry into words<small>A private page, no numbers required</small></span><span aria-hidden="true">→</span></GoodLifeRouteLink>
+          <GoodLifeRouteLink href={createPageUrl("Deals")}><Tag size={18}/><span>See Deals<small>Offers, only for things you already need</small></span><span aria-hidden="true">→</span></GoodLifeRouteLink>
         </div></details>
       </div>
       {expanded && <ExpandDetailCard item={expanded} onClose={() => setExpanded(null)} presentation="focused" room="good" saved={saved} onSave={onSave} error={saveError}/>}

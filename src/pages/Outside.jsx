@@ -21,7 +21,7 @@ import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Trees, Leaf, Sprout, CalendarHeart, MessageCircle, Feather, Sparkles, Bird } from "lucide-react";
 import { ExpandDetailCard, decodeEntities } from "@/components/brand/expandCards";
 import { cwOf } from "@/components/brand/flora";
-import { GoodLifeSection as Section, GoodLifeShelf as Shelf } from "./GoodLifeRoomParts";
+import { GoodLifeSection as Section, GoodLifeShelf as Shelf, GoodLifeRouteLink } from "./GoodLifeRoomParts";
 import { useGoodLifeKeep } from "@/components/lifestyle-elite/useGoodLifeKeep";
 import "./GoodLifeRoomsClean.css";
 import { pickProfile } from "@/utils/userProfile";
@@ -125,7 +125,7 @@ export default function Outside() {
   return (
     <div className="fw-good-clean fw-outside-clean" style={{ minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "12px 16px 0" }}>
-        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/Lifestyle?section=good")} aria-label="Back to Good life" className="fw-elite-press fw-good-back"><ArrowLeft size={19}/></button>
+        <GoodLifeRouteLink href="/Lifestyle?section=good" aria-label="Back to Good life" className="fw-elite-press fw-good-back"><ArrowLeft size={19}/></GoodLifeRouteLink>
         <header className="fw-good-hero fw-outside-hero"><span className="fw-good-path">GOOD LIFE / OUTSIDE</span><span className="fw-outside-window" aria-hidden="true"/><span className="fw-outside-tree" aria-hidden="true"/><h1>Outside</h1><p>A little air. No grand expedition required.</p></header>
         <details className="fw-good-context"><summary>A note from outside <span aria-hidden="true">+</span></summary><div className="fw-good-context-body">
           <div className="fw-good-context-row"><Leaf size={16}/><div><strong>Start nearby</strong><p>{firstName ? `${firstName}, ` : ""}a window, street tree or patch of sky is enough to begin.</p></div></div>
@@ -133,7 +133,7 @@ export default function Outside() {
         </div></details>
 
         <Section Icon={Leaf} title="One little outside thing" accent={sage}><div className="fw-outside-one"><Sprout size={22} aria-hidden="true"/><p>{prompts[0]}</p></div></Section>
-        <a href={createPageUrl("Events")} className="fw-outside-event"><CalendarHeart size={20}/><span><strong>See what's on in Events</strong><small>Walks and outdoor gatherings, when listed</small></span><span aria-hidden="true">→</span></a>
+        <GoodLifeRouteLink href={createPageUrl("Events")} className="fw-outside-event"><CalendarHeart size={20}/><span><strong>See what's on in Events</strong><small>Walks and outdoor gatherings, when listed</small></span><span aria-hidden="true">→</span></GoodLifeRouteLink>
 
         <details className="fw-good-library"><summary>More outside · small ideas and real reads <span aria-hidden="true">+</span></summary>
           <Section Icon={Trees} title="Three more little invitations" accent={sage}><div className="fw-outside-prompts">{prompts.slice(1).map((p,i)=><p key={i}>{p}</p>)}</div></Section>
@@ -142,10 +142,10 @@ export default function Outside() {
           {itemsStatus === "error" && <div role="alert" className="fw-good-load-error">The reads didn't arrive. <button type="button" onClick={() => { setItemsStatus("loading"); setRetryKey(x => x + 1); }}>Try again</button></div>}
         </details>
         <details className="fw-good-library"><summary>Carry it on · Planner, Jess, Community, Journal <span aria-hidden="true">+</span></summary><div className="fw-good-door-list">
-          <a href={createPageUrl("Planner")}><CalendarHeart size={18}/><span>Make room for a walk<small>No target, just some air</small></span><span aria-hidden="true">→</span></a>
-          <a href={createPageUrl("Jess")}><Sparkles size={18}/><span>Ask Jess for an idea<small>Even if all you have is a window</small></span><span aria-hidden="true">→</span></a>
-          <a href={createPageUrl("Community")}><MessageCircle size={18}/><span>Notice it together<small>Share what caught your eye, if you want</small></span><span aria-hidden="true">→</span></a>
-          <a href={createPageUrl("Journal")}><Feather size={18}/><span>Keep a little sighting<small>The first leaf, the fox, the sky</small></span><span aria-hidden="true">→</span></a>
+          <GoodLifeRouteLink href={createPageUrl("Planner")}><CalendarHeart size={18}/><span>Make room for a walk<small>No target, just some air</small></span><span aria-hidden="true">→</span></GoodLifeRouteLink>
+          <GoodLifeRouteLink href={createPageUrl("Jess")}><Sparkles size={18}/><span>Ask Jess for an idea<small>Even if all you have is a window</small></span><span aria-hidden="true">→</span></GoodLifeRouteLink>
+          <GoodLifeRouteLink href={createPageUrl("Community")}><MessageCircle size={18}/><span>Notice it together<small>Share what caught your eye, if you want</small></span><span aria-hidden="true">→</span></GoodLifeRouteLink>
+          <GoodLifeRouteLink href={createPageUrl("Journal")}><Feather size={18}/><span>Keep a little sighting<small>The first leaf, the fox, the sky</small></span><span aria-hidden="true">→</span></GoodLifeRouteLink>
         </div></details>
       </div>
       {expanded && <ExpandDetailCard item={expanded} onClose={() => setExpanded(null)} presentation="focused" room="good" saved={saved} onSave={onSave} error={saveError}/>}
