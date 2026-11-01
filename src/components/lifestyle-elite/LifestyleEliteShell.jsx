@@ -1174,7 +1174,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
     // remain; current playback still takes priority in ListenFocus.
     const edition = calmLayout ? orderListenEdition(grouped.audio, profile?.followed_categories) : [];
     const seen = new Set();
-    const candidates = [...edition.map(choice => choice.row), ...(grouped.audio || []).slice(0, 6)]
+    const candidates = [...edition.map(choice => choice.row), ...(grouped.audio || []).filter(row => row.audio_url && Number(row.duration_seconds) > 0).slice(0, 6), ...(grouped.audio || []).slice(0, 6)]
       .filter(row => row && !seen.has(row.id) && seen.add(row.id));
     const notes = new Map(edition.map(choice => [choice.id, choice]));
     const real = candidates.map(r => ({ ...rowCard(r, "audio"), ...(notes.has(r.id) ? { editorialReason: notes.get(r.id).reason, editorialFollowedCategory: notes.get(r.id).matchesFollowed ? notes.get(r.id).category : null } : {}) }));

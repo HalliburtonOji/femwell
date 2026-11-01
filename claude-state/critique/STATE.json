@@ -53,10 +53,10 @@
     "reason": "Halli stopped recurring builds: usage consumption and endless loop. Tool and automation.toml confirm PAUSED; explicit user restart required."
   },
   "manualContent": {
-    "id": "LIFESTYLE-CONTENT-2026-11-01-LC28",
-    "stage": "LC28 Good life full-room access and exact routed returns live on both origins at index-CQ4NCv12.js; Listen exact playable episode/content suitability next; scheduler PAUSED",
-    "nextAtom": "LC29 one coherent Listen episode-first source/player and Good life content/cost pass: verify actual playable episode, duration, captions/transcript and rights before Ideas review; measure dedicated-room 400–500-row request bytes/frequency, preserve full catalogue and all eleven rooms; six Read pieces and shared voice default held. No automatic recurrence.",
-    "proofGate": "Source ca68924d; 66/66 focused tests, scoped lint zero errors, build, independent finite P0/P1 none after two repaired live P1s; local and deployed controlled 360/390/430 all 11 Good life overlay→full room→exact Back, one document load and zero sampled errors/overflow; 42 onward route taps at 390 local no reload. Mock auth/empty catalogue, native iPhone and signed-in media not proved.",
+    "id": "LIFESTYLE-CONTENT-2026-11-01-LC29",
+    "stage": "LC29 candidate source and Ideas receipt: first Listen action episode-only, one episode direct, full Browse retained; nine Good life rooms share a brief published catalogue; Becoming failure Retry. Final normal push/site deploy pending; scheduler PAUSED.",
+    "nextAtom": "Finish LC29: commit final seventh-row correction and docs, push normally, rebuild/deploy site, verify both origins and 360/390/430 actual Listen and Good life taps. Then LC30 signed-in episode playback/transcript/source-rights and actual request/row/byte/provider-unit study; preserve all rooms, archives and held decisions. No automatic recurrence.",
+    "proofGate": "Candidate d76af1a7 plus seventh-row correction; 85/85 focused tests, scoped lint zero errors, build index-BS5SMAZR.js, independent finite P0/P1/P2 none after two repaired P2s; local controlled 360/390/430 Listen chooser/open and all 11 Good life full-room/Back, one document load and zero sampled errors/overflow. Mock media and local request-count fixture only; native iPhone, real signed-in media, bytes and paid units not proved.",
     "carryForward": [
       "Clean Ideas reader false-open progress repaired in LC08; canonical main reader still follows its held old reached contract until separate promotion",
       "Full Planner/Garden old-paper redesign and signed-in exact read-back remain; preview book ref token is only a bounded return repair",
@@ -75,8 +75,8 @@
       "LC16 Profile first owner removes old ground/streak locally; Settings/Menu and 15+ linked owners, nav/sheet visual motion and full every-tap audit remain separate",
       "LC16 Profile anonymous preference has no known Community or analytics consumer; wording corrected but privacy behaviour needs product design",
       "LC16 Profile fetches all owner DailyCheckins before local 90-day truncation; actual row/byte cost and safe query plan remain",
-      "LC28 Listen P2: Choose a listen can open a show directory instead of a specific playable episode; source/duration/captions/rights and player read-back needed",
-      "LC28 ten dedicated Good life rooms fetch 400–500 published catalogue rows on mount; actual bytes/paid units and safe shared-edition freshness unmeasured"
+      "LC29 episode URLs/durations are eligibility only; real publisher playback, transcript and rights still need signed-in source proof",
+      "LC29 nine dedicated Good life rooms briefly share the exact 500-row published query; Mirror 400 and Curious PODCAST 60 remain separate. Real bytes/paid units, source freshness and capacity are unmeasured"
     ],
     "automation": "PAUSED; manual work only"
   },
@@ -85,9 +85,9 @@
     "liveBundle": "index-OD-gjaX_.js"
   },
   "current": {
-    "section": "Lifestyle / Good life full rooms live (manual)",
-    "atom": "LC28 released; LC29 Listen playable episode and Good life content/cost pass next; other editorial/voice decisions held",
-    "status": "Main LC28 live index-CQ4NCv12.js on both origins; 11 full rooms/returns connected, scheduler PAUSED."
+    "section": "Lifestyle / Listen exact-choice and Good life source (manual)",
+    "atom": "LC29 candidate fully tested locally; final commit/push/deploy/reproof next; LC30 real source and cost proof after",
+    "status": "Main LC28 live index-CQ4NCv12.js; LC29 source candidate index-BS5SMAZR.js locally, scheduler PAUSED."
   },
   "lastCompleted": {
     "run": 5,

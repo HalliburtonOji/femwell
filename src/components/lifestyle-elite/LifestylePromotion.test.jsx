@@ -370,4 +370,15 @@ describe('approved main Lifestyle parity',()=>{
     expect(await screen.findByRole('heading',{name:'The only complete episode'})).toBeVisible();
     expect(screen.queryByRole('dialog',{name:'Choose a listen'})).not.toBeInTheDocument();
   });
+  it('finds a timed episode beyond six untimed feed rows without losing the older choices',async()=>{
+    window.history.replaceState({},'', '/Lifestyle?section=listen');
+    mock.articles.mockResolvedValue([
+      ...Array.from({length:6},(_,index)=>({id:`untimed-${index}`,title:`Untimed show ${index}`,media_type:'PODCAST',status:'PUBLISHED',audio_url:`https://publisher.example/untimed-${index}.mp3`,duration_seconds:0})),
+      {id:'seventh',title:'A complete seventh episode',media_type:'PODCAST',status:'PUBLISHED',audio_url:'https://publisher.example/seventh.mp3',duration_seconds:2500},
+    ]);
+    render(<Lifestyle/>);
+    expect(await screen.findByRole('button',{name:"Open today's listen"})).toBeVisible();
+    fireEvent.click(screen.getByText(/Browse all listens & watches/));
+    expect(screen.getByText('Untimed show 0')).toBeVisible();
+  });
 });

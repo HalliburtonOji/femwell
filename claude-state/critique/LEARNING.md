@@ -1,5 +1,9 @@
 # Critic learning — append dated evidence
 
+## 1 November — LC29 episode eligibility and shared source failure
+
+A chooser can be honest about a show directory and still waste the user's first tap. Select a timed in-app episode for the primary action, keeping directories in Browse. Apply selection before a six-row presentation cap: the critic reproduced six untimed rows hiding a seventh playable episode, which falsely said no episode was ready. A shared successful 500-row published query can reduce repeated nearby-room reads without changing bespoke filters, but each room still needs its own error state. Becoming's inherited catch-to-empty was caught only by an injected HTTP 500 and Retry tap. A mock one-request route loop proves deduplication in that loop, not wire bytes, bills or capacity.
+
 ## 1 November — LC28 full Good life room reachability and named return
 
 The focused Good life sheet looked complete because it had an eleven-room selector, but it hid the dedicated boards' mood, movement and intention tools. One visible selected-room action restored full depth without another eleven-item grid. A button labelled “Back to Good life” used `history.length > 1`, which reached `about:blank` in a fresh direct tab; named destinations need explicit routes. The 11 room pages had 42 distinct internal onward paths; preserving their anchors while using React Router in the app kept those taps smooth. Test settled pixels after sheet entrance animation: a mid-motion screenshot falsely suggested text bleeding through. A later 430 screenshot sweep paused during host sleep, while the complete first tap sweep and independent retry passed. Ten room routes still fetch 400–500 published rows on mount; source count alone is not a bill. The Listen directory-first choice remains a real content suitability P2.
