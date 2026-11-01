@@ -1,6 +1,7 @@
 import React from "react";
 import { beforeEach, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { queryClientInstance } from "@/lib/query-client";
 
 const api = vi.hoisted(() => ({ me: vi.fn(), items: vi.fn(), profiles: vi.fn(), saved: vi.fn(), createProfile: vi.fn(), updateProfile: vi.fn(), remove: vi.fn(), stories: vi.fn(), readings: vi.fn(), goals: vi.fn(), createGoal: vi.fn() }));
 vi.mock("@/api/base44Client", () => ({ base44: {
@@ -29,6 +30,7 @@ const mirrorRead = { id: "mirror-read", status: "PUBLISHED", category: "Fashion"
 const moveRead = { id: "move-read", status: "PUBLISHED", category: "Fitness", media_type: "ARTICLE", title: "Dance for the pleasure of it", summary: "Movement without a target.", lede: "Start with a song.\n\nStop whenever you like.", content_url: "https://publisher.example/move", source_name: "Movement Journal" };
 
 beforeEach(() => {
+  queryClientInstance.clear();
   vi.clearAllMocks();
   let profile = null;
   api.me.mockResolvedValue({ id: "reader-a", email: "reader@example.test" });

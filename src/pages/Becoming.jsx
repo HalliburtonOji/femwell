@@ -17,6 +17,7 @@
 // mechanics — if a card could appear in a hustle app unchanged, it fails.
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { base44 } from "@/api/base44Client";
+import { goodLifePublishedCatalog } from "@/data/goodLifeCatalog";
 import { ArrowLeft, HeartHandshake, Fingerprint, Compass, Sprout, Shield, Sparkles, Feather, MessageCircle, Users } from "lucide-react";
 import { T, SERIF, UI } from "@/components/journal/Editorial";
 import { OXBLOOD } from "@/components/brand/SliderKit";
@@ -78,6 +79,8 @@ const QUESTIONS = [
 
 export default function Becoming() {
   const [items, setItems] = useState([]);
+  const [itemsStatus, setItemsStatus] = useState("loading");
+  const [itemsRevision, setItemsRevision] = useState(0);
   const [firstName, setFirstName] = useState("");
   const [lens, setLens] = useState(LENS[0]);
   const [expanded, setExpanded] = useState(null);
@@ -92,11 +95,19 @@ export default function Becoming() {
 
   useEffect(() => {
     let alive = true;
+    setItemsStatus("loading");
+    goodLifePublishedCatalog().then(rows => {
+      if (alive) {
+        setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r)));
+        setItemsStatus("ready");
+      }
+    }).catch(() => { if (alive) setItemsStatus("error"); });
+    return () => { alive = false; };
+  }, [itemsRevision]);
+
+  useEffect(() => {
+    let alive = true;
     (async () => {
-      try {
-        const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500).catch(() => []);
-        if (alive) setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r)));
-      } catch { /* graceful */ }
       try {
         const u = await base44.auth.me().catch(() => null);
         if (u?.id) {
@@ -253,6 +264,7 @@ export default function Becoming() {
         </Section>
 
         {/* the lens — where are you becoming */}
+        {itemsStatus === "error" && <p role="alert" style={{fontFamily:UI,fontSize:14,color:OXBLOOD,lineHeight:1.45}}>The reads couldn't load just now. <button type="button" onClick={() => setItemsRevision(n => n + 1)} style={{border:0,background:"transparent",color:plum,font:"inherit",fontWeight:700,textDecoration:"underline",cursor:"pointer",minHeight:44}}>Try again</button></p>}
         <Section Icon={Compass} title="Where are you becoming?" accent={cwOf(lens.cw).petal}
           sub="Pick what's on your mind; the reads follow.">
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>

@@ -28,3 +28,9 @@ export function orderListenEdition(rows, followedCategories = []) {
     .filter(entry => entry.row)
     .sort((a, b) => Number(b.matchesFollowed) - Number(a.matchesFollowed) || a.index - b.index);
 }
+
+// A first-tap choice promises an episode, not a show homepage or an untimed file.
+// Keep every other card in the full Listen browse surface.
+export function playableListenChoices(cards = []) {
+  return cards.filter(card => card?.audioSrc && Number(card.duration) > 0 && !card.showDirectory);
+}

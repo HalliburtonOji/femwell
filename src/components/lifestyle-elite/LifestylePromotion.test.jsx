@@ -345,4 +345,29 @@ describe('approved main Lifestyle parity',()=>{
     expect(disclosure.open).toBe(true);
     expect(within(disclosure).getByRole('button',{name:/My own book/})).toBeVisible();
   });
+  it('offers a timed episode in the first Listen chooser and keeps show directories in Browse',async()=>{
+    window.history.replaceState({},'', '/Lifestyle?section=listen');
+    mock.articles.mockResolvedValue([
+      {id:'episode-one',title:'The complete episode',media_type:'PODCAST',content_type:'PODCAST',status:'PUBLISHED',audio_url:'https://publisher.example/complete.mp3',duration_seconds:2700,source_name:'The actual show'},
+      {id:'episode-two',title:'Another complete episode',media_type:'PODCAST',content_type:'PODCAST',status:'PUBLISHED',audio_url:'https://publisher.example/another.mp3',duration_seconds:1800,source_name:'Another actual show'},
+    ]);
+    render(<Lifestyle/>);
+    const choose=await screen.findByRole('button',{name:'Choose a listen'});
+    fireEvent.click(choose);
+    const sheet=await screen.findByRole('dialog',{name:'Choose a listen'});
+    expect(within(sheet).getByRole('button',{name:'The complete episode'})).toBeVisible();
+    expect(within(sheet).queryByRole('button',{name:/Huberman|FoundMyFitness|Mel Robbins/i})).not.toBeInTheDocument();
+    fireEvent.click(within(sheet).getByRole('button',{name:'Close section actions'}));
+    expect(await screen.findByText(/Browse all listens & watches/)).toBeVisible();
+  });
+  it('opens the only available timed episode directly, without a one-item chooser',async()=>{
+    window.history.replaceState({},'', '/Lifestyle?section=listen');
+    mock.articles.mockResolvedValue([{id:'only-episode',title:'The only complete episode',media_type:'PODCAST',content_type:'PODCAST',status:'PUBLISHED',audio_url:'https://publisher.example/only.mp3',duration_seconds:1200,source_name:'A real show'}]);
+    render(<Lifestyle/>);
+    const open=await screen.findByRole('button',{name:"Open today's listen"});
+    expect(screen.queryByRole('button',{name:'Choose a listen'})).not.toBeInTheDocument();
+    fireEvent.click(open);
+    expect(await screen.findByRole('heading',{name:'The only complete episode'})).toBeVisible();
+    expect(screen.queryByRole('dialog',{name:'Choose a listen'})).not.toBeInTheDocument();
+  });
 });

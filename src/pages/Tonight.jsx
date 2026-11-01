@@ -14,6 +14,7 @@
 // — good sleep is NEVER framed as a personal achievement or failing.
 import { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
+import { goodLifePublishedCatalog } from "@/data/goodLifeCatalog";
 import { ArrowLeft, Moon, Feather, Sparkles, Wind, BookOpen, MessageCircle, CalendarCheck, Stars } from "lucide-react";
 import { ExpandDetailCard, decodeEntities } from "@/components/brand/expandCards";
 import { GoodLifeSection as Section, GoodLifeShelf as Shelf, GoodLifeRouteLink } from "./GoodLifeRoomParts";
@@ -89,7 +90,7 @@ export default function Tonight() {
     let alive = true;
     (async () => {
       try {
-        const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500);
+        const rows = await goodLifePublishedCatalog();
         if (alive) { setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r))); setItemsStatus("ready"); }
       } catch { if (alive) setItemsStatus("error"); }
       // the nightly assembly — a chapter + the sky, both refresh on their own

@@ -1,6 +1,7 @@
 import React from "react";
 import { beforeEach, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { queryClientInstance } from "@/lib/query-client";
 
 const api = vi.hoisted(() => ({ me: vi.fn(), items: vi.fn(), profiles: vi.fn(), saved: vi.fn(), createProfile: vi.fn(), updateProfile: vi.fn(), remove: vi.fn() }));
 vi.mock("@/api/base44Client", () => ({ base44: {
@@ -28,6 +29,7 @@ async function openFeaturedRead() {
 }
 
 beforeEach(() => {
+  queryClientInstance.clear();
   vi.clearAllMocks();
   api.me.mockResolvedValue({ id: "reader-a" });
   api.items.mockResolvedValue([source]);
@@ -36,6 +38,17 @@ beforeEach(() => {
   api.createProfile.mockResolvedValue({ id: "profile-a", user_id: "reader-a", saved_item_ids: [source.id] });
   api.updateProfile.mockResolvedValue({ id: "profile-a", user_id: "reader-a", saved_item_ids: [source.id] });
   api.remove.mockResolvedValue(undefined);
+});
+
+it("shows a retry when the room catalogue fails, without calling the empty library a success", async () => {
+  api.items.mockRejectedValueOnce(new Error("offline")).mockResolvedValueOnce([source]);
+  render(<Becoming />);
+  const alert = await screen.findByRole("alert");
+  expect(alert).toHaveTextContent("reads couldn't load");
+  fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+  await waitFor(() => expect(api.items).toHaveBeenCalledTimes(2));
+  await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
+  expect(document.querySelector(".fw-becoming-clean .fw-bec-shelf button")).not.toBeNull();
 });
 
 it("opens the complete source and persists a Becoming read into the shared saved collection", async () => {

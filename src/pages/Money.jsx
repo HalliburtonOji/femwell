@@ -13,6 +13,7 @@
 // Deals deep-link. No new function.
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { base44 } from "@/api/base44Client";
+import { goodLifePublishedCatalog } from "@/data/goodLifeCatalog";
 import { ArrowLeft, Wallet, PiggyBank, Coins, HeartHandshake, Sparkles, MessageCircle, Feather, Tag } from "lucide-react";
 import { ExpandDetailCard, decodeEntities } from "@/components/brand/expandCards";
 import { cwOf } from "@/components/brand/flora";
@@ -97,7 +98,7 @@ export default function Money() {
     let alive = true;
     (async () => {
       try {
-        const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500);
+        const rows = await goodLifePublishedCatalog();
         if (alive) { setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r))); setItemsStatus("ready"); }
       } catch { if (alive) setItemsStatus("error"); }
     })();

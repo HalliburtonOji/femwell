@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LISTEN_EDITORIAL_CHOICES, orderListenEdition } from "./listenEditorial";
+import { LISTEN_EDITORIAL_CHOICES, orderListenEdition, playableListenChoices } from "./listenEditorial";
 
 const episode = (id, extra = {}) => ({ id, audio_url: `https://publisher.example/${id}.mp3`, duration_seconds: 2700, ...extra });
 
@@ -31,5 +31,13 @@ describe("Ideas Listen edition", () => {
 
   it("does not choose a source-only show as an in-app episode", () => {
     expect(orderListenEdition([episode(LISTEN_EDITORIAL_CHOICES[0].id, { duration_seconds: 0 })])).toEqual([]);
+  });
+  it("gives a first-tap listener only timed playable episodes, leaving directories to Browse", () => {
+    const playable = { id: "episode", audioSrc: "https://publisher.example/episode.mp3", duration: 2400 };
+    expect(playableListenChoices([
+      { id: "directory", showDirectory: true, duration: 0 },
+      { id: "untimed", audioSrc: "https://publisher.example/other.mp3" },
+      playable,
+    ])).toEqual([playable]);
   });
 });

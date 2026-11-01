@@ -83,7 +83,7 @@ import { getMoonPhase } from "@/utils/astrology";
 import ReadingColumn from "@/components/brand/ReadingColumn";
 import { LIFESTYLE_VIDEOS } from "@/data/lifestyleVideos";
 import { LIFESTYLE_EDITORIAL_DRAFTS } from "@/data/lifestyleEditorialDrafts";
-import { orderListenEdition } from "@/data/listenEditorial";
+import { orderListenEdition, playableListenChoices } from "@/data/listenEditorial";
 // the REAL curated shows (12, with Apple/Spotify deep-links) — the rail already owned them;
 // this page had been carrying a 2-item stub instead. Correcting that.
 import { EXTERNAL_PODCASTS } from "@/components/lifestyle/listen/ExternalPodcastsRail";
@@ -1196,6 +1196,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
     }));
     return [...real, ...ext];
   }, [grouped, rowCard, openExternal, calmLayout, returnToMain, profile?.followed_categories]);
+  const playableAudioChoices = useMemo(() => playableListenChoices(audioCards), [audioCards]);
   const videoCards = useMemo(() => {
     // A long blurb is not proof of a substantial watch. In the Ideas preview,
     // unknown-length/short clips stay in the full watch directory, not the lead.
@@ -1628,7 +1629,9 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
   const readPickerCard = item => ({ ...item, pickerLabel: item.archived ? `${item.title} · Archive · source check pending` : item.title });
   const sectionActions = {
     read: [continueCards[0] ? {label:"Continue reading",run:()=>openReadCard(continueCards[0])} : choose("Choose a read", [...articleCards, ...storyCards].map(readPickerCard), openReadCard), choose("Saved reads", actionSavedCards.filter((i) => ["article", "story", "daily_story"].includes(i.type)).map(readPickerCard), openReadCard, keepsError ? "Some saves couldn’t load. Open Yours to retry." : keepsLoading ? "Finding your saved reads…" : "No saved reads yet. Save a piece you enjoy and it will appear here.")],
-    listen: [choose("Choose a listen", audioCards), choose("Choose a watch", videoCards)],
+    listen: [calmLayout && playableAudioChoices.length === 1
+      ? { label: "Open today's listen", run: () => setExpanded(playableAudioChoices[0]) }
+      : choose("Choose a listen", calmLayout ? playableAudioChoices : audioCards, setExpanded, "No complete episode is ready here yet. Browse all listens & shows for the current sources."), choose("Choose a watch", videoCards)],
     books: [{ label: calmBookPosition && !calmBookPosition.caughtUp ? "Continue story" : "Your chapter", run: calmBookPosition && !calmBookPosition.caughtUp ? openPersonalChapter : openTodaysChapter }, focusedPreview && calmLayout ? choose("Choose a book", bookPickerRows, openBookChoice) : choose("Choose a book", calmLayout ? [...classicCards, ...shelfBookCards] : [...shelfBookCards, ...classicCards])],
     good: [calmLayout ? { label: "Time for yourself", run: focusGoodTime } : { label: "Time for yourself", description: "A read, a listen, or a little doing.", content: (afterClose) => <TimePickerLens presentation={selectedPresentation} calmLayout={calmLayout} ideasEdition={calmLayout && !returnToMain} pickFor={pickFor} isSaved={isSaved} onSave={(it) => afterClose(toggleSave, it)} onOpen={(it) => afterClose(openItem, it)} onTry={(title) => afterClose(saveTryThis, title)} /> }, choose("A small joy", goodLifeJoys, openJoy)],
     yours: [livingDemo ? {label:"Open your saves",run:()=>navigate(savedHref)} : choose("Open your saves", actionSavedCards), choose("Continue reading", continueCards, openReadCard, "No reading in progress yet. Start a book and your place will appear here.")],
@@ -1801,7 +1804,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
           // its rows but leads with that section's — so it reads as "today, at a glance, starting with
           // what you're looking at" rather than a summary about other sections sitting on top of one
           // that already summarises itself.
-          if(livingDemo && focusSection === "listen")glanceRows.unshift({Icon:Headphones,label:"Listen & watch",text:`${audioCards.length} listens · ${videoCards.length} watches in this selection`,onClick:()=>audioCards[0] || videoCards[0] ? setExpanded(audioCards[0] || videoCards[0]) : navigate(calmLayout ? watchHref : "/WatchListen")});
+          if(livingDemo && focusSection === "listen")glanceRows.unshift({Icon:Headphones,label:"Listen & watch",text:`${playableAudioChoices.length} episodes · ${videoCards.length} watches here; more shows in Browse`,onClick:()=>playableAudioChoices[0] || videoCards[0] ? setExpanded(playableAudioChoices[0] || videoCards[0]) : navigate(calmLayout ? watchHref : "/WatchListen")});
           if(livingDemo && focusSection === "good")glanceRows.unshift({Icon:Coffee,label:"A small joy",text:goodLifeJoys[0]?.title || "A little time to yourself",onClick:()=>openJoy(goodLifeJoys[0])});
           if(livingDemo && focusSection === "yours")glanceRows.unshift({Icon:Bookmark,label:"Your kept things",text:skySavedCount ? `${skySavedCount} Sky ${skySavedCount===1 ? "keepsake" : "keepsakes"}${savedItems.length ? ` · ${savedItems.length} Lifestyle ${savedItems.length===1 ? "find" : "finds"}` : " kept for another day"}` : savedItems.length ? `${savedItems.length} Lifestyle ${savedItems.length===1 ? "find" : "finds"} · your Sky keepsakes below` : keepsError || skySavesError ? "Some keeps couldn't load · open Yours to retry" : keepsLoading || skySavesLoading ? "Finding what you've kept" : "Your saved things, with room for more",onClick:()=>navigate(savedHref)});
           const focusRowLabel = { read: "Your reading", books: calmBookPosition && !calmBookPosition.caughtUp ? "Your place" : "Your chapter", story: "Today's chapter", sky: "Your sky", ...(livingDemo ? {listen:"Listen & watch",good:"A small joy",yours:"Your kept things"} : {}) }[focusSection] || null;

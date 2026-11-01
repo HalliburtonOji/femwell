@@ -14,6 +14,7 @@
 // guess — Liu 2022), never homework/streak, and NEVER shown when she chose solitude.
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
+import { goodLifePublishedCatalog } from "@/data/goodLifeCatalog";
 import { ArrowLeft, Users, Home, Heart, HandHeart, Leaf, MessageCircle, Feather, Moon, CalendarHeart, Sparkles } from "lucide-react";
 import { T, SERIF, UI } from "@/components/journal/Editorial";
 import { OXBLOOD } from "@/components/brand/SliderKit";
@@ -77,7 +78,7 @@ export default function Kindred() {
     let alive = true;
     (async () => {
       try {
-        const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500);
+        const rows = await goodLifePublishedCatalog();
         if (alive) { setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r))); setItemsStatus("ready"); }
       } catch { if (alive) setItemsStatus("error"); }
       try {

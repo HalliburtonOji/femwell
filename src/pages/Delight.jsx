@@ -16,6 +16,7 @@
 // good, never the reason to do it).
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
+import { goodLifePublishedCatalog } from "@/data/goodLifeCatalog";
 import { ArrowLeft, Tv, Laugh, Star, Music, Shuffle, Sparkles, Dices, MessageCircle, Feather, CalendarHeart, PartyPopper } from "lucide-react";
 import { T, SERIF, UI } from "@/components/journal/Editorial";
 import { OXBLOOD } from "@/components/brand/SliderKit";
@@ -73,7 +74,7 @@ export default function Delight() {
     let alive = true;
     (async () => {
       try {
-        const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500);
+        const rows = await goodLifePublishedCatalog();
         if (alive) { setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r))); setItemsStatus("ready"); }
       } catch { if (alive) setItemsStatus("error"); }
       try {

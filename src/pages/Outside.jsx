@@ -18,6 +18,7 @@
 // bar, urban-and-flat-first), kept OUT of the copy — never guilt-tripping.
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
+import { goodLifePublishedCatalog } from "@/data/goodLifeCatalog";
 import { ArrowLeft, Trees, Leaf, Sprout, CalendarHeart, MessageCircle, Feather, Sparkles, Bird } from "lucide-react";
 import { ExpandDetailCard, decodeEntities } from "@/components/brand/expandCards";
 import { cwOf } from "@/components/brand/flora";
@@ -87,7 +88,7 @@ export default function Outside() {
     let alive = true;
     (async () => {
       try {
-        const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500);
+        const rows = await goodLifePublishedCatalog();
         if (alive) { setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r))); setItemsStatus("ready"); }
       } catch { if (alive) setItemsStatus("error"); }
       try {
