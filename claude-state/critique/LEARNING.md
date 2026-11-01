@@ -1,5 +1,9 @@
 # Critic learning — append dated evidence
 
+## 1 November — LC28 full Good life room reachability and named return
+
+The focused Good life sheet looked complete because it had an eleven-room selector, but it hid the dedicated boards' mood, movement and intention tools. One visible selected-room action restored full depth without another eleven-item grid. A button labelled “Back to Good life” used `history.length > 1`, which reached `about:blank` in a fresh direct tab; named destinations need explicit routes. The 11 room pages had 42 distinct internal onward paths; preserving their anchors while using React Router in the app kept those taps smooth. Test settled pixels after sheet entrance animation: a mid-motion screenshot falsely suggested text bleeding through. A later 430 screenshot sweep paused during host sleep, while the complete first tap sweep and independent retry passed. Ten room routes still fetch 400–500 published rows on mount; source count alone is not a bill. The Listen directory-first choice remains a real content suitability P2.
+
 ## 31 October — LC27 approval parity and opened overlays
 
 The six accepted Lifestyle headers were already main; compare actual routed props before duplicating a demo promotion. A single Books chooser branch still differed: main expanded a generic card where the accepted demo used labelled exact openers. Inspect the overlay itself, because Good life's launcher was clean while its Becoming→Journal and Carry it on anchors still reloaded the document. The independent critic reproduced that P1 and re-proved routed exits at three touch widths. Capture reading scroll on the observed event before a route reset; a delayed persistence callback that re-reads scroll can save zero. Controlled no-reload taps are stronger than source review, but mocked content does not certify live owners, iPhone Safari, all 11 rooms or affordability.

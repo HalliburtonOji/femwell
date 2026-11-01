@@ -1,5 +1,7 @@
 # LC28 — Lifestyle opened journeys, 31 October 2026
 
+**Released 1 November:** claim `85d27b7f`, source `ca68924d`, candidate baton `c3c0b2ea` pushed without force. Base44 site deployed after the final build; `femwells.com` and `fem-well.base44.app` both serve `index-CQ4NCv12.js` and the [Ideas LC28 receipt](../../public/lifestyle-content/index.html#lc28-full-rooms). Controlled deployed 360/390/430 touch reran all eleven selected-room → full-room → named Back paths: one document load, no sampled overflow/page errors. No backend/entity deploy was needed.
+
 ## Motherboard and boundaries
 
 This is one manual, finite pass. The accepted main Lifestyle has six section headers and an in-place Good life room overlay. Its eleven dedicated Good life routes also remain reachable from the main room doors and other app areas. Each room's hero, daily choice, library, current content source, reader/player, secondary actions and exact exit remain part of the feature inventory. The first original Read essay is published; the other six, voice default and broader reader appearance remain held. Do not remove a room, content shelf or source ending to make this batch appear tidy. Four-hour automation stays paused.
