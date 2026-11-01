@@ -54,9 +54,9 @@
   },
   "manualContent": {
     "id": "LIFESTYLE-CONTENT-2026-11-01-LC29",
-    "stage": "LC29 candidate source and Ideas receipt: first Listen action episode-only, one episode direct, full Browse retained; nine Good life rooms share a brief published catalogue; Becoming failure Retry. Final normal push/site deploy pending; scheduler PAUSED.",
-    "nextAtom": "Finish LC29: commit final seventh-row correction and docs, push normally, rebuild/deploy site, verify both origins and 360/390/430 actual Listen and Good life taps. Then LC30 signed-in episode playback/transcript/source-rights and actual request/row/byte/provider-unit study; preserve all rooms, archives and held decisions. No automatic recurrence.",
-    "proofGate": "Candidate d76af1a7 plus seventh-row correction; 85/85 focused tests, scoped lint zero errors, build index-BS5SMAZR.js, independent finite P0/P1/P2 none after two repaired P2s; local controlled 360/390/430 Listen chooser/open and all 11 Good life full-room/Back, one document load and zero sampled errors/overflow. Mock media and local request-count fixture only; native iPhone, real signed-in media, bytes and paid units not proved.",
+    "stage": "LC29 released: first Listen action episode-only, one episode direct, full Browse retained; nine Good life rooms briefly share a published catalogue; Becoming failure Retry. Both origins index-BS5SMAZR.js and Ideas LC29 live; scheduler PAUSED.",
+    "nextAtom": "LC30 one coherent signed-in Listen and Good life editorial/source pass: verify actual episode playback, duration, transcript, publisher rights, Save/exact return; inspect room source suitability and actual cold/return request/row/byte/provider-unit work. Keep six Read pieces and shared voice default held. No automatic recurrence.",
+    "proofGate": "Source d76af1a7, final c9982d32; 85/85 focused tests, scoped lint zero errors, build, independent finite P0/P1/P2 none after two repaired P2s; both origins index-BS5SMAZR.js and Ideas LC29; local and deployed controlled 360/390/430 Listen chooser/open and all 11 Good life full-room/Back, one document load and zero sampled errors/overflow. Mock media and local request-count fixture only; native iPhone, real signed-in media, bytes and paid units not proved.",
     "carryForward": [
       "Clean Ideas reader false-open progress repaired in LC08; canonical main reader still follows its held old reached contract until separate promotion",
       "Full Planner/Garden old-paper redesign and signed-in exact read-back remain; preview book ref token is only a bounded return repair",
@@ -86,8 +86,8 @@
   },
   "current": {
     "section": "Lifestyle / Listen exact-choice and Good life source (manual)",
-    "atom": "LC29 candidate fully tested locally; final commit/push/deploy/reproof next; LC30 real source and cost proof after",
-    "status": "Main LC28 live index-CQ4NCv12.js; LC29 source candidate index-BS5SMAZR.js locally, scheduler PAUSED."
+    "atom": "LC29 released; LC30 signed-in source/editorial/cost pass next, six Read pieces and shared voice held",
+    "status": "Main LC29 live index-BS5SMAZR.js on both origins with Ideas LC29; scheduler PAUSED."
   },
   "lastCompleted": {
     "run": 5,

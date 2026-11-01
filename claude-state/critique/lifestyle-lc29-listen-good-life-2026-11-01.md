@@ -1,6 +1,6 @@
 # LC29 — Listen first choice and Good life shared source · 1 November 2026
 
-Status: candidate until normal push, Base44 site deploy and deployed mobile reproof. Claim `558b7a0d`; source `d76af1a7` plus seventh-row follow-up. Main route is `/Lifestyle`; Ideas receipt is `/lifestyle-content/index.html#lc29-listen-rooms`. Scheduler remains paused.
+Status: **live**. Claim `558b7a0d`; source `d76af1a7`, final correction/critique `c9982d32`, pushed normally. Both origins serve `index-BS5SMAZR.js` and Ideas `/lifestyle-content/index.html#lc29-listen-rooms`. Scheduler remains paused.
 
 ## Motherboard, complete touched inventory and mapped atoms
 
@@ -26,6 +26,7 @@ Design: the first action names one job. When more than one real episode exists, 
 - Controlled Chrome mobile touch at **360/390/430**: Listen chooser opened with two exact timed episodes, no show directory, closed; zero sampled overflow/page errors, one document load. At all three widths, Good life → each of 11 full rooms → named Back passed with no extra document load. Screenshots: `workspace/verify_screenshots/lc29-listen-{360,390,430}.png`; mock account/source, not native iPhone or real media.
 - Critic reproduced two **P2** source issues before correction: Becoming's failed 500-row read looked like empty content, and six untimed rows hid a seventh timed episode from the first chooser. Becoming now shows Retry and recovers on the second request. Independent rebuilt mobile reproof at 360/390/430 opened the seventh exact episode, bound the player to its fixture URL, and preserved the first-six and show directories in Browse. **Final candidate verdict: P0 none, P1 none, P2 none**. The mock media URL deliberately cannot stream, so real playback is unproved.
 - Controlled Move → Nest → Outside within eight seconds made **one** exact 500-row request across those rooms; other app requests still occur. The test fixture has tiny mock rows. Real response bytes, cold/return frequency, paid function units, external media transfer, invoices and supported-user capacity are **unknown**. Do not claim a money saving or universal performance improvement.
+- After normal push and `npx base44 site deploy -y`, both origins returned `index-BS5SMAZR.js` and the LC29 Ideas card. Controlled **deployed** 360/390/430 Listen chooser tap/open/close and all 11 Good life focused-overlay → full route → named Back paths passed, with one document load per width and zero sampled overflow/page errors. These remain mock-auth/content touch checks, not signed-in live media certification.
 
 ## Self critique and carry-forward
 
