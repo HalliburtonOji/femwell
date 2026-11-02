@@ -19,9 +19,9 @@
 @keyframes livingOrbitArrival{from{transform:rotate(-12deg)}to{transform:rotate(0)}}
 @media(prefers-reduced-motion:no-preference){.living-sky-orbit.is-moving{animation:livingOrbitArrival 3s ease-out both;transform-origin:50% 50%}}
 @media(prefers-reduced-motion:reduce){.living-sky-motion{display:none}}
-.fw-lifestyle-fold[data-fold=living][data-section=sky] .fw-ff-sections{position:relative;margin-top:8px;border-color:#D9C79B80;gap:4px}
-.fw-lifestyle-fold[data-fold=living][data-section=sky] .fw-ff-sections button{min-height:52px;border-radius:16px 16px 0 0;color:#51444E}
-.fw-lifestyle-fold[data-fold=living][data-section=sky] .fw-ff-sections button[aria-pressed=true]{background:linear-gradient(#E8E1EA90,#E8E1EA20);border-bottom-color:#8E6E8E}
+.fw-lifestyle-fold[data-fold=living] .fw-ff-sections{position:relative;margin-top:8px;border-color:#D9C79B80;gap:4px}
+.fw-lifestyle-fold[data-fold=living] .fw-ff-sections button{min-height:52px;border-radius:16px 16px 0 0;color:#51444E}
+.fw-lifestyle-fold[data-fold=living] .fw-ff-sections button[aria-pressed=true]{background:linear-gradient(var(--ff-tab-tint,#E8E1EA90),transparent);border-bottom-color:#8E6E8E}
 .fw-lifestyle-fold[data-fold=living][data-section=sky] .fw-ff-status{padding:6px 0;gap:14px;line-height:1.4}
 .fw-lifestyle-fold[data-fold=living][data-section=sky] .fw-ff-actions [aria-label="Section actions"]{gap:8px!important}
 .fw-lifestyle-fold[data-fold=living][data-section=sky] .fw-ff-actions [aria-label="Section actions"]>button{min-height:46px!important;padding:10px 12px!important;font:600 14px/1.3 var(--ff-ui)!important;background:#51444E!important;border-color:#51444E!important;color:white!important;box-shadow:none!important}

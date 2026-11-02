@@ -15,7 +15,7 @@
   border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; border-radius: 0;
   color: var(--ff-muted); background: transparent; font: 600 12px/1.3 var(--ff-ui); cursor: pointer;
 }
-.fw-lifestyle-fold .fw-ff-sections button[aria-pressed=true] { color: var(--ff-ink); border-bottom-color: var(--ff-plum); }
+.fw-lifestyle-fold .fw-ff-sections button[aria-pressed=true] { color: var(--ff-ink); border-bottom-color: var(--ff-plum); background:linear-gradient(var(--ff-tab-tint,#e8e1ea90),transparent); border-radius:16px 16px 0 0; }
 .fw-lifestyle-fold .fw-ff-section-icon { height: 16px; display: grid; place-items: center; }
 .fw-lifestyle-fold .fw-ff-status {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -36,13 +36,14 @@
 }
 .fw-lifestyle-fold .fw-ff-actions [aria-label="Section actions"] > button + button { background: transparent!important; color: var(--ff-plum)!important; }
 .fw-lifestyle-fold .fw-ff-summary { margin: 20px 0 0; color: var(--ff-ink); }
-.fw-lifestyle-fold .fw-ff-summary-nav { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--ff-line); }
+.fw-lifestyle-fold .fw-ff-summary-nav { display: flex; align-items: center; justify-content: flex-start; gap:14px; border-bottom: 1px solid var(--ff-line); }
 .fw-lifestyle-fold .fw-ff-summary-nav button {
   display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 8px 0;
   border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--ff-muted);
   font: 600 13px/1.4 var(--ff-ui); cursor: pointer;
 }
 .fw-lifestyle-fold .fw-ff-summary-nav button[aria-pressed=true] { border-bottom-color: var(--ff-plum); color: var(--ff-ink); }
+.fw-lifestyle-fold .fw-ff-summary-nav .fw-ff-everything { margin-left:auto; font-size:12px; font-weight:500; color:var(--ff-muted); }
 .fw-lifestyle-fold .fw-ff-summary-track {
   display: flex; align-items: stretch; overflow-x: auto; scroll-snap-type: x mandatory;
   overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch;

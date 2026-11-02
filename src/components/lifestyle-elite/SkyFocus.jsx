@@ -25,6 +25,7 @@ import useProfections from "@/components/horoscope/hooks/useProfections";
 import useAsteroids from "@/components/horoscope/hooks/useAsteroids";
 import { ASTEROID_NAMES, ASTEROID_ARCHETYPES } from "@/lib/astrology/asteroids";
 import BirthDataSheet from "@/components/horoscope/BirthDataSheet";
+import { base44 } from "@/api/base44Client";
 import JessAstraBanner from "@/components/horoscope/JessAstraBanner";
 import ShareButton from "@/components/share/ShareButton";
 import { recordProgress, hasReadLocally } from "@/components/community/readingActivity";
@@ -264,12 +265,13 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
     }
   }, [calmLayout, loading]);
   const consumedAction = useRef(null);
-  useEffect(() => { onActionState?.({ loading, hasChart: !!astro }); }, [loading, !!astro, onActionState]);
+  useEffect(() => { onActionState?.({ loading: loading || !!chartState.refreshing, hasChart: !!astro, failed: !astro && (!!chartState.chartLoadFailed || !user?.id), signedIn: !!user?.id }); }, [loading, !!chartState.refreshing, !!astro, !!chartState.chartLoadFailed, !!user?.id, onActionState]);
   useEffect(() => {
     if (loading || !actionRequest || consumedAction.current === actionRequest) return;
     consumedAction.current = actionRequest;
     onActionHandled?.(null);
-    if(calmLayout && actionRequest.type === "diary") openTool("diary");
+    if(actionRequest.type === "retry") refresh();
+    else if(calmLayout && actionRequest.type === "diary") openTool("diary");
     else if(actionRequest.type === "diary") {
       const target=refs.current.diary || refs.current.year;
       target?.focus({preventScroll:true});
@@ -309,7 +311,7 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
   }, [cyc.phase, reading, moon]);
 
   if (loading) return <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, color: C.slate, textAlign: "center", padding: "28px 0" }}>Reading the sky…</div>;
-  const chartFailure = complete && chartError ? <div role="alert" style={{fontFamily:UI,fontSize:13,color:C.crimson}}><p>{chartError}</p><Quiet onClick={refresh}>Try again</Quiet></div> : null;
+  const chartFailure = complete && chartError ? <div role="alert" className="fw-sky-load-error"><p>{chartError}</p><Quiet onClick={user?.id ? refresh : () => base44.auth.redirectToLogin(window.location.href)}>{user?.id ? "Try again" : "Sign in"}</Quiet></div> : null;
   const exactUnavailable = complete && chartState.exactReading && !reading;
   const readingDate=reading?.reading_date ? new Date(`${reading.reading_date}T12:00:00`).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:chartState.exactReading ? "numeric" : undefined}) : null;
   const currentSkyUrl = new URL(window.location.href);
@@ -327,14 +329,14 @@ function SkyFocusBody({ userProfile, chartState, presentMoon, actionRequest, onA
         <JessAstraBanner />
         {chartFailure}
         {exactReadingNote}
-        <Summary Icon={Moon} cw="lavender">{moon?.name ? `The moon is ${moon.name.toLowerCase()}${moon.illumination != null ? `, ${moon.illumination}% lit` : ""} tonight — your own sky opens once you add your birth date.` : "Your own sky opens once you add your birth date."}</Summary>
-        <section>
+        {!chartState.chartLoadFailed && user?.id && <Summary Icon={Moon} cw="lavender">{moon?.name ? `The moon is ${moon.name.toLowerCase()}${moon.illumination != null ? `, ${moon.illumination}% lit` : ""} tonight.` : "Tonight’s moon is here for everyone."}</Summary>}
+        {!portalChart && !chartState.chartLoadFailed && <section>
           <Eyebrow cw="lavender">Read me the sky</Eyebrow>
           <Title>{celestial ? "Your sky starts with a birthday." : "A daily reading from your own chart"}</Title>
-          <Body>{celestial ? "A little chart language for the life you're actually living. Your date of birth gets us started." : "FemWell writes you a daily reading from your own chart and your own cycle — not a sign-shaped horoscope written for a twelfth of the world."}</Body>
+          <Body>{celestial ? "Add your birth date and the personal part can begin." : "Add your birth date to begin your own reading."}</Body>
           <Body size={16} style={{ color: C.slate }}>{celestial ? "Time and place add detail. Don't know the time? Leave it blank; rising and houses need it, and your Moon sign may be uncertain." : "Your birth date is all we need to begin. Birth time and place are optional; they unlock your moon and rising. We never track your location."}</Body>
           <div style={{ marginTop: 6 }}><Cta filled Icon={Sparkles} onClick={() => setSheetOpen(true)}>Set up your sky</Cta></div>
-        </section>
+        </section>}
         {dailyLessons ? <><DailySkyLesson calmLayout={calmLayout} human={world} userId={user?.id} moon={moon} direction={direction} previewRoute={lessonRoute}/>{!calmLayout && <PrivateSkyNotes userId={user?.id} moon={moon}/>}</> : celestial && <MoonLesson moon={moon} />}
         {complete && (calmLayout ? <button className="fw-focused-button" onClick={()=>openTool("diary")}>Sky diary</button> : <div id="sky-observed-diary" tabIndex={-1} ref={el=>{refs.current.diary=el;}} style={{scrollMarginTop:70}}><ObservedSkyDiary human userId={user?.id}/></div>)}
         {diaryTask}{pairingTask}

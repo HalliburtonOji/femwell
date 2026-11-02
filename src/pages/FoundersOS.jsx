@@ -198,12 +198,13 @@ const GROUP_BLURB = {
   [CAT.BRAND]:     "Companion vision, cross-app UX patterns and the PWA/widget plan.",
   [CAT.VISION]:    "Bigger-picture concepts awaiting a build decision.",
   [CAT.BUILD]:     "The living build map — features, sprints, data flow, decisions, legal.",
-  [CAT.ARCHIVE]:   "Superseded demos (the page shipped live-elite) + older / passed-on previews — kept for history, nothing deleted. Tap to expand.",
+  [CAT.ARCHIVE]:   "Older previews and detailed build receipts, including work still awaiting review. All links stay reachable. Tap to expand.",
 };
 // Groups that start collapsed (secondary) on the home screen.
 const COLLAPSED_BY_DEFAULT = new Set([CAT.ARCHIVE]);
 
 const CATALOG = [
+  {kind:"doc",key:"Lifestyle status",group:CAT.CURRENT,sub:"Lifestyle · approved main",status:"live",added:"2026-11-02",accent:"plum",title:"Lifestyle · what is live, what is in review",desc:"The one current Lifestyle desk. Six accepted rooms are on main; remaining Read drafts and account voice are still in review. Older build receipts live in the archive."},
   {kind:"route",href:"/lifestyle-content/index.html#lc21-read-issue",group:CAT.CURRENT,sub:"Lifestyle · fuller Read issue",status:"candidate",added:"2026-10-22",accent:"plum",title:"Read · a real little magazine",desc:"Two more complete original pieces, a cover chosen from an actually followed topic, direct saved place, concise useful contents, narrated fiction and all older reading. Ideas only; human editorial publication gate remains."},
   {kind:"route",href:"/lifestyle-content/index.html#lc20-read-story-voice",group:CAT.CURRENT,sub:"Lifestyle · opened Read story",status:"candidate",added:"2026-10-22",accent:"plum",title:"Read it. Or hear it.",desc:"The full Ideas fiction now has Laura, George and River in its opened folio, using the app's one player. The Read landing stays clear; main Read, Jess and account voice are unchanged."},
   {kind:"route",href:"/lifestyle-content/voice-studio/scene.html",group:CAT.CURRENT,sub:"Lifestyle · character voice test",status:"candidate",added:"2026-10-21",accent:"plum",title:"The long way home · three voices",desc:"Three actual one-minute takes of the complete original Read scene, with direct Play, exact words and one player. A bounded Ideas sound test; account Jess and the old ten-voice audition are unchanged."},
@@ -211,7 +212,7 @@ const CATALOG = [
   {kind:"route",href:"/lifestyle-content/voice-studio/index.html",group:CAT.CURRENT,sub:"Lifestyle · Jess and sound",status:"candidate",added:"2026-10-21",accent:"plum",title:"Find her voice · ten real auditions",desc:"Ten same-script ElevenLabs samples you can actually hear and choose for the preview, plus the shared Jess/Lifestyle voice, scene-sound and cost plan. Current Jess and main audio are unchanged; automatic builds stay paused."},
   {kind:"route",href:"/lifestyle-content/index.html#lc12-main-promotion",group:CAT.CURRENT,sub:"Lifestyle · main promotion",status:"new",added:"2026-10-19",accent:"gold",title:"Lifestyle · useful first",desc:"Halli-approved Good life clearing, direct Read and Listen openings, human Sky Bulletin, calmer Books/Yours and the first scoped plain-language pass. Main and Ideas links, research, actual checks and remaining editorial gates inside. Manual build; automation paused."},
   {kind:"route",href:"/CalmLifestyleDemo?section=good",group:CAT.CURRENT,sub:"Lifestyle · Good life page",status:"candidate",added:"2026-10-19",accent:"gold",title:"Good life · the visible page",desc:"The A29 Ideas version Halli approved: time choice beneath the header, open read/listen/do and quieter joys. Compare its staged local drafts with the promoted main presentation; full Glance/Jess, eleven rooms and source paths remain."},
-  {kind:"route",href:"/lifestyle-content/index.html",group:CAT.CURRENT,sub:"Lifestyle · content & flow",status:"candidate",added:"2026-10-14",accent:"plum",title:"Lifestyle · one good thing",desc:"Content/source audit, staged Read and Listen editions, the voice and layout research, checks and decisions. Unreviewed factual/news drafts remain labelled in Ideas; manual work only."},
+  {kind:"route",href:"/lifestyle-content/index.html",group:CAT.ARCHIVE,sub:"Lifestyle · build evidence",status:"archive",added:"2026-10-14",accent:"plum",title:"Lifestyle · dated build receipts",desc:"Older detailed proofs and source notes, kept for reference. The current status and decisions are here in Ideas → Lifestyle status."},
   {kind:"route",href:"/CalmLifestyleDemo?section=read",group:CAT.CURRENT,sub:"Lifestyle · six room preview",status:"candidate",added:"2026-10-12",accent:"plum",title:"Lifestyle · room to breathe",desc:"Sky plus Read, Listen, Books, Good life and Yours. Focused first choices, distinct floral rhythm and room-owned opened sheets. Full source/actions remain; the club’s protected inner route and older destinations are still being reviewed. Checks and gaps inside. Ideas preview only; automation paused."},
   {kind:"route",href:"/FocusedLifestyleDemo?section=good",group:CAT.CURRENT,sub:"Lifestyle · focus and every tap",status:"candidate",added:"2026-10-09",accent:"plum",title:"Lifestyle · less to wade through",desc:"Earlier working preview: one room popup, brief Sky, direct book reading and clean opened details. The calmer whole-page preview carries these repairs forward. Main appearance awaits review; automation paused."},
   {kind:"doc",key:"Critique Director",group:CAT.CURRENT,sub:"Whole app · ongoing polish",status:"new",added:"2026-10-07",accent:"sage",title:"Critique Director · reports & decisions",desc:"Automatic runs paused. Previous research, frontend/backend checks and review decisions remain here. New builds run manually."},
@@ -800,6 +801,19 @@ function DocSurface({ children }) {
       padding: "18px 0 40px", margin: "2px 0 8px",
     }}>{children}</div>
   );
+}
+
+function LifestyleStatusDoc() {
+  const line = {margin:"12px 0",font:"400 14px/1.5 system-ui,sans-serif"};
+  const link = {color:"#51444e",fontWeight:700,textUnderlineOffset:3};
+  return <DocSurface><article style={{maxWidth:620,margin:"0 auto",padding:"4px 22px",color:"#191510"}}>
+    <p style={{fontSize:12,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"#806634"}}>Lifestyle · 2 November</p>
+    <h2 style={{font:"italic 600 32px/1.1 'FemWell Editorial',Georgia,serif",margin:"8px 0 18px"}}>Lifestyle, clearly.</h2>
+    <p style={line}><strong>Main:</strong> six approved rooms, the first published Read essay, direct Books and Listen, and all eleven Good life rooms. <a style={link} href="/Lifestyle">Open Lifestyle</a>.</p>
+    <p style={line}><strong>Review:</strong> <a style={link} href="/lifestyle-content/index.html#lc21-read-issue">six more Read pieces</a> and <a style={link} href="/lifestyle-content/voice-studio/index.html">the shared voice</a>. Neither is a main default.</p>
+    <p style={line}><strong>Receipts:</strong> <a style={link} href="/lifestyle-content/index.html#lc29-listen-rooms">LC29</a> and the <a style={link} href="/lifestyle-content/index.html">dated archive</a>. This page is the current Ideas desk.</p>
+    <p style={line}><strong>Next:</strong> deeper Read, Listen and Good life content/source checks. The four-hour automation stays paused.</p>
+  </article></DocSurface>;
 }
 
 const IDEAS_KEY  = "femwell_ideas";
@@ -1424,7 +1438,9 @@ function FoundersInner({ user }) {
   // Merge the recency dates in (entry `added` wins, else the RECENT_DATES map).
   const catalog = useMemo(
     () => [...CATALOG, ...demoCatalogEntries()].map((e) => ({
-      ...e, added: e.added || RECENT_DATES[e.key] || RECENT_DATES[e.href] || null,
+      ...e,
+      group: e.group === CAT.CURRENT && /^\/(?:lifestyle-content\/|CalmLifestyleDemo|SkyWorldsDemo|LifestyleBespokeDemo|LifestyleStacksDemo|LifestyleColumnDemo|LifestyleBentoDemo|LifestyleMoodDemo|LifestyleAlmanacDemo|LifestyleRoomsDemo|LifestyleTodayDemo|LifestyleCompassDemo|LifestyleEditorialDemo|selected-lifestyle\/)/.test(e.href || "") ? CAT.ARCHIVE : e.group,
+      added: e.added || RECENT_DATES[e.key] || RECENT_DATES[e.href] || null,
     })),
     [],
   );
@@ -1514,6 +1530,7 @@ function FoundersInner({ user }) {
       {tab === "Substance Plan" && <BrandDocFrame html={substancePlanHtml} title="FemWell — Community: the substance plan" />}
       {tab === "DM Spec" && <BrandDocFrame html={dmSpecHtml} title="FemWell — 1:1 / DM: the spec" />}
       {tab === "Ideas"     && <IdeasTab user={user} />}
+      {tab === "Lifestyle status" && <LifestyleStatusDoc />}
       {tab === "Strategy"  && <StrategyTab />}
       {tab === "Legal"     && <LegalTab />}
       {tab === "Decisions" && <DecisionsTab />}

@@ -12,7 +12,7 @@ export function FirstFoldNavigation({ cards, activeIndex, onSelect, phaseLine, c
     <nav className="fw-ff-sections" aria-label="Lifestyle sections">
       {cards.map((card, index) => {
         const selected = index === activeIndex;
-        return <button key={card.id} type="button" aria-pressed={selected} onClick={() => onSelect(card, index)}>
+        return <button key={card.id} type="button" aria-pressed={selected} style={{"--ff-tab-tint": `${cwOf(card.cw).petal}2B`}} onClick={() => onSelect(card, index)}>
           <span className="fw-ff-section-icon" aria-hidden="true">{selected ? <MeaningRosette color={cwOf(card.cw).petal} centre={C.gold} size={12}/> : <card.Icon size={16} strokeWidth={1.7}/>}</span>
           <span>{card.label}</span>
         </button>;
@@ -43,7 +43,7 @@ export function FirstFoldSummary({ orderedGlance, jess, sheetSections, jessOpen,
     <div className="fw-ff-summary-nav" aria-label="Glance and room controls">
       <button type="button" aria-pressed={index === 0} onClick={() => go(0)}>At a glance</button>
       <button type="button" aria-pressed={index === 1} onClick={() => go(1)}>Jess’s read <ChevronRight size={13} aria-hidden="true"/></button>
-      {calmLayout && focusLabel && <button type="button" className="fw-ff-everything" onClick={onClear} title="Show all Lifestyle rooms"><X size={13} aria-hidden="true"/> Everything</button>}
+      {calmLayout && focusLabel && <button type="button" className="fw-ff-everything" onClick={onClear} title="Show all Lifestyle rooms"><X size={13} aria-hidden="true"/> All rooms</button>}
     </div>
     <div className="fw-ff-summary-track" ref={track} onScroll={() => {
       const el = track.current;

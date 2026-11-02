@@ -1,5 +1,9 @@
 # Critic learning — append dated evidence
 
+## 2 November — LC30 missing state and founder desk
+
+An absent chart, a rejected chart request, a rejected reading request and a signed-out account had been collapsed into the same first-fold message; the independent critic reproduced a retry that could never work for a signed-out person. Carry the exact source outcome into the UI, keep the setup CTA one tap from the birth sheet, and never tell a woman her chart failed because another collection failed. Visual review at 390 caught a text-heavy founder status card after functional taps passed; shorten the founder summary on the actual phone capture. The one `/Ideas` route owns current status; detailed dated boards are archived but reachable. User-facing evidence and limits are in `lifestyle-lc30-sky-ideas-2026-11-02.md`; the automation remains paused.
+
 ## 1 November — LC29 episode eligibility and shared source failure
 
 A chooser can be honest about a show directory and still waste the user's first tap. Select a timed in-app episode for the primary action, keeping directories in Browse. Apply selection before a six-row presentation cap: the critic reproduced six untimed rows hiding a seventh playable episode, which falsely said no episode was ready. A shared successful 500-row published query can reduce repeated nearby-room reads without changing bespoke filters, but each room still needs its own error state. Becoming's inherited catch-to-empty was caught only by an injected HTTP 500 and Retry tap. A mock one-request route loop proves deduplication in that loop, not wire bytes, bills or capacity.

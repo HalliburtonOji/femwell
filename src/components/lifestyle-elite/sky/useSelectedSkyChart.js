@@ -4,7 +4,7 @@ import { newestOwnedReading } from "../finishLifestyle";
 
 // Founder previews and exact historical links read what exists. Main preserves
 // the original cached fallback when today's reading has not been produced.
-const EMPTY = {user:null,astro:null,reading:null,userProfile:null,loading:true,refreshing:false,generatingReading:false,error:"",checkedDay:null,readingRequest:null};
+const EMPTY = {user:null,astro:null,reading:null,userProfile:null,loading:true,refreshing:false,generatingReading:false,error:"",chartLoadFailed:false,checkedDay:null,readingRequest:null};
 const dayKey = () => new Date().toISOString().slice(0,10); // same key as the existing producer
 const validReadingDate = value => /^\d{4}-\d{2}-\d{2}$/.test(String(value || "")) && !Number.isNaN(Date.parse(`${value}T12:00:00Z`)) && new Date(`${value}T12:00:00Z`).toISOString().slice(0,10) === value;
 export default function useSelectedSkyChart(providedProfile, requestedReadingId = null, generateMissing = false) {
@@ -45,7 +45,7 @@ export default function useSelectedSkyChart(providedProfile, requestedReadingId 
       const realtime=liveReading.current!==liveAtStart && liveReading.current?.owner===user.id && liveReading.current?.day===checkedDay && !exactReading ? liveReading.current.reading : null;
       const settledReading=realtime ? newestOwnedReading(realtime,ownReading,user.id,true) : ownReading;
       const readingError = exactReading ? !validRequest ? "This saved reading link isn’t complete. Open today’s sky, or return to your plan." : failedCollection(readings) ? "That saved reading couldn’t load. Try again; today’s reading hasn’t replaced it." : !ownReading ? "That saved reading isn’t available in your account. Try again, or open today’s sky." : "" : "";
-      setState(previous=>({user,astro:failedCollection(charts) && previous.user?.id===user.id ? previous.astro : firstOwn(charts),reading:settledReading || (failedReading && previous.user?.id===user.id && previous.readingRequest===requestedReadingId ? previous.reading : null),userProfile:failedCollection(profiles) && previous.user?.id===user.id ? previous.userProfile : firstOwn(profiles),loading:false,refreshing:false,generatingReading:false,checkedDay,readingRequest:requestedReadingId,error:readingError || (failedReading || [charts,profiles].some(failedCollection) ? "Part of your sky didn't load. Your saved details haven't changed." : "")}));
+      setState(previous=>({user,astro:failedCollection(charts) && previous.user?.id===user.id ? previous.astro : firstOwn(charts),reading:settledReading || (failedReading && previous.user?.id===user.id && previous.readingRequest===requestedReadingId ? previous.reading : null),userProfile:failedCollection(profiles) && previous.user?.id===user.id ? previous.userProfile : firstOwn(profiles),loading:false,refreshing:false,generatingReading:false,chartLoadFailed:failedCollection(charts),checkedDay,readingRequest:requestedReadingId,error:readingError || (failedReading || [charts,profiles].some(failedCollection) ? "Part of your sky didn't load. Your saved details haven't changed." : "")}));
       setNewDay(!exactReading && dayKey()!==checkedDay ? dayKey() : null);
       if(generateMissing && !exactReading && !failedCollection(charts) && !failedCollection(readings) && readings.value.length===0 && firstOwn(charts) && !settledReading && dayKey()===checkedDay){
         setState(previous=>({...previous,generatingReading:true}));

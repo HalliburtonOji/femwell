@@ -34,6 +34,9 @@
 .fw-calm-find-action{display:inline-flex;align-items:center;gap:5px;font:700 14px/1.4 var(--ff-ui,system-ui);flex-shrink:0;background:#fff;border:1px solid #ded8df;border-radius:999px;padding:7px 9px}
 .fw-calm-find-details{border:0;background:transparent;min-height:44px;color:#6E6A61;font:500 12px var(--ff-ui,system-ui);padding:0 0 8px;cursor:pointer}
 .fw-calm-lifestyle .fw-ff-summary{margin-top:14px!important}
+.fw-calm-lifestyle .fw-sky-load-error{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0 16px;padding:10px 14px;border:1px solid #dcc5c2;border-radius:18px;background:#fcf8f7;color:#8d3029;font:600 13px/1.4 var(--ff-ui,system-ui)}
+.fw-calm-lifestyle .fw-sky-load-error p{margin:0!important;font:inherit!important;color:inherit!important}
+.fw-calm-lifestyle .fw-sky-load-error button{min-height:44px;flex:none;font:700 13px/1.4 var(--ff-ui,system-ui)}
 .fw-calm-lifestyle .fw-ff-glance-row{padding:10px 0!important}
 .fw-calm-lifestyle .fw-ff-row-text{font-size:16px!important;line-height:1.35!important}
 .fw-calm-lifestyle .fw-ff-row-label{font-size:12px!important;margin-bottom:3px!important}

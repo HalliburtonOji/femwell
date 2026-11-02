@@ -380,7 +380,7 @@ export default function BirthDataSheet({ open, onClose, onSaved, userId, initial
 
         <div style={fieldStyle}>
           <label style={labelStyle} htmlFor="bd-place">
-            Birth place <span style={optionalStyle}>(city, country)</span>
+            Birth place <span style={optionalStyle}>(optional · city, country)</span>
           </label>
           <PlaceAutocomplete value={place} onChange={setPlace} />
         </div>

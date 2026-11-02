@@ -76,6 +76,17 @@ describe("promoted main preserves the existing daily-reading fallback",()=>{
     mock.charts.mockResolvedValue([chart]);mock.readings.mockResolvedValue([reading()]);const {result}=renderHook(()=>useSelectedSkyChart(undefined,null,true));
     await waitFor(()=>expect(result.current.loading).toBe(false));expect(result.current.reading).toEqual(reading());expect(mock.invoke).not.toHaveBeenCalled();
   });
+  it("distinguishes an absent chart from a failed chart read when another sky source fails",async()=>{
+    mock.charts.mockResolvedValue([]);mock.readings.mockRejectedValue(new Error("offline"));
+    const absent=renderHook(()=>useSelectedSkyChart(undefined,null,false));
+    await waitFor(()=>expect(absent.result.current.loading).toBe(false));
+    expect(absent.result.current.astro).toBeNull();expect(absent.result.current.chartLoadFailed).toBe(false);
+    absent.unmount();
+    mock.charts.mockRejectedValue(new Error("offline"));mock.readings.mockResolvedValue([]);
+    const failed=renderHook(()=>useSelectedSkyChart(undefined,null,false));
+    await waitFor(()=>expect(failed.result.current.loading).toBe(false));
+    expect(failed.result.current.astro).toBeNull();expect(failed.result.current.chartLoadFailed).toBe(true);
+  });
   it.each(["failed-read","foreign-chart"])("does not treat %s as evidence that generation is needed",async mode=>{
     mock.charts.mockResolvedValue([{...chart,user_id:mode==="foreign-chart" ? "b" : "a"}]);if(mode==="failed-read")mock.readings.mockRejectedValue(new Error("offline"));
     const {result}=renderHook(()=>useSelectedSkyChart(undefined,null,true));await waitFor(()=>expect(result.current.loading).toBe(false));expect(mock.invoke).not.toHaveBeenCalled();
