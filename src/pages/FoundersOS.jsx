@@ -809,9 +809,9 @@ function LifestyleStatusDoc() {
   return <DocSurface><article style={{maxWidth:620,margin:"0 auto",padding:"4px 22px",color:"#191510"}}>
     <p style={{fontSize:12,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"#806634"}}>Lifestyle · 2 November</p>
     <h2 style={{font:"italic 600 32px/1.1 'FemWell Editorial',Georgia,serif",margin:"8px 0 18px"}}>Lifestyle, clearly.</h2>
-    <p style={line}><strong>Main:</strong> six approved rooms, the first published Read essay, direct Books and Listen, and all eleven Good life rooms. <a style={link} href="/Lifestyle">Open Lifestyle</a>.</p>
+    <p style={line}><strong>Main:</strong> six approved rooms, the first published Read essay, direct Books and Listen, all eleven Good life rooms, and Sky setup in one tap. <a style={link} href="/Lifestyle">Open Lifestyle</a>.</p>
     <p style={line}><strong>Review:</strong> <a style={link} href="/lifestyle-content/index.html#lc21-read-issue">six more Read pieces</a> and <a style={link} href="/lifestyle-content/voice-studio/index.html">the shared voice</a>. Neither is a main default.</p>
-    <p style={line}><strong>Receipts:</strong> <a style={link} href="/lifestyle-content/index.html#lc29-listen-rooms">LC29</a> and the <a style={link} href="/lifestyle-content/index.html">dated archive</a>. This page is the current Ideas desk.</p>
+    <p style={line}><strong>Receipts:</strong> <a style={link} href="/lifestyle-content/index.html#lc30-sky-ideas">LC30</a>, <a style={link} href="/lifestyle-content/index.html#lc29-listen-rooms">LC29</a> and the <a style={link} href="/lifestyle-content/index.html">dated archive</a>. This page is the current Ideas desk.</p>
     <p style={line}><strong>Next:</strong> deeper Read, Listen and Good life content/source checks. The four-hour automation stays paused.</p>
   </article></DocSurface>;
 }
