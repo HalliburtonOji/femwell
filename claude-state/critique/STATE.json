@@ -53,10 +53,10 @@
     "reason": "Halli stopped recurring builds: usage consumption and endless loop. Tool and automation.toml confirm PAUSED; explicit user restart required."
   },
   "manualContent": {
-    "id": "LIFESTYLE-CONTENT-2026-11-01-LC29",
-    "stage": "LC29 released: first Listen action episode-only, one episode direct, full Browse retained; nine Good life rooms briefly share a published catalogue; Becoming failure Retry. Both origins index-BS5SMAZR.js and Ideas LC29 live; scheduler PAUSED.",
-    "nextAtom": "LC30 one coherent signed-in Listen and Good life editorial/source pass: verify actual episode playback, duration, transcript, publisher rights, Save/exact return; inspect room source suitability and actual cold/return request/row/byte/provider-unit work. Keep six Read pieces and shared voice default held. No automatic recurrence.",
-    "proofGate": "Source d76af1a7, final c9982d32; 85/85 focused tests, scoped lint zero errors, build, independent finite P0/P1/P2 none after two repaired P2s; both origins index-BS5SMAZR.js and Ideas LC29; local and deployed controlled 360/390/430 Listen chooser/open and all 11 Good life full-room/Back, one document load and zero sampled errors/overflow. Mock media and local request-count fixture only; native iPhone, real signed-in media, bytes and paid units not proved.",
+    "id": "LIFESTYLE-CONTENT-2026-11-02-LC30",
+    "stage": "LC30 released: missing/failed/signed-out Sky entry separated; six selected tabs share soft floral tint; /Ideas is the current Lifestyle desk and dated detail boards are archived but reachable. Both origins index-CZGO0kcq.js; scheduler PAUSED.",
+    "nextAtom": "LC31 one larger manual Read/Listen/Good life editorial and source pass: inspect actual signed-in Listen playback, duration, transcript, rights, Save/exact return; full Read article fit and opened routes; room recommendation suitability; measure cold/return request/row/byte/provider-unit work. Keep six Read drafts and shared voice default held. No automatic recurrence.",
+    "proofGate": "Claim e492b8f8, source 2dc0dd63, receipt 12247468; targeted 68/68 plus Sky 57/57, scoped lint zero errors, build, finite independent P1/P2 repair; both origins index-CZGO0kcq.js and /Ideas LC30 receipt; local and deployed controlled 360/390/430 six-tab/chart-sheet taps, 390 failed chart retry and founder Ideas open, zero sampled overflow/page errors. Mock auth only; native iPhone, real signed-in chart write/read-back, historical every-tap and paid units not proved.",
     "carryForward": [
       "Clean Ideas reader false-open progress repaired in LC08; canonical main reader still follows its held old reached contract until separate promotion",
       "Full Planner/Garden old-paper redesign and signed-in exact read-back remain; preview book ref token is only a bounded return repair",
@@ -85,9 +85,9 @@
     "liveBundle": "index-OD-gjaX_.js"
   },
   "current": {
-    "section": "Lifestyle / Listen exact-choice and Good life source (manual)",
-    "atom": "LC29 released; LC30 signed-in source/editorial/cost pass next, six Read pieces and shared voice held",
-    "status": "Main LC29 live index-BS5SMAZR.js on both origins with Ideas LC29; scheduler PAUSED."
+    "section": "Lifestyle / Sky entry and canonical Ideas (manual)",
+    "atom": "LC30 released; LC31 larger Read/Listen/Good life editorial/source and cost pass next, six Read pieces and shared voice held",
+    "status": "Main LC30 live index-CZGO0kcq.js on both origins with /Ideas LC30 receipt; scheduler PAUSED."
   },
   "lastCompleted": {
     "run": 5,
