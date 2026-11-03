@@ -1,5 +1,7 @@
 # LC32 · Today listen and the next Read issue · 3 November 2026
 
+**Release:** claim `73bce637`, source `5233f292`, pushed without force and frontend deployed. Both public origins serve `index-BT2gjJPp.js`. The sole `/Ideas` Lifestyle status card opened the dated LC32 receipt at 390 with the allowed founder mock; the archive receipt opened the editor packet at 360/390/430. Deployed controlled Today failure→exact detail→Back passed at all three widths with zero sampled overflow/page errors. These were mock-auth/source journeys, not a real signed-in stream or save.
+
 ## Board, inventory and bounded atoms
 
 Today has a rotating Lifestyle card with moon, episode, book, story and reading modes. The episode mode made one published `LifestyleItems` request for six recent PODCAST rows, then accepted any URL as a first player and used an external `episode_url` as the fallback labelled “Open in Listen.” That can surface an LC31 verified 404 or send a user away while promising an app page. The shared full Listen directory, historical rows and other Today modes stay. The exact opened owner is `LifestyleDetail`, with an in-app Back; it previously defaulted to Read after a Today entry.
