@@ -1,5 +1,7 @@
 # LC31 · Read, Listen and Good life source journeys · 3 November 2026
 
+**Release:** claim `c620b277`, source `a2f8084f`, pushed without force and site deployed. Both public origins return `index-DUZmJiaU.js`; the dated Ideas archive receipt is reachable. Deployed controlled 360/390/430 Read, Listen, directory and Good life Move taps: overflow 0 and page errors 0 at each width, with mocked auth/data. No backend/entity deploy was needed.
+
 ## Board and mapped atoms
 
 Main Read has one human-reviewed original essay; six more original pieces and Good life's room pieces remain visible only as labelled Ideas drafts. Read first choice, saved place, Browse and exact opened reader are distinct atoms. Listen has checked episode, current player, watch alternative, full directory, publisher and detail routes. Good life has a time choice, three visible joys and eleven rooms; their topical drafts are review-gated and all previous archive rows stay accessible. This pass keeps those routes and histories.

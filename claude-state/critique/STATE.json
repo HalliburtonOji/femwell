@@ -53,10 +53,10 @@
     "reason": "Halli stopped recurring builds: usage consumption and endless loop. Tool and automation.toml confirm PAUSED; explicit user restart required."
   },
   "manualContent": {
-    "id": "LIFESTYLE-CONTENT-2026-11-03-LC31",
-    "stage": "LC31 local source candidate proved: exact eight failed podcast enclosures remain in Browse but are excluded from first choices/players; ten Acast HEAD anomalies were verified by ranged GET and retained. 127/127 focused checks and controlled three-width taps; live still LC30 until normal release. Scheduler PAUSED.",
-    "nextAtom": "LC31 normal push/site deploy and deployed reproof, then LC32 coherent editorial issue: six held Read essays each named-editor/source/rights/date gate, matched Good life room pieces, real signed-in Listen playback/Save/return, Today podcast consumer and full tapped destinations. No automatic recurrence.",
-    "proofGate": "Claim c620b277; local 127/127 focused tests, scoped lint zero errors, build, 360/390/430 controlled taps Read/Listen/Good life/directory and exact blocked detail, no sampled overflow/page errors; independent finite P0/P1/P2 corrected and closed on checked paths. Exact 32-source window: 10 Acast ranged GET 206 MP3, eight Buzzsprout ranged GET 404 HTML, one timeout unknown. No signed-in UI playback/owner read-back or native iPhone.",
+    "id": "LIFESTYLE-CONTENT-2026-11-03-LC31-LIVE",
+    "stage": "LC31 live source a2f8084f, both origins index-DUZmJiaU.js; exact eight failed enclosures remain in Browse but not false first/player; ten Acast ranged MP3 remain eligible. Scheduler PAUSED.",
+    "nextAtom": "LC32 larger manual editorial issue and opened journey: six held Read originals each source/date/rights/editor review in one Ideas desk; matched Good life rooms; real signed-in Listen playback, Save/return and Today podcast consumer; transcript and request/row/byte/provider-unit evidence. No automatic recurrence.",
+    "proofGate": "Claim c620b277, source a2f8084f, both origins index-DUZmJiaU.js and Ideas LC31 live. Local 127/127 focused tests, scoped lint zero errors/build, deployed controlled 360/390/430 mocked-auth Read/Listen/Good life/directory taps, overflow 0/errors 0. Finite independent P0/P1/P2 corrected/closed on checked paths. Real signed-in media/owner writes/native iPhone not certified.",
     "carryForward": [
       "Clean Ideas reader false-open progress repaired in LC08; canonical main reader still follows its held old reached contract until separate promotion",
       "Full Planner/Garden old-paper redesign and signed-in exact read-back remain; preview book ref token is only a bounded return repair",
@@ -86,8 +86,8 @@
   },
   "current": {
     "section": "Lifestyle / Read, Listen and Good life (manual)",
-    "atom": "LC31 exact media source candidate locally proved; release and deployed reproof next, then LC32 editorial/source-fit stage",
-    "status": "Main LC30 live index-CZGO0kcq.js until LC31 release; scheduler PAUSED."
+    "atom": "LC31 released; LC32 larger editorial issue and opened-owner/source stage next",
+    "status": "Main LC31 live index-DUZmJiaU.js on both origins with dated Ideas receipt; scheduler PAUSED."
   },
   "lastCompleted": {
     "run": 5,

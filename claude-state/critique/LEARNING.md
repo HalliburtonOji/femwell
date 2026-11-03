@@ -1,5 +1,9 @@
 # Critic learning — append dated evidence
 
+## 3 November — LC31 exact audio availability
+
+HEAD-only source checks can produce a false retirement: ten Acast enclosures returned two-byte text for HEAD but all ten answered capped ranged GET with MP3 data. Confirm a suspicious HEAD with a bounded GET, and guard only exact failed row-and-URL pairs so replacement URLs recover. Eight Buzzsprout enclosures returned 404 HTML on both probes; their copied publisher URLs were the same dead address. The independent critic caught the same bad source surfacing via Good life's time choice after Listen had been repaired, plus a duplicate unavailable action and undersized source tap. Check every consumer and opened owner, then re-prove the corrected tap at phone widths. A stored episode duration does not certify playback, rights or transcript. Controlled mock-auth taps do not certify the signed-in owner journey; four-hour automation remains paused. [LC31 evidence](lifestyle-lc31-source-journeys-2026-11-03.md).
+
 ## 2 November — LC30 missing state and founder desk
 
 An absent chart, a rejected chart request, a rejected reading request and a signed-out account had been collapsed into the same first-fold message; the independent critic reproduced a retry that could never work for a signed-out person. Carry the exact source outcome into the UI, keep the setup CTA one tap from the birth sheet, and never tell a woman her chart failed because another collection failed. Visual review at 390 caught a text-heavy founder status card after functional taps passed; shorten the founder summary on the actual phone capture. The one `/Ideas` route owns current status; detailed dated boards are archived but reachable. User-facing evidence and limits are in `lifestyle-lc30-sky-ideas-2026-11-02.md`; the automation remains paused.
