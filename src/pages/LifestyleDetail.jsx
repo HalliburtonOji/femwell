@@ -11,6 +11,7 @@ import ReadingColumn, { readTimeLabel, countWords } from "@/components/brand/Rea
 import { FloraAudio } from "@/components/brand/expandCards";
 import useReadingPlace from "@/components/lifestyle-elite/useReadingPlace";
 import { isOwnLifestyleDetailUrl } from "@/lib/editorialRelease";
+import { availableEpisodeSource, knownUnplayableAudio } from "@/data/lifestyleMediaAvailability";
 import "./LifestyleDetailCalm.css";
 
 // Map a content category to the best-fit whole-life Community room (default: the Lounge).
@@ -821,13 +822,13 @@ export default function LifestyleDetail() {
           {isAudio && (
             <section className="fw-calm-article__listen" aria-label={`Listen to ${decodedTitle}`}>
               <p className="fw-calm-article__listen-label">Listen</p>
-              {item.audio_url ? (
+              {item.audio_url && !knownUnplayableAudio(item) ? (
                 <FloraAudio src={item.audio_url} label={decodedTitle} accent="#58765f"
                   initialDuration={Number(item.duration_seconds) || 0}
                   item={{id:item.id,title:decodedTitle,sourceName:decodedSource || item.channel_name || "FemWell",_raw:item}}
                   presentation={calmReader ? "focused" : undefined}/>
-              ) : <p className="fw-calm-article__listen-unavailable">Audio isn’t available here.</p>}
-              {episodeSource && <a className="fw-calm-article__source" href={episodeSource} target="_blank" rel="noopener noreferrer">Open original episode</a>}
+              ) : <p className="fw-calm-article__listen-unavailable">This episode's audio isn't available right now.{availableEpisodeSource(item) && knownUnplayableAudio(item) ? " Try the publisher below." : ""}</p>}
+              {(knownUnplayableAudio(item) ? availableEpisodeSource(item) : episodeSource) && <a className="fw-calm-article__source" href={knownUnplayableAudio(item) ? availableEpisodeSource(item) : episodeSource} target="_blank" rel="noopener noreferrer">Open original episode</a>}
             </section>
           )}
 

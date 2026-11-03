@@ -2,6 +2,7 @@
 // These records do not create media, replace the publisher's description or
 // claim a transcript. Missing/unplayable source IDs simply fall back to the
 // existing room choice and every original source remains in the directory.
+import { knownUnplayableAudio } from "./lifestyleMediaAvailability";
 export const LISTEN_EDITORIAL_CHOICES = [
   {
     id: "6a59e948cceea7796379e6e5",
@@ -21,7 +22,7 @@ export const LISTEN_EDITORIAL_CHOICES = [
 ];
 
 export function orderListenEdition(rows, followedCategories = []) {
-  const byId = new Map((rows || []).filter(row => row?.audio_url && Number(row.duration_seconds) > 0).map(row => [row.id, row]));
+  const byId = new Map((rows || []).filter(row => row?.audio_url && Number(row.duration_seconds) > 0 && !knownUnplayableAudio(row)).map(row => [row.id, row]));
   const followed = new Set((Array.isArray(followedCategories) ? followedCategories : []).map(value => String(value).toLowerCase()));
   return LISTEN_EDITORIAL_CHOICES
     .map((entry, index) => ({ ...entry, index, row: byId.get(entry.id), matchesFollowed: followed.has(entry.category.toLowerCase()) }))
@@ -32,5 +33,5 @@ export function orderListenEdition(rows, followedCategories = []) {
 // A first-tap choice promises an episode, not a show homepage or an untimed file.
 // Keep every other card in the full Listen browse surface.
 export function playableListenChoices(cards = []) {
-  return cards.filter(card => card?.audioSrc && Number(card.duration) > 0 && !card.showDirectory);
+  return cards.filter(card => card?.audioSrc && Number(card.duration) > 0 && !card.showDirectory && !knownUnplayableAudio(card._raw));
 }

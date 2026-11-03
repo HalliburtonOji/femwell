@@ -7,6 +7,7 @@ import PodcastListenSheet from './PodcastListenSheet';
 import { T } from '@/components/journal/Editorial';
 import { CardFrame } from '@/components/brand/flora';
 import { fmtDuration } from '@/utils/duration';
+import { knownUnplayableAudio } from '@/data/lifestyleMediaAvailability';
 
 function PlayIndicator() {
   return (
@@ -73,7 +74,7 @@ export default function PodcastCard({ item, saved, hasPhaseTag, onSave, onUntag 
       }
       return;
     }
-    if (player && item.audio_url) {
+    if (player && item.audio_url && !knownUnplayableAudio(item)) {
       player.play(item);
       return;
     }

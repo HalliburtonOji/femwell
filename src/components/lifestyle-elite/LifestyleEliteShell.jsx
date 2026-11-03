@@ -84,6 +84,7 @@ import ReadingColumn from "@/components/brand/ReadingColumn";
 import { LIFESTYLE_VIDEOS } from "@/data/lifestyleVideos";
 import { LIFESTYLE_EDITORIAL_DRAFTS } from "@/data/lifestyleEditorialDrafts";
 import { orderListenEdition, playableListenChoices } from "@/data/listenEditorial";
+import { availableEpisodeSource, knownUnplayableAudio } from "@/data/lifestyleMediaAvailability";
 // the REAL curated shows (12, with Apple/Spotify deep-links) — the rail already owned them;
 // this page had been carrying a 2-item stub instead. Correcting that.
 import { EXTERNAL_PODCASTS } from "@/components/lifestyle/listen/ExternalPodcastsRail";
@@ -1017,7 +1018,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
     // generated/news archives in Browse, never as the first personal time pick.
     const firstRead = row => row && !/^FEMWELL_AI/i.test(String(row.provider || "")) && !isStaleNews(row) && contentBodyOf(row).length > 0;
     // The new demo's time promise uses measured durations. Longer/unknown items stay in their sections.
-    const within = (rows, seconds) => byDur(rows).find(row => Number(row.duration_seconds) > 0 && Number(row.duration_seconds) <= seconds) || null;
+    const within = (rows, seconds) => byDur(rows).find(row => !knownUnplayableAudio(row) && Number(row.duration_seconds) > 0 && Number(row.duration_seconds) <= seconds) || null;
     // The unreviewed local pieces are a preview choice only. On main, estimate
     // reading time from a complete source body when the row has no measured
     // duration; a thin teaser cannot claim to fit a time band.
@@ -1090,7 +1091,8 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
     ) : {}),
     // audio (piece #3): a podcast audio_url IS a real media file (mp3 from RSS) — play it in the
     // flora player (FloraAudio errors gracefully if a URL won't play), don't gate it out to a wall.
-    ...(type === "audio" && r.audio_url ? { audioSrc: r.audio_url } : {}),
+    ...(type === "audio" && r.audio_url && !knownUnplayableAudio(r) ? { audioSrc: r.audio_url } : {}),
+    ...(type === "audio" && knownUnplayableAudio(r) ? { external: true, audioUnavailable: true, kind: "Episode · audio unavailable" } : {}),
     // captions (video · WCAG SC 1.2.2 Level A) + transcript (audio-only · SC 1.2.1) when we have them
     ...(r.captions_url ? { captionsSrc: r.captions_url } : {}),
     ...(r.transcript ? { transcript: stripHtml(r.transcript) } : {}),
@@ -1100,13 +1102,13 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
     duration: Number(r.duration_seconds) || undefined,
     ...(r.editorial_local ? { saveable: false } : {}),
     _raw: r,
-    actions: r.editorial_local || (focusedPreview && type !== "book" && !r.lede && !r.chapters_json?.length && !r.content_url && !r.source_url && !r.audio_url && !r.episode_url && !r.video_id) ? [] : [{
+    actions: r.editorial_local || (type === "audio" && knownUnplayableAudio(r) && !availableEpisodeSource(r)) || (focusedPreview && type !== "book" && !r.lede && !r.chapters_json?.length && !r.content_url && !r.source_url && !r.audio_url && !r.episode_url && !r.video_id) ? [] : [{
       label: type === "video" ? ((r.video_id && r.is_embeddable !== false && !isTikTok(r)) ? "Open full-screen" : "Watch")
-        : type === "audio" ? "Open episode" : type === "book" ? "Open reader" : "Read this",
+        : type === "audio" ? knownUnplayableAudio(r) ? "At publisher" : "Open episode" : type === "book" ? "Open reader" : "Read this",
       Icon: type === "video" ? "Film" : type === "audio" ? "Headphones" : type === "book" ? "Book" : "BookOpen",
       primary: true,
-      onClick: () => type === "book" ? openBook(r) : (type === "audio" && r.episode_url) ? openExternal(r.episode_url) : focusedPreview && type === "video" && !(r.video_id && r.is_embeddable !== false && !isTikTok(r)) && !playableMedia(r.content_url) ? openExternal(r.content_url || r.source_url) : openItem(r),
-    }, ...(focusedPreview && type === "audio" && /^https?:\/\/\S+$/i.test(String(r.episode_url || "")) ? [{
+      onClick: () => type === "book" ? openBook(r) : (type === "audio" && (knownUnplayableAudio(r) ? availableEpisodeSource(r) : r.episode_url)) ? openExternal(knownUnplayableAudio(r) ? availableEpisodeSource(r) : r.episode_url) : focusedPreview && type === "video" && !(r.video_id && r.is_embeddable !== false && !isTikTok(r)) && !playableMedia(r.content_url) ? openExternal(r.content_url || r.source_url) : openItem(r),
+    }, ...(focusedPreview && type === "audio" && !knownUnplayableAudio(r) && /^https?:\/\/\S+$/i.test(String(r.episode_url || "")) ? [{
       label: "At publisher", Icon: "Headphones", primary: false,
       onClick: () => openExternal(r.episode_url),
     }] : [])],

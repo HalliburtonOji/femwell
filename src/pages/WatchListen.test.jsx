@@ -55,4 +55,15 @@ describe('opened Listen directory', () => {
     expect(await screen.findByText('A useful pause')).toBeInTheDocument();
     expect(calls.audio.mock.calls.some(([props]) => props.item._raw.media_type === 'PRACTICE')).toBe(true);
   });
+
+  it('keeps a 404 episode in Browse without a false player or dead publisher link', async () => {
+    const url='https://www.buzzsprout.com/1112270/episodes/19238113-rainbows-with-lulu-miller.mp3';
+    const broken = { ...row, id:'6a59e9430cd4a2ee47b7c5e3', title:'Rainbows with Lulu Miller', audio_url:url, episode_url:url, content_url:url, source_url:'', transcript:null };
+    calls.filter.mockImplementation(async query => query.media_type === 'PODCAST' ? [broken] : []);
+    render(<MemoryRouter><WatchListen /></MemoryRouter>);
+    expect(await screen.findByText('Rainbows with Lulu Miller')).toBeInTheDocument();
+    expect(screen.getByText(/audio isn't available right now/)).toBeInTheDocument();
+    expect(screen.queryByRole('link',{name:/Open at publisher/})).toBeNull();
+    expect(calls.audio).not.toHaveBeenCalled();
+  });
 });

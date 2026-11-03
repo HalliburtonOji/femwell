@@ -168,7 +168,7 @@ describe('approved main Lifestyle parity',()=>{
   it('keeps the Everything Sky detail honest and opens the selected Sky room',async()=>{
     render(<Lifestyle/>);
     const nav=await screen.findByRole('navigation',{name:'Lifestyle sections'});
-    fireEvent.click(screen.getByRole('button',{name:'Everything',exact:true}));
+    fireEvent.click(screen.getByRole('button',{name:'All rooms',exact:true}));
     const overview=await screen.findByRole('region',{name:'For you today'});
     const skyEntry=within(overview).getByText('Your sky',{exact:true}).closest('.fw-selected-overview__entries > div');
     fireEvent.click(within(skyEntry).getByRole('button',{name:'Details & tools'}));
@@ -299,7 +299,7 @@ describe('approved main Lifestyle parity',()=>{
     const nav=await screen.findByRole('navigation',{name:'Lifestyle sections'});
     expect(within(nav).getAllByRole('button')).toHaveLength(6);
     await waitFor(()=>expect(within(nav).getByRole('button',{name:'Read',exact:true})).toHaveAttribute('aria-pressed','true'));
-    expect(screen.getByRole('button',{name:'Everything',exact:true})).toBeVisible();
+    expect(screen.getByRole('button',{name:'All rooms',exact:true})).toBeVisible();
     fireEvent.click(within(nav).getByRole('button',{name:'Good life',exact:true}));
     fireEvent.click(screen.getByRole('button',{name:/Explore life’s rooms/}));
     const room=screen.getByRole('combobox',{name:'Room'});
@@ -308,7 +308,7 @@ describe('approved main Lifestyle parity',()=>{
   it('keeps Everything through remount and clears foreign content identity when changing rooms',async()=>{
     window.history.replaceState({},'', '/Lifestyle?section=read&reading=old&lesson=old#daily-sky-lesson');
     const view=render(<Lifestyle/>);
-    fireEvent.click(await screen.findByRole('button',{name:'Everything',exact:true}));
+    fireEvent.click(await screen.findByRole('button',{name:'All rooms',exact:true}));
     expect(window.location.search).toBe('?section=all');
     expect(screen.getByRole('heading',{name:'Your life, in bloom'})).toBeVisible();
     view.unmount();render(<Lifestyle/>);

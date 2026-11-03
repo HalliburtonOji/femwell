@@ -1,4 +1,5 @@
 // Existing content, honestly fitted and identified. No alternate persistence store.
+import { knownUnplayableAudio } from "@/data/lifestyleMediaAvailability";
 export function authoredJoyId(kind, title) {
   let hash = 2166136261;
   for (const ch of String(title || '').normalize('NFKC').trim()) hash = Math.imul(hash ^ ch.charCodeAt(0), 16777619);
@@ -13,7 +14,7 @@ export function timeFit(rows, seconds) {
 // Prefer a known complete, playable episode for a real evening. An unknown
 // runtime, multipart episode or show directory remains available in Listen.
 export function eveningListen(rows) {
-  const playable = (rows || []).filter(row => row?.audio_url &&
+  const playable = (rows || []).filter(row => row?.audio_url && !knownUnplayableAudio(row) &&
     Number(row.duration_seconds) >= 1200 && Number(row.duration_seconds) <= 5400 &&
     !/\b(?:part|episode|ep\.?|pt\.?)\s*2\b/i.test(row.title || ''));
   return playable.find(row => /how to fail with elizabeth day/i.test(row.source_name || '') &&

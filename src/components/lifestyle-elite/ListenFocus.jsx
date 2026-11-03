@@ -12,6 +12,7 @@ import { Eyebrow, Title, Card as CleanCard, Summary, Foot } from "@/components/b
 import { SelectedRoomDetail } from "./SelectedLifestyleHeader";
 import { usePodcastPlayer } from "@/hooks/usePodcastPlayer";
 import { CalmFindRow, CalmMore } from "./CalmLifestyle";
+import { knownUnplayableAudio } from "@/data/lifestyleMediaAvailability";
 
 const durOf = (it) => {
   const m = (it?.meta || []).find((row) => /min|hr|:/.test(String(row?.[1] || "")));
@@ -39,7 +40,7 @@ function ListenCard({ eyebrow, title, accent = "sage", children, style, classNam
 export default function ListenFocus({ audioCards = [], videoCards = [], onOpen, presentation, calmLayout = false, editorialPreview = false, directPlayer = false }) {
   const player = usePodcastPlayer();
   const current = presentation ? player?.currentEpisode : null;
-  const active = current && (audioCards.find(card=>card.id===current.id) || (current.audio_url ? {
+  const active = current && !knownUnplayableAudio(current) && (audioCards.find(card=>card.id===current.id) || (current.audio_url ? {
     id:current.id,type:"audio",title:current.title,audioSrc:current.audio_url,duration:current.duration_seconds,
     sourceName:current.source_name,imageUrl:current.image_url,_raw:current,
     meta:[["Headphones",current.source_name || "Podcast"]],body:[],

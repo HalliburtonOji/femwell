@@ -110,6 +110,12 @@ describe('actual Lifestyle source contracts', () => {
     expect(rows).toHaveLength(3);
     expect(eveningListen(rows.filter(row=>row.id!=='checked'))).toBeNull();
   });
+  it('keeps a measured 404 episode out of the Good life time pick without dropping the source row',()=>{
+    const broken={id:'6a59e9430cd4a2ee47b7c5e3',title:'Rainbows',audio_url:'https://www.buzzsprout.com/1112270/episodes/19238113-rainbows-with-lulu-miller.mp3',duration_seconds:2700};
+    const valid={id:'working',title:'Another full episode',audio_url:'https://media.example/working.mp3',duration_seconds:3000};
+    expect(eveningListen([broken,valid])).toBe(valid);
+    expect([broken,valid]).toHaveLength(2);
+  });
   it('leads small and source-ready choices while retaining every original identity',()=>{
     const joys=[{id:'day1',doable:{kind:'day'}},{id:'try1',doable:{kind:'try'}},{id:'day2',doable:{kind:'day'}},{id:'try2',doable:{kind:'try'}}];
     expect(smallJoysFirst(joys).map(row=>row.id)).toEqual(['try1','try2','day1','day2']);

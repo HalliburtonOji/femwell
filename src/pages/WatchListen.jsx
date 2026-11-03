@@ -15,6 +15,7 @@ import { FloraYouTube, FloraAudio, decodeEntities } from "@/components/brand/exp
 import { cwOf } from "@/components/brand/flora";
 import { EXTERNAL_PODCASTS } from "@/components/lifestyle/listen/ExternalPodcastsRail";
 import { LIFESTYLE_VIDEOS } from "@/data/lifestyleVideos";
+import { availableEpisodeSource, knownUnplayableAudio } from "@/data/lifestyleMediaAvailability";
 
 const stripHtml = (s) => (s ? String(s).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() : "");
 // real third-party titles carry emoji + hashtag tails; strip them so the grid reads as OURS
@@ -66,7 +67,8 @@ function MediaTile({ item, calm = false }) {
     <div style={{ display: "flex", flexDirection: "column", border: `1px solid ${calm ? "#e6e3dc" : T.paperDeep}`, borderRadius: calm ? 20 : 16, overflow: "hidden", background: calm ? "#fff" : T.paperHi, boxShadow: calm ? "0 8px 28px rgba(58,46,57,.05)" : "0 2px 10px rgba(58,44,26,.07)" }}>
       {item.kind === "video"
         ? <FloraYouTube videoId={item.youtubeId} item={{ id: item.id, title: item.title, category: item.category, cw: item.kind === "audio" ? "sage" : "gold" }} accent={accent} />
-        : <div style={{ padding: 11 }}><FloraAudio presentation={calm ? "focused" : undefined} src={item.audioSrc} label={item.title} accent={accent} initialDuration={item.seconds} item={{ id: item.id, title: item.title, sourceName: item.source, _raw: item.raw }} /></div>}
+        : item.audioSrc ? <div style={{ padding: 11 }}><FloraAudio presentation={calm ? "focused" : undefined} src={item.audioSrc} label={item.title} accent={accent} initialDuration={item.seconds} item={{ id: item.id, title: item.title, sourceName: item.source, _raw: item.raw }} /></div>
+        : <div style={{padding:16}}><p style={{margin:"0 0 8px",font:"500 14px/1.4 system-ui"}}>This episode's audio isn't available right now.</p>{item.sourceHref && <a href={item.sourceHref} target="_blank" rel="noopener noreferrer" style={{...linkBtn('#42634c'),minHeight:44,alignItems:'center'}}>Open at publisher <ExternalLink size={12}/></a>}</div>}
       <div style={{ padding: "10px 12px 12px", display: "flex", flexDirection: "column", gap: 4 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: calm ? 12 : 10, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: accent }}>
           {item.kind === "audio" ? <Headphones size={11} /> : <Film size={11} />}{item.kind === "audio" ? "Listen" : "Watch"}
@@ -149,7 +151,7 @@ export default function WatchListen() {
       [...pods, ...vids, ...vidsNew, ...rows].forEach((r) => {
         const m = String(r.media_type || "").toUpperCase();
         if (r.audio_url && !/VIDEO/.test(m)) {
-          push({ id: r.id, kind: "audio", title: cleanTitle(r.title), source: r.source_name || r.channel_name || "FemWell", audioSrc: r.audio_url, seconds: Number(r.duration_seconds) || 0, mins: minutesOf(r), category: "listen podcast rest", raw: r });
+          push({ id: r.id, kind: "audio", title: cleanTitle(r.title), source: r.source_name || r.channel_name || "FemWell", audioSrc: knownUnplayableAudio(r) ? null : r.audio_url, sourceHref: knownUnplayableAudio(r) ? availableEpisodeSource(r) : null, seconds: Number(r.duration_seconds) || 0, mins: minutesOf(r), category: "listen podcast rest", raw: r });
         } else if (m === "VIDEO" && r.video_id && r.is_embeddable !== false) {
           // hook: a real summary where we have one (138), else the channel — never padded
           push({ id: r.id, kind: "video", title: cleanTitle(r.title), source: r.channel_name || r.source_name || "", youtubeId: r.video_id, mins: minutesOf(r), category: "creative watch make" }, `v-${r.video_id}`);
@@ -221,7 +223,7 @@ export default function WatchListen() {
               <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, color: T.muted, textAlign: "center", padding: "30px 0" }}>{loadError ? "The library couldn't load. Try again." : "Nothing at that length yet — try another filter."}</p>
             ) : (
               <>
-                <div style={{ fontFamily: UI, fontSize: calm ? 12 : 11.5, fontWeight: 700, color: calm ? "#51444e" : T.muted, margin: "0 0 10px" }}>{shown.length} to {kind === "audio" ? "hear" : kind === "video" ? "watch" : "watch & hear"}</div>
+                <div style={{ fontFamily: UI, fontSize: calm ? 12 : 11.5, fontWeight: 700, color: calm ? "#51444e" : T.muted, margin: "0 0 10px" }}>{kind === "audio" ? `${shown.filter(item=>!!item.audioSrc).length} to hear${shown.some(item=>!item.audioSrc) ? ` · ${shown.filter(item=>!item.audioSrc).length} unavailable` : ""}` : `${shown.length} to ${kind === "video" ? "watch" : "watch & hear"}`}</div>
                 <div style={{ display: "grid", gridTemplateColumns: calm ? "1fr" : "1fr 1fr", gap: calm ? 14 : 12 }}>
                   {(calm ? shown.slice(0,visibleCount) : shown).map((it) => <MediaTile key={it.id} item={it} calm={calm} />)}
                 </div>

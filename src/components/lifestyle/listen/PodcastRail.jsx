@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, Play, Pause, ExternalLink } from 'lucide-react';
 import SaveHeartButton from '@/components/lifestyle/foryou/SaveHeartButton';
+import { availableEpisodeSource, knownUnplayableAudio } from '@/data/lifestyleMediaAvailability';
 
 // On-brand washes only: cream paper → palette accent (blush / sage / gold).
 // No generic blues or greens — categories lean into a palette accent instead.
@@ -54,7 +55,7 @@ function PodcastCard({ item, saved, hasPhaseTag, onOpen, onSave, onUntag }) {
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
             onError={e => { e.currentTarget.style.display = 'none'; }}
           />
-        ) : null}
+        ) : knownUnplayableAudio(item) ? <p role="status" style={{fontSize:14,lineHeight:1.4,margin:0}}>This episode's audio isn't available right now.</p> : null}
         <div style={{
           position: 'absolute', top: 8, left: 8,
           fontSize: 12, fontWeight: 600, textTransform: 'uppercase',
@@ -194,7 +195,7 @@ function PodcastSheet({ item, onClose }) {
             {item.summary}
           </p>
         )}
-        {item.audio_url ? (
+        {item.audio_url && !knownUnplayableAudio(item) ? (
           <>
             <button
               type="button"
@@ -213,9 +214,9 @@ function PodcastSheet({ item, onClose }) {
             {/* eslint-disable-next-line */}
             <audio ref={audioRef} src={item.audio_url} style={{ width: '100%', marginTop: 12 }} controls />
           </>
-        ) : item.episode_url ? (
+        ) : (knownUnplayableAudio(item) ? availableEpisodeSource(item) : item.episode_url) ? (
           <a
-            href={item.episode_url}
+            href={knownUnplayableAudio(item) ? availableEpisodeSource(item) : item.episode_url}
             target="_blank"
             rel="noopener noreferrer"
             style={{

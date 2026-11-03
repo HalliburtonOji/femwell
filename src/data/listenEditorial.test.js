@@ -32,6 +32,11 @@ describe("Ideas Listen edition", () => {
   it("does not choose a source-only show as an in-app episode", () => {
     expect(orderListenEdition([episode(LISTEN_EDITORIAL_CHOICES[0].id, { duration_seconds: 0 })])).toEqual([]);
   });
+  it("does not offer a measured 404 enclosure as a first-tap episode", () => {
+    const broken = episode("6a59e9430cd4a2ee47b7c5e3",{audio_url:"https://www.buzzsprout.com/1112270/episodes/19238113-rainbows-with-lulu-miller.mp3"});
+    expect(playableListenChoices([{id:broken.id,audioSrc:broken.audio_url,duration:2700,_raw:broken}])).toEqual([]);
+    expect(orderListenEdition([episode(LISTEN_EDITORIAL_CHOICES[1].id,{audio_url:"https://sphinx.acast.com/episode"})],["Culture"]).map(row=>row.id)).toEqual([LISTEN_EDITORIAL_CHOICES[1].id]);
+  });
   it("gives a first-tap listener only timed playable episodes, leaving directories to Browse", () => {
     const playable = { id: "episode", audioSrc: "https://publisher.example/episode.mp3", duration: 2400 };
     expect(playableListenChoices([

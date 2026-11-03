@@ -53,6 +53,7 @@ import FocusedLifestyleSheet, { FocusedText, firstSentences } from "@/components
 import ReadStoryVoice from "@/components/lifestyle-elite/ReadStoryVoice";
 import { isCurrentEditorialNews } from "@/data/lifestyleEditorialDrafts";
 import { isOwnLifestyleDetailUrl } from "@/lib/editorialRelease";
+import { availableEpisodeSource, knownUnplayableAudio } from "@/data/lifestyleMediaAvailability";
 import { ChapterBlock } from "@/utils/chapterProse";
 import { cwOf, Pollinator, floraKeyframes, FlowerGlyph } from "@/components/brand/flora";
 import {
@@ -807,7 +808,7 @@ export function FocusedCardContents({ item: raw, room }) {
   const folioIntro = source?.summary || source?.why_it_matters || (source?.editorial_local ? synopsis : "");
   const visibleSynopsis = room === "books" && synopsis ? firstSentences(synopsis, 2) : synopsis;
   const warnings = source?.trigger_warnings || source?.content_warnings || [];
-  const sourceUrl = source?.content_url || source?.source_url || item.externalUrl;
+  const sourceUrl = knownUnplayableAudio(source) ? availableEpisodeSource(source) : source?.content_url || source?.source_url || item.externalUrl;
   // Old authored imports carry a placeholder on femwell.app, although the
   // complete article is already here. Keep genuine publisher source exits.
   const authoredPlaceholder = body.length > 0 && /^https:\/\/femwell\.app\/(?:articles|stories)\//i.test(sourceUrl || "");
@@ -835,8 +836,9 @@ export function FocusedCardContents({ item: raw, room }) {
     {warnings.length > 0 && <details className="fw-focused-depth"><summary>Worth knowing</summary>{(Array.isArray(warnings) ? warnings : [warnings]).map((text,i)=><p key={i}>{text}</p>)}</details>}
     {!book && item.takeaways?.length > 0 && <details className="fw-focused-depth"><summary>A few things to keep</summary><ul>{item.takeaways.map((text,i)=><li key={i}><FocusedText text={text}/></li>)}</ul></details>}
     {readArticle && source?.source_links?.length > 0 && <section className="fw-read-folio-sources" aria-label={source.editorial_local ? "Sources for this draft" : "Sources"}><h3>{source.editorial_local ? "Sources for this draft" : "Sources"}</h3><ul>{source.source_links.filter(link => /^https:\/\//i.test(link?.url || "")).map(link => <li key={link.url}><a href={link.url} target="_blank" rel="noopener noreferrer">{link.label || "Original source"}<ExternalLink size={14}/></a></li>)}</ul></section>}
+    {item.audioUnavailable && <p role="status" className="fw-focused-note">This episode's in-app audio isn't available right now.</p>}
     {!book && !authoredPlaceholder && !ownArticleRoute && (room === "good" || item.external || (!item.audioSrc && !item.videoSrc && !item.youtubeId)) && /^https?:\/\//i.test(sourceUrl || "") && <a className="fw-focused-button" href={sourceUrl} target="_blank" rel="noopener noreferrer">{item.type === "video" ? "Watch" : item.type === "audio" ? "Listen" : "Read"} at {item.sourceName || "the source"}<ExternalLink size={15}/></a>}
-    {item.meta.some(([,label])=>label && !/duration unavailable/i.test(label)) && <details className="fw-focused-depth"><summary>About this {book ? "book" : "piece"}</summary><div className="fw-focused-note">{item.meta.filter(([,label])=>label && !/duration unavailable/i.test(label)).map(([,label],i)=><p key={i}>{label}</p>)}</div></details>}
+    {item.meta.some(([,label])=>label && !/duration unavailable/i.test(label)) && <details className="fw-focused-depth"><summary>About this {book ? "book" : item.type === "audio" ? "episode" : "piece"}</summary><div className="fw-focused-note">{item.meta.filter(([,label])=>label && !/duration unavailable/i.test(label)).map(([,label],i)=><p key={i}>{label}</p>)}</div></details>}
   </div>;
 }
 
@@ -854,13 +856,13 @@ function FocusedCardDetail({ item, active, onClose, saved, saving, onSave, room,
     : onClose();
   const media = !!(item.audioSrc || item.videoSrc || item.youtubeId);
   // Already reading/playing here. Keep genuine external and book/tool actions.
-  const sourceUrl = item._raw?.content_url || item._raw?.source_url;
+  const sourceUrl = knownUnplayableAudio(item._raw) ? availableEpisodeSource(item._raw) : item._raw?.content_url || item._raw?.source_url;
   const readableSource = !media && item.type !== "book" && /^https?:\/\//i.test(sourceUrl || "");
-  const actions = item.actions.filter(action => item.type === "book" || item.external || (!body.length && !media && !readableSource) || !/^(read this|open episode|open full-screen)$/i.test(action.label));
+  const actions = item.actions.filter(action => !(item.audioUnavailable && readableSource && action.label === "At publisher") && (item.type === "book" || item.external || (!body.length && !media && !readableSource) || !/^(read this|open episode|open full-screen)$/i.test(action.label)));
   return <FocusedLifestyleSheet title={item.title} eyebrow={item.kind} active={active} onClose={closeWithPlace} room={room} contentRef={setSheetNode}
     footer={<>{error && <p role="alert" className="fw-focused-note">{error}</p>}{item.saveable !== false && <button className="fw-focused-button" onClick={onSave} disabled={saving} aria-busy={saving} aria-pressed={saved}>{saved ? <BookmarkCheck size={16}/> : <Bookmark size={16}/>} {saving ? "Saving…" : saved ? "Saved" : "Save"}</button>}{actions.map(action=><button key={action.label} className={`fw-focused-button${action.primary ? " fw-focused-button--primary" : ""}`} onClick={()=>{if(readingInSheet) closeWithPlace().then(()=>action.onClick?.(item)); else {onClose(); action.onClick?.(item);}}}>{action.label}</button>)}</>}>
     <FocusedCardContents item={item} room={room}/>
-    {!body.length && !media && !readableSource && !item.quote && item.type !== "book" && !item.showDirectory && <p className="fw-focused-note">Only a summary is published here so far.</p>}
+    {!body.length && !media && !readableSource && !item.audioUnavailable && !item.quote && item.type !== "book" && !item.showDirectory && <p className="fw-focused-note">Only a summary is published here so far.</p>}
   </FocusedLifestyleSheet>;
 }
 
