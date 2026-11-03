@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { availableEpisodeSource, knownUnplayableAudio } from "./lifestyleMediaAvailability";
+import { availableEpisodeSource, firstPlayableEpisode, knownUnplayableAudio } from "./lifestyleMediaAvailability";
 
 describe("source-specific audio availability", () => {
   const id = "6a59e9430cd4a2ee47b7c5e3";
@@ -14,5 +14,14 @@ describe("source-specific audio availability", () => {
   it("does not route a copied dead enclosure as a publisher page", () => {
     expect(availableEpisodeSource({id,audio_url:url,episode_url:url,content_url:url})).toBeNull();
     expect(availableEpisodeSource({id,audio_url:url,episode_url:"https://publisher.example/episode"})).toBe("https://publisher.example/episode");
+  });
+  it("keeps a broken or directory-only Today suggestion out of the first player", () => {
+    const safe = {id:"safe",title:"A whole episode",audio_url:"https://publisher.example/live.mp3",duration_seconds:1800};
+    expect(firstPlayableEpisode([
+      {id,title:"Down today",audio_url:url,episode_url:url,duration_seconds:2200},
+      {id:"directory",title:"The show",episode_url:"https://publisher.example/show"},
+      safe,
+    ])).toEqual(safe);
+    expect(firstPlayableEpisode([{id,title:"Down today",audio_url:url,duration_seconds:2200}])).toBeNull();
   });
 });

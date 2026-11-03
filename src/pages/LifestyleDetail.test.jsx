@@ -183,6 +183,16 @@ describe('complete article and last-place recovery',()=>{
     fireEvent.click(screen.getByRole('button',{name:'Back'}));
     await waitFor(()=>expect(screen.getByTestId('path')).toHaveTextContent('/Lifestyle?section=yours'));
   });
+  it('returns a Today episode and its related read to Today',async()=>{
+    api.items.mockImplementation(async q=>q.id ? [{...article,id:q.id,title:q.id==='next'?'Next read':article.title}] : [{...article,id:'next',title:'Next read'},{...article,id:'other',title:'Another read'}]);
+    function Path(){const location=useLocation();return <output data-testid="path">{location.pathname+location.search}</output>;}
+    render(<MemoryRouter initialEntries={['/LifestyleDetail?id=article&from=today']}><Path/><LifestyleDetail/></MemoryRouter>);
+    await screen.findByRole('heading',{name:article.title});
+    const related=await screen.findByRole('link',{name:/Next read/i});
+    expect(related).toHaveAttribute('href','/LifestyleDetail?id=next&appearance=calm&from=today');
+    fireEvent.click(screen.getByRole('button',{name:'Back'}));
+    await waitFor(()=>expect(screen.getByTestId('path')).toHaveTextContent('/Today'));
+  });
   it('returns a Saved article and related read to the exact Saved tab',async()=>{
     api.items.mockImplementation(async q=>q.id ? [{...article,id:q.id,title:q.id==='next'?'Next read':article.title}] : [{...article,id:'next',title:'Next read'},{...article,id:'other',title:'Another read'}]);
     function Path(){const location=useLocation();return <output data-testid="path">{location.pathname+location.search}</output>;}

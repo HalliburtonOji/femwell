@@ -24,6 +24,7 @@ import {
 } from "@/components/journal/Editorial";
 import { base44 } from "@/api/base44Client";
 import { eligiblePublishedRead, isReviewedEditorial } from "@/lib/editorialRelease";
+import { firstPlayableEpisode } from "@/data/lifestyleMediaAvailability";
 import { pickProfile, displayFirstName } from "@/utils/userProfile";
 import { storyPreview } from "@/utils/chapterProse";
 import { loadStoryChapters, chapterForDay } from "@/components/lifestyle/dailyStory";
@@ -412,7 +413,7 @@ export default function TodayClipboardDemo({ routeActive = true }) {
       }).catch(() => {});
       // ── LISTEN — a real published podcast episode (the Lifestyle Listen source: LifestyleItems media_type PODCAST) ──
       withTimeout(base44.entities.LifestyleItems.filter({ media_type: "PODCAST", status: "PUBLISHED" }, "-published_at", 6)).then((rows) => {
-        const a = (rows || []).filter((r) => r && r.title && (r.audio_url || r.episode_url || r.content_url))[0]; if (alive && a) setContent((c) => ({ ...c, listen: a }));
+        const a = firstPlayableEpisode(rows); if (alive && a) setContent((c) => ({ ...c, listen: a }));
       }).catch(() => {});
       // ── PROGRAMS — the user's active programme (real); title/day/length resolved from Programs by program_key ──
       withTimeout(base44.entities.UserPrograms.filter({ user_id: id }, "-last_activity_date", 8)).then(async (rows) => {
@@ -566,7 +567,7 @@ export default function TodayClipboardDemo({ routeActive = true }) {
   const pulseLine = weekly?.structured_summary?.your_pattern || weekly?.insight_text || insightCards[0]?.insight_text || insightCards[0]?.content || null;
   const horo = content.horoscope;
   const listen = content.listen;
-  const listenHref = listen ? (listen.episode_url || listen.content_url || "/Lifestyle?tab=listen") : "/Lifestyle?tab=listen";
+  const listenHref = listen?.id ? `/LifestyleDetail?id=${encodeURIComponent(listen.id)}&from=today` : "/Lifestyle?section=listen";
   const phaseWord = PHASE_LABEL[phase] ? PHASE_LABEL[phase].toLowerCase() : "";
   const foryouItems = (content.foryou || []).filter(eligiblePublishedRead);
   const prog = content.program;
@@ -635,7 +636,7 @@ export default function TodayClipboardDemo({ routeActive = true }) {
       const accent = T.gold;
       const modes = [
         { tag: "Your moon", hook: `Tonight: ${moon.name.toLowerCase()}`, line: `${moon.line}. Your sky, read against where you are.`, visual: <MoonGlyph frac={moon.frac} size={92} />, flower: "violet", action: { type: "deeplink", Icon: Star, label: horo ? "Today's reading" : "Read your sky", href: "/Lifestyle?tab=horoscope" } },
-        listen && { tag: "Listen", hook: clip(listen.title, 52), line: listen.source_name ? `${listen.source_name} · play it here` : "An episode you can play here.", flower: "bluebell", action: { type: "audio", url: audioUrl, title: listen.title, href: listenHref, Icon: Headphones } },
+        listen && { tag: "Listen", hook: clip(listen.title, 52), line: listen.source_name ? `${listen.source_name} · today’s episode` : "One for your ears today.", flower: "bluebell", action: { type: "audio", url: audioUrl, title: listen.title, href: listenHref, Icon: Headphones } },
         content.book && { tag: "Book of the day", hook: clip(content.book.title, 46), line: content.book.author ? `${content.book.author} — opens straight in the reader, full screen.` : "Opens straight in the reader, full screen.", flower: "rose", action: { type: "deeplink", Icon: BookOpen, label: "Open in the reader", href: bookHref } },
         content.story && { tag: "Daily story", hook: clip(storyTitle, 44), line: content.story.segment_text ? clip(storyPreview(content.story.segment_text), 80) : "A chapter you can read now.", flower: "poppy", action: { type: "deeplink", Icon: Feather, label: "Read today's chapter", href: "/Lifestyle?tab=daily_story" } },
         foryouItem && { tag: foryouItem.provider === "FEMWELL_AI" ? "AI archive" : "Lifestyle", hook: clip(foryouItem.title, 50), line: foryouItem.provider === "FEMWELL_AI" ? "An older piece. Source check pending." : "From Lifestyle. Open if it grabs you.", flower: "primrose", action: { type: "deeplink", Icon: Sparkles, label: "Open this", href: foryouHref, internal: true } },
@@ -1255,24 +1256,33 @@ function InlineAction({ action, accent, uid, cycle, onSheet, onTend }) {
   return null;
 }
 function AudioAction({ action, accent }) {
-  const ref = useRef(null); const [playing, setPlaying] = useState(false); const [err, setErr] = useState(false);
-  const toggle = () => { const el = ref.current; if (!el) return; if (el.paused) { el.play().then(() => setPlaying(true)).catch(() => setErr(true)); } else { el.pause(); setPlaying(false); } };
+  const ref = useRef(null); const playRef = useRef(null); const fallbackRef = useRef(null); const restoreFocus = useRef(false);
+  const [playing, setPlaying] = useState(false); const [err, setErr] = useState(false);
+  const fail = () => { restoreFocus.current = document.activeElement === playRef.current; setErr(true); };
+  useEffect(() => {
+    if (!err || !fallbackRef.current) return;
+    if (restoreFocus.current) { fallbackRef.current.focus({preventScroll:true}); restoreFocus.current = false; }
+    const bottom = fallbackRef.current.getBoundingClientRect().bottom;
+    const clearOfNav = window.innerHeight - 108;
+    if (bottom > clearOfNav) window.scrollBy({top:bottom - clearOfNav + 8,behavior:"auto"});
+  }, [err]);
+  const toggle = () => { const el = ref.current; if (!el) return; if (el.paused) { el.play().then(() => setPlaying(true)).catch(fail); } else { el.pause(); setPlaying(false); } };
   if (err || !action.url) return (
     <div>
-      <a href={action.href} style={inlineBtn(accent)}><Headphones size={15} /> Open in Listen</a>
-      {err && <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, margin: "7px 0 0" }}>This clip won{"'"}t stream here — it{"'"}s waiting in Listen.</p>}
+      <Link ref={fallbackRef} to={action.href} style={{...inlineBtn(accent),color:T.ink}}><Headphones size={15} /> Open episode</Link>
+      {err && <p role="status" style={{ fontFamily: UI, fontSize: 12, color: T.muted, margin: "7px 0 0" }}>This clip won{"'"}t stream here. Open its episode page for more.</p>}
     </div>
   );
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 12, background: T.paper, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${accent}`, borderRadius: 12, padding: "11px 13px" }}>
-      <button onClick={toggle} aria-label={playing ? "Pause" : "Play"} style={{ flexShrink: 0, width: 46, height: 46, borderRadius: 999, background: accent, color: "#fff", border: "none", display: "grid", placeItems: "center", cursor: "pointer" }}>
+      <button ref={playRef} onClick={toggle} aria-label={playing ? "Pause" : "Play"} style={{ flexShrink: 0, width: 46, height: 46, borderRadius: 999, background: accent, color: T.ink, border: "none", display: "grid", placeItems: "center", cursor: "pointer" }}>
         {playing ? <Pause size={20} /> : <Play size={20} style={{ marginLeft: 2 }} />}
       </button>
       <div style={{ minWidth: 0, flex: 1 }}>
         <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: accent, letterSpacing: "0.04em" }}>{playing ? "Playing — right here" : "Play inline"}</div>
         <div style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, ...CLAMP2 }}>{clip(action.title, 40)}</div>
       </div>
-      <audio ref={ref} src={action.url} preload="none" onEnded={() => setPlaying(false)} onError={() => setErr(true)} />
+      <audio ref={ref} src={action.url} preload="none" onEnded={() => setPlaying(false)} onError={fail} />
     </div>
   );
 }

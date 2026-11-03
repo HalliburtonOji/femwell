@@ -25,3 +25,9 @@ export function availableEpisodeSource(row) {
   }
   return null;
 }
+
+// A first action on Today promises an in-app episode, like Lifestyle Listen.
+// Keep the directory and untimed rows elsewhere; do not manufacture a player.
+export function firstPlayableEpisode(rows) {
+  return (rows || []).find(row => row?.title && row.audio_url && Number(row.duration_seconds) > 0 && !knownUnplayableAudio(row)) || null;
+}

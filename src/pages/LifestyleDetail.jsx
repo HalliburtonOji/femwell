@@ -163,9 +163,10 @@ export default function LifestyleDetail() {
   // Every current Lifestyle article now opens in the same clean reading room.
   const calmReader = true;
   const fromLifestyleMain = urlParams.get("from") === "lifestyle-main";
+  const fromToday = urlParams.get("from") === "today";
   const originSection = urlParams.get("return_section") === "yours" ? "yours" : "read";
   const savedTab = fromLifestyleMain && urlParams.get("via") === "saved" && ["ADVICE", "LIFESTYLE", "CONTENT", "PROGRAM", "JOURNAL", "EVENT"].includes(urlParams.get("saved_tab")) ? urlParams.get("saved_tab") : null;
-  const backTo = savedTab ? `/Saved?tab=${savedTab}&appearance=calm&from=lifestyle-main` : fromLifestyleMain ? `/Lifestyle?section=${originSection}` : "/Lifestyle?section=read";
+  const backTo = savedTab ? `/Saved?tab=${savedTab}&appearance=calm&from=lifestyle-main` : fromToday ? "/Today" : fromLifestyleMain ? `/Lifestyle?section=${originSection}` : "/Lifestyle?section=read";
 
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -202,7 +203,7 @@ export default function LifestyleDetail() {
     // Route exits can wait for a private, acknowledged place; native browser
     // exits still rely on the local fallback because unload cannot await fetch.
     await Promise.race([saveReadingPlace(), new Promise(resolve => setTimeout(resolve, 3500))]);
-    if (fromLifestyleMain) navigate(backTo);
+    if (fromLifestyleMain || fromToday) navigate(backTo);
     else if (window.history.length > 1) window.history.back();
     else window.location.assign(backTo);
   };
@@ -1074,7 +1075,7 @@ export default function LifestyleDetail() {
                 return (
                   <Link
                     key={r.id}
-                    to={`/LifestyleDetail?id=${encodeURIComponent(r.id)}${calmReader ? "&appearance=calm" : ""}${fromLifestyleMain ? "&from=lifestyle-main" : ""}${savedTab ? `&via=saved&saved_tab=${savedTab}` : fromLifestyleMain && originSection === "yours" ? "&return_section=yours" : ""}`}
+                    to={`/LifestyleDetail?id=${encodeURIComponent(r.id)}${calmReader ? "&appearance=calm" : ""}${fromLifestyleMain ? "&from=lifestyle-main" : fromToday ? "&from=today" : ""}${savedTab ? `&via=saved&saved_tab=${savedTab}` : fromLifestyleMain && originSection === "yours" ? "&return_section=yours" : ""}`}
                     className="fw-related-card"
                   >
                     <div style={{

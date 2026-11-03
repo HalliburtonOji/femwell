@@ -135,6 +135,7 @@ The next time something catches your eye, let it. Then let it go when you want t
     author_name: "FemWell · Ideas draft",
     source_name: "FemWell · Ideas draft",
     published_at: "2026-10-18",
+    editorial_source_checked_at: "2026-11-03",
     expires_at: "2026-12-31",
     duration_label: "About 2 min read",
     source_links: [
@@ -192,7 +193,8 @@ In the morning she would have to explain the late email and answer her sister's 
 export function isCurrentEditorialNews(raw, now = Date.now()) {
   if (!raw?.editorial_local || String(raw.content_type || "").toUpperCase() !== "NEWS") return false;
   const date = new Date(now), today = [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
-  const published = String(raw.published_at || ""), expires = String(raw.expires_at || ""), checked = String(raw.revalidated_at || published);
+  // Neither a publication date nor a successful URL/HEAD probe is a fresh source review.
+  const published = String(raw.published_at || ""), expires = String(raw.expires_at || ""), checked = String(raw.editorial_source_checked_at || "");
   const starts = /^\d{4}-\d{2}-\d{2}$/.test(published) ? published <= today : Date.parse(published) <= now;
   const ends = /^\d{4}-\d{2}-\d{2}$/.test(expires) ? expires >= today : Date.parse(expires) >= now;
   const checkedAt = Date.parse(checked);
