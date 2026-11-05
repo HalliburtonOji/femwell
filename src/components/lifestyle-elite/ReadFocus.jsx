@@ -19,9 +19,10 @@ function ReadEditionChoice({ item, onOpen, onDetails, resume = false, compact = 
   if (!item) return null;
   const raw = item._raw || {};
   const archive = item.archived || /^FEMWELL_AI/i.test(String(raw.provider || ""));
-  const draftType = /NEWS/i.test(String(raw.content_type || "")) ? "News" : /GUIDE/i.test(String(raw.content_type || "")) ? "Guide" : /STORY|FICTION/i.test(String(raw.content_type || "")) ? "Fiction" : "Essay";
+  const markedNews = /NEWS/i.test(String(raw.content_type || "")) || (Array.isArray(raw.tags) && raw.tags.some(tag => String(tag).toLowerCase() === "news"));
+  const draftType = markedNews ? "News" : /GUIDE/i.test(String(raw.content_type || "")) ? "Guide" : /STORY|FICTION/i.test(String(raw.content_type || "")) ? "Fiction" : "Essay";
   const kind = resume ? "Continue reading" : raw.release_href ? `Ideas original · ${draftType} · published` : raw.editorial_local ? `Ideas · ${draftType} · unreviewed` : archive ? "Archive · source check pending"
-    : /news/i.test(String(raw.provider || "") + String(raw.category || "")) ? "News & context"
+    : markedNews || /news/i.test(String(raw.provider || "") + String(raw.category || "")) ? "News & context"
     : /guide/i.test(String(raw.content_type || "") + String(raw.media_type || "")) ? "Useful guide"
     : /fiction|story/i.test(String(raw.content_type || "") + String(item.type || "")) ? "Story" : "Article";
   const line = firstSentences(item.subtitle || item.summary || "", 1);
@@ -45,7 +46,9 @@ function ReadIssueBrief({ item, onOpen, onDetails }) {
   const news = /NEWS/i.test(String(raw.content_type || ""));
   const fiction = /STORY|FICTION/i.test(String(raw.content_type || ""));
   const essay = /ARTICLE/i.test(String(raw.content_type || ""));
-  const typeLabel = fiction ? "Original fiction · unreviewed · optional voice inside" : news ? "News draft · unreviewed" : essay ? "Essay draft · unreviewed" : "Practical guide · unreviewed";
+  const typeLabel = raw.release_href
+    ? `${fiction ? "Original fiction" : news ? "News" : essay ? "Essay" : "Practical guide"} · published original${fiction ? " · optional voice study" : ""}`
+    : fiction ? "Original fiction · unreviewed · optional voice inside" : news ? "News draft · unreviewed" : essay ? "Essay draft · unreviewed" : "Practical guide · unreviewed";
   return <div className="fw-read-brief">
     <button className="fw-read-brief-open" onClick={() => onOpen?.(item)} aria-label={`Read ${item.title}`}>
       <span><small>{typeLabel}{raw.duration_label ? ` · ${raw.duration_label}` : ""}</small><strong>{item.title}</strong></span>

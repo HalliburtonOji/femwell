@@ -31,6 +31,7 @@ The message doesn't need to be perfect. It just needs a day of the week. Tuesday
   {
     id: "ideas-read-day-off",
     editorial_local: true,
+    release_href: "/LifestyleDetail?id=6aecc863838ff7bd87937bc9",
     status: "NEEDS_REVIEW",
     media_type: "ARTICLE",
     content_type: "ARTICLE",
@@ -55,6 +56,7 @@ When evening comes, ask a kinder question than “What did I achieve?” Try “
   {
     id: "ideas-read-subscription-check",
     editorial_local: true,
+    release_href: "/LifestyleDetail?id=6aecc8647e43d87b9a6613ee",
     status: "NEEDS_REVIEW",
     media_type: "ARTICLE",
     content_type: "GUIDE",
@@ -78,6 +80,7 @@ This is not an invitation to cut every nice thing. A subscription you use and en
   {
     id: "ideas-read-meeting-after-meeting",
     editorial_local: true,
+    release_href: "/LifestyleDetail?id=6aecc8666d144ac18a3e0f4c",
     status: "NEEDS_REVIEW",
     media_type: "ARTICLE",
     content_type: "ARTICLE",
@@ -102,6 +105,7 @@ Not every decision needs a meeting. Not every disagreement needs a bigger one. B
   {
     id: "ideas-read-small-curiosity",
     editorial_local: true,
+    release_href: "/LifestyleDetail?id=6aecc867d7b5d3c3625a5af3",
     status: "NEEDS_REVIEW",
     media_type: "ARTICLE",
     content_type: "ARTICLE",
@@ -155,6 +159,7 @@ This edition covers the October–December 2026 cap. It needs another source che
   {
     id: "ideas-read-the-long-way-home-v1",
     editorial_local: true,
+    release_href: "/LifestyleDetail?id=6aecc868501fd964679a0394",
     status: "NEEDS_REVIEW",
     media_type: "ARTICLE",
     content_type: "STORY",

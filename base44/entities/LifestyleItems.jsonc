@@ -130,6 +130,10 @@
       "type": "string",
       "description": "ISO timestamp of the most recent successful HEAD check on content_url. Null until first revalidateUrls run."
     },
+    "editorial_source_checked_at": {
+      "type": "string",
+      "description": "ISO timestamp when an editor last compared dated factual claims with primary sources. A URL liveness check does not update this field."
+    },
     "is_editor_pick": {
       "type": "boolean",
       "default": false

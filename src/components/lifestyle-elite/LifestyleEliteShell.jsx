@@ -103,6 +103,7 @@ import { QuickRow } from "@/components/brand/QuickRow";
 import { withTimeout } from "@/utils/safeEntity";
 import { createPageUrl } from "@/utils";
 import { fmtDuration } from "@/utils/duration";
+import { isNewsSource, isStaleNews } from "@/data/editorialNews";
 import { isClickbait } from "@/utils/clickbait";
 import { cleanTitle } from "@/utils/cleanTitle";
 import { ChapterProse } from "@/utils/chapterProse";
@@ -357,20 +358,6 @@ const contentBodyOf = (r) => {
   const out = []; let n = 0;                             // cap to a taster, whole paragraphs only
   for (const p of paras) { if (n && n + p.length > G_BODY_MAX) break; out.push(p); n += p.length; }
   return out;
-};
-const isNewsSource = (r) => /NEWS/i.test(String(r?.content_type || "") + " " + String(r?.provider || "") + " " + String(r?.category || ""));
-const isStaleNews = (r) => {
-  if (!isNewsSource(r)) return false;
-  const published = String(r?.published_at || ""), revalidated = String(r?.revalidated_at || "");
-  const checkedAt = Date.parse(revalidated || published || "");
-  const expires = String(r?.expires_at || ""), expiresAt = Date.parse(expires);
-  const now=Date.now(), date=new Date(now);
-  const today=[date.getFullYear(),String(date.getMonth()+1).padStart(2,"0"),String(date.getDate()).padStart(2,"0")].join("-");
-  const future = value => /^\d{4}-\d{2}-\d{2}$/.test(value) ? value > today : Date.parse(value) > now;
-  return !Number.isFinite(checkedAt) ||
-    (published && (!Number.isFinite(Date.parse(published)) || future(published))) ||
-    (revalidated && (!Number.isFinite(Date.parse(revalidated)) || future(revalidated))) ||
-    now - checkedAt > 14 * 86400000 || (Number.isFinite(expiresAt) && (/^\d{4}-\d{2}-\d{2}$/.test(expires) ? expires < today : now > expiresAt));
 };
 const takeawaysOf = (r) => {
   const arr = Array.isArray(r?.takeaways) ? r.takeaways : [];
@@ -1067,7 +1054,7 @@ function LifestyleShell({ navigate, routePathname, routeSearch, routeActive = tr
     ...(archiveLabel && type === "daily_story" ? { kind: "Fiction · Archive" }
       : archiveLabel && type === "article" ? { kind: "Archive · source check pending" }
       : /GUIDE/i.test(String(r.content_type || "")) ? { kind: "Read · Guide" }
-      : /NEWS/i.test(String(r.content_type || "")) ? { kind: "Read · News" } : {}),
+      : isNewsSource(r) ? { kind: "Read · News" } : {}),
     title: r.title,
     subtitle: stripHtml(r.why_it_matters || r.summary || "") || metaOf(r),
     // §5 a real hook so a card is never empty — the substance, distinct from the short subtitle.

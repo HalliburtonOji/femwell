@@ -192,7 +192,7 @@ const CAT = {
 };
 const GROUP_ORDER = [CAT.CURRENT, CAT.BRANDDOCS, CAT.SPECS, CAT.BRAND, CAT.VISION, CAT.BUILD, CAT.ARCHIVE];
 const GROUP_BLURB = {
-  [CAT.CURRENT]:   "Builds, research and verification for your review. The selected Lifestyle is approved on main. Routine repairs continue through the Critique Director; substantial new directions stay here for your decision.",
+  [CAT.CURRENT]:   "One short status desk: what is live, what is staged and the few decisions that need you. Routine editorial and repairs continue in manual builds; substantial new directions stay here for your decision.",
   [CAT.BRANDDOCS]: "One brand home — the consolidated Brand Bible (the old Living-Ecosystem / Brand Identity / Flora docs are folded into it).",
   [CAT.SPECS]:     "Standing plans, specs and audits — the reference for what we're building.",
   [CAT.BRAND]:     "Companion vision, cross-app UX patterns and the PWA/widget plan.",
@@ -204,7 +204,7 @@ const GROUP_BLURB = {
 const COLLAPSED_BY_DEFAULT = new Set([CAT.ARCHIVE]);
 
 const CATALOG = [
-  {kind:"doc",key:"Lifestyle status",group:CAT.CURRENT,sub:"Lifestyle · approved main",status:"live",added:"2026-11-03",accent:"plum",title:"Lifestyle · what is live, what is in review",desc:"The one current Lifestyle desk. Six accepted rooms are on main; eight known unavailable episodes no longer lead first listens. Six original Read pieces and account voice are in review."},
+  {kind:"doc",key:"Lifestyle status",group:CAT.CURRENT,sub:"Lifestyle · approved main",status:"live",added:"2026-11-05",accent:"plum",title:"Lifestyle · what is live, what is in review",desc:"The one current Lifestyle desk. Six accepted rooms are on main; five more approved original Read texts now have published identities. The dated energy piece follows its source-freshness gate. Voice remains a separate study; routine editorial no longer needs six separate approvals."},
   {kind:"route",href:"/lifestyle-content/index.html#lc21-read-issue",group:CAT.CURRENT,sub:"Lifestyle · fuller Read issue",status:"candidate",added:"2026-10-22",accent:"plum",title:"Read · a real little magazine",desc:"Two more complete original pieces, a cover chosen from an actually followed topic, direct saved place, concise useful contents, narrated fiction and all older reading. Ideas only; human editorial publication gate remains."},
   {kind:"route",href:"/lifestyle-content/index.html#lc20-read-story-voice",group:CAT.CURRENT,sub:"Lifestyle · opened Read story",status:"candidate",added:"2026-10-22",accent:"plum",title:"Read it. Or hear it.",desc:"The full Ideas fiction now has Laura, George and River in its opened folio, using the app's one player. The Read landing stays clear; main Read, Jess and account voice are unchanged."},
   {kind:"route",href:"/lifestyle-content/voice-studio/scene.html",group:CAT.CURRENT,sub:"Lifestyle · character voice test",status:"candidate",added:"2026-10-21",accent:"plum",title:"The long way home · three voices",desc:"Three actual one-minute takes of the complete original Read scene, with direct Play, exact words and one player. A bounded Ideas sound test; account Jess and the old ten-voice audition are unchanged."},

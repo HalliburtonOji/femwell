@@ -193,7 +193,7 @@ describe("calmer lists preserve exact source tasks", () => {
     const resume={id:"saved",title:"The Shape of Starting Over",type:"book",_continue:{id:"saved"}};
     const feature={id:"feature",title:"The plans you actually want to keep",type:"article",_raw:{editorial_local:true,content_type:"ARTICLE"},saveable:false};
     const guide={id:"guide",title:"The payment you forgot about",type:"article",_raw:{editorial_local:true,content_type:"GUIDE",duration_label:"About 2 min read"},saveable:false};
-    const news={id:"news",title:"The energy cap changed",type:"article",_raw:{editorial_local:true,content_type:"NEWS",published_at:today,expires_at:today,duration_label:"About 2 min read"},saveable:false};
+    const news={id:"news",title:"The energy cap changed",type:"article",_raw:{editorial_local:true,content_type:"NEWS",published_at:today,editorial_source_checked_at:today,expires_at:today,duration_label:"About 2 min read"},saveable:false};
     const older={id:"older",title:"The older full article",type:"article",_raw:{provider:"EDITORIAL"}};
     const {rerender}=render(<ReadFocus calmLayout editorialPreview presentation="focused" continueCards={[resume]} articleCards={[feature,guide,news,older]} onOpen={onOpen} onDetails={onDetails}/>);
     expect(screen.getByRole("heading",{name:"The plans you actually want to keep"})).toBeVisible();
@@ -212,7 +212,7 @@ describe("calmer lists preserve exact source tasks", () => {
     expect(screen.getByText("Browse all reading · 2")).toBeVisible();
     expect(screen.getByText(/Past edition · source recheck needed/)).toBeInTheDocument();
     const old=new Date(Date.now()-16*86400000).toISOString().slice(0,10),future=new Date(Date.now()+28*86400000).toISOString().slice(0,10);
-    rerender(<ReadFocus calmLayout editorialPreview presentation="focused" continueCards={[resume]} articleCards={[feature,guide,{...news,_raw:{...news._raw,published_at:old,expires_at:future}},older]} onOpen={onOpen} onDetails={onDetails}/>);
+    rerender(<ReadFocus calmLayout editorialPreview presentation="focused" continueCards={[resume]} articleCards={[feature,guide,{...news,_raw:{...news._raw,published_at:old,editorial_source_checked_at:old,expires_at:future}},older]} onOpen={onOpen} onDetails={onDetails}/>);
     expect(within(screen.getByLabelText("Useful reads in this issue")).queryByRole("button",{name:"Read The energy cap changed"})).not.toBeInTheDocument();
     expect(screen.getByText("Browse all reading · 2")).toBeVisible();
   });
