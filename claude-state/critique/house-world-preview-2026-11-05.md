@@ -32,3 +32,5 @@ House scene: SVG hotspot/prop composition, scoped CSS, existing font/astrology m
 ## Verdict and next coherent build
 
 Scoped P0: none found. P1: blocked Ideas exit fixed. P2: stale pre-deploy open tab needs one reload; 2.5D art does not yet prove the high-end Sims-like world; native iPhone GPU/thermal/gesture proof, exact saved source and account persistence remain open. Next: compare this against one genuine dimensional/rendered treatment with actual source-backed object, instrument bytes/frame cost, and refine a selected art direction before any main-world or schema decision. Keep LC34 Lifestyle content work on its separate manual track; four-hour automation paused.
+
+**Release close:** refined source `f9641c19` pushed without force, site deploy succeeded, both fresh origins serve `index-hSMNbVru.js`; the final three-backdrop composition and actual interactions passed controlled deployed 360/390/430 taps. The signed-in in-app `/HouseWorldDemo` tab was refreshed and left open for Halli. This closes the optional visual-test atom; it does not close the full house-world proposal.
