@@ -134,6 +134,10 @@
       "type": "string",
       "description": "ISO timestamp when an editor last compared dated factual claims with primary sources. A URL liveness check does not update this field."
     },
+    "expires_at": {
+      "type": "string",
+      "description": "Last date a dated editorial claim or edition may lead as current; its complete historical article remains readable."
+    },
     "is_editor_pick": {
       "type": "boolean",
       "default": false

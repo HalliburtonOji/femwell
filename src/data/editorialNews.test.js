@@ -13,6 +13,6 @@ describe("stored editorial news", () => {
     expect(isStaleNews({...edition, editorial_source_checked_at: "2026-11-06"}, Date.parse("2026-11-05T19:00:00Z"))).toBe(true);
   });
   it("keeps the historical article but removes its current-news eligibility after expiry", () => {
-    expect(isStaleNews(edition, Date.parse("2027-01-01T12:00:00Z"))).toBe(true);
+    expect(isStaleNews({...edition, editorial_source_checked_at: "2027-01-01T08:00:00Z"}, Date.parse("2027-01-01T12:00:00Z"))).toBe(true);
   });
 });

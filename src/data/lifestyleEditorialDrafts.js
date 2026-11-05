@@ -130,6 +130,7 @@ The next time something catches your eye, let it. Then let it go when you want t
   {
     id: "ideas-read-october-energy-cap",
     editorial_local: true,
+    release_href: "/LifestyleDetail?id=6aecc9c384f9cf2547528254",
     status: "NEEDS_REVIEW",
     media_type: "ARTICLE",
     content_type: "NEWS",
