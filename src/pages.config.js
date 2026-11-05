@@ -330,6 +330,7 @@ import Garden from './pages/Garden';
 // map "Garden" back to Garden below. Old garden stays reachable at /GardenHub.
 import GardenEliteShell from './components/garden-elite/GardenEliteShell';
 import GardenL2Demo from './pages/GardenL2Demo';
+import HouseWorldDemo from './pages/HouseWorldDemo';
 import __Layout from './Layout.jsx';
 
 
@@ -340,6 +341,7 @@ export const PAGES = {
     "Explore": Explore,
     "Garden": GardenEliteShell,
     "GardenL2Demo": GardenL2Demo,
+    "HouseWorldDemo": HouseWorldDemo,
     "GardenElite": GardenEliteShell,
     "GardenHub": Garden,
     "Journal": JournalHub,

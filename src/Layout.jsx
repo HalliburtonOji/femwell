@@ -21,7 +21,7 @@ const LITE_NAV = ["ProgramDay", "ProgramDetail"];
 const todayStr = new Date().toISOString().split("T")[0];
 
 export default function Layout({ children, currentPageName }) {
-  const cleanPreview = ["Lifestyle", "LifestyleElite", "LifestyleDetail", "BookReader", "FictionReader", "FocusedLifestyleDemo","CalmLifestyleDemo", "Becoming", "Mirror", "Move", "Kindred", "Curious", "Delight", "Nest", "Tonight", "Make", "Outside", "Money"].includes(currentPageName)
+  const cleanPreview = ["Lifestyle", "LifestyleElite", "LifestyleDetail", "BookReader", "FictionReader", "FocusedLifestyleDemo","CalmLifestyleDemo", "HouseWorldDemo", "Becoming", "Mirror", "Move", "Kindred", "Curious", "Delight", "Nest", "Tonight", "Make", "Outside", "Money"].includes(currentPageName)
     || (["LifestyleDetail", "Saved", "WatchListen"].includes(currentPageName)
       && new URLSearchParams(window.location.search).get("appearance") === "calm");
   const navPageName = ["SkyWorldsDemo","FocusedLifestyleDemo","CalmLifestyleDemo"].includes(currentPageName) ? "Lifestyle" : currentPageName;
@@ -76,7 +76,7 @@ export default function Layout({ children, currentPageName }) {
       {/* GO-LIVE 2026-07: the persistent CALENDAR ICON — the single logging entry
           (replaces the retired "+" FAB). Top-right, on every nav page; opens the
           universal calendar (CalendarOverlay listens for "fw_open_calendar"). */}
-      {showNav && (
+      {showNav && currentPageName !== "HouseWorldDemo" && (
         <button
           onClick={() => { try { window.dispatchEvent(new CustomEvent("fw_open_calendar")); } catch { /* noop */ } }}
           aria-label="Open calendar — log or plan"
@@ -130,7 +130,7 @@ export default function Layout({ children, currentPageName }) {
           <a href="/Terms" style={{ color: "#9B8B7A", textDecoration: "none", fontSize: 12 }}>Terms</a>
         </footer>
       )}
-      {showNav && currentPageName !== "Ideas" && (
+      {showNav && currentPageName !== "Ideas" && currentPageName !== "HouseWorldDemo" && (
         <Link
           to="/Ideas"
           aria-label="Open Ideas (Design Lab — dev only)"

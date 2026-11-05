@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Sun, Utensils, BookOpen, Book, Sparkles, Activity, HeartPulse,
-  CalendarDays, LayoutGrid, Users, Search,
+  CalendarDays, LayoutGrid, Users, Search, Flower2,
   Settings, Stethoscope, UsersRound, LogOut, ChevronRight,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -16,7 +16,7 @@ const KNOWN_ROUTES = new Set([
   "/LifeStageCare", "/Community", "/Saved", "/Deals", "/Events",
   "/Settings", "/DoctorExport", "/PartnerSettings", "/Explore",
   "/Track", "/Onboarding", "/CycleSettings", "/Upgrade",
-  "/Ideas",
+  "/Ideas", "/HouseWorldDemo",
   // Health letter hub (replaces /SkinHair, /LifeStageCare AND /HealthDashboard).
   // /HealthDashboard now redirects to /Health via App.jsx — kept out of the
   // whitelist so any stray nav link warns rather than silently 404s.
@@ -327,6 +327,14 @@ export default function MenuSheet({ open, onClose, returnFocusRef }) {
             );
           })}
         </div>
+
+        {/* COMMUNITY & CONTENT */}
+        <p style={SECTION_HDR}>A WORLD TO TRY</p>
+        <button onClick={() => go("/HouseWorldDemo")} style={{ ...ROW_BASE, background: "#eee5e8", borderRadius: 18, border: "1px solid #d7c6cf" }}>
+          <Flower2 size={23} aria-hidden="true" style={{ color: "#76536d" }} />
+          <span style={{ flex: 1 }}><strong style={{ display: "block", color: "#533b4c", fontSize: 16 }}>Your house · preview</strong><small style={{ color: "#776975", fontSize: 12 }}>Jess, a pet and the garden</small></span>
+          <ChevronRight size={17} aria-hidden="true" style={{ color: "#76536d" }} />
+        </button>
 
         {/* COMMUNITY & CONTENT */}
         <p style={SECTION_HDR}>COMMUNITY &amp; CONTENT</p>
