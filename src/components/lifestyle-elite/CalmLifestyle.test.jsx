@@ -10,6 +10,16 @@ import { CalmTaskDialog } from "./CalmLifestyle";
 vi.mock("@/api/base44Client", () => ({ base44: { auth: { me: vi.fn() }, entities: {}, functions: { invoke: vi.fn() } } }));
 
 describe("calmer lists preserve exact source tasks", () => {
+  it("does not lead with an expired reviewed news edition while keeping its history", () => {
+    const reviewed = {provider:"FEMWELL_EDITORIAL",status:"PUBLISHED",source_id:"read",editor_name:"Halli",rights_basis:"Original prose",lede:"A complete article.",published_at:"2026-11-05",editorial_reviewed_at:"2026-11-05",rights_confirmed_at:"2026-11-05"};
+    const expired={id:"old-news",title:"Last season's bill",type:"article",archived:true,body:["The older full article."],_raw:{...reviewed,id:"old-news",tags:["News"]}};
+    const current={id:"current",title:"A useful page today",type:"article",body:["The complete new article."],_raw:{...reviewed,id:"current"}};
+    render(<ReadFocus calmLayout presentation="focused" articleCards={[expired,current]} onOpen={vi.fn()}/>);
+    expect(screen.getByRole("button",{name:/A useful page today.*Read/})).toBeVisible();
+    expect(screen.getByText("Last season's bill")).not.toBeVisible();
+    fireEvent.click(screen.getByText("Browse all reading · 1"));
+    expect(screen.getByText("Last season's bill")).toBeVisible();
+  });
   it("gives Ideas Yours the owned source first and keeps every wider-library row behind a truthful choice", () => {
     const saved={id:"owned-story",type:"daily_story",title:"Her kept story",sourceName:"FemWell Fiction",body:["Full kept story."]};
     const candidates=[0,1,2].map(index=>({id:`candidate-${index}`,type:"article",title:`Other find ${index}`,sourceName:"FemWell Fiction",body:[`Full source ${index}.`]}));

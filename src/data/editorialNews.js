@@ -1,3 +1,5 @@
+import { eligiblePublishedRead } from "../lib/editorialRelease";
+
 export const isNewsSource = row => /NEWS/i.test(String(row?.content_type || "") + " " + String(row?.provider || "") + " " + String(row?.category || "")) ||
   (Array.isArray(row?.tags) && row.tags.some(tag => String(tag).toLowerCase() === "news"));
 
@@ -14,3 +16,6 @@ export function isStaleNews(row, now = Date.now()) {
   return stale || !!(published && (!Number.isFinite(Date.parse(published)) || future(published))) ||
     !!(expires && (!Number.isFinite(Date.parse(expires)) || (/^\d{4}-\d{2}-\d{2}$/.test(expires) ? expires < today : now > Date.parse(expires))));
 }
+
+// Today offers a current recommendation; the full Lifestyle archive keeps older articles.
+export const eligibleCurrentRead = row => eligiblePublishedRead(row) && !isStaleNews(row);

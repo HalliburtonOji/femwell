@@ -19,6 +19,7 @@ for (const [draftId, sourceId, category, type, tags] of approved) {
   if (found.length > 1) throw new Error(`Duplicate source identity: ${sourceId}`);
   if (found[0]?.status === "PUBLISHED") {
     if (found[0].lede !== draft.lede) throw new Error(`Published text mismatch: ${sourceId}`);
+    if (tags.includes("News") && (found[0].editorial_source_checked_at !== "2026-11-05T18:10:00Z" || found[0].expires_at !== draft.expires_at || !found[0].tags?.includes("News"))) throw new Error(`Published news metadata mismatch: ${sourceId}`);
     console.log(`${sourceId}: already published (${found[0].id})`);
     continue;
   }
@@ -43,6 +44,6 @@ for (const [draftId, sourceId, category, type, tags] of approved) {
   };
   await base44.entities.LifestyleItems.update(row.id, patch);
   const after = await base44.entities.LifestyleItems.filter({ id: row.id }, "-created_date", 1);
-  if (after.length !== 1 || after[0].status !== "PUBLISHED" || after[0].lede !== draft.lede || after[0].content_url !== patch.content_url || after[0].provider !== "FEMWELL_EDITORIAL") throw new Error(`Published read-back failed: ${sourceId}`);
+  if (after.length !== 1 || after[0].status !== "PUBLISHED" || after[0].lede !== draft.lede || after[0].content_url !== patch.content_url || after[0].provider !== "FEMWELL_EDITORIAL" || (tags.includes("News") && (after[0].editorial_source_checked_at !== patch.editorial_source_checked_at || after[0].expires_at !== patch.expires_at || !after[0].tags?.includes("News")))) throw new Error(`Published read-back failed: ${sourceId}`);
   console.log(`${sourceId}: published (${row.id}), ${draft.lede.length} characters`);
 }

@@ -97,7 +97,7 @@ export default function ReadFocus({ continueCards = [], articleCards = [], story
     const previewEssays = editorialPreview ? articleCards.filter(item => item._raw?.editorial_local && String(item._raw.content_type).toUpperCase() === "ARTICLE") : [];
     const followed = Array.isArray(followedCategories) ? followedCategories : [];
     const matchingEssay = followed.map(value => previewEssays.find(item => String(item._raw?.category || "").toLowerCase() === String(value).toLowerCase())).find(Boolean);
-    const reviewedEssays = editorialPreview ? [] : articleCards.filter(item => isReviewedEditorial(item._raw));
+    const reviewedEssays = editorialPreview ? [] : articleCards.filter(item => !item.archived && isReviewedEditorial(item._raw));
     const matchingReviewed = followed.map(value => reviewedEssays.find(item => String(item._raw?.category || "").toLowerCase() === String(value).toLowerCase())).find(Boolean);
     const reviewedLead = matchingReviewed || reviewedEssays[0] || null;
     const completeEditorial = (editorialPreview && (matchingEssay || previewEssays[0])) ||

@@ -23,7 +23,8 @@ import {
   PHASE_COLORS, PHASE_LABEL,
 } from "@/components/journal/Editorial";
 import { base44 } from "@/api/base44Client";
-import { eligiblePublishedRead, isReviewedEditorial } from "@/lib/editorialRelease";
+import { isReviewedEditorial } from "@/lib/editorialRelease";
+import { eligibleCurrentRead } from "@/data/editorialNews";
 import { firstPlayableEpisode } from "@/data/lifestyleMediaAvailability";
 import { pickProfile, displayFirstName } from "@/utils/userProfile";
 import { storyPreview } from "@/utils/chapterProse";
@@ -380,7 +381,7 @@ export default function TodayClipboardDemo({ routeActive = true }) {
         withTimeout(base44.entities.LifestyleItems.filter({ provider: "FEMWELL_EDITORIAL", status: "PUBLISHED" }, "-published_at", 8), 2500).catch(() => []),
       ]).then(([rows, editorial]) => {
         const seen = new Set();
-        const arr = [...(editorial || []), ...(rows || [])].filter(row => eligiblePublishedRead(row) && !seen.has(row.id) && seen.add(row.id));
+        const arr = [...(editorial || []), ...(rows || [])].filter(row => eligibleCurrentRead(row) && !seen.has(row.id) && seen.add(row.id));
         const followed = new Set((Array.isArray(prof?.followed_categories) ? prof.followed_categories : []).map(value => String(value).toLowerCase()));
         const reviewed = arr.filter(isReviewedEditorial);
         const preferred = reviewed.find(row => followed.has(String(row.category || '').toLowerCase())) || reviewed[0];
@@ -569,7 +570,7 @@ export default function TodayClipboardDemo({ routeActive = true }) {
   const listen = content.listen;
   const listenHref = listen?.id ? `/LifestyleDetail?id=${encodeURIComponent(listen.id)}&from=today` : "/Lifestyle?section=listen";
   const phaseWord = PHASE_LABEL[phase] ? PHASE_LABEL[phase].toLowerCase() : "";
-  const foryouItems = (content.foryou || []).filter(eligiblePublishedRead);
+  const foryouItems = (content.foryou || []).filter(eligibleCurrentRead);
   const prog = content.program;
 
   // ── THE PER-SECTION SMART CARDS — one card per app section, each a REAL glanceable synthesis of
