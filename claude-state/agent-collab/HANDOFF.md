@@ -157,7 +157,7 @@ line: **no generative AI writing about her reading** (the Fable incident, Jan 20
 
 ## 6. IN FLIGHT — claim a surface before you edit it
 
-| Codex | Companion unifier second exploration | Expand `claude-state/COMPANION_UNIFIER_CONCEPT_2026-11-05.md` with distinct worlds and real FemWell scene/interaction map; update Brand Bible §10.5.89, BUILD_PLAN and STATUS. Research and planning only, no runtime, Ideas UI, schema, voice/social default or automation change. | 2026-11-05 | CLAIMED; Halli found the first single-character/meeting concept too shallow. |
+| Codex | Companion unifier second exploration | Expand `claude-state/COMPANION_UNIFIER_CONCEPT_2026-11-05.md` with distinct worlds and real FemWell scene/interaction map; update Brand Bible §10.5.90, BUILD_PLAN and STATUS. Research and planning only, no runtime, Ideas UI, schema, voice/social default or automation change. | 2026-11-05 | RELEASED concept `6fedd228` after claim `85689ca1`; four worlds, actual existing cast, cross-room objects and practical/playful scene script. Source Bible mirror awaits normal site build; main live `index-xdqZMkvf.js`, no interactive Ideas demo yet. |
 
 | Codex | LC34 companion unifier concept exploration | Read-only mapping of Jess, Garden, Today, Lifestyle, Planner and Community; scoped concept note in `claude-state/`, proposed direction in `BRAND_IDENTITY.md`, top STATUS and rolling plan. No runtime, profile/schema, AI, voice, social or main change. Keep approved accumulating garden and paused automation. | 2026-11-05 | RELEASED concept `563f177e` after claim `ebe52a12`; source/research map only, no Ideas demo or main change. Live remains `index-xdqZMkvf.js`; next artifact is one tappable Ideas meeting-practice scene. |
 
